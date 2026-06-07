@@ -24,4 +24,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Run the autonomous scheduler
-CMD ["python3", "src/autonomous.py"]
+ENV PYTHONPATH="/app"
+CMD ["python3", "-m", "src.autonomous"]
