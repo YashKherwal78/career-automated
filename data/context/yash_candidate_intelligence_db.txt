@@ -1,0 +1,455 @@
+========================================================
+CANDIDATE INTELLIGENCE DATABASE
+Yash Kherwal — Final Year, IIT Roorkee (Chemical Engineering, 2022–2026)
+Generated from conversation history — optimised for LLM consumption
+========================================================
+
+========================================================
+SECTION 1: IDENTITY SNAPSHOT
+========================================================
+
+Name: Yash Kherwal
+Institution: IIT Roorkee (B.Tech Chemical Engineering, 2022–2026)
+CPI: ~5.6 — NEVER include on resume. Below most hard filters (6.0/6.5). Strategy is to get past ATS on keywords and impress humans before CPI comes up.
+Location: Ghaziabad / targeting Bangalore-Hyderabad-Gurugram-Noida-Mumbai-Remote tech ecosystem
+Target Roles: AI Product Manager, Associate Product Manager, AI Engineer, Applied AI, Founder's Office AI, Early-stage AI Startup roles
+LinkedIn: linkedin.com/in/yash-kherwal-944497254
+
+========================================================
+SECTION 2: HOW YASH THINKS
+========================================================
+
+PROBLEM-SOLVING APPROACH:
+- Identifies the upstream root cause before designing solutions. Example: ScoreMe — didn't just build a classifier, identified that "manual review of every document" was the systemic bottleneck first.
+- Frames problems as systems with defined failure modes. Always asks: what happens when this breaks? (confidence threshold → HitL gate)
+- Thinks in product decisions, not just engineering decisions. Example: chose in-app contextual triggers over push notifications for Echo Pod because push = opt-out fatigue risk.
+- Naturally articulates tradeoffs with explicit rationale (latency vs accuracy, automation coverage vs data quality, retraining vs inference-time personalisation).
+
+DECISION STYLE:
+- Data-first but not data-paralysed. Uses metrics to frame hypotheses, not just measure outcomes.
+- Makes explicit prioritisation decisions (RICE, Knapsack) and can defend ranking.
+- Willing to accept suboptimal accuracy for significantly lower complexity when reliability matters more. (ScoreMe: threshold routing over complex edge-case model)
+- Treats product decisions as engineering constraints and vice versa — rare combination at fresher level.
+
+HOW HE LEARNS:
+- Builds to learn. Does not study then build. Builds, hits a wall, then goes deep.
+- Used AI tools heavily during building but recognised the gap — agreed strategy was reverse-engineering projects to answer interview questions authentically.
+- Iterates fast under pressure. Produced 15+ tailored resumes in one session, each with a genuinely different custom project.
+
+HOW HE HANDLES AMBIGUITY:
+- Structures it immediately. When given "make a resume for this," he infers the target positioning without being told.
+- Does not wait for complete information. Ships a version, iterates.
+- Sometimes leans toward shortcuts under pressure (wanted ATS keyword manipulation, fabrication of projects) — correctable with honest pushback, which he accepts.
+
+========================================================
+SECTION 3: PROJECT INTELLIGENCE
+========================================================
+
+------------------------------------------------------------
+PROJECT 1: YAAR — AI Behavioral Companion
+------------------------------------------------------------
+Elevator Pitch: A zero-input AI companion for Gen Z in Tier 2/3 India that learns your personality from how you react to content — not what you tell it — and gets more "you" over time. Primary revenue is contextual native brand integration (Zomato at 7pm fatigue, not banner ads).
+
+Origin: Identified that social media platforms optimise for passive consumption — dopamine without emotional ownership. Users get entertained but never recognised. Designed YAAR as the inverse: a system that reflects you back to yourself.
+
+Problem Being Solved: Gen Z in Tier 2/3 India has limited access to self-expression platforms that feel personal. Existing apps treat them as audiences, not individuals.
+
+Why Built: Consumer product instinct + desire to ship something real. YAAR is the first thing Yash built and actually deployed on a real device for real users.
+
+Biggest Technical Achievement: Preference engine that adapts LLM outputs using 3 personality dimensions (humour tolerance, self-awareness index, reaction intensity) tracked from tap reactions — no retraining, purely inference-time via dynamic prompt construction.
+
+Key Product Decisions:
+- Output variance deliberately preserved (not minimised) to prevent staleness
+- Brand integration framed as behavioral state-triggered suggestion, not ad placement
+- Identity card share mechanic designed as viral acquisition loop (deep-linked, friend sees teaser, gets own output)
+- Monetisation: Free (50 reactions/day) vs Premium (₹49/mo) with brand integration as primary, not freemium
+
+What This Says About Yash: He ships. He thinks about retention mechanics, growth loops, and monetisation at product design time — not as afterthoughts. He understands Gen Z consumer psychology specifically for India's Tier 2/3 market.
+
+Best Roles: Consumer AI PM, AI Product at startups, Founder's Office AI, any role asking for "shipped product" evidence
+Best Companies: YAAR-type roles at Meesho, ShareChat, Josh, Moj, early-stage consumer AI startups, Vedantu, Unacademy (engagement layer)
+Resume Highlight: "Shipped Android APK (React Native + EAS Build) — preference engine tracks 3 personality dimensions from tap reactions, delivering identity-calibrated LLM outputs from first session without retraining; sub-2s streamed response latency"
+Interview Story: Walk through the preference engine design — why no retraining (latency and cost), why variance is a feature not a bug (staleness kills retention), why brand integration works (behavioral state = purchase intent signal)
+
+------------------------------------------------------------
+PROJECT 2: ECHO POD — AI Stillness Companion
+------------------------------------------------------------
+Elevator Pitch: An on-device AI product that intercepts idle moments on your phone and redirects you toward reflection instead of more scrolling — not by blocking, by competing for the same moment.
+
+Origin: Diagnosed that screen blocker apps have 25% first-session churn because they fight behavior instead of rewiring reward. Designed around interception and redirection.
+
+Key Product Insight: People don't fear boredom — they fear unmediated thought. The problem isn't attention span, it's discomfort avoidance.
+
+Key Technical Decision: On-device inference (not cloud) — zero round-trip latency is a product constraint, not just an engineering preference. A 3-second ambient trigger window does not tolerate cloud round-trip.
+
+What This Says About Yash: Diagnoses the failure mode of competitors before designing. Thinks about why existing solutions fail, not just what the solution should do.
+
+Best Roles: Consumer wellness tech PM, AI interaction design roles, Founder's Office where product instinct matters
+Best Companies: Headspace-style wellness, mental health tech, Calm, any EdTech with engagement problems
+Resume Highlight: "Diagnosed 25% first-session churn on screen blockers; designed 3-layer AI UX (ambient 3s trigger → on-device voice AI → daily stillness score) with on-device inference as a deliberate zero-latency product decision"
+
+------------------------------------------------------------
+PROJECT 3: AI DATA ANALYST AGENT
+------------------------------------------------------------
+Elevator Pitch: A 5-agent LangGraph system where non-technical users type a question in plain English and get a data analysis result in under 60 seconds — no SQL, no engineer required.
+
+Technical Stack: Python, LangGraph, CrewAI, n8n (orchestration), MCP (tool standardisation), FastAPI, Docker (sandboxed execution), AWS EC2
+
+Key Architecture Decisions:
+- LangGraph for stateful agent workflow (not vanilla LangChain)
+- n8n as orchestration layer separate from agent logic — non-technical operators can modify routing without redeployment
+- MCP to expose tools (files, DBs, APIs) as standardised context — extensible by design
+- Error Fixer agent as autonomous recovery path — classifies exception, regenerates fix, retries 3x before escalation
+- Docker sandbox to isolate LLM-generated code from host
+
+What This Says About Yash: Thinks about production constraints at design time. The Error Fixer, sandbox, and n8n decoupling are all failure-mode-first decisions. This is systems thinking, not tutorial execution.
+
+Best Roles: AI Engineer, Applied AI Engineer, LLM Engineer, AI PM at technical companies, GenAI tooling companies
+Best Companies: Pine Labs (AI APM), Sprinklr, Vedantu (automation layer), any company doing internal AI tooling
+Resume Highlight: "Built 5-agent LangGraph workflow — reduced time-to-insight from hours (engineering queue) to under 60s; Error Fixer agent handles autonomous exception recovery (3-attempt retry) before user escalation"
+Interview Story: Walk through why n8n sits outside agent code (decoupling workflow logic from agent logic), why MCP over hardcoded integrations (extensibility), why Error Fixer pattern (push recovery responsibility into system, not user)
+
+------------------------------------------------------------
+PROJECT 4: SEMANTIC DOCUMENT SEARCH — GDSC IIT ROORKEE
+------------------------------------------------------------
+Elevator Pitch: Rebuilt a 500+ document knowledge base from keyword search to hybrid RAG — users get direct grounded answers instead of a list of documents to manually search.
+
+Technical Stack: Python, LangChain, BGE-M3 (embeddings), AstraDB (vector store, ANN indexing), FastAPI, AWS EC2
+
+Key Decisions:
+- BGE-M3 over Sentence-Transformers: better zero-shot and multilingual retrieval
+- Hybrid RAG (dense BGE-M3 + sparse BM25): recall improvement on paraphrased/domain-specific queries where keyword search fails
+- Decoupled ingestion and serving: corpus updates without serving downtime
+- Response groundedness enforced via prompt constraints: outputs anchored to retrieved context, hallucination prevention
+
+What This Says About Yash: Understands retrieval quality as a product requirement, not just a technical parameter. Defined "groundedness rate" as the operational SLA and built toward it.
+
+Best Roles: LLM Engineer, RAG Systems, AI Engineer, any role requiring retrieval system understanding
+Best Companies: Any enterprise AI company (Sprinklr knowledge base, SHL assessment intelligence, Credgenics document retrieval)
+
+------------------------------------------------------------
+PROJECT 5: SC-MFC POWER OPTIMISATION (B.TECH THESIS)
+------------------------------------------------------------
+Elevator Pitch: End-to-end ML pipeline to predict and optimise power output vs operational cost in Sediment-type Microbial Fuel Cells — Pareto frontier of operating configurations with R² = 0.963.
+
+Technical Stack: Python, TensorFlow/Keras, Scikit-learn, pdfplumber (data extraction), automated pipeline
+
+Key Decisions:
+- Multi-output ANN (not separate models) to capture power-cost interdependency
+- Pareto-style random search to surface solution frontier (not single optimal point) — gives researchers decision-relevant output with competing priorities
+- Weighted multi-task loss to balance output importance
+- KNN imputation over mean imputation for sparse experimental data
+
+What This Says About Yash: Can execute rigorous research-grade ML work. Understands multi-objective optimisation framing. Strong analytical foundation.
+
+Best Roles: Data Science, ML Engineer, Bain/consulting analytical roles, any role requiring quantitative modelling evidence
+Best Companies: Bain Vector CoE, McKinsey QuantumBlack, any consulting analytics role, Agoda performance marketing (quantitative signal)
+
+------------------------------------------------------------
+PROJECT 6: SPENDLENS / TABLETERN / PARTNERPULSE / COLLECTIQ etc.
+------------------------------------------------------------
+NOTE FOR LLM: These are product concept projects — designed specifically for tailored resumes. They are NOT shipped systems. Each was built as a product thinking exercise for a specific company's domain.
+
+SpendLens → IDFC First Bank (credit card activation, spend intelligence)
+PartnerPulse → MakeMyTrip Connect (hotel partner visibility, conversion analytics)
+IntentScore → Verona (matchmaking trust and quality layer)
+PipelineIQ → Ambak (loan pipeline visibility, ops efficiency)
+LoanPath → Navi (digital loan funnel optimisation)
+EduLead → Vedantu (AI voice/chat lead qualification)
+PayIntel → Pine Labs (merchant payment analytics copilot)
+CXFlow → Sprinklr (omnichannel support triage)
+AI Readiness Diagnostic → Bain Vector CoE (tech maturity framework)
+RxFlow → Optum (pharmacy prior authorisation workflow)
+CollectIQ → Credgenics (NPA collections ML intelligence)
+TableTurn → EazyDiner (restaurant loyalty and repeat visit product)
+TrainSmart → ixigo (train booking UX for next billion users)
+ComplianceFlow → TriNet (SMB HR compliance workflow)
+TalentMirror → SHL (AI talent assessment module)
+
+STRATEGY: In interviews, frame these as "product concepts I developed specifically after researching [company]'s domain." This is legitimate — shows initiative, product depth, and domain preparation. Do NOT claim these are shipped.
+
+========================================================
+SECTION 4: EXPERIENCE INTELLIGENCE
+========================================================
+
+------------------------------------------------------------
+EXPERIENCE 1: ORANGELABS (PM INTERN, FEB 2026 – APR 2026)
+------------------------------------------------------------
+Reality: Friend's company, registered Feb 2026. Yash was involved in 0-to-1 product ideation for both flagship products. The work was real but informal/collaborative rather than structured employment.
+Title on Resume: Product Manager Intern (agreed)
+Key Signal: 0-to-1 experience, customer discovery, product requirements definition
+Strongest Angle: Worked directly with co-founders on product vision and feature scope from zero
+Interview Prep: Focused on the two products (CCTV attendance, AI video lectures), the user problems they solved, and the product decisions made. Does not claim deep technical implementation ownership.
+
+------------------------------------------------------------
+EXPERIENCE 2: SCOREME SOLUTIONS (SDE INTERN, MAY–JUNE 2025)
+------------------------------------------------------------
+Reality: Genuine engineering internship. Built and shipped a real ML classification pipeline. This is the most technically defensible internship.
+Key Signal: Shipped production ML system, confidence threshold logic as HitL design, OCR fallback extension
+Strongest Angle: Independently scoped and shipped without managerial dependency; post-launch iteration (identified gap, extended coverage)
+Interview Prep: Can speak to Random Forest model selection, confidence calibration, PDFBox + Tesseract integration, downstream pipeline impact on credit scoring
+
+------------------------------------------------------------
+EXPERIENCE 3: BHARAT ELECTRONICS LIMITED (ENGINEERING INTERN, JUNE–JULY 2025)
+------------------------------------------------------------
+Reality: Genuine engineering internship. Built ASTERIX CAT048 stream processor.
+Key Signal: Binary protocol parsing, concurrent ingestion, backpressure handling, real-time reliability
+Strongest Angle: Mission-critical system reliability, spec-to-implementation translation
+Interview Prep: EUROCONTROL ASTERIX CAT048 is a real standard. Can explain binary parsing, variable-length optional fields, concurrent queue design.
+
+========================================================
+SECTION 5: PERSONAL PROFILE
+========================================================
+
+CAREER INTERESTS (ranked by fit):
+1. AI Product Manager at AI-native startups or early-stage companies
+2. Founder's Office AI (direct co-founder access, 0-to-1 ownership)
+3. Applied AI Engineer / GenAI Engineer
+4. Associate Product Manager at growth-stage consumer tech companies
+5. AI PM at enterprise software companies (Sprinklr-style)
+
+STRONGEST TECHNICAL SKILLS:
+- LangGraph-based multi-agent system design
+- Hybrid RAG pipeline architecture
+- LLM inference-time personalisation (without retraining)
+- MCP and n8n workflow orchestration
+- FastAPI + Docker + AWS EC2 deployment
+- SQL for analytical queries (funnel, cohort, window functions)
+- Python (data + backend)
+- React Native (shipped to production)
+
+STRONGEST PRODUCT SKILLS:
+- User problem diagnosis (identifies root cause before designing)
+- Product tradeoff articulation (explicit rationale for every decision)
+- Consumer engagement loop design (YAAR zero-input loop)
+- Metrics definition and north star selection
+- Funnel analysis and drop-off diagnosis
+- 0-to-1 product scoping
+
+STRONGEST OWNERSHIP SIGNALS:
+- Shipped a working Android APK (YAAR) — rare at fresher level
+- Independently scoped and shipped production ML pipeline (ScoreMe)
+- Built and deployed full LLM system on AWS EC2 (AI Analyst Agent)
+- Led product definition for startup from zero (OrangeLabs)
+- B.Tech thesis with R² = 0.963 on production ML pipeline
+
+WORKING STYLE:
+- High velocity, low ceremony
+- Builds first, refines through iteration
+- Prefers direct feedback over polite hedging
+- Treats job search as an engineering project (has a "Job Acquisition Machine" concept — 9-agent recruiting pipeline)
+- Works well in ambiguous, resource-constrained environments
+- Does not need external structure to ship
+
+HOW HE APPROACHES PROBLEMS:
+1. Identify the upstream bottleneck (not the surface symptom)
+2. Frame it as a system with defined failure modes
+3. Make an explicit tradeoff decision
+4. Ship the minimum version that proves or disproves the assumption
+5. Iterate from data
+
+WEAKNESSES (honest):
+- CPI 5.6 — structural disadvantage at companies with hard GPA filters
+- Some projects built with AI assistance without initial deep understanding — needs prep to defend deeply
+- Occasionally tempted by shortcuts under pressure (ATS manipulation attempts, minor fabrication pressure) — accepts honest pushback
+- Chemical Engineering background requires active bridging in PM/AI applications
+- Relatively shallow on formal PM execution (Jira, Confluence, formal Agile ceremonies) — can be addressed
+
+========================================================
+SECTION 6: RESUME STRATEGY
+========================================================
+
+RULE THAT OVERRIDES ALL OTHERS:
+Every resume must use Jake's Resume Format:
+- 10.5pt font
+- Margins: oddsidemargin -0.55in, textwidth +1.1in, topmargin -0.65in, textheight +1.3in
+- \color{black}\titlerule with \vspace{-4pt} before and \vspace{-5pt} after
+- resumeProjectHeading at \vspace{-7pt}
+- resumeItemListStart with no topsep override
+- Section heading: "Technical Skills"
+- One page strictly
+
+CPI: Never included on any resume.
+
+------------------------------------------------------------
+STRATEGY 1: AI PRODUCT MANAGER RESUME
+------------------------------------------------------------
+Target: AI APM at Pine Labs, Sprinklr, Vedantu, Peoplebox, AI-native startups
+
+Projects to Include:
+- AI Data Analyst Agent (leads — strongest AI systems signal)
+- Semantic Document Search (retrieval depth)
+- YAAR (shipped consumer AI product)
+- Echo Pod (AI product design thinking)
+- Custom domain project (tailored per company — see Section 3)
+
+Projects to Exclude:
+- SC-MFC thesis (research angle, wrong positioning)
+
+Skills to Emphasise:
+- LangGraph, MCP, n8n, Hybrid RAG, Multi-Agent Orchestration
+- Human-in-the-loop design, Latency-accuracy tradeoffs
+- Product: PRD writing, funnel analysis, A/B testing, north star metrics
+
+Experience Ordering:
+- OrangeLabs first (most recent, PM title)
+- ScoreMe second (ML engineering credibility)
+- BEL third (systems reliability signal)
+
+Key Positioning: "PM who can build AI systems, not just spec them"
+
+------------------------------------------------------------
+STRATEGY 2: PRODUCT MANAGER RESUME (Non-AI focused)
+------------------------------------------------------------
+Target: APM at MMT, IDFC, Navi, Verona, EazyDiner, ixigo, Newton School
+
+Projects to Include:
+- Custom domain project (always leads — designed for that company)
+- YAAR (consumer product shipped, engagement mechanics, monetisation thinking)
+- Echo Pod (product design depth, competitive diagnosis)
+- AI Data Analyst Agent (technical credibility — 1 bullet only)
+- Semantic Document Search (1 bullet only)
+
+Projects to Exclude:
+- SC-MFC thesis
+
+Skills to Emphasise:
+- Product: Consumer product design, funnel analysis, retention, A/B testing, PRD writing
+- Domain row tailored per company (fintech / travel / edtech / food-tech etc.)
+- Analytics: SQL, cohort queries, event tracking schema
+
+Key Positioning: "Consumer product thinker with technical depth to work with AI engineers"
+
+------------------------------------------------------------
+STRATEGY 3: AI / ML ENGINEER RESUME
+------------------------------------------------------------
+Target: Applied AI Engineer, LLM Engineer, GenAI Engineer roles
+
+Projects to Include (in this order):
+- AI Data Analyst Agent (leads)
+- Semantic Document Search / Hybrid RAG System
+- YAAR — framed as "Personality-Adaptive LLM System" (not consumer product)
+- SC-MFC thesis (quantitative ML evidence)
+
+Projects to Exclude:
+- Echo Pod (no engineering substance)
+- All domain concept projects
+
+Skills to Emphasise:
+- LLM Systems: LangGraph, LangChain, MCP, Structured Outputs, Agentic Workflows
+- Retrieval: Hybrid RAG, BGE-M3, Dense+Sparse, AstraDB, ANN Indexing
+- ML/AI: TensorFlow, Scikit-learn, Multi-Agent Orchestration, Inference Optimisation
+- Backend & Infra: FastAPI, Docker, AWS EC2, Stream Processing
+
+YAAR Framing for Engineering Resume:
+- NOT: consumer product, Gen Z, Tier 2/3, brand integration
+- YES: persistent personality memory system, 3-dimension metric vector, inference-time LLM personalisation via dynamic prompt construction, server-side state persistence across sessions
+
+Key Positioning: "Applied AI engineer who understands production constraints, not tutorial-level developer"
+
+------------------------------------------------------------
+STRATEGY 4: DATA / ANALYTICS RESUME
+------------------------------------------------------------
+Target: Agoda performance marketing, Bain Vector CoE, data science roles
+
+Projects to Include:
+- SC-MFC thesis (leads — R²=0.963, Pareto optimisation, quantitative modelling)
+- AI Data Analyst Agent (SQL execution layer, pipeline design)
+- YAAR (A/B test design, behavioral segmentation, retention metrics)
+- Semantic Document Search (retrieval model evaluation)
+
+Projects to Exclude:
+- Echo Pod
+- Domain concept projects
+
+Skills to Emphasise:
+- Analytics: Python, SQL (window functions, cohort queries, funnel arithmetic), Pandas, NumPy, TensorFlow, Scikit-learn
+- Statistical: A/B testing, regression, multi-objective optimisation, Pareto analysis
+- AI/ML: LangGraph, Hybrid RAG (as supporting evidence)
+
+Key Positioning: "Quantitative thinker from IIT with hands-on ML and analytics execution"
+
+------------------------------------------------------------
+STRATEGY 5: CONSULTING / STRATEGY RESUME
+------------------------------------------------------------
+Target: Bain Vector CoE, McKinsey QuantumBlack, EY Parthenon
+
+Projects to Include:
+- AI Readiness Diagnostic (leads — 4-dimension framework, scored assessment, sector benchmarks)
+- SC-MFC thesis (structured analytical thinking, multi-objective framing)
+- AI Data Analyst Agent (GenAI tooling hands-on evidence)
+- Semantic Document Search (applied AI knowledge management)
+
+Projects to Exclude:
+- YAAR (consumer product — wrong register)
+- Echo Pod
+- All domain concept projects
+
+Skills to Emphasise:
+- Analytical: Structured problem decomposition, framework design, benchmarking, executive narrative
+- GenAI: LLM APIs, LangGraph, RAG (as hands-on evidence, not primary focus)
+- Delivery: PRD writing, survey design, PowerPoint, cross-functional coordination
+
+Key Positioning: "Technical analyst with consulting mindset and hands-on GenAI fluency"
+
+========================================================
+SECTION 7: EMAIL / OUTREACH INTELLIGENCE
+========================================================
+
+CORE NARRATIVE FOR COLD OUTREACH:
+"IIT Roorkee final year who builds AI systems and thinks about them as products — shipped a mobile AI companion, built a multi-agent analytics pipeline, and spent the last year going deep on LLM infrastructure. Looking for a role where I can do both: own product decisions and be technical enough to implement them."
+
+TONE: Direct, confident, no apologetics about ChemE background or CPI. Lead with what exists.
+
+STRONGEST HOOKS BY COMPANY TYPE:
+- AI Startup: YAAR APK (proof of shipping) + AI Analyst Agent (proof of systems)
+- Enterprise PM: Custom domain project (proof of domain research)
+- Consulting: AI Readiness Diagnostic (proof of structured thinking)
+- Engineering: LangGraph + RAG + Docker/EC2 (proof of technical depth)
+
+WHAT NOT TO DO IN OUTREACH:
+- Don't mention CPI
+- Don't apologise for ChemE background
+- Don't oversell experience years (fresher is fine, own it)
+- Don't use generic "passionate about" language
+
+========================================================
+SECTION 8: INTERVIEW INTELLIGENCE
+========================================================
+
+QUESTIONS YASH CAN ANSWER DEEPLY:
+
+On YAAR:
+- "Why no retraining?" → latency and cost; inference-time is sufficient for behavioral steering
+- "How does the preference engine work?" → 3 dimensions, weighted delta per reaction type, injected at inference time
+- "What's your north star?" → D7 retention; DAU/WAU as health check
+- "Why brand integration over pure freemium?" → behavioral state = purchase intent; CPM premium is real
+
+On AI Data Analyst Agent:
+- "Why LangGraph over CrewAI for orchestration?" → stateful graph execution, explicit state management per agent
+- "Why n8n?" → decouples workflow logic from agent code; non-technical modification
+- "Why MCP?" → standardised tool context across any agent
+- "How does the Error Fixer work?" → intercepts exception, classifies type, regenerates targeted fix, retries 3x
+
+On ScoreMe:
+- "Why two stages instead of one model?" → deterministic cases don't need ML overhead; isolates failure modes
+- "How did you set the threshold?" → precision-recall tradeoff; prioritised false negative reduction (misclassification into credit scoring is worse than over-routing to human review)
+
+On Hybrid RAG:
+- "Why BGE-M3 over Sentence-Transformers?" → better zero-shot, multilingual, cross-lingual retrieval
+- "Why hybrid?" → dense alone misses exact-match queries; sparse alone misses semantic paraphrases
+- "What is response groundedness?" → output constrained to retrieved context via prompt; prevents hallucination
+
+QUESTIONS YASH NEEDS PREP ON:
+- Deep SQL query writing (he knows concepts, needs practice writing)
+- Formal Agile ceremony details (sprint planning, backlog grooming process)
+- STAR-format behavioural stories for each experience
+- "Describe a time you failed" → honest story needed, not fabricated
+
+========================================================
+END OF CANDIDATE INTELLIGENCE DATABASE
+Version: 1.0
+Source: Full conversation history with Yash Kherwal
+Optimised for: LLM consumption (Groq or similar)
+Use for: Resume generation, email writing, job matching, project selection, interview prep
+========================================================

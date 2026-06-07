@@ -1,0 +1,25 @@
+# Environments
+.env
+.env.local
+venv/
+.venv/
+__pycache__/
+.DS_Store
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+data/crm.db
+
+# Logs
+*.log
+*.out
+*.aux
+logs.csv
+data/logs.csv
+
+# Generated Resumes & Artifacts
+data/linkedin_resumes/
+data/tailored_*
+data/generated_resumes/
