@@ -1,0 +1,7 @@
+sources:
+  - id: speedyapply_ai_jobs
+    type: github_repo
+    name: "2026 AI College Jobs"
+    url: "https://github.com/speedyapply/2026-AI-College-Jobs"
+    priority: 100
+    parser: markdown_table

@@ -1,0 +1,64 @@
+version: "1.0.0"
+rules:
+  - id: ALLOW_ASSOCIATE_PM
+    priority: 100
+    action: ALLOW
+    field: title
+    match: regex
+    pattern: "(?i)(associate product manager|apm|product analyst|junior product manager)"
+    
+  - id: ALLOW_AI_PRODUCT
+    priority: 95
+    action: ALLOW
+    field: title
+    match: regex
+    pattern: "(?i)(ai product|product manager.*ai|genai|ai pm)"
+
+  - id: ALLOW_FOUNDERS_OFFICE
+    priority: 90
+    action: ALLOW
+    field: title
+    match: regex
+    pattern: "(?i)(founder's office|chief of staff)"
+
+  - id: ALLOW_PRODUCT_MANAGER
+    priority: 85
+    action: ALLOW
+    field: title
+    match: regex
+    pattern: "(?i)(product manager)"
+
+  - id: REJECT_SENIORITY
+    priority: 50
+    action: REJECT
+    field: title
+    match: regex
+    pattern: "(?i)\\b(senior|sr|staff|principal|director|vp|head|lead|manager|executive)\\b"
+
+  - id: REJECT_EXPERIENCE
+    priority: 45
+    action: REJECT
+    field: experience
+    match: regex
+    pattern: "(?i)(3\\+|4\\+|5\\+|6\\+|7\\+|8\\+|9\\+|10\\+)"
+
+  - id: REJECT_ENGINEERING_DEPT
+    priority: 40
+    action: REJECT
+    field: title
+    match: regex
+    pattern: "(?i)\\b(backend|frontend|fullstack|full stack|devops|sre|qa|security|data engineer|software engineer)\\b"
+
+  - id: REJECT_BUSINESS_DEPT
+    priority: 35
+    action: REJECT
+    field: title
+    match: regex
+    pattern: "(?i)\\b(marketing|sales|hr|finance|legal|recruiter|customer success|account executive|account manager)\\b"
+
+  - id: REJECT_EMPLOYMENT_TYPE
+    priority: 30
+    action: REJECT
+    field: title
+    match: regex
+    pattern: "(?i)\\b(contract|intern|internship|temporary|part-time|part time)\\b"
