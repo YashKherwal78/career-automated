@@ -1,0 +1,11 @@
+graphiti
+tree-sitter
+tree-sitter-python
+pyright
+faiss-cpu
+gitpython
+sqlite-utils
+psutil
+watchdog
+networkx
+aider-chat

@@ -1,0 +1,13 @@
+routing:
+  refactor:
+    executor: aider
+  feature:
+    executor: native
+  autonomous:
+    executor: openhands
+  bugfix:
+    executor: native
+  large_scale:
+    executor: aider
+  documentation:
+    executor: native
