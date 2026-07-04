@@ -1,58 +1,69 @@
 import sqlite3
 from src.config.config import Config
-from src.jobs.providers.csv_provider import CSVProvider
-from src.jobs.providers.apify_provider import ApifyProvider
+from src.discovery.providers.provider_manager import ProviderManager
+from src.jobs.deduplicator import process_job
+from src.jobs.ranking import apply_ranking_engine
 
-def ingest_jobs(provider_type="apify"):
-    """Agent 0: Discovers jobs from the selected provider and loads them into the database."""
-    print(f"Agent 0: Ingesting jobs from {provider_type} provider...")
+def run_discovery_pipeline():
+    """Pipeline A & B: Opportunity Discovery Engine"""
+    print("Agent 0: Initializing Dual Discovery Pipeline...")
     
-    if provider_type == "csv":
-        provider = CSVProvider(str(Config.DATA_DIR / "jobs.csv"))
-    elif provider_type == "apify":
-        provider = ApifyProvider()
-    else:
-        raise ValueError(f"Unknown provider type: {provider_type}")
-        
-    jobs = provider.discover_jobs()
+    manager = ProviderManager()
     
-    conn = sqlite3.connect(Config.DATABASE_PATH)
-    cursor = conn.cursor()
+    # We will pass empty dict for last_sync_timestamps for now
+    print("-> Running ProviderManager (Parallel Execution)...")
+    opportunities = manager.run_all_providers()
+    
+    print(f"-> Discovered {len(opportunities)} raw opportunities.")
     
     jobs_ingested = 0
-    for job in jobs:
-        # Check if job already exists based on URL
-        cursor.execute("SELECT id FROM jobs WHERE job_url = ?", (job["job_url"],))
-        if cursor.fetchone() is None:
-            cursor.execute("""
-                INSERT INTO jobs (company_name, job_title, job_url, job_description, location, experience_required, skills_required, employment_type, posting_date, days_old)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                job.get("company_name", ""),
-                job.get("job_title", ""),
-                job.get("job_url", ""),
-                job.get("job_description", ""),
-                job.get("location", ""),
-                job.get("experience_required", ""),
-                job.get("skills_required", ""),
-                job.get("employment_type", ""),
-                job.get("posting_date", ""),
-                job.get("days_old", 0)
-            ))
+    new_companies = 0
+    
+    conn = sqlite3.connect(Config.DATABASE_PATH)
+    c = conn.cursor()
+    
+    for opt in opportunities:
+        try:
+            # Check if company exists in registry
+            c.execute("SELECT 1 FROM company_intelligence_static WHERE company_name = ?", (opt.company,))
+            exists = c.fetchone()
             
-            # Also create a linked Lead record so the pipeline can process it
-            job_id = cursor.lastrowid
-            cursor.execute("""
-                INSERT INTO leads (company_name, job_id, job_title, job_url, status)
-                VALUES (?, ?, ?, ?, 'New')
-            """, (job.get("company_name", ""), job_id, job.get("job_title", ""), job.get("job_url", "")))
-            
+            if not exists and opt.company != "Unknown Company":
+                # Dynamic Registration (Pipeline B)
+                c.execute("""
+                    INSERT INTO company_intelligence_static 
+                    (company_name, priority, lifecycle_status, discovery_source) 
+                    VALUES (?, 'P3', 'NEW', 'SEARCH_DISCOVERY')
+                """, (opt.company,))
+                conn.commit()
+                new_companies += 1
+                
+            # Map StandardJob to the dictionary format expected by process_job
+            # Map StandardJob to the dictionary format expected by process_job
+            job_dict = {
+                "company_name": opt.company,
+                "job_title": opt.role,
+                "job_url": opt.application_url,
+                "job_description": opt.job_description,
+                "location": opt.location,
+                "experience_required": opt.experience_required,
+                "skills_required": ", ".join(opt.skills) if opt.skills else "",
+                "employment_type": opt.remote_hybrid_onsite,
+                "posting_date": opt.date_posted,
+                "source": opt.source
+            }
+            process_job(job_dict)
             jobs_ingested += 1
+        except Exception as e:
+            print(f"Error processing opportunity {opt.role} at {opt.company}: {e}")
             
-    conn.commit()
     conn.close()
-    print(f"Agent 0: Successfully ingested {jobs_ingested} new jobs from {provider_type}.")
+    
+    print("-> Applying Opportunity Ranking (Phase 5)...")
+    apply_ranking_engine()
+    
+    print(f"Agent 0: Successfully ingested {jobs_ingested} opportunities into cache.")
+    print(f"Agent 0: Dynamically registered {new_companies} new P3 startups.")
 
 if __name__ == "__main__":
-    # Apify is the production default
-    ingest_jobs(provider_type="apify")
+    run_discovery_pipeline()

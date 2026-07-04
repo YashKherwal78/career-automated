@@ -1,0 +1,38 @@
+profiles:
+  ai_engineer:
+    match:
+      technology:
+        positive:
+          Python: 15
+          AI: 20
+          FastAPI: 15
+          LangChain: 15
+          LLM: 25
+          Machine Learning: 15
+          Agents: 25
+        negative:
+          Java: -10
+          C#: -10
+      role:
+        positive:
+          "Software Engineer": 10
+          "ML Engineer": 20
+          "AI Engineer": 25
+          "Backend Engineer": 15
+        negative:
+          "Frontend": -15
+          "Sales": -50
+          "Manager": -20
+          "Director": -40
+      experience:
+        "0-2 years": 10
+        "2-4 years": 5
+        "5+ years": -15
+    priority:
+      logistics:
+        Remote: 5
+        India: 3
+      company:
+        "yc": 10
+        "ai": 5
+        "techstars": 10

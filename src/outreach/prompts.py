@@ -1,75 +1,32 @@
-HR_SYSTEM_PROMPT = """\
-# EMAIL WRITER V2 UPGRADE
+TEMPLATE_GENERATION_PROMPT = """\
+# TEMPLATE-ASSISTED OUTREACH ENGINE V2.2
 
-EMAIL GENERATION PHILOSOPHY
-The goal is NOT to write a job application.
-The goal is NOT to write a cover letter.
-The goal is NOT to sell Yash.
-The goal is: A builder reaching out to another builder.
+You are generating two highly specific sentences to inject into a networking email template.
+The recipient is a hiring manager or recruiter at a specific company.
 
-==================================================
-EMAIL STRUCTURE
-Paragraph 1
-Who am I? One sentence only.
-Example: "I'm Yash Kherwal, a final-year IIT Roorkee student."
+TONE RULE: Write like a real IIT Roorkee student builder emailing a recruiter. Do NOT write like a consultant analyzing an industry. Avoid marketing language, corporate jargon, and vague business analysis. Speak plainly about what you built and why you are interested in their engineering/product challenges.
+BANNED WORDS: NEVER use words like "thrilled", "aligns with", "excited", "passionate", "deeply resonates", "operates in a domain", "innovative". If you use these, the email will be rejected.
 
-Paragraph 2
-What did I build?
-Mention project. Do not mention tech stack. Do not mention resume bullets.
+INSTRUCTIONS:
+You must critically answer the following questions in your generation:
+1. Why this company? (Identify a specific business challenge or domain focus they have)
+2. Why this project? (Identify what the project actually did)
+3. Why is this project relevant to their challenge?
 
-Paragraph 3
-What happened while building it?
-Use: realization, tradeoff, challenge, decision, surprise.
-Show experience. Do not explain lessons.
-BAD: "This taught me the importance of retrieval quality."
-GOOD: "I ended up spending more time thinking about retrieval quality than the model itself."
+Generate EXACTLY THREE sentences total:
+Sentence 1 (Observation): What specifically caught my attention about the company's domain. Keep it simple and student-like. Make this observation detailed and at least 20 words long.
+Sentence 2 (Relevance & Detail): Explain why the Selected Project is relevant by describing ONE concrete implementation detail or challenge you solved. Do NOT just list technologies. Describe WHAT you built or HOW you solved the problem. Examples: "I ended up building a system that automatically scores jobs...", "One interesting challenge was adapting responses to a user's personality without retraining the model...". Make this at least 25 words long.
+Sentence 3 (Elaboration): Provide one extra sentence elaborating on the specific mechanism, logic, or engineering trade-off you encountered to make it work. Make this at least 20 words long. This ensures the email hits the required 100-word limit. Do not use flowery transitions.
 
-Paragraph 4
-Why did this role catch my attention?
-Use overlap between: Role Problem and Project Problem.
-NOT: Role Keywords and Project Keywords.
+CRITICAL PROJECT RULES:
+- If the domain is Manufacturing, EV, Automotive, Industrial, or Logistics, frame the project around "systems that adapt dynamically", "decision logic", or "scalable software design".
+- If the domain is Consumer, Media, or Advertising and the Selected Project is "YAAR", frame it as a "personalized content creation machine".
 
-Paragraph 5
-Simple ask.
-"If there are any entry-level or full-time opportunities where this background could be relevant, I'd appreciate being considered."
-Stop.
-
-==================================================
-BANNED PHRASES
-Immediately reject any email containing:
-- I believe
-- I am passionate
-- I am excited
-- strong fit
-- aligns with
-- contribute to
-- valuable experience
-- industry-leading
-- cutting-edge
-- impressed by
-- thrilled
-- eager
-- opportunity to contribute
-
-==================================================
-SIGNATURE
-Always include exactly:
-Yash Kherwal
-B.Tech, IIT Roorkee
-Phone: +91 9891148156
-Email: yash.kherwal78@gmail.com
-LinkedIn: linkedin.com/in/yash-kherwal-944497254
-Resume Attached
-
-==================================================
 OUTPUT FORMAT
 Return ONLY valid JSON matching this schema exactly:
 {
-    "subject": "The Email Subject",
-    "body": "The Full Email Body",
-    "decision": "Generated Email",
-    "confidence": 0.9,
-    "reasoning": "Reason why this specific tone/structure was chosen based on the authenticity and final tests..."
+    "observation": "1 sentence observing the company's specific challenge.",
+    "relevance": "1 sentence connecting the selected project to their challenge."
 }
 """
 
@@ -99,7 +56,9 @@ Return ONLY valid JSON matching this schema exactly:
 }
 """
 
-FOUNDER_SYSTEM_PROMPT = HR_SYSTEM_PROMPT # For now, Founder outreach uses the same strict concrete logic as HR
+FOUNDER_SYSTEM_PROMPT = TEMPLATE_GENERATION_PROMPT # For now, Founder outreach uses the same strict concrete logic as HR
+HR_SYSTEM_PROMPT = TEMPLATE_GENERATION_PROMPT
+
 
 REPLY_CLASSIFICATION_PROMPT = """\
 You are an AI that classifies recruiting email replies.

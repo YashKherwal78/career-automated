@@ -1,0 +1,13 @@
+scan_policies:
+  hourly:
+    min_score: 90
+    interval_hours: 1
+  daily:
+    min_score: 75
+    interval_hours: 24
+  every_3_days:
+    min_score: 50
+    interval_hours: 72
+  weekly:
+    min_score: 0
+    interval_hours: 168

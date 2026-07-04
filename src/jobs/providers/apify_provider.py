@@ -1,17 +1,14 @@
 import urllib.parse
 from typing import List, Dict
 from datetime import datetime
-from apify_client import ApifyClient
 from src.config.config import Config
 from src.jobs.providers.base_provider import JobProvider
+from src.integrations.apify_manager import ApifyManager
 
 class ApifyProvider(JobProvider):
     def __init__(self):
-        self.api_key = Config.APIFY_API_KEY
-        if not self.api_key:
-            raise ValueError("APIFY_API_KEY is not set in config.")
-        self.client = ApifyClient(self.api_key)
-        self.actor_id = "hKByXkMQaC5Qt9UMN"
+        self.manager = ApifyManager()
+        self.actor_id = Config.APIFY_ACTOR_ID
 
     def _generate_urls(self) -> List[str]:
         roles = [
@@ -39,7 +36,12 @@ class ApifyProvider(JobProvider):
     def discover_jobs(self) -> List[Dict]:
         jobs = []
         try:
-            print(f"ApifyProvider: Starting Apify actor {self.actor_id}...")
+            client, key_id = self.manager.get_client(tier=4, category="job_discovery")
+            if not client:
+                print("ApifyProvider: Discovery skipped (Budget limit reached or no active keys).")
+                return []
+                
+            print(f"ApifyProvider: Starting Apify actor {self.actor_id} via Manager...")
             
             urls = self._generate_urls()
             
@@ -49,7 +51,7 @@ class ApifyProvider(JobProvider):
             }
             
             # Run the actor
-            run = self.client.actor(self.actor_id).call(run_input=run_input)
+            run = client.actor(self.actor_id).call(run_input=run_input)
             
             dataset_id = getattr(run, "default_dataset_id", getattr(run, "defaultDatasetId", None))
             if not dataset_id and isinstance(run, dict):
@@ -57,10 +59,11 @@ class ApifyProvider(JobProvider):
             
             if not dataset_id:
                 print("ApifyProvider: Could not find dataset ID in run response.")
+                self.manager.record_usage(key_id, "job_discovery", credits=0.0, useful_results=0, success=False)
                 return []
                 
             # Fetch and process results
-            for item in self.client.dataset(dataset_id).iterate_items():
+            for item in client.dataset(dataset_id).iterate_items():
                 posted_date_str = item.get("postedAt", datetime.now().isoformat())
                 days_old = 0
                 if posted_date_str:
@@ -104,7 +107,13 @@ class ApifyProvider(JobProvider):
                 jobs.append(job)
                 
             print(f"ApifyProvider: Successfully fetched {len(jobs)} jobs.")
+            
+            # Record usage (assuming standard actor run cost of ~0.05 credits for a small run)
+            self.manager.record_usage(key_id, "job_discovery", credits=0.05, useful_results=len(jobs), success=True)
+            
         except Exception as e:
             print(f"Error reading from Apify provider: {e}")
+            if 'key_id' in locals():
+                self.manager.record_usage(key_id, "job_discovery", credits=0.0, useful_results=0, success=False)
             
         return jobs

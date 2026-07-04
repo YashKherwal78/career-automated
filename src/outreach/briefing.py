@@ -34,6 +34,10 @@ def generate_and_send_briefing():
     cursor.execute("SELECT company_name, job_title, job_url, interview_probability FROM leads WHERE status = 'Scored' OR status = 'New' ORDER BY interview_probability DESC LIMIT 5")
     top_jobs = cursor.fetchall()
     
+    # Top Referrals
+    cursor.execute("SELECT company, job_title, contact_name, referral_score, ranking_reason FROM referral_contacts ORDER BY referral_score DESC LIMIT 5")
+    top_referrals = cursor.fetchall()
+    
     conn.close()
     
     bounce_rate = (bounces / emails_sent * 100) if emails_sent > 0 else 0.0
@@ -66,6 +70,16 @@ def generate_and_send_briefing():
     
     for job in top_jobs:
         html += f"<li><b>{job['company_name']}</b> - {job['job_title']} (Interview Prob: {job['interview_probability']}%)<br><a href='{job['job_url']}'>Link</a></li>"
+        
+    html += """
+        </ul>
+        
+        <h3>Top Referral Opportunities</h3>
+        <ul>
+    """
+    
+    for ref in top_referrals:
+        html += f"<li><b>{ref['contact_name']}</b> @ {ref['company']} (Score: {ref['referral_score']})<br><i>{ref['ranking_reason']}</i></li>"
         
     html += """
         </ul>

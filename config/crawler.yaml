@@ -1,0 +1,11 @@
+extraction:
+  batch_size: 50
+  concurrency: 20
+  retry: 3
+  timeout_seconds: 10
+  provider_priority:
+    - Ashby
+    - Greenhouse
+    - Workable
+    - Lever
+    - SmartRecruiters

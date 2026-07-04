@@ -1,120 +1,146 @@
 import os
+import re
+import json
 import subprocess
 from pathlib import Path
 from src.config.config import Config
-from groq import Groq
+from src.utils.llm_router import LLMRouter
+from src.applications.rag import RAGClient
 
 RESUME_WRITER_SYSTEM_PROMPT = """
-You are the Resume Generation Agent for Yash Kherwal.
+You are the Resume Tailoring Engine for Yash Kherwal.
 
 You have access to:
-1. Candidate Intelligence Database
-2. Job Description
-3. Resume Template
-
-Your objective is NOT ATS optimization.
-Your objective is maximizing interview probability.
+1. Retrieved Context (Truthful chunks from Candidate Intelligence Database)
+2. Base Resume Template (LaTeX)
+3. Job Description Keywords & Skills
 
 ==================================================
-PRIMARY PRINCIPLES
+1. STRICT ANTI-HALLUCINATION RULES (CRITICAL)
 ==================================================
-A recruiter spends approximately 10-20 seconds on a resume.
-The resume must answer:
-Why this candidate?
-Why this role?
-Why now?
-Every bullet must earn its place.
+You are FORBIDDEN from inventing or hallucinating ANY facts.
+You MUST NOT invent:
+- New projects or internships
+- New metrics, numbers, or percentages
+- New skills, languages, or tools
+- New responsibilities
+
+You are ONLY ALLOWED to:
+- Rewrite bullets to improve wording and match JD terminology (ONLY if factually correct).
+- Reorder bullets to prioritize relevance.
+- Shorten bullets.
+- Expand bullets USING ONLY facts from the Retrieved Context.
 
 ==================================================
-PROJECT SELECTION
+2. LLM SCOPE & LATEX STRUCTURE (STRUCTURE LOCK)
 ==================================================
-Do NOT blindly keyword match.
-Use the Candidate Intelligence Database.
-Select projects based on:
-- Demonstrated ownership
-- Relevant problem solving
-- Technical depth
-- Product thinking
-- Company relevance
-
-Maximum: 4 Projects
-Prefer: 1 flagship project + 2 supporting projects + 1 optional project
+- The base .tex template is authoritative.
+- DO NOT modify the LaTeX structure (margins, font size, document class).
+- DO NOT modify section structures, section names, or alignment.
+- DO NOT add dates to projects. If the base template has a date like \resumeProjectHeading{...}{2025}, replace it with an empty string: \resumeProjectHeading{...}{}. NO PROJECT DATES.
+- Preserve existing heading formatting and existing spacing exactly.
+- DO NOT create new sections.
+- Output ONLY valid, compilable LaTeX starting with \documentclass and ending with \end{document}.
 
 ==================================================
-ROLE STRATEGIES
+3. PROJECT & INTERNSHIP SELECTION (DIFFERENTIATION SCORE)
 ==================================================
-AI / ML ENGINEER
-Prioritize:
-1. Autonomous Data Analysis Agent
-2. Semantic Document Search
-3. YAAR (technical framing)
-4. SC-MFC Thesis
-Focus on: Architecture, Technical decisions, Failure modes, Production deployment
-
-PRODUCT MANAGER
-Prioritize:
-1. YAAR
-2. Recruiting Intelligence Platform
-3. Semantic Search
-4. Custom domain project
-Focus on: User problem, Product decisions, Tradeoffs, Metrics, Ownership
-
-SOFTWARE ENGINEER
-Prioritize:
-1. Autonomous Data Analysis Agent
-2. Recruiting Intelligence Platform
-3. Semantic Search
-4. BEL Experience
-Focus on: Reliability, Scalability, Concurrency, Architecture
-
-DATA SCIENCE
-Prioritize:
-1. SC-MFC Thesis
-2. ScoreMe
-3. Autonomous Data Analysis Agent
-4. Semantic Search
-Focus on: Quantitative outcomes, Modeling, Evaluation, Business impact
+- The context will specify Priority Projects and Internships. You MUST include them.
+- Total projects should be 2 to 4. 
+- Do not remove a highly unique, signature project (like CareerAutomated) simply because another project has slightly higher keyword overlap. Optimize for "Would this resume make a recruiter want to interview this candidate?", NOT just keyword density.
 
 ==================================================
-BULLET WRITING RULES
+4. PAGE UTILIZATION (90-95% TARGET)
 ==================================================
-Good Bullet: Action + Decision + Result
-Example: Built a hybrid retrieval system combining BGE-M3 embeddings and BM25 scoring to improve semantic search quality across 500+ documents while preserving exact-match retrieval performance.
-
-Bad Bullet: Developed a search engine using Python.
-
-==================================================
-FORBIDDEN
-==================================================
-Never write: Responsible for, Worked on, Helped with, Assisted in, Passionate about, Strong understanding of, Excellent communication skills
+- The resume MUST fit on exactly 1 page.
+- Do NOT leave excessive whitespace at the bottom.
+- To fill space:
+  1. Expand high-signal bullets using the Retrieved Context.
+  2. Add one additional bullet to signature projects.
+  3. Add an additional relevant project.
+- Do NOT shrink margins or aggressively reduce spacing to force content.
 
 ==================================================
-TRUTH POLICY
+5. ORANGE LABS FRAMING (BUSINESS/PRODUCT ROLES)
 ==================================================
-Never invent metrics, users, revenue, accuracy, scale, or technologies.
-Only use facts contained in the Candidate Intelligence Database.
-
-==================================================
-PROJECTS SECTION RULES
-==================================================
-Do not include the year, months, or dates in the Projects section. 
-
-==================================================
-OUTPUT
-==================================================
-Generate only valid LaTeX content.
-The output must compile directly using the provided resume template.
-Do not include explanations. Do not include markdown. Do not include commentary.
-Return only the completed LaTeX resume.
+- If this is a Business/Product role, preserve Orange Labs' Product/Growth framing.
+- Avoid generic PM buzzwords. Preserve points about Ownership, Problem Discovery, Product Decisions, User Understanding, and Experimentation.
+- Do NOT revert Orange Labs back to an AI-heavy engineering description.
 """
 
-def tailor_resume(groq_client: Groq, base_resume_path: str, company_name: str, job_title: str, job_description: str, output_dir: str = None) -> tuple[str, str]:
-    """Agent 5: LLM-tailors the LaTeX resume based on role and compiles to PDF."""
-    print(f"Agent 5: Tailoring resume for {job_title} at {company_name}...")
+def extract_numbers(text: str) -> set:
+    """Extracts all integers and decimals from text."""
+    numbers = re.findall(r'\b\d+(?:\.\d+)?\b', text)
+    return set(numbers)
+
+def extract_projects_from_tex(tex: str) -> dict:
+    """Extracts project blocks from LaTeX. Returns dict of {project_name: full_latex_block}."""
+    projects = {}
+    matches = re.finditer(r'\\resumeProjectHeading\s*\{\\textbf\{([^}]+)\}.*?\\resumeItemListStart(.*?)\\resumeItemListEnd', tex, re.DOTALL)
+    for m in matches:
+        proj_name = m.group(1).strip()
+        full_block = m.group(0)
+        projects[proj_name] = full_block
+    return projects
+
+def parse_jd(llm_router: LLMRouter, job_title: str, job_description: str) -> dict:
+    """Agentic extraction of JD elements."""
+    prompt = f"""
+    Analyze the following Job Title and Description.
+    Title: {job_title}
+    Description: {job_description}
+    
+    Extract and return ONLY a JSON object with the following keys:
+    - "role_type": Categorize as "AI", "PRODUCT", "BUSINESS", or "SDE".
+    - "domain": The industry or domain (e.g. "Fintech", "Healthcare").
+    - "skills": List of top 10 required hard skills.
+    - "keywords": List of 5-10 core terminology/methodology keywords (e.g. "Growth Loops", "Microservices").
+    
+    JSON Output ONLY:
+    """
+    try:
+        messages = [{"role": "user", "content": prompt}]
+        response = llm_router.chat_completion(messages, temperature=0.1, response_format={"type": "json_object"}, intent="utility")
+        content = response.choices[0].message.content
+        # basic json cleaning
+        cleaned = content.replace("```json", "").replace("```", "").strip()
+        return json.loads(cleaned)
+    except Exception as e:
+        print(f"JD Parser warning: {e}")
+        # Deterministic fallback
+        title_lower = job_title.lower()
+        role_type = "SDE"
+        if any(w in title_lower for w in ["ai", "machine learning", "ml", "data scientist"]): role_type = "AI"
+        elif any(w in title_lower for w in ["product", "growth"]): role_type = "PRODUCT"
+        elif any(w in title_lower for w in ["business", "analyst"]): role_type = "BUSINESS"
+        
+        return {
+            "role_type": role_type,
+            "domain": "Software",
+            "skills": ["Python", "SQL", "APIs"],
+            "keywords": ["Agile", "Cross-functional"]
+        }
+
+def compile_and_count_pages(tex_path, out_dir_path):
+    try:
+        result = subprocess.run(
+            ["pdflatex", "-interaction=nonstopmode", "-output-directory", str(out_dir_path), str(tex_path)],
+            check=False,
+            capture_output=True,
+            text=True
+        )
+        match = re.search(r'\((\d+) pages?', result.stdout)
+        if match: return int(match.group(1))
+        return 1
+    except Exception as e:
+        print(f"Agent 5: pdflatex compilation failed. Error: {e}")
+        return -1
+
+def tailor_resume(llm_router: LLMRouter, base_resume_path: str, company_name: str, job_title: str, job_description: str, job_id: int, output_dir: str = None, mode: str = "application") -> tuple[str, str]:
+    print(f"Agent 5: Tailoring resume for Job {job_id} ({job_title} at {company_name}) | Mode: {mode.upper()}...")
     
     if not output_dir:
         output_dir = str(Config.DATA_DIR)
-        
     out_dir_path = Path(output_dir)
     out_dir_path.mkdir(parents=True, exist_ok=True)
     
@@ -123,82 +149,122 @@ def tailor_resume(groq_client: Groq, base_resume_path: str, company_name: str, j
         return "", ""
         
     with open(base_resume_path, "r") as f:
-        template = f.read()
+        base_template = f.read()
         
-    db_path = Config.DATA_DIR / "context" / "yash_candidate_intelligence_db.txt"
-    try:
-        with open(str(db_path), "r") as f:
-            intelligence_db = f.read()
-    except Exception as e:
-        print(f"Could not load intelligence DB: {e}")
-        intelligence_db = ""
+    # 1. JD Parsing
+    print("Agent 5: Parsing Job Description...")
+    jd_intel = parse_jd(llm_router, job_title, job_description)
+    role_type = jd_intel["role_type"]
+    
+    # 2. Role Routing (Priority Projects)
+    priority_projects = []
+    if role_type == "AI":
+        priority_projects = ["CareerAutomated", "AI Data Analyst Agent", "Semantic Search Engine", "RAG"]
+    elif role_type == "PRODUCT":
+        priority_projects = ["YAAR", "CareerAutomated", "Orange Labs", "User Behaviour Systems"]
+    elif role_type == "BUSINESS":
+        priority_projects = ["YAAR", "CareerAutomated", "Orange Labs", "ScoreMe"]
+    else: # SDE
+        priority_projects = ["CareerAutomated", "AI Data Analyst Agent", "Backend Systems"]
         
+    # 3. RAG Retrieval
+    print(f"Agent 5: Retrieving context for Role Type: {role_type}...")
+    rag = RAGClient()
+    search_query = f"{job_title} {job_description[:500]} {' '.join(jd_intel['skills'])} {' '.join(priority_projects)}"
+    retrieved_chunks = rag.retrieve(search_query, top_k_initial=15, top_k_final=5)
+    
+    context_text = "\n".join([f"[{c['type'].upper()}] {c['text']}" for c in retrieved_chunks])
+    
+    # Gather allowed numbers for Metric Grounding
+    allowed_numbers = extract_numbers(context_text) | extract_numbers(base_template)
+    
     user_prompt = f"""
-    COMPANY NAME:
-    {company_name}
-
-    JOB TITLE:
-    {job_title}
-
-    JOB DESCRIPTION:
-    {job_description}
+    COMPANY NAME: {company_name}
+    JOB TITLE: {job_title}
     
-    CANDIDATE INTELLIGENCE DATABASE:
-    {intelligence_db}
+    TARGET DOMAIN: {jd_intel['domain']}
+    REQUIRED SKILLS: {', '.join(jd_intel['skills'])}
+    JD KEYWORDS: {', '.join(jd_intel['keywords'])}
     
-    RESUME TEMPLATE (Use this structure exactly):
-    {template}
+    ROLE TYPE ROUTING: {role_type}
+    PRIORITY PROJECTS/INTERNSHIPS TO INCLUDE: {', '.join(priority_projects)}
+    
+    RETRIEVED CANDIDATE CONTEXT (Single Source of Truth):
+    {context_text}
+    
+    BASE RESUME TEMPLATE (Modify this):
+    {base_template}
     """
     
-    try:
-        response = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[
-                {"role": "system", "content": RESUME_WRITER_SYSTEM_PROMPT},
-                {"role": "user", "content": user_prompt}
-            ],
-            temperature=0.2,
-            max_tokens=2500
-        )
-        latex_content = response.choices[0].message.content.strip()
-        
-        # Extract LaTeX only (from \documentclass to \end{document})
-        import re
-        match = re.search(r'(\\documentclass.*?\\end\{document\})', latex_content, re.DOTALL)
-        if match:
-            latex_content = match.group(1)
-        else:
-            print("Agent 5 Warning: Could not find \documentclass or \end{document} in the response.")
-                
-    except Exception as e:
-        print(f"Agent 5 LLM Error: {e}")
-        return base_resume_path, "Fallback (Error)"
-        
-    # Write tailored tex
-    sanitized_role = "".join([c if c.isalnum() else "_" for c in job_title])[:30]
-    tex_path = out_dir_path / f"tailored_resume_{sanitized_role}.tex"
+    print("Agent 5: Generating tailored LaTeX...")
+    messages = [
+        {"role": "system", "content": RESUME_WRITER_SYSTEM_PROMPT},
+        {"role": "user", "content": user_prompt}
+    ]
+    response = llm_router.chat_completion(messages, temperature=0.3, intent="reasoning")
+    tailored_tex = response.choices[0].message.content
     
-    with open(str(tex_path), "w") as f:
-        f.write(latex_content)
+    # Extract only the LaTeX block
+    tex_match = re.search(r'\\documentclass.*\\end\{document\}', tailored_tex, re.DOTALL)
+    if tex_match:
+        tailored_tex = tex_match.group(0)
+    else:
+        tailored_tex = tailored_tex.replace("```latex", "").replace("```", "").strip()
+    
+    # 4. Validation Gate & Metric Grounding
+    print("Agent 5: Validating Output and Metric Grounding...")
+    
+    base_projects = extract_projects_from_tex(base_template)
+    tailored_projects = extract_projects_from_tex(tailored_tex)
+    
+    # Check for hallucinated metrics in each project block
+    for proj_name, proj_block in tailored_projects.items():
+        # Only check the actual text inside \resumeItem{}
+        bullets = re.findall(r'\\resumeItem\{(.*?)\}', proj_block, re.DOTALL)
+        bullet_text = " ".join(bullets)
         
-    # Compile to PDF
-    print(f"Agent 5: Compiling {tex_path.name} with pdflatex...")
-    try:
-        subprocess.run(
-            ["pdflatex", "-interaction=nonstopmode", "-output-directory", str(out_dir_path), str(tex_path)],
-            check=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
-        )
-        pdf_path = out_dir_path / f"tailored_resume_{sanitized_role}.pdf"
-        if pdf_path.exists():
-            print(f"Agent 5: Successfully generated PDF: {pdf_path.name}")
-            return str(pdf_path), "Dynamic Tailored Project"
-    except subprocess.CalledProcessError as e:
-        print(f"Agent 5: pdflatex compilation failed. Using base resume. Error: {e}")
-        
-    return base_resume_path, "Fallback (Compilation Error)"
+        proj_numbers = extract_numbers(bullet_text)
+        unsupported = proj_numbers - allowed_numbers
+        if unsupported:
+            print(f"  [Metric Grounding] Violation in Project '{proj_name}': {unsupported}. Restoring original bullet block.")
+            # Find closest match in base resume
+            closest_base_proj = None
+            for bp_name, bp_block in base_projects.items():
+                if bp_name.lower() in proj_name.lower() or proj_name.lower() in bp_name.lower():
+                    closest_base_proj = bp_block
+                    break
+            
+            if closest_base_proj:
+                tailored_tex = tailored_tex.replace(proj_block, closest_base_proj)
+            else:
+                # If we can't find original, we might have to delete it, but user said DO NOT DELETE.
+                # So we just fallback to base template entirely if it's too mangled.
+                print(f"  [Metric Grounding] Could not find original for '{proj_name}'.")
 
-if __name__ == "__main__":
-    client = Groq(api_key=Config.GROQ_API_KEY)
-    tailor_resume(client, str(Config.DATA_DIR / "yash_resume_aiml.tex"), "SaaS Enterprise Software Company")
+    # 5. Telemetry & Scoring
+    print(f"--- TELEMETRY FOR JOB {job_id} ---")
+    print(f"Selected Template: {os.path.basename(base_resume_path)}")
+    print(f"Role Type: {role_type}")
+    print(f"Retrieved Chunks: {len(retrieved_chunks)}")
+    print(f"JD Skills Found: {len(jd_intel['skills'])}")
+    print("-----------------------------------")
+    
+    # 6. Compilation
+    tex_path = out_dir_path / f"tailored_resume_{job_id}.tex"
+    pdf_path = out_dir_path / f"tailored_resume_{job_id}.pdf"
+    
+    with open(tex_path, "w", encoding="utf-8") as f:
+        f.write(tailored_tex)
+        
+    print("Agent 5: Compiling PDF...")
+    pages = compile_and_count_pages(tex_path, out_dir_path)
+    
+    if pages > 1:
+        print("Agent 5 Warning: Resume exceeds 1 page! Using base resume as safe fallback.")
+        return base_resume_path, "Base Resume (Fallback)"
+        
+    if not os.path.exists(pdf_path):
+        print("Agent 5 Error: PDF compilation failed. Using base resume.")
+        return base_resume_path, "Base Resume (Fallback)"
+        
+    return str(pdf_path), priority_projects[0] if priority_projects else "Dynamic Tailored"

@@ -1,0 +1,48 @@
+linkedin:
+  enabled: true
+  actor: "hKByXkMQaC5Qt9UMN"
+  priority: 12
+  timeout: 90
+  retries: 2
+google_jobs:
+  enabled: true
+  actor: "hynekcasia/google-jobs-scraper"
+  priority: 11
+  timeout: 60
+  retries: 2
+wellfound:
+  enabled: true
+  actor: "clearpath/wellfound-api-ppe"
+  priority: 13
+  timeout: 60
+  retries: 2
+exa:
+  enabled: true
+  priority: 15
+  timeout: 30
+  retries: 1
+greenhouse:
+  enabled: true
+  priority: 2
+  timeout: 30
+  retries: 2
+lever:
+  enabled: true
+  priority: 3
+  timeout: 30
+  retries: 2
+workday:
+  enabled: true
+  priority: 5
+  timeout: 45
+  retries: 2
+workable:
+  enabled: true
+  priority: 6
+  timeout: 30
+  retries: 2
+generic:
+  enabled: true
+  priority: 10
+  timeout: 120
+  retries: 3

@@ -1,7 +1,8 @@
 import json
 from ddgs import DDGS
 from groq import Groq
-from src.crm.database import add_or_update_lead
+from src.utils.llm_router import LLMRouter
+from src.crm.database import add_or_update_lead, get_cached_intelligence, set_cached_intelligence
 
 def calculate_priority_score(metadata: dict) -> int:
     score = 0
@@ -31,7 +32,12 @@ def calculate_priority_score(metadata: dict) -> int:
         
     return score
 
-def run_intelligence_engine(groq_client: Groq, company_name: str) -> dict:
+def run_intelligence_engine(company_name: str) -> dict:
+    cached = get_cached_intelligence(company_name)
+    if cached:
+        print(f"Using cached intelligence for {company_name}")
+        return cached
+
     query_general = f"{company_name} company employee count industry domain hiring careers"
     results_general = DDGS().text(query_general, max_results=3)
     context_general = " ".join([r["body"] for r in results_general]) if results_general else "No generic info found."
@@ -54,11 +60,16 @@ def run_intelligence_engine(groq_client: Groq, company_name: str) -> dict:
     """
     
     try:
-        response = groq_client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+        router = LLMRouter()
+        response = router.chat_completion(
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.1
+            temperature=0.1,
+            intent="outreach"
         )
+    except Exception as e:
+        print(f"Error in intelligence engine (All keys failed) for {company_name}: {e}")
+        return {"domain": "Other", "employee_count": None, "is_hiring": False, "priority_score": 0}
+    try:
         content = response.choices[0].message.content
         if "```json" in content:
             content = content.split("```json")[1].split("```")[0].strip()
@@ -67,7 +78,8 @@ def run_intelligence_engine(groq_client: Groq, company_name: str) -> dict:
             
         metadata = json.loads(content)
         metadata["priority_score"] = calculate_priority_score(metadata)
+        set_cached_intelligence(company_name, metadata)
         return metadata
     except Exception as e:
-        print(f"Error in intelligence engine for {company_name}: {e}")
+        print(f"Error parsing intelligence engine response for {company_name}: {e}")
         return {"domain": "Other", "employee_count": None, "is_hiring": False, "priority_score": 0}

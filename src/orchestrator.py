@@ -4,6 +4,7 @@ import random
 import sqlite3
 from datetime import datetime
 from src.config.config import Config
+from src.referrals.pipeline import run_referral_engine
 from groq import Groq
 from src.crm.database import add_or_update_lead, get_lead
 from src.crm.state_machine import CRMState, transition_state
@@ -89,8 +90,16 @@ def run_outreach_for_job(job_id: int, lead: dict, mc):
     
     # AGENT 5: Resume Tailoring
     print("\n[Agent 5] Resume Tailoring Engine...")
-    base_resume = str(Config.DATA_DIR / "yash_resume_aiml.tex")
-    tailored_resume_path, selected_project = tailor_resume(active_groq_client, base_resume, company_name, job["job_title"], job_desc)
+    
+    # Determine base template
+    rec_resume = job.get("recommended_resume", "AIML_RESUME")
+    if rec_resume == "PRODUCT_RESUME":
+        base_resume = str(Config.DATA_DIR / "yash_resume_pm.tex")
+    else:
+        # For DATA, AI, SWE, default to AIML_RESUME template for now
+        base_resume = str(Config.DATA_DIR / "yash_resume_aiml.tex")
+        
+    tailored_resume_path, selected_project = tailor_resume(active_groq_client, base_resume, company_name, job["job_title"], job_desc, job_id)
     transition_state(company_name, CRMState.RESUME_TAILORED)
     
     # ENRICHMENT OPTIMIZATION: Contact Discovery
@@ -110,11 +119,9 @@ def run_outreach_for_job(job_id: int, lead: dict, mc):
     print("\n[Agent 8 & 9] Email Writer Engine & Critic Loop...")
     # Load context for Agent 8
     try:
-        with open(Config.DATA_DIR / "context" / "yash_profile.md", "r") as f:
-            yash_profile = f.read()
-        with open(Config.DATA_DIR / "context" / "projects.md", "r") as f:
-            projects_context = f.read()
-        context_str = f"\n\n--- YASH PROFILE ---\n{yash_profile}\n\n--- PROJECTS CONTEXT ---\n{projects_context}"
+        with open(Config.DATA_DIR / "context" / "yash_master_profile.md", "r") as f:
+            yash_master_profile = f.read()
+        context_str = f"\n\n--- YASH MASTER PROFILE ---\n{yash_master_profile}"
     except Exception:
         context_str = ""
 
@@ -302,6 +309,9 @@ def run_batch_operations():
             print(f"[Mission Control] Daily email limit reached ({stats['emails_sent']}/{mc.max_daily_emails}). Pausing.")
             break
             
+        # Trigger Referral Engine for jobs that passed the threshold
+        run_referral_engine(lead['company_name'], lead['job_title'], lead.get('job_description', ''))
+        
         res = run_outreach_for_job(lead['job_id'], lead, mc)
         if res:
             results.append(res)

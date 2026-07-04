@@ -1,11 +1,11 @@
 import json
 from imap_tools import MailBox, AND
-from groq import Groq
+from src.utils.llm_router import LLMRouter
 from src.config.config import Config
 from src.crm.database import get_lead_by_hr_email, add_or_update_lead
 from src.crm.state_machine import CRMState, transition_state
 
-def classify_reply(groq_client: Groq, email_body: str) -> dict:
+def classify_reply(llm_router: LLMRouter, email_body: str) -> dict:
     prompt = f"""
     You are an expert HR response classifier.
     Read the following email reply from an HR recruiter or founder.
@@ -28,11 +28,11 @@ def classify_reply(groq_client: Groq, email_body: str) -> dict:
     }}
     """
     try:
-        response = groq_client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+        response = llm_router.chat_completion(
             messages=[{"role": "user", "content": prompt}],
             temperature=0.1,
-            response_format={"type": "json_object"}
+            response_format={"type": "json_object"},
+            intent="utility"
         )
         return json.loads(response.choices[0].message.content)
     except Exception as e:
@@ -42,7 +42,7 @@ def classify_reply(groq_client: Groq, email_body: str) -> dict:
 def monitor_inbox():
     print("\n[Inbox Monitor] Connecting to Gmail via IMAP...")
     try:
-        client = Groq(api_key=Config.GROQ_API_KEY)
+        router = LLMRouter()
         
         with MailBox('imap.gmail.com').login(Config.GMAIL_ADDRESS, Config.GMAIL_APP_PASSWORD) as mailbox:
             # Fetch unread emails
@@ -60,7 +60,7 @@ def monitor_inbox():
                 company_name = lead["company_name"]
                 
                 # Classify
-                classification_data = classify_reply(client, body)
+                classification_data = classify_reply(router, body)
                 cls = classification_data.get("classification", "UNKNOWN")
                 
                 print(f"Classified {company_name} reply as: {cls}")

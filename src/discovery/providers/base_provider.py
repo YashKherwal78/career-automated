@@ -62,6 +62,10 @@ class BaseProvider(ABC):
     @property
     def name(self) -> str:
         return self.__class__.__name__
+        
+    @property
+    def pipeline_type(self) -> str:
+        return getattr(self, '_pipeline_type', 'PIPELINE_A')
 
     @abstractmethod
     def _get_capabilities(self) -> ProviderCapabilities:

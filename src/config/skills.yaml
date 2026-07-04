@@ -1,0 +1,40 @@
+Python:
+  aliases:
+    - python
+    - PYTHON
+    - py
+SQL:
+  aliases:
+    - sql
+    - SQL
+    - Sql
+Product Management:
+  aliases:
+    - product management
+    - pm
+    - product mgr
+    - product manager
+FastAPI:
+  aliases:
+    - fastapi
+    - fast api
+    - Fastapi
+LLMs:
+  aliases:
+    - llm
+    - llms
+    - large language models
+    - generative ai
+    - gen ai
+A/B Testing:
+  aliases:
+    - a/b testing
+    - ab testing
+    - a/b tests
+    - split testing
+Product Analytics:
+  aliases:
+    - product analytics
+    - data analytics
+    - mixpanel
+    - amplitude

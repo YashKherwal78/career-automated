@@ -1,0 +1,25 @@
+companies:
+  cursor:
+    ats: greenhouse
+    should_exist: true
+    min_jobs: 1
+    expected_roles:
+      - engineer
+      - product
+  mercor:
+    ats: ashby
+    should_exist: true
+    expected_roles:
+      - ai
+  perplexity:
+    should_exist: true
+    expected_roles:
+      - ai
+  supabase:
+    should_exist: true
+    min_jobs: 1
+  elevenlabs:
+    should_exist: true
+    expected_roles:
+      - ml
+      - ai

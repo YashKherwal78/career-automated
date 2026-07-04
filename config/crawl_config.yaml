@@ -1,0 +1,41 @@
+crawler:
+  production: true
+  historical_mode:
+    enabled: true
+  live_mode:
+    enabled: true
+    
+connectors:
+  y_combinator:
+    enabled: true
+  peak_xv:
+    enabled: true
+  techstars:
+    enabled: true
+  accel:
+    enabled: true
+  crunchbase:
+    enabled: false
+  techcrunch_rss:
+    enabled: true
+
+yc_orchestrator:
+  tier1_api_url: "https://raw.githubusercontent.com/yc-oss/api/main/data/companies.json"
+  tier5_csv_url: "https://raw.githubusercontent.com/ali-ce/datasets/master/Y-Combinator/yc-companies.csv"
+  max_retries: 3
+  backoff_factor: 2
+  ttl:
+    YCAPIConnector: "24h"
+    OfficialYCConnector: "24h"
+    PlaywrightYCConnector: "48h"
+    KaggleConnector: "30d"
+    GitHubConnector: "7d"
+    TechCrunchConnector: "12h"
+
+search_providers:
+  duckduckgo:
+    enabled: true
+  brave:
+    enabled: false
+  bing:
+    enabled: false

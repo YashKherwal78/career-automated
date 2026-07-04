@@ -1,0 +1,42 @@
+profiles:
+  - name: AI India
+    locations:
+      - India
+    keywords:
+      - AI Engineer
+      - Machine Learning Engineer
+      - ML Engineer
+      - LLM Engineer
+      - GenAI Engineer
+      - Applied AI Researcher
+    daily_queries: 10
+    daily_budget: 1000
+  - name: Product India
+    locations:
+      - India
+    keywords:
+      - Product Manager
+      - Associate Product Manager
+      - APM
+      - Product Analyst
+      - Growth Product Manager
+    daily_queries: 5
+    daily_budget: 500
+  - name: SWE India
+    locations:
+      - India
+    keywords:
+      - Software Engineer
+      - Backend Engineer
+      - Full Stack Engineer
+    daily_queries: 10
+    daily_budget: 1000
+  - name: Founders Office
+    locations:
+      - India
+    keywords:
+      - Founder's Office
+      - Chief of Staff
+      - Strategy and Operations
+    daily_queries: 3
+    daily_budget: 150

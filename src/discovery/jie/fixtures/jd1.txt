@@ -1,0 +1,9 @@
+Title: Backend Engineer (Python)
+Responsibilities:
+- Build and maintain highly scalable APIs using FastAPI and Python.
+- Collaborate with product management and engineering teams.
+Requirements:
+- 3 to 5 years of software engineering experience.
+- Strong knowledge of Python and SQL.
+- Experience with large language models (LLMs) is a nice to have.
+- Remote work allowed.

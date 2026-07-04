@@ -1,59 +1,39 @@
-import sqlite3
-from rich.console import Console
-from rich.table import Table
-from rich.panel import Panel
-from rich.layout import Layout
-from config import Config
+import streamlit as st
 
-def render_analytics():
-    conn = sqlite3.connect(Config.DATABASE_PATH)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-    console = Console()
+st.set_page_config(
+    page_title="CareerAutomated Control Center",
+    page_icon="🚀",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-    cursor.execute("SELECT COUNT(*) as c FROM leads WHERE status != 'New'")
-    processed = cursor.fetchone()["c"]
+# Dark theme is handled by .streamlit/config.toml, but we can't easily create that here. We'll rely on Streamlit's default dark mode if user's OS is dark, or we can write the config.toml later.
 
-    cursor.execute("SELECT COUNT(*) as c FROM leads WHERE hr_contacted = 1 OR founder_contacted = 1")
-    sent = cursor.fetchone()["c"]
+# Auto refresh every 30 seconds
+# A simple way without st_autorefresh is to use a fragment or custom JS, but Streamlit has a built-in st.empty() or just a manual button if auto isn't strictly native. Wait, I can just use st.rerun with a time.sleep in a thread, but the safest way without plugins is a meta refresh tag.
+st.markdown(
+    """
+    <meta http-equiv="refresh" content="30">
+    <style>
+        .block-container { padding-top: 1rem; }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-    cursor.execute("SELECT COUNT(*) as c FROM leads WHERE hr_replied = 1 OR founder_replied = 1")
-    replies = cursor.fetchone()["c"]
+pages = {
+    "Control Center": [
+        st.Page("pages/home.py", title="Home", icon="🏠"),
+        st.Page("pages/jobs.py", title="Jobs", icon="💼"),
+        st.Page("pages/applications.py", title="Applications", icon="📝"),
+        st.Page("pages/outreach.py", title="Outreach", icon="📧"),
+        st.Page("pages/queue.py", title="Queue", icon="🔄"),
+        st.Page("pages/candidate.py", title="Candidate", icon="👤"),
+        st.Page("pages/agents.py", title="Agents", icon="🤖"),
+        st.Page("pages/analytics.py", title="Analytics", icon="📊"),
+        st.Page("pages/settings.py", title="Settings", icon="⚙️")
+    ]
+}
 
-    cursor.execute("SELECT COUNT(*) as c FROM leads WHERE reply_classification = 'Positive Interest'")
-    positives = cursor.fetchone()["c"]
-
-    cursor.execute("SELECT COUNT(*) as c FROM leads WHERE interview_scheduled = 1 OR reply_classification = 'Interview Request'")
-    interviews = cursor.fetchone()["c"]
-
-    cursor.execute("SELECT COUNT(*) as c FROM leads WHERE bounce_status = 1")
-    bounces = cursor.fetchone()["c"]
-    
-    cursor.execute("SELECT SUM(total_cost) as t FROM leads")
-    row = cursor.fetchone()
-    total_cost = row["t"] if row["t"] else 0.0
-
-    bounce_rate = (bounces / sent * 100) if sent > 0 else 0
-    reply_rate = (replies / sent * 100) if sent > 0 else 0
-    cpi = (total_cost / interviews) if interviews > 0 else 0
-
-    table = Table(title="AI Recruiting Intelligence Dashboard")
-    table.add_column("Metric", style="cyan")
-    table.add_column("Value", style="magenta")
-
-    table.add_row("Companies Processed", str(processed))
-    table.add_row("Total Emails Sent", str(sent))
-    table.add_row("Total Replies", str(replies))
-    table.add_row("Positive Replies", str(positives))
-    table.add_row("Interviews Generated", str(interviews))
-    table.add_row("Hard Bounces", str(bounces))
-    table.add_row("Bounce Rate", f"{bounce_rate:.1f}%")
-    table.add_row("Reply Rate", f"{reply_rate:.1f}%")
-    table.add_row("Total Cost", f"${total_cost:.2f}")
-    table.add_row("Cost Per Interview", f"${cpi:.2f}")
-
-    console.print(Panel(table, title="Funnel & Cost Analytics", border_style="green"))
-    conn.close()
-
-if __name__ == "__main__":
-    render_analytics()
+pg = st.navigation(pages)
+pg.run()

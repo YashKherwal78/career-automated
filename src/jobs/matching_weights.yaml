@@ -1,0 +1,36 @@
+# matching_weights.yaml
+# Configurable weights for the MatchEngine dual-scoring architecture.
+
+relevance:
+  role_fit:
+    exact: 40
+    core: 35
+    adjacent: 20
+    weak: 5
+    reject: -50
+  experience_fit: 25
+  location: 10
+  remote: 10
+  employment_type: 5
+
+opportunity:
+  company_priority: 20
+  freshness: 15
+  official_ats: 5
+  hiring_velocity: 10
+  company_quality: 10
+
+soft_rejects:
+  onsite_penalty: -10
+  outside_city_penalty: -10
+  slightly_over_experience: -15
+  small_company_penalty: -5
+
+confidence_adjustment:
+  max_bonus: 10
+  min_penalty: -10
+
+recommendation_thresholds:
+  apply_now: 85
+  apply_if_time: 75
+  save_for_later: 50

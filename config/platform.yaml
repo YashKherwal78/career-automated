@@ -1,0 +1,10 @@
+auth:
+  enabled: false
+  default_user: "user_1"
+outreach:
+  templates:
+    founder: "Hi {name}, I saw {company} is hiring..."
+resume:
+  rules:
+    "AI Engineer": "variant_ai_1.pdf"
+    "Backend": "variant_backend_1.pdf"

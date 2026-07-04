@@ -8,11 +8,9 @@ def generate_email_strategy(groq_client: Groq, company_name: str, job_descriptio
     print(f"Agent 7: Generating Email Strategy for {company_name}...")
     
     try:
-        with open(Config.DATA_DIR / "context" / "yash_profile.md", "r") as f:
-            yash_profile = f.read()
-        with open(Config.DATA_DIR / "context" / "projects.md", "r") as f:
-            projects_context = f.read()
-        context_str = f"\n\n--- YASH PROFILE ---\n{yash_profile}\n\n--- PROJECTS CONTEXT ---\n{projects_context}"
+        with open(Config.DATA_DIR / "context" / "yash_master_profile.md", "r") as f:
+            yash_master_profile = f.read()
+        context_str = f"\n\n--- YASH MASTER PROFILE ---\n{yash_master_profile}"
     except Exception:
         context_str = ""
 

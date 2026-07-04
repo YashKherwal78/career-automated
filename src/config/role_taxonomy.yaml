@@ -1,0 +1,25 @@
+Product:
+  exact:
+    - Associate Product Manager
+    - Assistant Product Manager
+  core:
+    - Product Manager
+    - AI Product Manager
+    - Growth Product Manager
+  adjacent:
+    - Technical Product Manager
+    - Product Owner
+    - Product Analyst
+  weak:
+    - Product Evangelist
+    - Portfolio Manager
+    - Category Manager
+    - Oncology Product Manager
+  reject:
+    - Senior Product Manager
+    - Staff Product Manager
+    - Principal Product Manager
+    - Director Product
+    - Director of Product
+    - VP Product
+    - Head of Product

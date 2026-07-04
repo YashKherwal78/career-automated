@@ -1,98 +1,96 @@
-from typing import List, Dict, Tuple
-from src.discovery.providers.provider_manager import ProviderManager
-from src.discovery.eligibility_engine import EligibilityEngine
-from src.applications.match_engine import MatchEngine
-from src.discovery.normalization.experience_normalizer import ExperienceNormalizer
-from src.discovery.ats_detector import ATSDetector
+import logging
+from typing import Dict, Any
 from src.discovery.priority_scheduler import PriorityScheduler
+from src.discovery.providers.provider_manager import ProviderManager
+from src.crm.database import get_connection
 
-class DiscoveryEngineV2:
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class JobDiscoveryEngine:
+    """
+    Job Discovery Engine V2
+    This engine NEVER searches the open internet.
+    It reads target companies from the PriorityScheduler, executes their specific ATS providers,
+    extracts the jobs, and pushes them down the pipeline.
+    """
+    
     def __init__(self):
-        self.provider_manager = ProviderManager()
-        self.eligibility_engine = EligibilityEngine()
-        self.match_engine = MatchEngine()
-        self.experience_normalizer = ExperienceNormalizer()
-        self.ats_detector = ATSDetector()
         self.scheduler = PriorityScheduler()
+        self.provider_manager = ProviderManager()
         
-    def run_discovery(self, last_sync_timestamps: dict = None) -> Tuple[List[dict], dict]:
-        print("DiscoveryEngineV2: Starting Fast Loop Job Discovery...")
+    def run(self):
+        logger.info("Starting Job Discovery Engine...")
         
-        # 1. Get Scheduled Companies
-        scheduled_companies = self.scheduler.get_companies_to_scan(limit=50)
-        print(f"Scheduled {len(scheduled_companies)} high-priority companies for scan.")
+        target_companies = self.scheduler.get_companies_to_scan(limit=100)
         
-        # 2. Run all health-checked providers, but restrict to scheduled companies
-        # Assuming ProviderManager can be updated to accept `target_companies`.
-        all_jobs = self.provider_manager.run_all_providers(last_sync_timestamps, target_companies=scheduled_companies)
-        
-        # 2. Deduplicate
-        unique_jobs = {}
-        duplicates_removed = 0
-        for job in all_jobs:
-            # V2 deduplication key
-            key = f"{job.company}_{job.role}_{job.ats_type}".lower().strip()
-            if key not in unique_jobs:
-                unique_jobs[key] = job
-            else:
-                duplicates_removed += 1
-                
-        jobs_to_process = list(unique_jobs.values())
-        print(f"Discovered {len(all_jobs)} jobs. Deduplicated down to {len(jobs_to_process)}.")
-        
-        # 3. Eligibility Filter & 4. Match Score
-        final_jobs = []
-        filtered_count = 0
-        
-        for job in jobs_to_process:
-            # V3 Normalization
-            normalized_exp = self.experience_normalizer.normalize(job.experience_required, job.role)
-            job.experience_required = normalized_exp
+        if not target_companies:
+            logger.info("No companies scheduled for scan.")
+            return
             
-            opp_dict = {
-                "company": job.company,
-                "role": job.role,
-                "location": job.location,
-                "remote_hybrid_onsite": job.remote_hybrid_onsite,
-                "experience_required": job.experience_required,
-                "skills": job.skills,
-                "job_description": job.job_description,
-                "ats_type": job.ats_type,
-                "application_url": job.application_url,
-                "source": job.source,
-                "date_posted": job.date_posted
-            }
+        logger.info(f"Retrieved {len(target_companies)} companies to scan.")
+        
+        for company in target_companies:
+            company_name = company['company_name']
+            ats_provider = company.get('ats_provider', '').lower()
             
-            decision = self.eligibility_engine.check_eligibility(opp_dict)
-            if not decision.eligible:
-                filtered_count += 1
+            if not ats_provider:
+                logger.warning(f"Company {company_name} has no known ATS. Skipping.")
                 continue
                 
-            score_data = self.match_engine.evaluate(
-                job_title=job.role,
-                company=job.company,
-                location=job.location,
-                job_description=job.job_description,
-                employee_count=""
-            )
+            logger.info(f"Scanning {company_name} via {ats_provider}...")
             
-            opp_dict["overall_score"] = score_data.get("overall_score", 0)
-            opp_dict["reasoning"] = score_data.get("reasoning", "")
+            # Use specific providers based on ats
+            try:
+                # We assume ProviderManager routes correctly based on ATS
+                jobs = self.provider_manager.execute_providers(
+                    query="", # No generic search query
+                    location="",
+                    limit_per_provider=50,
+                    target_company=company_name,
+                    ats_override=ats_provider,
+                    careers_url=company.get('careers_url')
+                )
+            except Exception as e:
+                logger.error(f"Error scanning {company_name}: {e}")
+                self._update_hiring_intelligence(company_name, success=False, error=str(e))
+                continue
+                
+            self._update_hiring_intelligence(company_name, success=True, jobs_found=len(jobs))
+            logger.info(f"Discovered {len(jobs)} jobs for {company_name}.")
             
-            final_jobs.append(opp_dict)
+            # The jobs are now ready for EligibilityFilter, MatchEngine, etc.
+            # In a real implementation, this would emit JobsDiscoveredEvent or similar.
+
+    def _update_hiring_intelligence(self, company_name: str, success: bool, jobs_found: int = 0, error: str = None):
+        """Updates the dynamic hiring intelligence with the results of the scan."""
+        conn = get_connection()
+        cursor = conn.cursor()
+        
+        if success:
+            cursor.execute('''
+                INSERT INTO hiring_intelligence_dynamic (company_name, last_successful_sync, last_checked, active_job_count, consecutive_failures, last_error)
+                VALUES (?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, 0, NULL)
+                ON CONFLICT(company_name) DO UPDATE SET
+                last_successful_sync = CURRENT_TIMESTAMP,
+                last_checked = CURRENT_TIMESTAMP,
+                active_job_count = ?,
+                consecutive_failures = 0,
+                last_error = NULL
+            ''', (company_name, jobs_found, jobs_found))
+        else:
+            cursor.execute('''
+                INSERT INTO hiring_intelligence_dynamic (company_name, last_checked, consecutive_failures, last_error)
+                VALUES (?, CURRENT_TIMESTAMP, 1, ?)
+                ON CONFLICT(company_name) DO UPDATE SET
+                last_checked = CURRENT_TIMESTAMP,
+                consecutive_failures = consecutive_failures + 1,
+                last_error = ?
+            ''', (company_name, error, error))
             
-        # 5. Sort by score
-        final_jobs.sort(key=lambda x: x.get("overall_score", 0), reverse=True)
-        
-        stats = {
-            "total_found": len(all_jobs),
-            "deduplicated": len(jobs_to_process),
-            "duplicates_removed": duplicates_removed,
-            "filtered": filtered_count,
-            "final": len(final_jobs)
-        }
-        
-        return final_jobs, stats
-        
-    def get_health_report(self) -> str:
-        return self.provider_manager.get_health_report()
+        conn.commit()
+        conn.close()
+
+if __name__ == "__main__":
+    engine = JobDiscoveryEngine()
+    engine.run()

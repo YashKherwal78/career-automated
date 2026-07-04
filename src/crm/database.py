@@ -203,7 +203,10 @@ def init_db():
             outreach_priority TEXT DEFAULT 'LOW',
             application_priority TEXT DEFAULT 'LOW',
             scan_priority_score INTEGER DEFAULT 0,
-            lifecycle_status TEXT DEFAULT 'NEW',
+            lifecycle_status TEXT DEFAULT 'DISCOVERED',
+            remote_hiring BOOLEAN DEFAULT 0,
+            founder_office_probability REAL DEFAULT 0.0,
+            scan_frequency TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
@@ -227,6 +230,28 @@ def init_db():
             FOREIGN KEY (company_name) REFERENCES company_intelligence_static (company_name)
         )
         ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS final_company_registry (
+            company_name TEXT PRIMARY KEY,
+            ats_provider TEXT,
+            ats_slug TEXT,
+            ats_base_url TEXT,
+            ats_detection_method TEXT,
+            ats_last_verified DATETIME,
+            priority TEXT DEFAULT 'P2',
+            discovery_source TEXT,
+            connector_status TEXT DEFAULT 'UNKNOWN',
+            connector_error TEXT,
+            last_scan DATETIME,
+            last_successful_scan DATETIME,
+            times_scanned INTEGER DEFAULT 0,
+            active_jobs INTEGER DEFAULT 0,
+            scan_frequency TEXT DEFAULT 'Daily',
+            workday_tenant TEXT,
+            workday_region TEXT,
+            workday_version TEXT
+        )
+    ''')
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS discovery_strategy (
             strategy_id TEXT PRIMARY KEY,
@@ -253,11 +278,36 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             company_name TEXT NOT NULL,
             source TEXT NOT NULL,
+            discovery_type TEXT,
             first_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
             last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
             confidence INTEGER DEFAULT 1,
             reliability_score REAL DEFAULT 0.5,
-            UNIQUE(company_name, source)
+            UNIQUE(company_name, source, discovery_type)
+        )
+    ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS ats_learning_cache (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            domain TEXT UNIQUE NOT NULL,
+            ats_provider TEXT NOT NULL,
+            confidence REAL DEFAULT 0.0,
+            successful_extractions INTEGER DEFAULT 0,
+            failed_extractions INTEGER DEFAULT 0,
+            first_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
+            last_seen DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS system_events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            event_type TEXT NOT NULL,
+            payload TEXT NOT NULL,
+            status TEXT DEFAULT 'PENDING',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            processed_at DATETIME,
+            error_message TEXT,
+            retry_count INTEGER DEFAULT 0
         )
     ''')
     cursor.execute('''
@@ -292,7 +342,9 @@ def init_db():
             eligibility_decision TEXT,
             rule_version TEXT,
             matched_rule TEXT,
-            raw_payload TEXT
+            raw_payload TEXT,
+            status TEXT DEFAULT 'NEW',
+            notes TEXT
         )
     ''')
     conn.commit()
@@ -589,7 +641,7 @@ def add_to_opportunity_cache(opp: dict, decision: dict = None, strategy_id: str 
     finally:
         conn.close()
 
-def add_discovery_source(company_name: str, source: str) -> int:
+def add_discovery_source(company_name: str, source: str, discovery_type: str = "Company Discovery") -> int:
     """
     Upserts a discovery source for a company. Returns the total unique sources found to be used as a confidence score.
     """
@@ -597,12 +649,12 @@ def add_discovery_source(company_name: str, source: str) -> int:
     cursor = conn.cursor()
     try:
         cursor.execute('''
-            INSERT INTO company_discovery_sources (company_name, source) 
-            VALUES (?, ?)
-            ON CONFLICT(company_name, source) DO UPDATE SET 
+            INSERT INTO company_discovery_sources (company_name, source, discovery_type) 
+            VALUES (?, ?, ?)
+            ON CONFLICT(company_name, source, discovery_type) DO UPDATE SET 
             last_seen = CURRENT_TIMESTAMP,
             confidence = confidence + 1
-        ''', (company_name, source))
+        ''', (company_name, source, discovery_type))
         
         cursor.execute('''
             SELECT COUNT(DISTINCT source) FROM company_discovery_sources WHERE company_name = ?

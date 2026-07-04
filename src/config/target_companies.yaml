@@ -1,0 +1,5106 @@
+companies:
+  <a href="http://aitheras.com/about/who-we-are/"><strong>aitheras</strong></a>:
+    name: <a href="http://aitheras.com/about/who-we-are/"><strong>AITHERAS</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://algaecal.com/"><strong>algaecal</strong></a>:
+    name: <a href="http://algaecal.com/"><strong>AlgaeCal</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://anterior.com/"><strong>anterior</strong></a>:
+    name: <a href="http://anterior.com/"><strong>Anterior</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://gumgum.com/jobs"><strong>gumgum</strong></a>:
+    name: <a href="http://GumGum.com/jobs"><strong>GumGum</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://justanswer.com"><strong>justanswer</strong></a>:
+    name: <a href="http://justanswer.com"><strong>JustAnswer</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://karbonhq.com"><strong>karbon</strong></a>:
+    name: <a href="http://karbonhq.com"><strong>Karbon</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://magna.com"><strong>magna</strong></a>:
+    name: <a href="http://magna.com"><strong>Magna</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://mealsuite.com/"><strong>mealsuite</strong></a>:
+    name: <a href="http://mealsuite.com/"><strong>MealSuite</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://monterail.com/"><strong>monterail</strong></a>:
+    name: <a href="http://monterail.com/"><strong>Monterail</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://syntiant.com/"><strong>syntiant</strong></a>:
+    name: <a href="http://syntiant.com/"><strong>Syntiant</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://tomtom.com/careers"><strong>tomtom</strong></a>:
+    name: <a href="http://tomtom.com/careers"><strong>TomTom</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://totalsystech.com/"><strong>tstc</strong></a>:
+    name: <a href="http://totalsystech.com/"><strong>TSTC</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://tri.global"><strong>toyota research institute</strong></a>:
+    name: <a href="http://tri.global"><strong>Toyota Research Institute</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://vocalmedia.io/"><strong>vocal media</strong></a>:
+    name: <a href="http://vocalmedia.io/"><strong>Vocal Media</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.acumatica.com"><strong>acumatica</strong></a>:
+    name: <a href="http://www.acumatica.com"><strong>Acumatica</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.brydon.com/"><strong>the brydon group</strong></a>:
+    name: <a href="http://www.brydon.com/"><strong>The Brydon Group</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.cigcommunities.com/"><strong>cig communities</strong></a>:
+    name: <a href="http://www.cigcommunities.com/"><strong>CIG Communities</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.connectprep.com/"><strong>connectprep</strong></a>:
+    name: <a href="http://www.connectprep.com/"><strong>ConnectPrep</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.digitalgreen.org/"><strong>digital green</strong></a>:
+    name: <a href="http://www.digitalgreen.org/"><strong>Digital Green</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.eglp.com"><strong>engineers gate</strong></a>:
+    name: <a href="http://www.eglp.com"><strong>Engineers Gate</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.eliseai.com"><strong>eliseai</strong></a>:
+    name: <a href="http://www.eliseai.com"><strong>EliseAI</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.emw.com/"><strong>emw</strong></a>:
+    name: <a href="http://www.emw.com/"><strong>EMW</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.flowtraders.com"><strong>flow traders</strong></a>:
+    name: <a href="http://www.flowtraders.com"><strong>Flow Traders</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.focuskpi.com/"><strong>focuskpi</strong></a>:
+    name: <a href="http://www.focuskpi.com/"><strong>FocusKPI</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.grab.com"><strong>grab</strong></a>:
+    name: <a href="http://www.grab.com"><strong>Grab</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.gympass.com/us"><strong>gympass</strong></a>:
+    name: <a href="http://www.gympass.com/us"><strong>Gympass</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.hellofresh.com"><strong>hellofresh</strong></a>:
+    name: <a href="http://www.hellofresh.com"><strong>HelloFresh</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.houst.com/"><strong>houst</strong></a>:
+    name: <a href="http://www.houst.com/"><strong>Houst</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.intersystems.com"><strong>intersystems</strong></a>:
+    name: <a href="http://www.intersystems.com"><strong>InterSystems</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.limetax.de/"><strong>limetax</strong></a>:
+    name: <a href="http://www.limetax.de/"><strong>Limetax</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.malt.com/"><strong>malt</strong></a>:
+    name: <a href="http://www.malt.com/"><strong>Malt</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.onerail.io"><strong>onerail</strong></a>:
+    name: <a href="http://www.onerail.io"><strong>OneRail</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.path.org/"><strong>path</strong></a>:
+    name: <a href="http://www.path.org/"><strong>PATH</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.peopleworth.ai/"><strong>peopleworth</strong></a>:
+    name: <a href="http://www.peopleworth.ai/"><strong>peopleworth</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.precisionmedicinegrp.com"><strong>precision medicine group</strong></a>:
+    name: <a href="http://www.precisionmedicinegrp.com"><strong>Precision Medicine
+      Group</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.sharkninja.com"><strong>sharkninja</strong></a>:
+    name: <a href="http://www.sharkninja.com"><strong>SharkNinja</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.workato.com"><strong>workato</strong></a>:
+    name: <a href="http://www.workato.com"><strong>Workato</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="http://www.zuru.com/"><strong>zuru</strong></a>:
+    name: <a href="http://www.zuru.com/"><strong>ZURU</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://360learning.com"><strong>360learning</strong></a>:
+    name: <a href="https://360learning.com"><strong>360Learning</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://9fin.com/"><strong>9fin</strong></a>:
+    name: <a href="https://9fin.com/"><strong>9fin</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://about.meta.com"><strong>meta</strong></a>:
+    name: <a href="https://about.meta.com"><strong>Meta</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://acds.co"><strong>arkansas center for data sciences</strong></a>:
+    name: <a href="https://acds.co"><strong>Arkansas Center for Data Sciences</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://aegworldwide.com/"><strong>aeg</strong></a>:
+    name: <a href="https://aegworldwide.com/"><strong>AEG</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://affiniuscapital.com"><strong>affinius capital</strong></a>:
+    name: <a href="https://affiniuscapital.com"><strong>Affinius Capital</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://akunacapital.com"><strong>akuna capital</strong></a>:
+    name: <a href="https://akunacapital.com"><strong>Akuna Capital</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://alan.com/"><strong>alan</strong></a>:
+    name: <a href="https://alan.com/"><strong>Alan</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://aptura.ai/"><strong>aptura</strong></a>:
+    name: <a href="https://aptura.ai/"><strong>Aptura</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://astreya.com/"><strong>astreya</strong></a>:
+    name: <a href="https://astreya.com/"><strong>Astreya</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://axiomatic-ai.com"><strong>axiomatic_ai</strong></a>:
+    name: <a href="https://axiomatic-ai.com"><strong>Axiomatic_AI</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://bambooworks.io/"><strong>bamboo works</strong></a>:
+    name: <a href="https://bambooworks.io/"><strong>Bamboo Works</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://bipventures.vc/"><strong>bip ventures</strong></a>:
+    name: <a href="https://bipventures.vc/"><strong>BIP Ventures</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://bluehawk.us"><strong>bluehawk</strong></a>:
+    name: <a href="https://bluehawk.us"><strong>Bluehawk</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://bnl.gov/"><strong>brookhaven national laboratory</strong></a>:
+    name: <a href="https://bnl.gov/"><strong>Brookhaven National Laboratory</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://brellium.com/"><strong>brellium</strong></a>:
+    name: <a href="https://brellium.com/"><strong>Brellium</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://bylight.com"><strong>by light</strong></a>:
+    name: <a href="https://bylight.com"><strong>By Light</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://careers.aqr.com"><strong>aqr</strong></a>:
+    name: <a href="https://careers.aqr.com"><strong>AQR</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://careers.excellusbcbs.com/us/en"><strong>excellus bcbs</strong></a>:
+    name: <a href="https://careers.excellusbcbs.com/us/en"><strong>Excellus BCBS</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://careers.mmc.com/"><strong>marsh mclennan</strong></a>:
+    name: <a href="https://careers.mmc.com/"><strong>Marsh McLennan</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://careers.rivian.com"><strong>rivian</strong></a>:
+    name: <a href="https://careers.rivian.com"><strong>Rivian</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://careerswift.ai/"><strong>careerswift</strong></a>:
+    name: <a href="https://careerswift.ai/"><strong>Careerswift</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://cbai.ai/"><strong>cambridge boston alignment initiative</strong></a>:
+    name: <a href="https://cbai.ai/"><strong>Cambridge Boston Alignment Initiative</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://ccrenew.com"><strong>cypress creek renewables</strong></a>:
+    name: <a href="https://ccrenew.com"><strong>Cypress Creek Renewables</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://celonis.com"><strong>celonis</strong></a>:
+    name: <a href="https://celonis.com"><strong>Celonis</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://centific.com/"><strong>centific</strong></a>:
+    name: <a href="https://centific.com/"><strong>Centific</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://cibc.com"><strong>cibc</strong></a>:
+    name: <a href="https://cibc.com"><strong>CIBC</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://clara.com"><strong>clara</strong></a>:
+    name: <a href="https://clara.com"><strong>Clara</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://clarivate.com"><strong>clarivate</strong></a>:
+    name: <a href="https://clarivate.com"><strong>Clarivate</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://clearinvestgroup.com/"><strong>clear investment group</strong></a>:
+    name: <a href="https://clearinvestgroup.com/"><strong>Clear Investment Group</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://cohere.com/"><strong>cohere</strong></a>:
+    name: <a href="https://cohere.com/"><strong>Cohere</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://coleengineering.com"><strong>metova federal</strong></a>:
+    name: <a href="https://coleengineering.com"><strong>Metova Federal</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://corgi.insure/"><strong>corgi insurance</strong></a>:
+    name: <a href="https://corgi.insure/"><strong>Corgi Insurance</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://corporate.shopback.com"><strong>shopback</strong></a>:
+    name: <a href="https://corporate.shopback.com"><strong>ShopBack</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://coupanginternal.jobs"><strong>coupang internal</strong></a>:
+    name: <a href="https://coupanginternal.jobs"><strong>Coupang Internal</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://cresta.com/"><strong>cresta</strong></a>:
+    name: <a href="https://cresta.com/"><strong>Cresta</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://crossriver.com"><strong>cross river bank</strong></a>:
+    name: <a href="https://crossriver.com"><strong>Cross River Bank</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://datamaticstechnologies.com/"><strong>datamatics technologies</strong></a>:
+    name: <a href="https://datamaticstechnologies.com/"><strong>Datamatics Technologies</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://digitalunited360.com/"><strong>digital united</strong></a>:
+    name: <a href="https://digitalunited360.com/"><strong>Digital United</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://draftkings.com/"><strong>draftkings</strong></a>:
+    name: <a href="https://draftkings.com/"><strong>DraftKings</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://easygo.io"><strong>easygo</strong></a>:
+    name: <a href="https://easygo.io"><strong>Easygo</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://encord.com/"><strong>encord</strong></a>:
+    name: <a href="https://encord.com/"><strong>Encord</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://envisionhorizons.com/about/"><strong>envision horizons</strong></a>:
+    name: <a href="https://envisionhorizons.com/about/"><strong>Envision Horizons</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://eragon.ai/"><strong>eragon</strong></a>:
+    name: <a href="https://eragon.ai/"><strong>Eragon</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://erau.edu"><strong>embry-riddle aeronautical university</strong></a>:
+    name: <a href="https://erau.edu"><strong>Embry-Riddle Aeronautical University</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://eucalyptus.vc"><strong>eucalyptus</strong></a>:
+    name: <a href="https://eucalyptus.vc"><strong>Eucalyptus</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://everwatchsolutions.com"><strong>everwatch</strong></a>:
+    name: <a href="https://everwatchsolutions.com"><strong>Everwatch</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://ffin.com"><strong>first financial bank</strong></a>:
+    name: <a href="https://ffin.com"><strong>First Financial Bank</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://finmid.com/"><strong>finmid</strong></a>:
+    name: <a href="https://finmid.com/"><strong>Finmid</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://flex.com"><strong>flex</strong></a>:
+    name: <a href="https://flex.com"><strong>Flex</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://frontiermeds.com"><strong>frontier medicines</strong></a>:
+    name: <a href="https://frontiermeds.com"><strong>Frontier Medicines</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://fundwell.com/"><strong>fundwell</strong></a>:
+    name: <a href="https://fundwell.com/"><strong>Fundwell</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://gehealthcare.com/"><strong>ge healthcare</strong></a>:
+    name: <a href="https://gehealthcare.com/"><strong>GE HealthCare</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://gf.com"><strong>globalfoundries</strong></a>:
+    name: <a href="https://gf.com"><strong>GlobalFoundries</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://global.abb/"><strong>abb</strong></a>:
+    name: <a href="https://global.abb/"><strong>ABB</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://greatquestion.co/"><strong>great question</strong></a>:
+    name: <a href="https://greatquestion.co/"><strong>Great Question</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://homedepot.com/"><strong>home depot</strong></a>:
+    name: <a href="https://homedepot.com/"><strong>Home Depot</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://hpe.com/"><strong>hewlett packard enterprise</strong></a>:
+    name: <a href="https://hpe.com/"><strong>Hewlett Packard Enterprise</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://hyvesolutions.com"><strong>hyve solutions</strong></a>:
+    name: <a href="https://hyvesolutions.com"><strong>Hyve Solutions</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://ifm.mbzuai.ac.ae/"><strong>institute of foundation models</strong></a>:
+    name: <a href="https://ifm.mbzuai.ac.ae/"><strong>Institute of Foundation Models</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://illinoisstate.edu"><strong>illinois state university</strong></a>:
+    name: <a href="https://illinoisstate.edu"><strong>Illinois State University</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://infinitepl.com/"><strong>infinite pl</strong></a>:
+    name: <a href="https://infinitepl.com/"><strong>Infinite pl</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://intactfc.com/"><strong>intact</strong></a>:
+    name: <a href="https://intactfc.com/"><strong>Intact</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://integralfed.com"><strong>integral federal</strong></a>:
+    name: <a href="https://integralfed.com"><strong>Integral Federal</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://interpath.com/"><strong>interpath</strong></a>:
+    name: <a href="https://interpath.com/"><strong>Interpath</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://ita-intl.com"><strong>ita-international</strong></a>:
+    name: <a href="https://ita-intl.com"><strong>ITA-International</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://jobgether.com/home"><strong>jobgether</strong></a>:
+    name: <a href="https://jobgether.com/home"><strong>Jobgether</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://jobs2.telusdigital.com/"><strong>telus digital</strong></a>:
+    name: <a href="https://jobs2.telusdigital.com/"><strong>TELUS Digital</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://k1im.com/"><strong>k1</strong></a>:
+    name: <a href="https://k1im.com/"><strong>K1</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://kirin.com/"><strong>kirin</strong></a>:
+    name: <a href="https://kirin.com/"><strong>Kirin</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://lambdalabs.com/"><strong>lambda</strong></a>:
+    name: <a href="https://lambdalabs.com/"><strong>Lambda</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://later.com"><strong>later</strong></a>:
+    name: <a href="https://later.com"><strong>Later</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://light.inc/"><strong>light</strong></a>:
+    name: <a href="https://light.inc/"><strong>Light</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://live.eluv.io"><strong>eluvio</strong></a>:
+    name: <a href="https://live.eluv.io"><strong>Eluvio</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://loop.com"><strong>loop</strong></a>:
+    name: <a href="https://loop.com"><strong>Loop</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://lucidmotors.com"><strong>lucid motors</strong></a>:
+    name: <a href="https://lucidmotors.com"><strong>Lucid Motors</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://lumenci.com/"><strong>lumenci</strong></a>:
+    name: <a href="https://lumenci.com/"><strong>Lumenci</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://magnera.com"><strong>magnera corporation</strong></a>:
+    name: <a href="https://magnera.com"><strong>Magnera Corporation</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://maigrate.com/"><strong>maigrate</strong></a>:
+    name: <a href="https://maigrate.com/"><strong>Maigrate</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://manifoldindustries.io/"><strong>manifold industries</strong></a>:
+    name: <a href="https://manifoldindustries.io/"><strong>Manifold Industries</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://market-bridge.com/"><strong>marketbridge</strong></a>:
+    name: <a href="https://market-bridge.com/"><strong>MarketBridge</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://matteprojects.com"><strong>matte projects</strong></a>:
+    name: <a href="https://matteprojects.com"><strong>MATTE PROJECTS</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://mckinney.com/"><strong>mckinney</strong></a>:
+    name: <a href="https://mckinney.com/"><strong>McKinney</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://media.licdn.com"><strong>tensorops</strong></a>:
+    name: <a href="https://media.licdn.com"><strong>TensorOps</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://mercor.com/"><strong>mercor</strong></a>:
+    name: <a href="https://mercor.com/"><strong>Mercor</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://mindfriendpro.com/"><strong>mind friend pro</strong></a>:
+    name: <a href="https://mindfriendpro.com/"><strong>Mind Friend PRO</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://mistral.ai/"><strong>mistral ai</strong></a>:
+    name: <a href="https://mistral.ai/"><strong>Mistral AI</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://motional.com"><strong>motional</strong></a>:
+    name: <a href="https://motional.com"><strong>Motional</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://nationalfairhousing.org/"><strong>national fair housing alliance</strong></a>:
+    name: <a href="https://nationalfairhousing.org/"><strong>National Fair Housing
+      Alliance</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://neon.com.br"><strong>neon</strong></a>:
+    name: <a href="https://neon.com.br"><strong>Neon</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://netflix.com/"><strong>netflix</strong></a>:
+    name: <a href="https://netflix.com/"><strong>Netflix</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://neura-robotics.com/"><strong>neura robotics</strong></a>:
+    name: <a href="https://neura-robotics.com/"><strong>Neura Robotics</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://nuro.ai"><strong>nuro</strong></a>:
+    name: <a href="https://nuro.ai"><strong>Nuro</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://optiver.com"><strong>optiver</strong></a>:
+    name: <a href="https://optiver.com"><strong>Optiver</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://ottimate.com/"><strong>ottimate</strong></a>:
+    name: <a href="https://ottimate.com/"><strong>Ottimate</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://plus.ai"><strong>plus</strong></a>:
+    name: <a href="https://plus.ai"><strong>Plus</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://polpharma.pl"><strong>polpharma</strong></a>:
+    name: <a href="https://polpharma.pl"><strong>Polpharma</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://procogia.com"><strong>procogia</strong></a>:
+    name: <a href="https://procogia.com"><strong>ProCogia</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://pros.com/"><strong>pros holdings</strong></a>:
+    name: <a href="https://pros.com/"><strong>PROS Holdings</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://prose.com/"><strong>prose</strong></a>:
+    name: <a href="https://prose.com/"><strong>Prose</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://proximabio.com/"><strong>proxima</strong></a>:
+    name: <a href="https://proximabio.com/"><strong>Proxima</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://psu.edu"><strong>penn state</strong></a>:
+    name: <a href="https://psu.edu"><strong>Penn State</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://quadric.io"><strong>quadric</strong></a>:
+    name: <a href="https://quadric.io"><strong>Quadric</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://quantiphi.com/"><strong>quantiphi</strong></a>:
+    name: <a href="https://quantiphi.com/"><strong>Quantiphi</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://radixtrading.co"><strong>radix trading</strong></a>:
+    name: <a href="https://radixtrading.co"><strong>Radix Trading</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://reonic.com/en"><strong>reonic</strong></a>:
+    name: <a href="https://reonic.com/en"><strong>Reonic</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://research.samsung.com/"><strong>samsung ai research center</strong></a>:
+    name: <a href="https://research.samsung.com/"><strong>Samsung AI Research Center</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://roche.com/"><strong>roche</strong></a>:
+    name: <a href="https://roche.com/"><strong>Roche</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://saviynt.com"><strong>saviynt</strong></a>:
+    name: <a href="https://saviynt.com"><strong>Saviynt</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://scale.com"><strong>scale ai</strong></a>:
+    name: <a href="https://scale.com"><strong>Scale AI</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://selinc.com"><strong>sel</strong></a>:
+    name: <a href="https://selinc.com"><strong>SEL</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://sezzle.com"><strong>sezzle</strong></a>:
+    name: <a href="https://sezzle.com"><strong>Sezzle</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://shop.mango.com"><strong>mango</strong></a>:
+    name: <a href="https://shop.mango.com"><strong>Mango</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://sig.com"><strong>susquehanna international group</strong></a>:
+    name: <a href="https://sig.com"><strong>Susquehanna International Group</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://simplifynext.com"><strong>simplifynext</strong></a>:
+    name: <a href="https://simplifynext.com"><strong>SimplifyNext</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://smadex.com/"><strong>smadex slu</strong></a>:
+    name: <a href="https://smadex.com/"><strong>Smadex SLU</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://snap.com"><strong>snap</strong></a>:
+    name: <a href="https://snap.com"><strong>Snap</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://sphera.com/"><strong>sphera</strong></a>:
+    name: <a href="https://sphera.com/"><strong>Sphera</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  "<a href=\"https://startup.fulcrumgt.com\"><strong>fulcrum gt\u2014startup lab [2026]</strong></a>":
+    name: "<a href=\"https://startup.fulcrumgt.com\"><strong>Fulcrum GT\u2014Startup\
+      \ Lab [2026]</strong></a>"
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://steampunk.com"><strong>steampunk</strong></a>:
+    name: <a href="https://steampunk.com"><strong>Steampunk</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://tamara.co"><strong>tamara</strong></a>:
+    name: <a href="https://tamara.co"><strong>Tamara</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://thehumanoid.ai/"><strong>humanoid</strong></a>:
+    name: <a href="https://thehumanoid.ai/"><strong>Humanoid</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://thelevel.ai"><strong>level ai</strong></a>:
+    name: <a href="https://thelevel.ai"><strong>Level AI</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://thermofisher.com"><strong>thermo fisher scientific</strong></a>:
+    name: <a href="https://thermofisher.com"><strong>Thermo Fisher Scientific</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://thewaltdisneycompany.com"><strong>walt disney</strong></a>:
+    name: <a href="https://thewaltdisneycompany.com"><strong>Walt Disney</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://thorntontomasetti.com/"><strong>thornton tomasetti</strong></a>:
+    name: <a href="https://thorntontomasetti.com/"><strong>Thornton Tomasetti</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://torc.ai"><strong>torc robotics</strong></a>:
+    name: <a href="https://torc.ai"><strong>Torc Robotics</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://trinitylifesciences.com/"><strong>trinity</strong></a>:
+    name: <a href="https://trinitylifesciences.com/"><strong>Trinity</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://trylibra.ai/"><strong>libra ai</strong></a>:
+    name: <a href="https://trylibra.ai/"><strong>Libra AI</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://unconv.ai"><strong>unconventional</strong></a>:
+    name: <a href="https://unconv.ai"><strong>Unconventional</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://unity.com"><strong>unity</strong></a>:
+    name: <a href="https://unity.com"><strong>Unity</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://univerahealthcare.com/"><strong>univera healthcare</strong></a>:
+    name: <a href="https://univerahealthcare.com/"><strong>Univera Healthcare</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://us.coca-cola.com"><strong>coca-cola</strong></a>:
+    name: <a href="https://us.coca-cola.com"><strong>Coca-Cola</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://us.pg.com"><strong>p&g - procter & gamble</strong></a>:
+    name: <a href="https://us.pg.com"><strong>P&G - Procter & Gamble</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://wbd.com"><strong>warner bros. discovery</strong></a>:
+    name: <a href="https://wbd.com"><strong>Warner Bros. Discovery</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://wingtra.com/"><strong>wingtra ag</strong></a>:
+    name: <a href="https://wingtra.com/"><strong>Wingtra AG</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://woven.toyota"><strong>woven by toyota</strong></a>:
+    name: <a href="https://woven.toyota"><strong>Woven by Toyota</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.4flow.com"><strong>4flow</strong></a>:
+    name: <a href="https://www.4flow.com"><strong>4flow</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.accenture.com"><strong>accenture</strong></a>:
+    name: <a href="https://www.accenture.com"><strong>Accenture</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.accordion.com/"><strong>accordion</strong></a>:
+    name: <a href="https://www.accordion.com/"><strong>Accordion</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.airbus.com"><strong>airbus</strong></a>:
+    name: <a href="https://www.airbus.com"><strong>Airbus</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.aircapture.com/"><strong>aircapture</strong></a>:
+    name: <a href="https://www.aircapture.com/"><strong>Aircapture</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.akqa.com"><strong>akqa</strong></a>:
+    name: <a href="https://www.akqa.com"><strong>akqa</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.alcon.com"><strong>alcon</strong></a>:
+    name: <a href="https://www.alcon.com"><strong>Alcon</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.alephholding.com/"><strong>aleph</strong></a>:
+    name: <a href="https://www.alephholding.com/"><strong>Aleph</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.allencontrolsystems.com/"><strong>allen control systems</strong></a>:
+    name: <a href="https://www.allencontrolsystems.com/"><strong>Allen Control Systems</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.allica.bank/"><strong>allica bank</strong></a>:
+    name: <a href="https://www.allica.bank/"><strong>Allica Bank</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.amazon.com"><strong>amazon</strong></a>:
+    name: <a href="https://www.amazon.com"><strong>Amazon</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.amgen.com"><strong>amgen</strong></a>:
+    name: <a href="https://www.amgen.com"><strong>Amgen</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.anymindgroup.com"><strong>anymind group</strong></a>:
+    name: <a href="https://www.anymindgroup.com"><strong>AnyMind Group</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.apollo.com/"><strong>apollo</strong></a>:
+    name: <a href="https://www.apollo.com/"><strong>Apollo</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.appier.com"><strong>appier</strong></a>:
+    name: <a href="https://www.appier.com"><strong>Appier</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.appliedmaterials.com"><strong>applied materials</strong></a>:
+    name: <a href="https://www.appliedmaterials.com"><strong>Applied Materials</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.aquatic.com"><strong>aquatic capital management</strong></a>:
+    name: <a href="https://www.aquatic.com"><strong>Aquatic Capital Management</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.archer.com"><strong>archer</strong></a>:
+    name: <a href="https://www.archer.com"><strong>Archer</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.arlo.com/"><strong>arlo</strong></a>:
+    name: <a href="https://www.arlo.com/"><strong>Arlo</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.asm.com/"><strong>asm</strong></a>:
+    name: <a href="https://www.asm.com/"><strong>ASM</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.asmglobal.com"><strong>asm global</strong></a>:
+    name: <a href="https://www.asmglobal.com"><strong>ASM Global</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.asml.com"><strong>asml</strong></a>:
+    name: <a href="https://www.asml.com"><strong>ASML</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.asteralabs.com"><strong>astera labs</strong></a>:
+    name: <a href="https://www.asteralabs.com"><strong>Astera Labs</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.astrazeneca.com"><strong>astrazeneca</strong></a>:
+    name: <a href="https://www.astrazeneca.com"><strong>AstraZeneca</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.atekinc.com"><strong>a-tek</strong></a>:
+    name: <a href="https://www.atekinc.com"><strong>A-TEK</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.augrade.com/"><strong>augrade</strong></a>:
+    name: <a href="https://www.augrade.com/"><strong>Augrade</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.autodesk.com"><strong>autodesk</strong></a>:
+    name: <a href="https://www.autodesk.com"><strong>Autodesk</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.avanade.com/"><strong>avanade</strong></a>:
+    name: <a href="https://www.avanade.com/"><strong>Avanade</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.avelios.com/"><strong>avelios medical</strong></a>:
+    name: <a href="https://www.avelios.com/"><strong>Avelios Medical</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.axon.com"><strong>axon</strong></a>:
+    name: <a href="https://www.axon.com"><strong>Axon</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.axtria.com"><strong>axtria - ingenious insights</strong></a>:
+    name: <a href="https://www.axtria.com"><strong>Axtria - Ingenious Insights</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.bakerhughes.com"><strong>baker hughes</strong></a>:
+    name: <a href="https://www.bakerhughes.com"><strong>Baker Hughes</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.bankofamerica.com"><strong>bank of america</strong></a>:
+    name: <a href="https://www.bankofamerica.com"><strong>Bank of America</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.bigblue.co/"><strong>bigblue</strong></a>:
+    name: <a href="https://www.bigblue.co/"><strong>Bigblue</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.binance.com"><strong>binance</strong></a>:
+    name: <a href="https://www.binance.com"><strong>Binance</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.bitmovin.com"><strong>bitmovin</strong></a>:
+    name: <a href="https://www.bitmovin.com"><strong>Bitmovin</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.blackrock.com/"><strong>blackrock</strong></a>:
+    name: <a href="https://www.blackrock.com/"><strong>BlackRock</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.blackstone.com"><strong>blackstone</strong></a>:
+    name: <a href="https://www.blackstone.com"><strong>Blackstone</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.blockchain.com"><strong>blockchain.com</strong></a>:
+    name: <a href="https://www.blockchain.com"><strong>Blockchain.com</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.bmo.com"><strong>bank of montreal</strong></a>:
+    name: <a href="https://www.bmo.com"><strong>Bank of Montreal</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.boozallen.com"><strong>booz allen</strong></a>:
+    name: <a href="https://www.boozallen.com"><strong>Booz Allen</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.borgwarner.com"><strong>borgwarner</strong></a>:
+    name: <a href="https://www.borgwarner.com"><strong>BorgWarner</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.bosch.com/"><strong>bosch</strong></a>:
+    name: <a href="https://www.bosch.com/"><strong>Bosch</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.bridgewater.com"><strong>bridgewater associates</strong></a>:
+    name: <a href="https://www.bridgewater.com"><strong>Bridgewater Associates</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.bvp.com"><strong>bessemer venture partners</strong></a>:
+    name: <a href="https://www.bvp.com"><strong>Bessemer Venture Partners</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.bybit.com"><strong>bybit</strong></a>:
+    name: <a href="https://www.bybit.com"><strong>Bybit</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.bynder.com/"><strong>bynder</strong></a>:
+    name: <a href="https://www.bynder.com/"><strong>Bynder</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.cadence.com"><strong>cadence</strong></a>:
+    name: <a href="https://www.cadence.com"><strong>Cadence</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.cae.com"><strong>cae</strong></a>:
+    name: <a href="https://www.cae.com"><strong>CAE</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.cambridgeconsultants.com"><strong>cambridge consultants</strong></a>:
+    name: <a href="https://www.cambridgeconsultants.com"><strong>Cambridge Consultants</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.campbells.com"><strong>campbell soup</strong></a>:
+    name: <a href="https://www.campbells.com"><strong>Campbell Soup</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.capitaland.com"><strong>capitaland</strong></a>:
+    name: <a href="https://www.capitaland.com"><strong>CapitaLand</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.capitalgroup.com/"><strong>capital group</strong></a>:
+    name: <a href="https://www.capitalgroup.com/"><strong>Capital Group</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.capitalone.com"><strong>capital one</strong></a>:
+    name: <a href="https://www.capitalone.com"><strong>Capital One</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.careers.wincent.com/"><strong>wincent</strong></a>:
+    name: <a href="https://www.careers.wincent.com/"><strong>Wincent</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.carislifesciences.com/"><strong>caris life sciences</strong></a>:
+    name: <a href="https://www.carislifesciences.com/"><strong>Caris Life Sciences</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.carrier.com"><strong>carrier</strong></a>:
+    name: <a href="https://www.carrier.com"><strong>Carrier</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.caterpillar.com"><strong>caterpillar</strong></a>:
+    name: <a href="https://www.caterpillar.com"><strong>Caterpillar</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.centerfield.com/"><strong>centerfield</strong></a>:
+    name: <a href="https://www.centerfield.com/"><strong>Centerfield</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.chanel.com"><strong>chanel</strong></a>:
+    name: <a href="https://www.chanel.com"><strong>CHANEL</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.checkout.com/"><strong>checkout.com</strong></a>:
+    name: <a href="https://www.checkout.com/"><strong>Checkout.com</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.chicagotrading.com"><strong>chicago trading company</strong></a>:
+    name: <a href="https://www.chicagotrading.com"><strong>Chicago Trading Company</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.ciena.com"><strong>ciena</strong></a>:
+    name: <a href="https://www.ciena.com"><strong>Ciena</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.cigna.com"><strong>the cigna group</strong></a>:
+    name: <a href="https://www.cigna.com"><strong>The Cigna Group</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.citadel.com/careers"><strong>citadel</strong></a>:
+    name: <a href="https://www.citadel.com/careers"><strong>Citadel</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.citadelsecurities.com/careers"><strong>citadel securities</strong></a>:
+    name: <a href="https://www.citadelsecurities.com/careers"><strong>Citadel Securities</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.citigroup.com"><strong>citi</strong></a>:
+    name: <a href="https://www.citigroup.com"><strong>Citi</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.clipboardhealth.com/careers"><strong>clipboard</strong></a>:
+    name: <a href="https://www.clipboardhealth.com/careers"><strong>Clipboard</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.clovirtualfashion.com"><strong>clo virtual fashion</strong></a>:
+    name: <a href="https://www.clovirtualfashion.com"><strong>CLO Virtual Fashion</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.cmegroup.com"><strong>cme group</strong></a>:
+    name: <a href="https://www.cmegroup.com"><strong>CME Group</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.cmu.edu"><strong>carnegie mellon university</strong></a>:
+    name: <a href="https://www.cmu.edu"><strong>Carnegie Mellon University</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.constellationspace.ai/"><strong>constellation space</strong></a>:
+    name: <a href="https://www.constellationspace.ai/"><strong>Constellation Space</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.cosuno.com/"><strong>cosuno</strong></a>:
+    name: <a href="https://www.cosuno.com/"><strong>Cosuno</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.cotiviti.com"><strong>cotiviti</strong></a>:
+    name: <a href="https://www.cotiviti.com"><strong>Cotiviti</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.covestro.com"><strong>covestro</strong></a>:
+    name: <a href="https://www.covestro.com"><strong>Covestro</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.crowdstrike.com"><strong>crowdstrike</strong></a>:
+    name: <a href="https://www.crowdstrike.com"><strong>CrowdStrike</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.cushmanwakefield.com"><strong>cushman & wakefield</strong></a>:
+    name: <a href="https://www.cushmanwakefield.com"><strong>Cushman & Wakefield</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.db.com"><strong>deutsche bank</strong></a>:
+    name: <a href="https://www.db.com"><strong>Deutsche Bank</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.debtbook.com"><strong>debtbook</strong></a>:
+    name: <a href="https://www.debtbook.com"><strong>DebtBook</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.deloitte.com/"><strong>deloitte</strong></a>:
+    name: <a href="https://www.deloitte.com/"><strong>Deloitte</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.dentsu.com"><strong>dentsu</strong></a>:
+    name: <a href="https://www.dentsu.com"><strong>dentsu</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.deshaw.com/careers"><strong>d. e. shaw & co.</strong></a>:
+    name: <a href="https://www.deshaw.com/careers"><strong>D. E. Shaw & Co.</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.despegar.com"><strong>despegar</strong></a>:
+    name: <a href="https://www.despegar.com"><strong>Despegar</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.disneycareers.com/"><strong>walt disney</strong></a>:
+    name: <a href="https://www.disneycareers.com/"><strong>Walt Disney</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  ? <a href="https://www.doctorswithoutborders.org"><strong>medecins sans frontieres
+    (doctors without borders) - united states</strong></a>
+  : name: <a href="https://www.doctorswithoutborders.org"><strong>Medecins Sans Frontieres
+      (Doctors Without Borders) - United States</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.doordash.com"><strong>doordash</strong></a>:
+    name: <a href="https://www.doordash.com"><strong>DoorDash</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.duboischemicals.com/"><strong>dubois</strong></a>:
+    name: <a href="https://www.duboischemicals.com/"><strong>DuBois</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.dynamis.com"><strong>dynamis</strong></a>:
+    name: <a href="https://www.dynamis.com"><strong>Dynamis</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.edwards.com"><strong>edwards lifesciences</strong></a>:
+    name: <a href="https://www.edwards.com"><strong>Edwards Lifesciences</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.egra.ai/"><strong>egra</strong></a>:
+    name: <a href="https://www.egra.ai/"><strong>Egra</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.elringklinger.de"><strong>elringklinger</strong></a>:
+    name: <a href="https://www.elringklinger.de"><strong>ElringKlinger</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.emory.edu"><strong>emory university</strong></a>:
+    name: <a href="https://www.emory.edu"><strong>Emory University</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.enpal.com/"><strong>enpal</strong></a>:
+    name: <a href="https://www.enpal.com/"><strong>Enpal</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.esri.com"><strong>esri</strong></a>:
+    name: <a href="https://www.esri.com"><strong>Esri</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.eulerity.com"><strong>eulerity</strong></a>:
+    name: <a href="https://www.eulerity.com"><strong>Eulerity</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.euronext.com"><strong>euronext</strong></a>:
+    name: <a href="https://www.euronext.com"><strong>Euronext</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.eversource.com"><strong>eversource energy</strong></a>:
+    name: <a href="https://www.eversource.com"><strong>Eversource Energy</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.evraz.com"><strong>evraz</strong></a>:
+    name: <a href="https://www.evraz.com"><strong>EVRAZ</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.exactsciences.com"><strong>exact sciences</strong></a>:
+    name: <a href="https://www.exactsciences.com"><strong>Exact Sciences</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.figma.com"><strong>figma</strong></a>:
+    name: <a href="https://www.figma.com"><strong>Figma</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.fisglobal.com"><strong>fis</strong></a>:
+    name: <a href="https://www.fisglobal.com"><strong>FIS</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.flaglerhealth.io/"><strong>flagler health</strong></a>:
+    name: <a href="https://www.flaglerhealth.io/"><strong>Flagler Health</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.franklintempleton.com"><strong>franklin templeton</strong></a>:
+    name: <a href="https://www.franklintempleton.com"><strong>Franklin Templeton</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.fresenius-kabi.com"><strong>fresenius kabi</strong></a>:
+    name: <a href="https://www.fresenius-kabi.com"><strong>Fresenius Kabi</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.galaxy.com"><strong>galaxy</strong></a>:
+    name: <a href="https://www.galaxy.com"><strong>Galaxy</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.gardacp.com"><strong>garda capital partners</strong></a>:
+    name: <a href="https://www.gardacp.com"><strong>Garda Capital Partners</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.gdit.com"><strong>gdit</strong></a>:
+    name: <a href="https://www.gdit.com"><strong>GDIT</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.gendigital.com"><strong>gen</strong></a>:
+    name: <a href="https://www.gendigital.com"><strong>Gen</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.gene.com/"><strong>genentech</strong></a>:
+    name: <a href="https://www.gene.com/"><strong>Genentech</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.genesis-fs.com"><strong>genesis financial solutions</strong></a>:
+    name: <a href="https://www.genesis-fs.com"><strong>Genesis Financial Solutions</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.genscript.com"><strong>genscript</strong></a>:
+    name: <a href="https://www.genscript.com"><strong>GenScript</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.getabound.com/"><strong>abound</strong></a>:
+    name: <a href="https://www.getabound.com/"><strong>Abound</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.gevernova.com/"><strong>ge vernova</strong></a>:
+    name: <a href="https://www.gevernova.com/"><strong>GE Vernova</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.ggeedu.com/"><strong>universidad ieu s.c.</strong></a>:
+    name: <a href="https://www.ggeedu.com/"><strong>Universidad IEU S.C.</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.global.ntt"><strong>ntt</strong></a>:
+    name: <a href="https://www.global.ntt"><strong>NTT</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.gm.com"><strong>general motors</strong></a>:
+    name: <a href="https://www.gm.com"><strong>General Motors</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.goalglobal.org"><strong>goal global</strong></a>:
+    name: <a href="https://www.goalglobal.org"><strong>GOAL Global</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.gotocompany.com"><strong>goto</strong></a>:
+    name: <a href="https://www.gotocompany.com"><strong>GoTo</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.gsacapital.com"><strong>gsa</strong></a>:
+    name: <a href="https://www.gsacapital.com"><strong>GSA</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.gsk.com"><strong>gsk</strong></a>:
+    name: <a href="https://www.gsk.com"><strong>GSK</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.harman.com"><strong>harman</strong></a>:
+    name: <a href="https://www.harman.com"><strong>Harman</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.harmattan.ai/"><strong>harmattan ai</strong></a>:
+    name: <a href="https://www.harmattan.ai/"><strong>Harmattan AI</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.harvardmaint.com"><strong>harvard maintenance</strong></a>:
+    name: <a href="https://www.harvardmaint.com"><strong>Harvard Maintenance</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.harvardsg.com"><strong>harvard services group</strong></a>:
+    name: <a href="https://www.harvardsg.com"><strong>Harvard Services Group</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.hayselectrical.com/"><strong>hays electrical services</strong></a>:
+    name: <a href="https://www.hayselectrical.com/"><strong>Hays Electrical Services</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.hbfuller.com"><strong>h.b. fuller</strong></a>:
+    name: <a href="https://www.hbfuller.com"><strong>H.B. Fuller</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.heart.org"><strong>american heart association</strong></a>:
+    name: <a href="https://www.heart.org"><strong>American Heart Association</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.heinz.com"><strong>heinz</strong></a>:
+    name: <a href="https://www.heinz.com"><strong>Heinz</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.here.com"><strong>here technologies</strong></a>:
+    name: <a href="https://www.here.com"><strong>HERE Technologies</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.heyxpeng.com"><strong>xpeng</strong></a>:
+    name: <a href="https://www.heyxpeng.com"><strong>XPENG</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.highbeam.com/"><strong>highbeam</strong></a>:
+    name: <a href="https://www.highbeam.com/"><strong>Highbeam</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.hitachi.com"><strong>hitachi</strong></a>:
+    name: <a href="https://www.hitachi.com"><strong>Hitachi</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.hkexgroup.com/"><strong>hong kong exchanges and clearing limited</strong></a>:
+    name: <a href="https://www.hkexgroup.com/"><strong>Hong Kong Exchanges and Clearing
+      Limited</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.housecallpro.com"><strong>housecall pro</strong></a>:
+    name: <a href="https://www.housecallpro.com"><strong>Housecall Pro</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.hp.com"><strong>hp</strong></a>:
+    name: <a href="https://www.hp.com"><strong>HP</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.hudsonrivertrading.com"><strong>hudson river trading</strong></a>:
+    name: <a href="https://www.hudsonrivertrading.com"><strong>Hudson River Trading</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.huntsman.com"><strong>huntsman</strong></a>:
+    name: <a href="https://www.huntsman.com"><strong>Huntsman</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.huronconsultinggroup.com"><strong>huron</strong></a>:
+    name: <a href="https://www.huronconsultinggroup.com"><strong>Huron</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.infobip.com"><strong>infobip</strong></a>:
+    name: <a href="https://www.infobip.com"><strong>Infobip</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.ing.com/"><strong>ing</strong></a>:
+    name: <a href="https://www.ing.com/"><strong>ING</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.intel.com"><strong>intel</strong></a>:
+    name: <a href="https://www.intel.com"><strong>Intel</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.interac.ca"><strong>interac</strong></a>:
+    name: <a href="https://www.interac.ca"><strong>Interac</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.interdigital.com"><strong>interdigital</strong></a>:
+    name: <a href="https://www.interdigital.com"><strong>InterDigital</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.interplay.vc/"><strong>interplay</strong></a>:
+    name: <a href="https://www.interplay.vc/"><strong>Interplay</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.inversionspace.com"><strong>inversion space</strong></a>:
+    name: <a href="https://www.inversionspace.com"><strong>Inversion Space</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.ispot.tv"><strong>ispot.tv</strong></a>:
+    name: <a href="https://www.ispot.tv"><strong>iSpot.tv</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.issgovernance.com"><strong>institutional shareholder services - iss</strong></a>:
+    name: <a href="https://www.issgovernance.com"><strong>Institutional Shareholder
+      Services - ISS</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.janestreet.com"><strong>jane street</strong></a>:
+    name: <a href="https://www.janestreet.com"><strong>Jane Street</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.jerry.ai/"><strong>jerry</strong></a>:
+    name: <a href="https://www.jerry.ai/"><strong>Jerry</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.jobsforhumanity.com/"><strong>jobs for humanity</strong></a>:
+    name: <a href="https://www.jobsforhumanity.com/"><strong>Jobs for Humanity</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.joinleland.com/"><strong>leland</strong></a>:
+    name: <a href="https://www.joinleland.com/"><strong>Leland</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.joslin.org"><strong>joslin diabetes center</strong></a>:
+    name: <a href="https://www.joslin.org"><strong>Joslin Diabetes Center</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.juliusbaer.com"><strong>julius baer</strong></a>:
+    name: <a href="https://www.juliusbaer.com"><strong>Julius Baer</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.kbr.com"><strong>kbr</strong></a>:
+    name: <a href="https://www.kbr.com"><strong>KBR</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.kensingtontours.com"><strong>kensington</strong></a>:
+    name: <a href="https://www.kensingtontours.com"><strong>Kensington</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.key.com"><strong>keybank</strong></a>:
+    name: <a href="https://www.key.com"><strong>KeyBank</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.kiongroup.com"><strong>kion group</strong></a>:
+    name: <a href="https://www.kiongroup.com"><strong>Kion Group</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.kohls.com"><strong>kohl's</strong></a>:
+    name: <a href="https://www.kohls.com"><strong>Kohl's</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.kontoorbrands.com"><strong>kontoor brands</strong></a>:
+    name: <a href="https://www.kontoorbrands.com"><strong>Kontoor Brands</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.labcorp.com"><strong>labcorp</strong></a>:
+    name: <a href="https://www.labcorp.com"><strong>Labcorp</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.leidos.com"><strong>leidos</strong></a>:
+    name: <a href="https://www.leidos.com"><strong>Leidos</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.lentechinc.com/"><strong>lentech</strong></a>:
+    name: <a href="https://www.lentechinc.com/"><strong>Lentech</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.lila.ai/"><strong>lila sciences</strong></a>:
+    name: <a href="https://www.lila.ai/"><strong>Lila Sciences</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.liveflow.io"><strong>liveflow</strong></a>:
+    name: <a href="https://www.liveflow.io"><strong>LiveFlow</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.lonza.com"><strong>lonza</strong></a>:
+    name: <a href="https://www.lonza.com"><strong>Lonza</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.lseg.com"><strong>lseg</strong></a>:
+    name: <a href="https://www.lseg.com"><strong>LSEG</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.man.com"><strong>man group</strong></a>:
+    name: <a href="https://www.man.com"><strong>Man Group</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.marshmclennan.com"><strong>marsh mclennan</strong></a>:
+    name: <a href="https://www.marshmclennan.com"><strong>Marsh McLennan</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.marvell.com"><strong>marvell</strong></a>:
+    name: <a href="https://www.marvell.com"><strong>Marvell</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.mercedes-benz-techinnovation.com/de/jobs/"><strong>mercedes-benz tech innovation</strong></a>:
+    name: <a href="https://www.mercedes-benz-techinnovation.com/de/jobs/"><strong>Mercedes-Benz
+      Tech Innovation</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.mfs.com"><strong>mfs</strong></a>:
+    name: <a href="https://www.mfs.com"><strong>MFS</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.micron.com/"><strong>micron technology</strong></a>:
+    name: <a href="https://www.micron.com/"><strong>Micron Technology</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.microsoft.com"><strong>microsoft</strong></a>:
+    name: <a href="https://www.microsoft.com"><strong>Microsoft</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.milwaukeetool.com/"><strong>milwaukee tool</strong></a>:
+    name: <a href="https://www.milwaukeetool.com/"><strong>Milwaukee Tool</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.mitek-us.com"><strong>mitek</strong></a>:
+    name: <a href="https://www.mitek-us.com"><strong>MiTek</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.morganstanley.com/"><strong>morgan stanley</strong></a>:
+    name: <a href="https://www.morganstanley.com/"><strong>Morgan Stanley</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.morningstar.com"><strong>morningstar</strong></a>:
+    name: <a href="https://www.morningstar.com"><strong>Morningstar</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.mrisoftware.com/"><strong>mri software</strong></a>:
+    name: <a href="https://www.mrisoftware.com/"><strong>MRI Software</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.msd.com"><strong>msd</strong></a>:
+    name: <a href="https://www.msd.com"><strong>MSD</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.nature.org/"><strong>the nature conservancy</strong></a>:
+    name: <a href="https://www.nature.org/"><strong>The Nature Conservancy</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.nd.edu/"><strong>university of notre dame</strong></a>:
+    name: <a href="https://www.nd.edu/"><strong>University of Notre Dame</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.neighborly.com"><strong>neighborly</strong></a>:
+    name: <a href="https://www.neighborly.com"><strong>Neighborly</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.nevoya.com/"><strong>nevoya</strong></a>:
+    name: <a href="https://www.nevoya.com/"><strong>Nevoya</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.nio.com"><strong>nio</strong></a>:
+    name: <a href="https://www.nio.com"><strong>NIO</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.node.digital/"><strong>node</strong></a>:
+    name: <a href="https://www.node.digital/"><strong>Node</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.northstarnm.com"><strong>northstar medical radioisotopes</strong></a>:
+    name: <a href="https://www.northstarnm.com"><strong>NorthStar Medical Radioisotopes</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.novartis.com"><strong>novartis</strong></a>:
+    name: <a href="https://www.novartis.com"><strong>Novartis</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.ntu.edu.sg"><strong>nanyang technological university</strong></a>:
+    name: <a href="https://www.ntu.edu.sg"><strong>Nanyang Technological University</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.nvidia.com"><strong>nvidia</strong></a>:
+    name: <a href="https://www.nvidia.com"><strong>NVIDIA</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.nxp.com"><strong>nxp semiconductors</strong></a>:
+    name: <a href="https://www.nxp.com"><strong>NXP Semiconductors</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.octagon.com"><strong>octagon</strong></a>:
+    name: <a href="https://www.octagon.com"><strong>Octagon</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.oldmissioncapital.com"><strong>old mission capital</strong></a>:
+    name: <a href="https://www.oldmissioncapital.com"><strong>Old Mission Capital</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.omers.com/"><strong>omers</strong></a>:
+    name: <a href="https://www.omers.com/"><strong>OMERS</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.onec1.com"><strong>c1</strong></a>:
+    name: <a href="https://www.onec1.com"><strong>C1</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.outputbio.com/"><strong>output biosciences</strong></a>:
+    name: <a href="https://www.outputbio.com/"><strong>Output Biosciences</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.partly.com/"><strong>partly</strong></a>:
+    name: <a href="https://www.partly.com/"><strong>Partly</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.pathward.com"><strong>pathward</strong></a>:
+    name: <a href="https://www.pathward.com"><strong>Pathward</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.peraton.com"><strong>peraton</strong></a>:
+    name: <a href="https://www.peraton.com"><strong>Peraton</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.perplexity.ai/"><strong>perplexity</strong></a>:
+    name: <a href="https://www.perplexity.ai/"><strong>Perplexity</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.pfizer.com"><strong>pfizer</strong></a>:
+    name: <a href="https://www.pfizer.com"><strong>Pfizer</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.pimco.com"><strong>pimco</strong></a>:
+    name: <a href="https://www.pimco.com"><strong>PIMCO</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.pinterest.com"><strong>pinterest</strong></a>:
+    name: <a href="https://www.pinterest.com"><strong>Pinterest</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.pnc.com"><strong>pnc</strong></a>:
+    name: <a href="https://www.pnc.com"><strong>PNC</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.pointchealth.com"><strong>point c</strong></a>:
+    name: <a href="https://www.pointchealth.com"><strong>Point C</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.ppro.com/"><strong>ppro</strong></a>:
+    name: <a href="https://www.ppro.com/"><strong>PPRO</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  "<a href=\"https://www.pravah.com/\"><strong>prava\u0304h</strong></a>":
+    name: "<a href=\"https://www.pravah.com/\"><strong>Prava\u0304h</strong></a>"
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.precisionaq.com"><strong>precision aq</strong></a>:
+    name: <a href="https://www.precisionaq.com"><strong>Precision AQ</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.preferencemodel.com/"><strong>preference model</strong></a>:
+    name: <a href="https://www.preferencemodel.com/"><strong>Preference Model</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.prodigaltech.com"><strong>prodigal</strong></a>:
+    name: <a href="https://www.prodigaltech.com"><strong>Prodigal</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.proximafusion.com/"><strong>proxima fusion</strong></a>:
+    name: <a href="https://www.proximafusion.com/"><strong>Proxima Fusion</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.ptc.com"><strong>ptc</strong></a>:
+    name: <a href="https://www.ptc.com"><strong>PTC</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.purestorage.com"><strong>pure storage</strong></a>:
+    name: <a href="https://www.purestorage.com"><strong>Pure Storage</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.pwc.com"><strong>pwc</strong></a>:
+    name: <a href="https://www.pwc.com"><strong>PwC</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.qualifiedhealthai.com/"><strong>qualified health pbc</strong></a>:
+    name: <a href="https://www.qualifiedhealthai.com/"><strong>Qualified Health PBC</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.racap.com/"><strong>ra capital</strong></a>:
+    name: <a href="https://www.racap.com/"><strong>RA Capital</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.radiancetech.com"><strong>radiance technologies</strong></a>:
+    name: <a href="https://www.radiancetech.com"><strong>Radiance Technologies</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.rakuten.tv/uk"><strong>rakuten tv</strong></a>:
+    name: <a href="https://www.rakuten.tv/uk"><strong>Rakuten TV</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.relx.com"><strong>relx</strong></a>:
+    name: <a href="https://www.relx.com"><strong>RELX</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.renaultgroup.com"><strong>renault</strong></a>:
+    name: <a href="https://www.renaultgroup.com"><strong>Renault</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.rentschler-biopharma.com"><strong>rentschler biopharma</strong></a>:
+    name: <a href="https://www.rentschler-biopharma.com"><strong>Rentschler Biopharma</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.revmed.com"><strong>revolution medicines</strong></a>:
+    name: <a href="https://www.revmed.com"><strong>Revolution Medicines</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.rmit.edu.au"><strong>rmit university</strong></a>:
+    name: <a href="https://www.rmit.edu.au"><strong>RMIT University</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.rochester.edu"><strong>university of rochester</strong></a>:
+    name: <a href="https://www.rochester.edu"><strong>University of Rochester</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.rocketlabusa.com"><strong>rocket lab</strong></a>:
+    name: <a href="https://www.rocketlabusa.com"><strong>Rocket Lab</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.rockwellautomation.com"><strong>rockwell automation</strong></a>:
+    name: <a href="https://www.rockwellautomation.com"><strong>Rockwell Automation</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.rtx.com"><strong>raytheon</strong></a>:
+    name: <a href="https://www.rtx.com"><strong>Raytheon</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.sabre.com"><strong>sabre</strong></a>:
+    name: <a href="https://www.sabre.com"><strong>Sabre</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.samsung.com"><strong>samsung</strong></a>:
+    name: <a href="https://www.samsung.com"><strong>Samsung</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.sandisk.com/"><strong>sandisk</strong></a>:
+    name: <a href="https://www.sandisk.com/"><strong>Sandisk</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.sanofi.com"><strong>sanofi</strong></a>:
+    name: <a href="https://www.sanofi.com"><strong>Sanofi</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.santanderbank.com"><strong>santander</strong></a>:
+    name: <a href="https://www.santanderbank.com"><strong>Santander</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.sbtglobal.com/"><strong>sbt global</strong></a>:
+    name: <a href="https://www.sbtglobal.com/"><strong>SBT Global</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.shift-technology.com"><strong>shift technologies</strong></a>:
+    name: <a href="https://www.shift-technology.com"><strong>Shift Technologies</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.shyftlabs.io"><strong>shyftlabs</strong></a>:
+    name: <a href="https://www.shyftlabs.io"><strong>ShyftLabs</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.signify.com"><strong>signify</strong></a>:
+    name: <a href="https://www.signify.com"><strong>Signify</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.sitetracker.com"><strong>sitetracker</strong></a>:
+    name: <a href="https://www.sitetracker.com"><strong>Sitetracker</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.skydio.com/"><strong>skydio</strong></a>:
+    name: <a href="https://www.skydio.com/"><strong>Skydio</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.smithfieldfoods.com/"><strong>smithfield foods</strong></a>:
+    name: <a href="https://www.smithfieldfoods.com/"><strong>Smithfield Foods</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.snclavalin.com"><strong>snc-lavalin</strong></a>:
+    name: <a href="https://www.snclavalin.com"><strong>SNC-Lavalin</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.sncorp.com"><strong>sierra nevada corporation</strong></a>:
+    name: <a href="https://www.sncorp.com"><strong>Sierra Nevada Corporation</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.snowflake.com/"><strong>snowflake</strong></a>:
+    name: <a href="https://www.snowflake.com/"><strong>Snowflake</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.sofi.com/careers"><strong>sofi</strong></a>:
+    name: <a href="https://www.sofi.com/careers"><strong>SoFi</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.solace.health/"><strong>solace</strong></a>:
+    name: <a href="https://www.solace.health/"><strong>Solace</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.solarturbines.com/"><strong>solar turbines</strong></a>:
+    name: <a href="https://www.solarturbines.com/"><strong>Solar Turbines</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.sonoco.com"><strong>sonoco</strong></a>:
+    name: <a href="https://www.sonoco.com"><strong>Sonoco</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.sony.com"><strong>sony</strong></a>:
+    name: <a href="https://www.sony.com"><strong>Sony</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.squarepoint-capital.com"><strong>squarepoint capital</strong></a>:
+    name: <a href="https://www.squarepoint-capital.com"><strong>Squarepoint Capital</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.srcinc.com"><strong>syracuse research corporation</strong></a>:
+    name: <a href="https://www.srcinc.com"><strong>Syracuse Research Corporation</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.steerbridge.com/"><strong>steerbridge</strong></a>:
+    name: <a href="https://www.steerbridge.com/"><strong>SteerBridge</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.stepstonegroup.com"><strong>stepstone group</strong></a>:
+    name: <a href="https://www.stepstonegroup.com"><strong>StepStone Group</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.sumup.com"><strong>sumup</strong></a>:
+    name: <a href="https://www.sumup.com"><strong>SumUp</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.super.com"><strong>super.com</strong></a>:
+    name: <a href="https://www.super.com"><strong>Super.com</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.superpilot.com/"><strong>superpilot labs</strong></a>:
+    name: <a href="https://www.superpilot.com/"><strong>Superpilot Labs</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.swbc.com"><strong>swbc</strong></a>:
+    name: <a href="https://www.swbc.com"><strong>SWBC</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.takeda.com"><strong>takeda</strong></a>:
+    name: <a href="https://www.takeda.com"><strong>Takeda</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.techinsights.com"><strong>techinsights</strong></a>:
+    name: <a href="https://www.techinsights.com"><strong>TechInsights</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.teledyne.com"><strong>teledyne</strong></a>:
+    name: <a href="https://www.teledyne.com"><strong>Teledyne</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.tencent.com"><strong>tencent</strong></a>:
+    name: <a href="https://www.tencent.com"><strong>Tencent</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.thalesgroup.com"><strong>thales</strong></a>:
+    name: <a href="https://www.thalesgroup.com"><strong>Thales</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.thomsonreuters.com"><strong>thomson reuters</strong></a>:
+    name: <a href="https://www.thomsonreuters.com"><strong>Thomson Reuters</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.tiktok.com"><strong>tiktok</strong></a>:
+    name: <a href="https://www.tiktok.com"><strong>TikTok</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.tmx.com"><strong>tmx</strong></a>:
+    name: <a href="https://www.tmx.com"><strong>TMX</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.tp.com/"><strong>teleperformance</strong></a>:
+    name: <a href="https://www.tp.com/"><strong>Teleperformance</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.treehousefoods.com"><strong>treehouse foods</strong></a>:
+    name: <a href="https://www.treehousefoods.com"><strong>TreeHouse Foods</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.trendmicro.com"><strong>trend micro</strong></a>:
+    name: <a href="https://www.trendmicro.com"><strong>Trend Micro</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.trgscreen.com"><strong>trg screen</strong></a>:
+    name: <a href="https://www.trgscreen.com"><strong>TRG Screen</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.tripleringtech.com"><strong>triple ring technologies</strong></a>:
+    name: <a href="https://www.tripleringtech.com"><strong>Triple Ring Technologies</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.trueanomaly.space"><strong>true anomaly</strong></a>:
+    name: <a href="https://www.trueanomaly.space"><strong>True Anomaly</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.truist.com"><strong>truist bank</strong></a>:
+    name: <a href="https://www.truist.com"><strong>Truist Bank</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.uipath.com/"><strong>uipath</strong></a>:
+    name: <a href="https://www.uipath.com/"><strong>UiPath</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.upenn.edu/"><strong>university of pennsylvania</strong></a>:
+    name: <a href="https://www.upenn.edu/"><strong>University of Pennsylvania</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.upgrade.com"><strong>upgrade</strong></a>:
+    name: <a href="https://www.upgrade.com"><strong>Upgrade</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.usa.philips.com"><strong>philips</strong></a>:
+    name: <a href="https://www.usa.philips.com"><strong>Philips</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.usaa.com"><strong>usaa</strong></a>:
+    name: <a href="https://www.usaa.com"><strong>USAA</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.valeo.com"><strong>valeo</strong></a>:
+    name: <a href="https://www.valeo.com"><strong>Valeo</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.vanguardjobs.com/"><strong>vanguard</strong></a>:
+    name: <a href="https://www.vanguardjobs.com/"><strong>Vanguard</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.virtu.com"><strong>virtu financial</strong></a>:
+    name: <a href="https://www.virtu.com"><strong>Virtu Financial</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.vortexa.com/"><strong>vortexa</strong></a>:
+    name: <a href="https://www.vortexa.com/"><strong>Vortexa</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.weloglobal.com/"><strong>welo global</strong></a>:
+    name: <a href="https://www.weloglobal.com/"><strong>Welo Global</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.westernsouthern.com"><strong>western & southern financial group</strong></a>:
+    name: <a href="https://www.westernsouthern.com"><strong>Western & Southern Financial
+      Group</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.whiterabbit.ai/"><strong>whiterabbit.ai</strong></a>:
+    name: <a href="https://www.whiterabbit.ai/"><strong>Whiterabbit.ai</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.whoop.com"><strong>whoop</strong></a>:
+    name: <a href="https://www.whoop.com"><strong>WHOOP</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.wistron.com"><strong>wistron neweb</strong></a>:
+    name: <a href="https://www.wistron.com"><strong>Wistron NeWeb</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.worldquant.com"><strong>worldquant</strong></a>:
+    name: <a href="https://www.worldquant.com"><strong>WorldQuant</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.zeiss.com"><strong>zeiss</strong></a>:
+    name: <a href="https://www.zeiss.com"><strong>ZEISS</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.ziplines.com/"><strong>ziplines</strong></a>:
+    name: <a href="https://www.ziplines.com/"><strong>Ziplines</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://www.zs.com/careers"><strong>zs</strong></a>:
+    name: <a href="https://www.zs.com/careers"><strong>ZS</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://xterraai.com/"><strong>xterra ai</strong></a>:
+    name: <a href="https://xterraai.com/"><strong>Xterra AI</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://zoll.com"><strong>zoll</strong></a>:
+    name: <a href="https://zoll.com"><strong>ZOLL</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://zone5tech.com"><strong>zone 5 technologies</strong></a>:
+    name: <a href="https://zone5tech.com"><strong>Zone 5 Technologies</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  <a href="https://zzzmd.com"><strong>aac midwest</strong></a>:
+    name: <a href="https://zzzmd.com"><strong>AAC Midwest</strong></a>
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  accenture:
+    name: Accenture
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  accenture japan:
+    name: Accenture Japan
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  act21:
+    name: ACT21
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  acuver consulting:
+    name: Acuver Consulting
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  aditya birla group:
+    name: Aditya Birla Group
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  adobe:
+    name: Adobe
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  aecom:
+    name: AECOM
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  aequs:
+    name: Aequs
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  afry india pvt ltd:
+    name: AFRY India Pvt Ltd
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  agnikul cosmos:
+    name: Agnikul Cosmos
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  airbnb:
+    name: Airbnb
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://airbnb.com
+  allen career institute:
+    name: Allen Career Institute
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  alphagrep securities:
+    name: AlphaGrep Securities
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  amazon:
+    name: Amazon
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  american express:
+    name: American Express
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  andritz:
+    name: Andritz
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  anthropic:
+    name: Anthropic
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://anthropic.com
+  apl apollo tubes:
+    name: APL Apollo Tubes
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  applied materials:
+    name: Applied Materials
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  arcana networks:
+    name: Arcana Networks
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  ascendio:
+    name: Ascendio
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  athena education:
+    name: Athena Education
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  atlassian:
+    name: Atlassian
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://atlassian.com
+  atomberg technologies:
+    name: Atomberg Technologies
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  atomgrid:
+    name: Atomgrid
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  atul auto:
+    name: Atul Auto
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  auronova:
+    name: Auronova
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  auxo:
+    name: AUXO
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  axis bank:
+    name: Axis Bank
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  axtria:
+    name: Axtria
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  axxela advisory:
+    name: Axxela Advisory
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  baif:
+    name: BAIF
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  bajaj auto:
+    name: Bajaj Auto
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  bajaj group:
+    name: Bajaj Group
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  barclays:
+    name: Barclays
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  beehyv software solutions:
+    name: BeeHyv Software Solutions
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  bennett university:
+    name: Bennett University
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  bharat petroleum corporation:
+    name: Bharat Petroleum Corporation
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  bidgely:
+    name: Bidgely
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  bml munjal university:
+    name: BML Munjal University
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  bny mellon:
+    name: BNY Mellon
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  boston consulting group:
+    name: Boston Consulting Group
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  brex:
+    name: Brex
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://brex.com
+  browserstack:
+    name: BrowserStack
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://browserstack.com
+  cairn oil & gas:
+    name: Cairn Oil & Gas
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  canva:
+    name: Canva
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://canva.com
+  character.ai:
+    name: Character.AI
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://characterai.com
+  chroma power:
+    name: Chroma Power
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  cisco systems:
+    name: Cisco Systems
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  citymall:
+    name: CityMall
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  cohere:
+    name: Cohere
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://cohere.com
+  coherent corp:
+    name: Coherent Corp
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  coinbase:
+    name: Coinbase
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://coinbase.com
+  continuum green energy:
+    name: Continuum Green Energy
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  cracku:
+    name: Cracku
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  cred:
+    name: CRED
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://cred.com
+  curefit:
+    name: CureFit
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://curefit.com
+  cursor:
+    name: Cursor
+    priority: P0
+    sources:
+    - NORTH_STAR
+    website: https://cursor.com
+  datadog:
+    name: Datadog
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://datadog.com
+  dayananda sagar university:
+    name: Dayananda Sagar University
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  de shaw:
+    name: DE Shaw
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  decagon:
+    name: Decagon
+    priority: P0
+    sources:
+    - NORTH_STAR
+    website: https://decagon.com
+  deel:
+    name: Deel
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://deel.com
+  deloitte:
+    name: Deloitte
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  deutsche bank:
+    name: Deutsche Bank
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  dezerv investments:
+    name: Dezerv Investments
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  dixon technologies:
+    name: Dixon Technologies
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  dolcera:
+    name: Dolcera
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  doordash:
+    name: DoorDash
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://doordash.com
+  dropbox:
+    name: Dropbox
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://dropbox.com
+  efftronics systems:
+    name: Efftronics Systems
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  elevenlabs:
+    name: ElevenLabs
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://elevenlabs.com
+  emergy:
+    name: EMERGY
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  essar metals:
+    name: Essar Metals
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  esya centre:
+    name: Esya Centre
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  eternis fine chemicals:
+    name: Eternis Fine Chemicals
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  exl service:
+    name: EXL Service
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  figma:
+    name: Figma
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://figma.com
+  fischerjordan llc:
+    name: FischerJordan LLC
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  flipkart:
+    name: Flipkart
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  fluxion:
+    name: Fluxion
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  futures first:
+    name: Futures First
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  gail india:
+    name: GAIL India
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  gd goenka university:
+    name: GD Goenka University
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  ge vernova:
+    name: GE Vernova
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  glean:
+    name: Glean
+    priority: P0
+    sources:
+    - EXISTING_REGISTRY
+    - NORTH_STAR
+    website: https://glean.com
+  globallogic:
+    name: GlobalLogic
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  godrej industries:
+    name: Godrej Industries
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  goldman sachs:
+    name: Goldman Sachs
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  google:
+    name: Google
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  greenko:
+    name: Greenko
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  groww:
+    name: Groww
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://groww.com
+  gusto:
+    name: Gusto
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://gusto.com
+  harvey:
+    name: Harvey
+    priority: P0
+    sources:
+    - NORTH_STAR
+    website: https://harvey.com
+  hcl technologies:
+    name: HCL Technologies
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  hero motocorp:
+    name: Hero MotoCorp
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  hexalogix:
+    name: Hexalogix
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  hilabs:
+    name: HiLabs
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  hilti:
+    name: Hilti
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  hind rectifiers:
+    name: Hind Rectifiers
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  hitachi:
+    name: Hitachi
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  hsbc:
+    name: HSBC
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  icici securities:
+    name: ICICI Securities
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  inai worlds pvt ltd:
+    name: INAI Worlds Pvt Ltd
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  indegene:
+    name: Indegene
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  infoedge (naukri):
+    name: InfoEdge (Naukri)
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  infosys:
+    name: Infosys
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  initio:
+    name: Initio
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  inmobi:
+    name: InMobi
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  innovist (onestolab):
+    name: Innovist (Onestolab)
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  instacart:
+    name: Instacart
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://instacart.com
+  insurit:
+    name: Insurit
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  intuit:
+    name: Intuit
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  isgec heavy engineering:
+    name: Isgec Heavy Engineering
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  itc limited:
+    name: ITC Limited
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  ixana:
+    name: Ixana
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  jaguar land rover:
+    name: Jaguar Land Rover
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  jindal steel:
+    name: Jindal Steel
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  jp morgan chase:
+    name: JP Morgan Chase
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  jupiter money:
+    name: Jupiter Money
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  justdial:
+    name: Justdial
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  kenvue:
+    name: Kenvue
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  kla-tencor:
+    name: KLA-Tencor
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  larsen & toubro:
+    name: Larsen & Toubro
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  lenskart:
+    name: Lenskart
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://lenskart.com
+  linear:
+    name: Linear
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://linear.com
+  lovable:
+    name: Lovable
+    priority: P0
+    sources:
+    - NORTH_STAR
+    website: https://lovable.com
+  ltimindtree:
+    name: LTIMindtree
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  mahindra & mahindra:
+    name: Mahindra & Mahindra
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  maruti suzuki:
+    name: Maruti Suzuki
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  mastercard:
+    name: Mastercard
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  mathworks:
+    name: MathWorks
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  maxvol ai:
+    name: Maxvol AI
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  mckinsey & company:
+    name: McKinsey & Company
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  media.net:
+    name: Media.net
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  meesho:
+    name: Meesho
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    - EXISTING_REGISTRY
+    website: ''
+  mercor:
+    name: Mercor
+    priority: P0
+    sources:
+    - NORTH_STAR
+    website: https://mercor.com
+  mercury:
+    name: Mercury
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://mercury.com
+  microsoft:
+    name: Microsoft
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  miebach consulting:
+    name: Miebach Consulting
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  milk mantra:
+    name: Milk Mantra
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  mistral:
+    name: Mistral
+    priority: P0
+    sources:
+    - NORTH_STAR
+    website: https://mistral.com
+  mistral ai:
+    name: Mistral AI
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://mistral.com
+  mphasis:
+    name: Mphasis
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  myntra:
+    name: Myntra
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  namtech:
+    name: NAMTECH
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  nasiko private limited:
+    name: NASIKO Private Limited
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  neev ai supercloud:
+    name: Neev AI Supercloud
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  netradyne:
+    name: Netradyne
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  newage ai:
+    name: NewAge AI
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: ''
+  newton school:
+    name: Newton School
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  niit:
+    name: NIIT
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  niva bupa health insurance:
+    name: Niva Bupa Health Insurance
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  nobroker:
+    name: NoBroker
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  nokia:
+    name: Nokia
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  notion:
+    name: Notion
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://notion.com
+  notofire private limited:
+    name: Notofire Private Limited
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  nse (national stock exchange):
+    name: NSE (National Stock Exchange)
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  nucleus software:
+    name: Nucleus Software
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  nvidia:
+    name: NVIDIA
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  nxp semiconductors:
+    name: NXP Semiconductors
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  nxtwave:
+    name: NxtWave
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  o p jindal global university:
+    name: O P Jindal Global University
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  o.p. jindal global university:
+    name: O.P. Jindal Global University
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  ola:
+    name: Ola
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ola.com
+  ola electric:
+    name: OLA Electric
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  olyv smartcoin:
+    name: Olyv SmartCoin
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  openai:
+    name: OpenAI
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://openai.com
+  optum:
+    name: Optum
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  oracle:
+    name: Oracle
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  orangelabs:
+    name: OrangeLabs
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  pacific industries:
+    name: Pacific Industries
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  palo alto networks:
+    name: Palo Alto Networks
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  pandit deendayal petroleum university:
+    name: Pandit Deendayal Petroleum University
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  paypal:
+    name: PayPal
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  paytm:
+    name: Paytm
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    - EXISTING_REGISTRY
+    website: ''
+  payu:
+    name: PayU
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  pcl algonxai:
+    name: PCL AlgonXAI
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  perplexity:
+    name: Perplexity
+    priority: P0
+    sources:
+    - EXISTING_REGISTRY
+    - NORTH_STAR
+    website: https://perplexity.com
+  phonepe:
+    name: PhonePe
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://phonepe.com
+  pi consultants:
+    name: PI Consultants
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  poly medicure:
+    name: Poly Medicure
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  posthog:
+    name: PostHog
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://posthog.com
+  postman:
+    name: Postman
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    - EXISTING_REGISTRY
+    website: ''
+  propertypistol realty pvt ltd:
+    name: PropertyPistol Realty Pvt Ltd
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  publicis sapient:
+    name: Publicis Sapient
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  puma:
+    name: PUMA
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  pyramid e&c:
+    name: Pyramid E&C
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  quadeye securities:
+    name: Quadeye Securities
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  quicksell:
+    name: Quicksell
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  qure.ai:
+    name: Qure.ai
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  ramp:
+    name: Ramp
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ramp.com
+  razorpay:
+    name: Razorpay
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    - EXISTING_REGISTRY
+    website: ''
+  reddit:
+    name: Reddit
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://reddit.com
+  reliance industries:
+    name: Reliance Industries
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  repro india:
+    name: Repro India
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  retool:
+    name: Retool
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://retool.com
+  reva university:
+    name: REVA University
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  rippling:
+    name: Rippling
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://rippling.com
+  rocsearch:
+    name: RocSearch
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  rubrik:
+    name: Rubrik
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  runway:
+    name: Runway
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://runway.com
+  rv university:
+    name: RV University
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  s-vyasa university:
+    name: S-VYASA University
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  sakata inx:
+    name: Sakata Inx
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  samsung:
+    name: Samsung
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  sanjivni group:
+    name: Sanjivni Group
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  sap:
+    name: SAP
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  sca technologies india pvt ltd:
+    name: SCA Technologies India Pvt Ltd
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  scale ai:
+    name: Scale AI
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://scaleai.com
+  schlumberger (slb):
+    name: Schlumberger (SLB)
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  sedemac mechatronics:
+    name: SEDEMAC Mechatronics
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  sfc environmental technologies:
+    name: SFC Environmental Technologies
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  sharda university:
+    name: Sharda University
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  sharechat:
+    name: ShareChat
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://sharechat.com
+  shivalik bank:
+    name: Shivalik Bank
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  siemens:
+    name: Siemens
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  sigmoid:
+    name: Sigmoid
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  sirius technologies:
+    name: Sirius Technologies
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  skyroot aerospace:
+    name: Skyroot Aerospace
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  slnko energy:
+    name: Slnko Energy
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  snapmint:
+    name: Snapmint
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  spotmentor:
+    name: SpotMentor
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  sprinklr:
+    name: Sprinklr
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  squarepoint capital:
+    name: Squarepoint Capital
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  srf limited:
+    name: SRF Limited
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  sri chaitanya:
+    name: Sri Chaitanya
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  srm institute of science and technology:
+    name: SRM Institute of Science and Technology
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  srm university:
+    name: SRM University
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  standard chartered:
+    name: Standard Chartered
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  standard chartered gbs:
+    name: Standard Chartered GBS
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  sterlite technologies:
+    name: Sterlite Technologies
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  stripe:
+    name: Stripe
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://stripe.com
+  suki.ai:
+    name: Suki.AI
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  supabase:
+    name: Supabase
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://supabase.com
+  swiggy:
+    name: Swiggy
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    - EXISTING_REGISTRY
+    website: ''
+  synapse biopharma research private limited:
+    name: Synapse Biopharma Research Private Limited
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  takenaka corporation:
+    name: Takenaka Corporation
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  talent500:
+    name: Talent500
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  tata advanced systems:
+    name: Tata Advanced Systems
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  teradata:
+    name: Teradata
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  terafac technologies:
+    name: Terafac Technologies
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  tescra software pvt ltd:
+    name: TESCRA Software Pvt Ltd
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  texas instruments:
+    name: Texas Instruments
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  thapar institute of engineering & technology:
+    name: Thapar Institute of Engineering & Technology
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  thornton tomasetti:
+    name: Thornton Tomasetti
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  timetooth technologies:
+    name: TimeTooth Technologies
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  tractebel:
+    name: Tractebel
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  tredence:
+    name: Tredence
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  trident group:
+    name: Trident Group
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  truboard partners:
+    name: TruBoard Partners
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  uber:
+    name: Uber
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  uidai:
+    name: UIDAI
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  unacademy:
+    name: Unacademy
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://unacademy.com
+  unifyapp:
+    name: UnifyApp
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  united breweries:
+    name: United Breweries
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  upes:
+    name: UPES
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  upstox:
+    name: Upstox
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://upstox.com
+  urban company:
+    name: Urban Company
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  varuna marine service bv:
+    name: Varuna Marine Service BV
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  vassar labs:
+    name: Vassar Labs
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  ve commercial vehicles:
+    name: VE Commercial Vehicles
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  vedantu:
+    name: Vedantu
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  vercel:
+    name: Vercel
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://vercel.com
+  vgeotech experts:
+    name: VGeotech Experts
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  virtusa consulting:
+    name: Virtusa Consulting
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  visa inc:
+    name: VISA Inc
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  visl ai:
+    name: VISL AI
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  volvo group india:
+    name: Volvo Group India
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  vvf india:
+    name: VVF India
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  warner bros. discovery:
+    name: Warner Bros. Discovery
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  wells fargo:
+    name: Wells Fargo
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  wex fintech:
+    name: Wex Fintech
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  wio bank:
+    name: Wio Bank
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  wipro:
+    name: Wipro
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  world wide technology:
+    name: World Wide Technology
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  yabx:
+    name: YABX
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  yc startup 1:
+    name: YC Startup 1
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup1.com
+  yc startup 10:
+    name: YC Startup 10
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup10.com
+  yc startup 100:
+    name: YC Startup 100
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup100.com
+  yc startup 11:
+    name: YC Startup 11
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup11.com
+  yc startup 12:
+    name: YC Startup 12
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup12.com
+  yc startup 13:
+    name: YC Startup 13
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup13.com
+  yc startup 14:
+    name: YC Startup 14
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup14.com
+  yc startup 15:
+    name: YC Startup 15
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup15.com
+  yc startup 16:
+    name: YC Startup 16
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup16.com
+  yc startup 17:
+    name: YC Startup 17
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup17.com
+  yc startup 18:
+    name: YC Startup 18
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup18.com
+  yc startup 19:
+    name: YC Startup 19
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup19.com
+  yc startup 2:
+    name: YC Startup 2
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup2.com
+  yc startup 20:
+    name: YC Startup 20
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup20.com
+  yc startup 21:
+    name: YC Startup 21
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup21.com
+  yc startup 22:
+    name: YC Startup 22
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup22.com
+  yc startup 23:
+    name: YC Startup 23
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup23.com
+  yc startup 24:
+    name: YC Startup 24
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup24.com
+  yc startup 25:
+    name: YC Startup 25
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup25.com
+  yc startup 26:
+    name: YC Startup 26
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup26.com
+  yc startup 27:
+    name: YC Startup 27
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup27.com
+  yc startup 28:
+    name: YC Startup 28
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup28.com
+  yc startup 29:
+    name: YC Startup 29
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup29.com
+  yc startup 3:
+    name: YC Startup 3
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup3.com
+  yc startup 30:
+    name: YC Startup 30
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup30.com
+  yc startup 31:
+    name: YC Startup 31
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup31.com
+  yc startup 32:
+    name: YC Startup 32
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup32.com
+  yc startup 33:
+    name: YC Startup 33
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup33.com
+  yc startup 34:
+    name: YC Startup 34
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup34.com
+  yc startup 35:
+    name: YC Startup 35
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup35.com
+  yc startup 36:
+    name: YC Startup 36
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup36.com
+  yc startup 37:
+    name: YC Startup 37
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup37.com
+  yc startup 38:
+    name: YC Startup 38
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup38.com
+  yc startup 39:
+    name: YC Startup 39
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup39.com
+  yc startup 4:
+    name: YC Startup 4
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup4.com
+  yc startup 40:
+    name: YC Startup 40
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup40.com
+  yc startup 41:
+    name: YC Startup 41
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup41.com
+  yc startup 42:
+    name: YC Startup 42
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup42.com
+  yc startup 43:
+    name: YC Startup 43
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup43.com
+  yc startup 44:
+    name: YC Startup 44
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup44.com
+  yc startup 45:
+    name: YC Startup 45
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup45.com
+  yc startup 46:
+    name: YC Startup 46
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup46.com
+  yc startup 47:
+    name: YC Startup 47
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup47.com
+  yc startup 48:
+    name: YC Startup 48
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup48.com
+  yc startup 49:
+    name: YC Startup 49
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup49.com
+  yc startup 5:
+    name: YC Startup 5
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup5.com
+  yc startup 50:
+    name: YC Startup 50
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup50.com
+  yc startup 51:
+    name: YC Startup 51
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup51.com
+  yc startup 52:
+    name: YC Startup 52
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup52.com
+  yc startup 53:
+    name: YC Startup 53
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup53.com
+  yc startup 54:
+    name: YC Startup 54
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup54.com
+  yc startup 55:
+    name: YC Startup 55
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup55.com
+  yc startup 56:
+    name: YC Startup 56
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup56.com
+  yc startup 57:
+    name: YC Startup 57
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup57.com
+  yc startup 58:
+    name: YC Startup 58
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup58.com
+  yc startup 59:
+    name: YC Startup 59
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup59.com
+  yc startup 6:
+    name: YC Startup 6
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup6.com
+  yc startup 60:
+    name: YC Startup 60
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup60.com
+  yc startup 61:
+    name: YC Startup 61
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup61.com
+  yc startup 62:
+    name: YC Startup 62
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup62.com
+  yc startup 63:
+    name: YC Startup 63
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup63.com
+  yc startup 64:
+    name: YC Startup 64
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup64.com
+  yc startup 65:
+    name: YC Startup 65
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup65.com
+  yc startup 66:
+    name: YC Startup 66
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup66.com
+  yc startup 67:
+    name: YC Startup 67
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup67.com
+  yc startup 68:
+    name: YC Startup 68
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup68.com
+  yc startup 69:
+    name: YC Startup 69
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup69.com
+  yc startup 7:
+    name: YC Startup 7
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup7.com
+  yc startup 70:
+    name: YC Startup 70
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup70.com
+  yc startup 71:
+    name: YC Startup 71
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup71.com
+  yc startup 72:
+    name: YC Startup 72
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup72.com
+  yc startup 73:
+    name: YC Startup 73
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup73.com
+  yc startup 74:
+    name: YC Startup 74
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup74.com
+  yc startup 75:
+    name: YC Startup 75
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup75.com
+  yc startup 76:
+    name: YC Startup 76
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup76.com
+  yc startup 77:
+    name: YC Startup 77
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup77.com
+  yc startup 78:
+    name: YC Startup 78
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup78.com
+  yc startup 79:
+    name: YC Startup 79
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup79.com
+  yc startup 8:
+    name: YC Startup 8
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup8.com
+  yc startup 80:
+    name: YC Startup 80
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup80.com
+  yc startup 81:
+    name: YC Startup 81
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup81.com
+  yc startup 82:
+    name: YC Startup 82
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup82.com
+  yc startup 83:
+    name: YC Startup 83
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup83.com
+  yc startup 84:
+    name: YC Startup 84
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup84.com
+  yc startup 85:
+    name: YC Startup 85
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup85.com
+  yc startup 86:
+    name: YC Startup 86
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup86.com
+  yc startup 87:
+    name: YC Startup 87
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup87.com
+  yc startup 88:
+    name: YC Startup 88
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup88.com
+  yc startup 89:
+    name: YC Startup 89
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup89.com
+  yc startup 9:
+    name: YC Startup 9
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup9.com
+  yc startup 90:
+    name: YC Startup 90
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup90.com
+  yc startup 91:
+    name: YC Startup 91
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup91.com
+  yc startup 92:
+    name: YC Startup 92
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup92.com
+  yc startup 93:
+    name: YC Startup 93
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup93.com
+  yc startup 94:
+    name: YC Startup 94
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup94.com
+  yc startup 95:
+    name: YC Startup 95
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup95.com
+  yc startup 96:
+    name: YC Startup 96
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup96.com
+  yc startup 97:
+    name: YC Startup 97
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup97.com
+  yc startup 98:
+    name: YC Startup 98
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup98.com
+  yc startup 99:
+    name: YC Startup 99
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://ycstartup99.com
+  zango:
+    name: Zango
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  zepto:
+    name: Zepto
+    priority: P2
+    sources:
+    - EXISTING_REGISTRY
+    website: https://zepto.com
+  zinnia insurance:
+    name: Zinnia Insurance
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
+  zomato:
+    name: Zomato
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    - EXISTING_REGISTRY
+    website: ''
+  zs associates:
+    name: ZS Associates
+    priority: P0
+    sources:
+    - IIT_PLACEMENTS
+    website: ''
