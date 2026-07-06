@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('ingestion')
 import os
 import sqlite3
 import pandas as pd
@@ -56,7 +58,7 @@ class IngestionEngine:
                     for name in df[col].dropna().tolist():
                         raw_companies.append((name.strip(), source_name))
             except Exception as e:
-                print(f"Warning: Failed to load {file}: {e}")
+                logger.info(f"Warning: Failed to load {file}: {e}")
 
         if not raw_companies:
             return 0

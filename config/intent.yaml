@@ -1,0 +1,96 @@
+intent_config_version: 1
+
+hard_reject:
+  titles:
+    - doctor
+    - dentist
+    - dermatologist
+    - chef
+    - plumber
+    - pilot
+    - driver
+    - electrician
+    - veterinarian
+    - radiologist
+    - therapist
+    - pharmacist
+    - surgeon
+    - physician
+  seniority:
+    - senior
+    - staff
+    - principal
+    - director
+    - vp
+    - head
+    - chief
+
+role_families:
+  software:
+    thresholds:
+      accept: 10
+      review: 4
+    positive:
+      backend: 5
+      frontend: 3
+      full stack: 5
+      fullstack: 5
+      python: 3
+      java: 2
+      automation: 4
+      qa: 3
+      sdet: 4
+      machine learning: 5
+      ai: 4
+      data: 3
+      cloud: 3
+      devops: 3
+      software: 3
+      engineer: 2
+      developer: 2
+      programmer: 2
+      sde: 4
+    bonus:
+      entry level: 3
+      new grad: 3
+      remote: 2
+    company_signals:
+      yc backed: 2
+      saas: 2
+      consultancy: -2
+      agency: -3
+    negative:
+      recruiter: -10
+      sales: -10
+      marketing: -10
+      hr: -10
+      account executive: -10
+      representative: -5
+  
+  product:
+    thresholds:
+      accept: 10
+      review: 4
+    positive:
+      product: 5
+      apm: 5
+      associate product: 5
+      product owner: 4
+      product analyst: 3
+      product operations: 3
+    bonus:
+      entry level: 3
+      new grad: 3
+      remote: 2
+    company_signals:
+      yc backed: 2
+      saas: 2
+      consultancy: -2
+      agency: -3
+    negative:
+      sales: -10
+      medical: -10
+      nurse: -10
+      marketing: -5
+      developer: -5
+      engineer: -5

@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('engine')
 import sqlite3
 import pandas as pd
 import uuid
@@ -25,7 +27,7 @@ class DiscoveryEngine:
             for name in df['Company Name'].dropna().tolist():
                 raw_companies.append((name.strip(), "IIT Placement List"))
         except Exception as e:
-            print(f"Warning: Failed to load IIT list: {e}")
+            logger.info(f"Warning: Failed to load IIT list: {e}")
             
         # 2. Extra List (Placeholder)
         if extra_excel_path:
@@ -34,7 +36,7 @@ class DiscoveryEngine:
                 for name in df_extra['Company Name'].dropna().tolist():
                     raw_companies.append((name.strip(), "Extra Company List"))
             except Exception as e:
-                print(f"Warning: Failed to load Extra list: {e}")
+                logger.info(f"Warning: Failed to load Extra list: {e}")
                 
         # 3. Curated Startup Additions
         curated = ["Razorpay", "CRED", "Groww", "PhonePe", "Zepto", "Meesho", "Swiggy", "Zomato"]

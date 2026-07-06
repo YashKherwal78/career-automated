@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('vc_connectors')
 import requests
 from bs4 import BeautifulSoup
 from typing import List, Dict, Any
@@ -32,11 +34,11 @@ class BaseResumableConnector(SourceConnector):
         headers = {"User-Agent": "Mozilla/5.0"}
         
         while page <= max_pages:
-            print(f"[{self.source_name}] Crawling real portfolio page {page}...")
+            logger.info(f"[{self.source_name}] Crawling real portfolio page {page}...")
             url = f"https://techcrunch.com/tag/{tag}/page/{page}/" if page > 1 else f"https://techcrunch.com/tag/{tag}/"
             resp = requests.get(url, headers=headers, timeout=15)
             if resp.status_code != 200:
-                print(f"[{self.source_name}] Reached end of archive or blocked (HTTP {resp.status_code})")
+                logger.info(f"[{self.source_name}] Reached end of archive or blocked (HTTP {resp.status_code})")
                 break
                 
             soup = BeautifulSoup(resp.content, "html.parser")
@@ -83,7 +85,7 @@ class YCConnector(BaseResumableConnector):
         self.db_path = db_path
         
     def discover_companies(self) -> List[Dict[str, Any]]:
-        print("[YCConnector] Starting Production Paginated Crawl (Real Data)...")
+        logger.info("[YCConnector] Starting Production Paginated Crawl (Real Data)...")
         # Crawl up to 1000 pages to exhaust the entire historical archive
         added = self._scrape_tc_tag("y-combinator", 1000)
         return [{"status": "success", "added": added, "source": self.source_name}]
@@ -104,7 +106,7 @@ class PeakXVConnector(BaseResumableConnector):
         self.db_path = db_path
         
     def discover_companies(self) -> List[Dict[str, Any]]:
-        print("[PeakXVConnector] Starting Production Paginated Crawl (Real Data)...")
+        logger.info("[PeakXVConnector] Starting Production Paginated Crawl (Real Data)...")
         # Peak XV / Sequoia India tag
         added = self._scrape_tc_tag("peak-xv-partners", 1000)
         return [{"status": "success", "added": added, "source": self.source_name}]
@@ -125,7 +127,7 @@ class AccelConnector(BaseResumableConnector):
         self.db_path = db_path
         
     def discover_companies(self) -> List[Dict[str, Any]]:
-        print("[AccelConnector] Starting Production Paginated Crawl (Real Data)...")
+        logger.info("[AccelConnector] Starting Production Paginated Crawl (Real Data)...")
         added = self._scrape_tc_tag("accel", 1000)
         return [{"status": "success", "added": added, "source": self.source_name}]
 

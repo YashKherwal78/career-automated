@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('career_discovery')
 import sqlite3
 import re
 import asyncio
@@ -144,7 +146,7 @@ class CareerDiscoveryEngine:
             return results
             
     def process_batch(self) -> Tuple[int, int]:
-        print("[CareerDiscoveryEngine] Booting Asynchronous Worker Pool (20 workers)...")
+        logger.info("[CareerDiscoveryEngine] Booting Asynchronous Worker Pool (20 workers)...")
         
         conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
@@ -159,10 +161,10 @@ class CareerDiscoveryEngine:
         companies = c.fetchall()
         
         if not companies:
-            print("No companies in DISCOVERED state.")
+            logger.info("No companies in DISCOVERED state.")
             return 0, 0
             
-        print(f"[CareerDiscoveryEngine] Handed {len(companies)} companies to Worker Pool.")
+        logger.info(f"[CareerDiscoveryEngine] Handed {len(companies)} companies to Worker Pool.")
         
         # Execute async worker pool
         results = asyncio.run(self._run_async_batch(companies))

@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('aggregator')
 import sqlite3
 import datetime
 import uuid
@@ -81,11 +83,11 @@ class SourceAggregator:
         conn.close()
 
     def run_all(self):
-        print(f"[SourceAggregator] Starting run with {len(self.active_connectors)} active connectors.")
+        logger.info(f"[SourceAggregator] Starting run with {len(self.active_connectors)} active connectors.")
         for connector in sorted(self.active_connectors, key=lambda x: x.priority, reverse=True):
             started_at = datetime.datetime.utcnow().isoformat()
             try:
-                print(f"[SourceAggregator] Running {connector.source_name} (v{connector.version})...")
+                logger.info(f"[SourceAggregator] Running {connector.source_name} (v{connector.version})...")
                 results = connector.discover_companies()
                 
                 # Aggregate stats
@@ -97,7 +99,7 @@ class SourceAggregator:
                 self.log_crawl_run(connector.source_name, started_at, stats, "SUCCESS")
                 
             except Exception as e:
-                print(f"[SourceAggregator] Connector {connector.source_name} failed: {e}")
+                logger.info(f"[SourceAggregator] Connector {connector.source_name} failed: {e}")
                 self.log_crawl_run(connector.source_name, started_at, {"failures": 1}, "FAILED")
                 # Isolate failure, continue to next connector
                 continue
