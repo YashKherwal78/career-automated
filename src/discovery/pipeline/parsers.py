@@ -109,3 +109,114 @@ class LeverParser:
             return LeverBoardIdentity(ats='lever', board_token=board_token), 1.0, None
             
         return None, 0.0, "Could not extract board token"
+
+class AshbyParser:
+    def parse(self, url: str) -> Tuple[Optional[BoardIdentity], float, Optional[str]]:
+        from src.discovery.models import StandardBoardIdentity
+        parsed = urlparse(url)
+        hostname = parsed.hostname
+        if not hostname or 'ashbyhq.com' not in hostname:
+            return None, 0.0, "Not a recognized Ashby domain"
+        path_parts = [p for p in parsed.path.strip('/').split('/') if p]
+        if len(path_parts) > 0:
+            board_token = path_parts[-1]
+            return StandardBoardIdentity(ats='ashby', board_token=board_token), 1.0, None
+        return None, 0.0, "Could not extract board token"
+
+class WorkableParser:
+    def parse(self, url: str) -> Tuple[Optional[BoardIdentity], float, Optional[str]]:
+        from src.discovery.models import StandardBoardIdentity
+        parsed = urlparse(url)
+        hostname = parsed.hostname
+        if not hostname or 'workable.com' not in hostname:
+            return None, 0.0, "Not a recognized Workable domain"
+        path_parts = [p for p in parsed.path.strip('/').split('/') if p]
+        if len(path_parts) > 0:
+            board_token = path_parts[0]
+            return StandardBoardIdentity(ats='workable', board_token=board_token), 1.0, None
+        return None, 0.0, "Could not extract board token"
+
+class SmartRecruitersParser:
+    def parse(self, url: str) -> Tuple[Optional[BoardIdentity], float, Optional[str]]:
+        from src.discovery.models import StandardBoardIdentity
+        parsed = urlparse(url)
+        hostname = parsed.hostname
+        if not hostname or 'smartrecruiters.com' not in hostname:
+            return None, 0.0, "Not a recognized SmartRecruiters domain"
+        path_parts = [p for p in parsed.path.strip('/').split('/') if p]
+        if len(path_parts) > 0:
+            board_token = path_parts[-1]
+            return StandardBoardIdentity(ats='smartrecruiters', board_token=board_token), 1.0, None
+        return None, 0.0, "Could not extract board token"
+
+class TeamtailorParser:
+    def parse(self, url: str) -> Tuple[Optional[BoardIdentity], float, Optional[str]]:
+        from src.discovery.models import StandardBoardIdentity
+        parsed = urlparse(url)
+        hostname = parsed.hostname
+        if not hostname or 'teamtailor.com' not in hostname:
+            return None, 0.0, "Not a recognized Teamtailor domain"
+        
+        # Candidate is either subdomain.teamtailor.com or teamtailor.com/subdomain
+        if hostname != 'teamtailor.com' and hostname.endswith('.teamtailor.com'):
+            board_token = hostname.split('.')[0]
+            return StandardBoardIdentity(ats='teamtailor', board_token=board_token), 1.0, None
+            
+        path_parts = [p for p in parsed.path.strip('/').split('/') if p]
+        if len(path_parts) > 0:
+            board_token = path_parts[0]
+            return StandardBoardIdentity(ats='teamtailor', board_token=board_token), 1.0, None
+        return None, 0.0, "Could not extract board token"
+
+class BreezyParser:
+    def parse(self, url: str) -> Tuple[Optional[BoardIdentity], float, Optional[str]]:
+        from src.discovery.models import StandardBoardIdentity
+        parsed = urlparse(url)
+        hostname = parsed.hostname
+        if not hostname or 'breezy.hr' not in hostname:
+            return None, 0.0, "Not a recognized BreezyHR domain"
+            
+        if hostname != 'breezy.hr' and hostname.endswith('.breezy.hr'):
+            board_token = hostname.split('.')[0]
+            return StandardBoardIdentity(ats='breezy', board_token=board_token), 1.0, None
+            
+        path_parts = [p for p in parsed.path.strip('/').split('/') if p]
+        if len(path_parts) > 0:
+            board_token = path_parts[0]
+            return StandardBoardIdentity(ats='breezy', board_token=board_token), 1.0, None
+        return None, 0.0, "Could not extract board token"
+
+class RecruiteeParser:
+    def parse(self, url: str) -> Tuple[Optional[BoardIdentity], float, Optional[str]]:
+        from src.discovery.models import StandardBoardIdentity
+        parsed = urlparse(url)
+        hostname = parsed.hostname
+        if not hostname or 'recruitee.com' not in hostname:
+            return None, 0.0, "Not a recognized Recruitee domain"
+            
+        if hostname != 'recruitee.com' and hostname.endswith('.recruitee.com'):
+            board_token = hostname.split('.')[0]
+            return StandardBoardIdentity(ats='recruitee', board_token=board_token), 1.0, None
+            
+        path_parts = [p for p in parsed.path.strip('/').split('/') if p]
+        if len(path_parts) > 0:
+            board_token = path_parts[0]
+            return StandardBoardIdentity(ats='recruitee', board_token=board_token), 1.0, None
+        return None, 0.0, "Could not extract board token"
+
+class JobviteParser:
+    def parse(self, url: str) -> Tuple[Optional[BoardIdentity], float, Optional[str]]:
+        from src.discovery.models import StandardBoardIdentity
+        parsed = urlparse(url)
+        hostname = parsed.hostname
+        if not hostname or 'jobvite.com' not in hostname:
+            return None, 0.0, "Not a recognized Jobvite domain"
+            
+        path_parts = [p for p in parsed.path.strip('/').split('/') if p]
+        # Jobvite formats: jobs.jobvite.com/company/ or jobvite.com/company/
+        if len(path_parts) > 0:
+            board_token = path_parts[0]
+            if board_token == 'careers' and len(path_parts) > 1:
+                board_token = path_parts[1]
+            return StandardBoardIdentity(ats='jobvite', board_token=board_token), 1.0, None
+        return None, 0.0, "Could not extract board token"

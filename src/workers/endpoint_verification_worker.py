@@ -11,6 +11,13 @@ from src.discovery.pipeline.sources import HeadProbeSource, StaticLandingPageSou
 from src.discovery.pipeline.plugins.greenhouse_plugin import GreenhouseDiscoveryPlugin
 from src.discovery.pipeline.plugins.lever_plugin import LeverDiscoveryPlugin
 from src.discovery.pipeline.plugins.workday_plugin import WorkdayDiscoveryPlugin
+from src.discovery.pipeline.plugins.ashby_plugin import AshbyDiscoveryPlugin
+from src.discovery.pipeline.plugins.workable_plugin import WorkableDiscoveryPlugin
+from src.discovery.pipeline.plugins.smartrecruiters_plugin import SmartRecruitersDiscoveryPlugin
+from src.discovery.pipeline.plugins.teamtailor_plugin import TeamtailorDiscoveryPlugin
+from src.discovery.pipeline.plugins.breezy_plugin import BreezyDiscoveryPlugin
+from src.discovery.pipeline.plugins.recruitee_plugin import RecruiteeDiscoveryPlugin
+from src.discovery.pipeline.plugins.jobvite_plugin import JobviteDiscoveryPlugin
 from src.discovery.pipeline.caches import ReplayCache
 from src.discovery.pipeline.fallback_models import DiscoveryBudget
 
@@ -21,7 +28,28 @@ class EndpointVerificationWorker(BaseWorker):
     def __init__(self):
         super().__init__("EndpointVerificationWorker")
         sources = [HeadProbeSource(), StaticLandingPageSource(), ExternalSearchSource()]
-        plugins = [GreenhouseDiscoveryPlugin(), LeverDiscoveryPlugin(), WorkdayDiscoveryPlugin()]
+        
+        plugins = [
+            GreenhouseDiscoveryPlugin(),
+            LeverDiscoveryPlugin(),
+            WorkdayDiscoveryPlugin()
+        ]
+        
+        if settings.enable_discovery_plugin_ashby:
+            plugins.append(AshbyDiscoveryPlugin())
+        if settings.enable_discovery_plugin_workable:
+            plugins.append(WorkableDiscoveryPlugin())
+        if settings.enable_discovery_plugin_smartrecruiters:
+            plugins.append(SmartRecruitersDiscoveryPlugin())
+        if settings.enable_discovery_plugin_teamtailor:
+            plugins.append(TeamtailorDiscoveryPlugin())
+        if settings.enable_discovery_plugin_breezy:
+            plugins.append(BreezyDiscoveryPlugin())
+        if settings.enable_discovery_plugin_recruitee:
+            plugins.append(RecruiteeDiscoveryPlugin())
+        if settings.enable_discovery_plugin_jobvite:
+            plugins.append(JobviteDiscoveryPlugin())
+            
         replay_cache = ReplayCache(self.db_path)
         self.orchestrator = DiscoveryOrchestrator(
             sources=sources,

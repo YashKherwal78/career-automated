@@ -159,6 +159,13 @@ class StaticLandingPageSource(DiscoverySource):
                         r'https?://[a-zA-Z0-9.-]+\.apply\.workday\.com[^"\'\\\s]*',
                         r'https?://boards\.greenhouse\.io[^"\'\\\s]*',
                         r'https?://jobs\.lever\.co[^"\'\\\s]*',
+                        r'https?://[a-zA-Z0-9.-]+\.ashbyhq\.com[^"\'\\\s]*',
+                        r'https?://[a-zA-Z0-9.-]+\.workable\.com[^"\'\\\s]*',
+                        r'https?://[a-zA-Z0-9.-]+\.smartrecruiters\.com[^"\'\\\s]*',
+                        r'https?://[a-zA-Z0-9.-]+\.teamtailor\.com[^"\'\\\s]*',
+                        r'https?://[a-zA-Z0-9.-]+\.breezy\.hr[^"\'\\\s]*',
+                        r'https?://[a-zA-Z0-9.-]+\.recruitee\.com[^"\'\\\s]*',
+                        r'https?://[a-zA-Z0-9.-]+\.jobvite\.com[^"\'\\\s]*',
                         r'https?://[a-zA-Z0-9.-]+\.eightfold\.ai[^"\'\\\s]*',
                         r'https?://[a-zA-Z0-9.-]+\.phenom\.com[^"\'\\\s]*',
                         r'https?://[a-zA-Z0-9.-]+\.icims\.com[^"\'\\\s]*'
@@ -246,12 +253,24 @@ class ExternalSearchSource(DiscoverySource):
         error_msg = None
         
         company = context.company
-        # We will use exactly the 4 queries specified by the user for benchmarking
+        parsed_web = urlparse(context.website)
+        domain = parsed_web.netloc.lower() or parsed_web.path.lower()
+        if domain.startswith("www."):
+            domain = domain[4:]
+            
         queries = [
-            f'"{company}" Workday',
-            f'"{company}" careers Workday',
-            f'"{company}" myworkdayjobs',
-            f'"{company}" careers'
+            f'"{company}" careers',
+            f'"{company}" jobs',
+            f'site:{domain}',
+            f'"{company}" Greenhouse',
+            f'"{company}" Lever',
+            f'"{company}" Ashby',
+            f'"{company}" Workable',
+            f'"{company}" SmartRecruiters',
+            f'"{company}" Teamtailor',
+            f'"{company}" Jobvite',
+            f'"{company}" BreezyHR',
+            f'"{company}" Recruitee'
         ]
         
         try:

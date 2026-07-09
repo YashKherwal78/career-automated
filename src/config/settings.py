@@ -12,6 +12,15 @@ class Settings:
     enable_ranking: bool = os.environ.get("ENABLE_RANKING", "True").lower() == "true"
     enable_cleanup: bool = os.environ.get("ENABLE_CLEANUP", "True").lower() == "true"
 
+    # Discovery Plugin Rollout Flags
+    enable_discovery_plugin_ashby: bool = os.environ.get("ENABLE_DISCOVERY_PLUGIN_ASHBY", "True").lower() == "true"
+    enable_discovery_plugin_workable: bool = os.environ.get("ENABLE_DISCOVERY_PLUGIN_WORKABLE", "True").lower() == "true"
+    enable_discovery_plugin_smartrecruiters: bool = os.environ.get("ENABLE_DISCOVERY_PLUGIN_SMARTRECRUITERS", "True").lower() == "true"
+    enable_discovery_plugin_teamtailor: bool = os.environ.get("ENABLE_DISCOVERY_PLUGIN_TEAMTAILOR", "True").lower() == "true"
+    enable_discovery_plugin_breezy: bool = os.environ.get("ENABLE_DISCOVERY_PLUGIN_BREEZY", "True").lower() == "true"
+    enable_discovery_plugin_recruitee: bool = os.environ.get("ENABLE_DISCOVERY_PLUGIN_RECRUITEE", "True").lower() == "true"
+    enable_discovery_plugin_jobvite: bool = os.environ.get("ENABLE_DISCOVERY_PLUGIN_JOBVITE", "True").lower() == "true"
+
     # Worker Timing Intervals (in seconds)
     discovery_interval: int = int(os.environ.get("DISCOVERY_INTERVAL", "900"))       # 15 mins
     verification_interval: int = int(os.environ.get("VERIFICATION_INTERVAL", "300")) # 5 mins

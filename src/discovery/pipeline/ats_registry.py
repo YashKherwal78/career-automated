@@ -126,7 +126,15 @@ class ATSRegistry:
             raw_metadata = getattr(new_result, 'metadata', getattr(new_result, 'ats_metadata', '{}'))
             ats_metadata = raw_metadata if isinstance(raw_metadata, str) else json.dumps(raw_metadata)
 
-            # Insert new ACTIVE endpoint first
+            # Retire existing endpoint BEFORE new one is inserted to satisfy the UNIQUE index
+            if existing:
+                conn.execute("""
+                    UPDATE ats_registry 
+                    SET status = 'RETIRED', retired_at = ?
+                    WHERE id = ?
+                """, (now, existing['id']))
+
+            # Insert new ACTIVE endpoint
             conn.execute("""
                 INSERT INTO ats_registry (
                     company_id, company_domain, company_name, ats_type, endpoint, canonical_endpoint, endpoint_hash,
@@ -154,14 +162,6 @@ class ATSRegistry:
                 ats_metadata,
                 now, now, now, now + 14 * 24 * 3600
             ))
-
-            # Retire existing endpoint AFTER new one is successfully inserted
-            if existing:
-                conn.execute("""
-                    UPDATE ats_registry 
-                    SET status = 'RETIRED', retired_at = ?
-                    WHERE id = ?
-                """, (now, existing['id']))
 
         if connection:
             _execute_promotion(connection)
