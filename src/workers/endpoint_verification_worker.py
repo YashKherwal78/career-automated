@@ -137,7 +137,7 @@ class EndpointVerificationWorker(BaseWorker):
                         # Emit event
                         self.metrics.record_event("EndpointVerified", {
                             "company_id": company_id,
-                            "endpoints": [v.get("url") for v in verified],
+                            "endpoints": [v.url for v in verified],  # Candidate objects, not dicts
                             "worker_id": self.worker_id
                         })
                         self.metrics.update_business_metric("total_verified_endpoints", 1)
