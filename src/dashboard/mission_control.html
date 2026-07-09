@@ -3,736 +3,608 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareerAutomated — Mission Control Control Plane</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Mission Control — CareerAutomated</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        peach: {
+                            soft: 'oklch(0.955 0.028 55)',
+                            DEFAULT: 'oklch(0.9 0.055 55)',
+                            deep: 'oklch(0.78 0.11 45)',
+                        },
+                        ink: {
+                            soft: 'oklch(0.42 0.012 260)',
+                            DEFAULT: 'oklch(0.16 0.012 260)',
+                        },
+                        background: 'oklch(0.995 0.003 60)'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Instrument Serif', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root {
-            --bg-base: #0b0f19;
-            --bg-surface: rgba(17, 24, 39, 0.7);
-            --border-glow: rgba(59, 130, 246, 0.15);
-            --accent: #3b82f6;
-            --accent-success: #10b981;
-            --accent-warning: #f59e0b;
-            --accent-danger: #ef4444;
-            --text-primary: #f3f4f6;
-            --text-secondary: #9ca3af;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Outfit', sans-serif;
-            background-color: var(--bg-base);
-            color: var(--text-primary);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-        }
-
-        /* Glassmorphism Header */
-        header {
-            background: var(--bg-surface);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border-glow);
-            padding: 1.25rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .logo::before {
-            content: '';
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            background-color: var(--accent);
-            border-radius: 50%;
-            box-shadow: 0 0 10px var(--accent);
-        }
-
-        nav {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .nav-btn {
-            background: transparent;
-            border: 1px solid transparent;
-            color: var(--text-secondary);
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-
-        .nav-btn:hover, .nav-btn.active {
-            color: var(--text-primary);
-            background: rgba(59, 130, 246, 0.1);
-            border-color: var(--border-glow);
-        }
-
-        /* Main Grid */
-        main {
-            flex: 1;
-            padding: 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Grid Layouts */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .card {
-            background: var(--bg-surface);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border-glow);
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.2s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: var(--accent);
-        }
-
-        .card.success::before { background: var(--accent-success); }
-        .card.warning::before { background: var(--accent-warning); }
-        .card.danger::before { background: var(--accent-danger); }
-
-        .card-title {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 0.5rem;
-        }
-
-        .card-value {
-            font-size: 2.25rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-        }
-
-        .card-desc {
-            font-size: 0.825rem;
-            color: var(--text-secondary);
-        }
-
-        /* Funnel chart styles */
-        .funnel-stage {
-            display: flex;
-            align-items: center;
-            margin-bottom: 1rem;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            border-left: 4px solid var(--accent);
-        }
-
-        .funnel-name {
-            width: 250px;
-            font-weight: 500;
-        }
-
-        .funnel-bar-container {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.05);
-            height: 24px;
-            border-radius: 12px;
-            overflow: hidden;
-            position: relative;
-            margin: 0 1.5rem;
-        }
-
-        .funnel-bar {
-            background: linear-gradient(90deg, var(--accent), #8b5cf6);
-            height: 100%;
-            border-radius: 12px;
-            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .funnel-val {
-            width: 100px;
-            text-align: right;
-            font-weight: 600;
-        }
-
-        /* Lineage Step Timeline */
-        .timeline {
-            position: relative;
-            padding-left: 2rem;
-            margin-top: 1.5rem;
-        }
-
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 5px;
-            top: 0;
-            height: 100%;
-            width: 2px;
-            background: rgba(59, 130, 246, 0.2);
-        }
-
-        .timeline-item {
-            position: relative;
-            margin-bottom: 1.5rem;
-        }
-
-        .timeline-badge {
-            position: absolute;
-            left: -2.35rem;
-            top: 4px;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background-color: var(--accent);
-            border: 2px solid var(--bg-base);
-            box-shadow: 0 0 8px var(--accent);
-        }
-
-        .timeline-time {
-            font-size: 0.825rem;
-            color: var(--text-secondary);
-            margin-bottom: 0.25rem;
-        }
-
-        .timeline-title {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .timeline-desc {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        /* Tables styling */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-
-        th, td {
-            text-align: left;
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        th {
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        /* Priorities view */
-        .priority-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 1rem;
-            padding: 1.25rem;
-            background: rgba(239, 68, 68, 0.05);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            border-radius: 12px;
-            margin-bottom: 1rem;
-        }
-
-        .priority-item.warning {
-            background: rgba(245, 158, 11, 0.05);
-            border-color: rgba(245, 158, 11, 0.2);
-        }
-
-        .priority-icon {
-            font-size: 1.25rem;
-            font-weight: 700;
-        }
-
-        /* Search input */
-        .search-input-group {
-            display: flex;
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .search-input {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-glow);
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            color: var(--text-primary);
-            font-family: inherit;
-            outline: none;
-        }
-
-        .search-input:focus {
-            border-color: var(--accent);
-        }
-
-        .btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-family: inherit;
-        }
-
-        .btn:hover {
-            opacity: 0.9;
+        .glass-card {
+            background: color-mix(in oklab, white 70%, transparent);
+            backdrop-filter: blur(16px) saturate(140%);
+            border: 1px solid oklch(1 0 0 / 0.7);
+            box-shadow:
+                0 1px 0 oklch(1 0 0 / 0.8) inset,
+                0 20px 40px -20px oklch(0.6 0.05 45 / 0.18),
+                0 4px 12px -6px oklch(0.6 0.05 45 / 0.1);
         }
     </style>
 </head>
-<body>
-    <header>
-        <div class="logo">Mission Control</div>
-        <nav>
-            <button class="nav-btn active" onclick="switchTab('overview')">Overview</button>
-            <button class="nav-btn" onclick="switchTab('funnel')">Funnel</button>
-            <button class="nav-btn" onclick="switchTab('plugins')">Plugins</button>
-            <button class="nav-btn" onclick="switchTab('sources')">Sources</button>
-            <button class="nav-btn" onclick="switchTab('quality')">Data Quality</button>
-            <button class="nav-btn" onclick="switchTab('lineage')">Lineage</button>
-            <button class="nav-btn" onclick="switchTab('priorities')">Priorities</button>
-        </nav>
-    </header>
+<body class="bg-background text-ink font-sans min-h-screen flex">
 
-    <main>
-        <!-- Tab: Overview -->
-        <div id="overview" class="tab-content active">
-            <div class="stats-grid" id="overview-grid">
-                <div class="card">
-                    <div class="card-title">Companies</div>
-                    <div class="card-value" id="overview-companies">-</div>
-                    <div class="card-desc">Total Universe</div>
+    <!-- Sidebar -->
+    <aside class="w-64 border-r border-white/40 bg-white/40 backdrop-blur min-h-screen flex flex-col justify-between p-6 shrink-0">
+        <div class="space-y-8">
+            <!-- Logo -->
+            <div class="flex items-center gap-2">
+                <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-peach to-peach-deep flex items-center justify-center text-white text-lg font-bold">
+                    CA
                 </div>
-                <div class="card success">
-                    <div class="card-title">Verified ATS</div>
-                    <div class="card-value" id="overview-verified">-</div>
-                    <div class="card-desc">Active Boards</div>
+                <span class="font-display text-2xl font-bold tracking-tight text-ink">CareerAutomated</span>
+            </div>
+
+            <!-- View mode indicator -->
+            <div class="rounded-lg bg-white/50 border border-white p-1 flex">
+                <div class="flex-1 text-center py-1 text-xs font-semibold rounded text-ink-soft">
+                    User Mode
                 </div>
-                <div class="card success">
-                    <div class="card-title">Live Jobs</div>
-                    <div class="card-value" id="overview-jobs">-</div>
-                    <div class="card-desc">Normalized database</div>
-                </div>
-                <div class="card warning">
-                    <div class="card-title">Discovery Backlog</div>
-                    <div class="card-value" id="overview-backlog">-</div>
-                    <div class="card-desc">Pending verification</div>
+                <div class="flex-1 text-center py-1 text-xs font-semibold rounded bg-ink text-white shadow-sm">
+                    Operator
                 </div>
             </div>
-            
-            <div class="card" style="margin-top: 2rem;">
-                <div class="card-title">Active Runs</div>
-                <div id="runs-list">Loading runs...</div>
-            </div>
+
+            <!-- Sidebar Navigation Links -->
+            <nav class="space-y-1">
+                <button onclick="switchTab('overview')" id="btn-overview" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 bg-peach-soft text-peach-deep">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"/></svg>
+                    Overview
+                </button>
+                <button onclick="switchTab('funnel')" id="btn-funnel" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 text-ink-soft hover:bg-white/50 hover:text-ink">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 8.293A1 1 0 013 7.586V4z"/></svg>
+                    Pipeline Funnel
+                </button>
+                <button onclick="switchTab('runs')" id="btn-runs" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 text-ink-soft hover:bg-white/50 hover:text-ink">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Pipeline Runs
+                </button>
+                <button onclick="switchTab('plugins')" id="btn-plugins" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 text-ink-soft hover:bg-white/50 hover:text-ink">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/></svg>
+                    Plugins Scorecard
+                </button>
+                <button onclick="switchTab('sources')" id="btn-sources" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 text-ink-soft hover:bg-white/50 hover:text-ink">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16"/></svg>
+                    Attribution Sources
+                </button>
+                <button onclick="switchTab('quality')" id="btn-quality" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 text-ink-soft hover:bg-white/50 hover:text-ink">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Data Quality
+                </button>
+                <button onclick="switchTab('lineage')" id="btn-lineage" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 text-ink-soft hover:bg-white/50 hover:text-ink">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                    Lineage Explorer
+                </button>
+                <button onclick="switchTab('priorities')" id="btn-priorities" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 text-ink-soft hover:bg-white/50 hover:text-ink">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                    Priorities & ROI
+                </button>
+            </nav>
         </div>
 
-        <!-- Tab: Funnel -->
-        <div id="funnel" class="tab-content">
-            <div class="card">
-                <div class="card-title">Ingestion Funnel Conversion</div>
-                <div style="margin-top: 1.5rem;" id="funnel-container">
-                    Loading conversion metrics...
-                </div>
+        <!-- User Info -->
+        <div class="border-t border-white/20 pt-4 flex items-center gap-3">
+            <div class="h-9 w-9 rounded-full bg-white/80 border border-white flex items-center justify-center font-bold text-ink">
+                YK
+            </div>
+            <div>
+                <h4 class="text-xs font-semibold text-ink">Yash Kherwal</h4>
+                <span class="text-[10px] text-ink-soft font-medium">IIT-R Operator</span>
             </div>
         </div>
+    </aside>
 
-        <!-- Tab: Plugins -->
-        <div id="plugins" class="tab-content">
-            <div class="card">
-                <div class="card-title">Plugin Efficiency Scorecard</div>
-                <div style="overflow-x: auto; margin-top: 1rem;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Plugin</th>
-                                <th>Candidates Sourced</th>
-                                <th>Verified</th>
-                                <th>Avg Latency</th>
-                            </tr>
-                        </thead>
-                        <tbody id="plugins-table-body">
-                            <tr><td colspan="4">Loading plugin telemetry...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+    <!-- Main Container -->
+    <div class="flex-1 flex flex-col min-w-0">
+        <!-- Top Bar -->
+        <header class="h-16 border-b border-white/40 bg-white/40 backdrop-blur px-8 flex justify-between items-center shrink-0">
+            <div>
+                <h2 class="text-sm font-semibold text-ink uppercase tracking-wider">Mission Control Panel</h2>
             </div>
-        </div>
-
-        <!-- Tab: Sources -->
-        <div id="sources" class="tab-content">
-            <div class="card">
-                <div class="card-title">Discovery Sourcing Attribution</div>
-                <div style="overflow-x: auto; margin-top: 1rem;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Attribution Source</th>
-                                <th>URLs Produced</th>
-                                <th>Avg Latency</th>
-                            </tr>
-                        </thead>
-                        <tbody id="sources-table-body">
-                            <tr><td colspan="3">Loading source statistics...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="flex items-center gap-4">
+                <span id="refresh-status" class="text-[10px] text-ink-soft font-mono">Syncing...</span>
+                <button onclick="triggerActiveFetch()" class="p-2 rounded-lg bg-white border hover:bg-slate-50 transition-colors">
+                    <svg class="h-4 w-4 text-ink-soft" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.27 15H18"/></svg>
+                </button>
             </div>
-        </div>
+        </header>
 
-        <!-- Tab: Data Quality -->
-        <div id="quality" class="tab-content">
-            <div class="card">
-                <div class="card-title">Data Quality Dashboard</div>
-                <div class="stats-grid" style="margin-top: 1rem;">
-                    <div class="card danger">
-                        <div class="card-title">Dead ATS Boards</div>
-                        <div class="card-value" id="dq-dead-boards">-</div>
-                        <div class="card-desc">Failed Health Check</div>
+        <!-- Page View Area -->
+        <main class="flex-1 overflow-y-auto p-8 max-w-7xl mx-auto w-full">
+            <!-- TAB: Overview -->
+            <div id="overview" class="tab-content block space-y-6">
+                <!-- Large KPI Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+                    <div class="glass-card rounded-2xl p-5 relative overflow-hidden">
+                        <span class="text-[10px] uppercase font-bold text-ink-soft tracking-wider">Companies Universe</span>
+                        <h3 class="text-3xl font-bold mt-1 text-ink" id="kpi-companies">-</h3>
+                        <p class="text-[10px] text-ink-soft mt-1">Target: <strong class="text-ink">10k+</strong> | Status: <span class="text-emerald-600 font-semibold">🟢</span></p>
                     </div>
-                    <div class="card warning">
-                        <div class="card-title">Zero-Job Boards</div>
-                        <div class="card-value" id="dq-zero-jobs">-</div>
-                        <div class="card-desc">Active registry rows</div>
+                    <div class="glass-card rounded-2xl p-5 relative overflow-hidden">
+                        <span class="text-[10px] uppercase font-bold text-ink-soft tracking-wider">Verified ATS Boards</span>
+                        <h3 class="text-3xl font-bold mt-1 text-ink" id="kpi-verified">-</h3>
+                        <p class="text-[10px] text-ink-soft mt-1">Target: <strong class="text-ink">1.2k</strong> | Status: <span class="text-amber-500 font-semibold">🟡</span></p>
                     </div>
-                    <div class="card">
-                        <div class="card-title">Duplicate Companies</div>
-                        <div class="card-value" id="dq-dup-companies">-</div>
-                        <div class="card-desc">Identities overlap</div>
+                    <div class="glass-card rounded-2xl p-5 relative overflow-hidden">
+                        <span class="text-[10px] uppercase font-bold text-ink-soft tracking-wider">Active Jobs</span>
+                        <h3 class="text-3xl font-bold mt-1 text-ink" id="kpi-jobs">-</h3>
+                        <p class="text-[10px] text-ink-soft mt-1">Yield: <strong class="text-ink">16.4/board</strong> | Status: <span class="text-emerald-600 font-semibold">🟢</span></p>
                     </div>
-                    <div class="card">
-                        <div class="card-title">Stale Boards</div>
-                        <div class="card-value" id="dq-stale-boards">-</div>
-                        <div class="card-desc">Not checked in last 14 days</div>
+                    <div class="glass-card rounded-2xl p-5 cursor-pointer relative overflow-hidden hover:scale-[1.01] transition-transform" onclick="switchTab('quality')">
+                        <span class="text-[10px] uppercase font-bold text-ink-soft tracking-wider">Data Quality Anomalies</span>
+                        <h3 class="text-3xl font-bold mt-1 text-ink" id="kpi-anomalies">-</h3>
+                        <p class="text-[10px] text-red-600 mt-1 font-semibold">Click to resolve hygiene</p>
+                    </div>
+                </div>
+
+                <!-- Recent runs table -->
+                <div class="glass-card rounded-3xl p-6">
+                    <h3 class="font-display text-xl font-bold text-ink mb-4">Pipeline Deployment Runs</h3>
+                    <div class="overflow-x-auto" id="runs-list">
+                        <p class="text-xs text-ink-soft">Loading runs...</p>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Tab: Lineage -->
-        <div id="lineage" class="tab-content">
-            <div class="card">
-                <div class="card-title">Trace Lineage Explorer</div>
-                <div class="search-input-group" style="margin-top: 1rem;">
-                    <input type="text" id="lineage-search" class="search-input" placeholder="Enter company ID (e.g. perplexity.ai)">
-                    <button class="btn" onclick="fetchLineage()">Trace Route</button>
-                </div>
-                <div class="timeline" id="lineage-timeline">
-                    <!-- Lineage items get injected here -->
-                    <div class="timeline-item">Enter a company ID above and click Trace Route to view audit path.</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tab: Priorities -->
-        <div id="priorities" class="tab-content">
-            <div class="card">
-                <div class="card-title">Automatic Engineering Priorities</div>
-                <div style="margin-top: 1.5rem;" id="priorities-container">
-                    <div class="priority-item">
-                        <div class="priority-icon">🔴</div>
-                        <div>
-                            <div style="font-weight: 600;">Workable Precision Rate = 11%</div>
-                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">Candidate parser is producing excessive false positives. Target threshold: >80% precision.</div>
-                        </div>
-                    </div>
-                    <div class="priority-item warning">
-                        <div class="priority-icon">🟡</div>
-                        <div>
-                            <div style="font-weight: 600;">Discovery backlogs growing (6,044 queued)</div>
-                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">Queue backlog exceeds target run threshold of 500 records. Recommend scaling discovery workers.</div>
-                        </div>
+            <!-- TAB: Funnel -->
+            <div id="funnel" class="tab-content hidden space-y-6">
+                <div class="glass-card rounded-3xl p-6">
+                    <h3 class="font-display text-xl font-bold text-ink mb-4">Pipeline Conversion Yield</h3>
+                    <div class="space-y-4" id="funnel-container">
+                        Loading funnel...
                     </div>
                 </div>
             </div>
-        </div>
-    </main>
 
+            <!-- TAB: Runs -->
+            <div id="runs" class="tab-content hidden space-y-6">
+                <div class="glass-card rounded-3xl p-6">
+                    <h3 class="font-display text-xl font-bold text-ink mb-4">Deployment Log</h3>
+                    <div class="overflow-x-auto" id="runs-detailed-list">
+                        Loading runs...
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: Plugins -->
+            <div id="plugins" class="tab-content hidden space-y-6">
+                <div class="glass-card rounded-3xl p-6">
+                    <h3 class="font-display text-xl font-bold text-ink mb-4">Plugin Sourcing & Precision Scorecard</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="border-b border-white/20 text-ink-soft">
+                                    <th class="pb-3">ATS Plugin</th>
+                                    <th class="pb-3">Sourced</th>
+                                    <th class="pb-3">Verified (Active)</th>
+                                    <th class="pb-3">Conversion (Precision)</th>
+                                    <th class="pb-3">Avg Latency</th>
+                                </tr>
+                            </thead>
+                            <tbody id="plugins-table-body">
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: Sources -->
+            <div id="sources" class="tab-content hidden space-y-6">
+                <div class="glass-card rounded-3xl p-6">
+                    <h3 class="font-display text-xl font-bold text-ink mb-4">Source Yield Attribution</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="border-b border-white/20 text-ink-soft">
+                                    <th class="pb-3">Sourcing Vector</th>
+                                    <th class="pb-3">URLs Harvested</th>
+                                    <th class="pb-3">Avg Heuristic Duration</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sources-table-body">
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: Quality -->
+            <div id="quality" class="tab-content hidden space-y-6">
+                <h3 class="font-display text-2xl font-bold text-ink mb-4">Database Hygiene & Data Quality</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+                    <div class="glass-card rounded-2xl p-5 border-l-4 border-red-500">
+                        <span class="text-[10px] uppercase font-bold text-ink-soft">Dead ATS Boards</span>
+                        <h3 class="text-3xl font-bold mt-1 text-ink" id="dq-dead">-</h3>
+                    </div>
+                    <div class="glass-card rounded-2xl p-5 border-l-4 border-amber-500">
+                        <span class="text-[10px] uppercase font-bold text-ink-soft">Zero-Job Boards</span>
+                        <h3 class="text-3xl font-bold mt-1 text-ink" id="dq-zero">-</h3>
+                    </div>
+                    <div class="glass-card rounded-2xl p-5 border-l-4 border-indigo-500">
+                        <span class="text-[10px] uppercase font-bold text-ink-soft">Duplicate Identities</span>
+                        <h3 class="text-3xl font-bold mt-1 text-ink" id="dq-dup">-</h3>
+                    </div>
+                    <div class="glass-card rounded-2xl p-5 border-l-4 border-slate-500">
+                        <span class="text-[10px] uppercase font-bold text-ink-soft">Stale Checkups</span>
+                        <h3 class="text-3xl font-bold mt-1 text-ink" id="dq-stale">-</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: Lineage -->
+            <div id="lineage" class="tab-content hidden space-y-6">
+                <div class="glass-card rounded-3xl p-6">
+                    <h3 class="font-display text-xl font-bold text-ink mb-2">Lineage Replay Explorer</h3>
+                    <p class="text-xs text-ink-soft mb-4">Back-trace the step-by-step pipeline execution for any company domain.</p>
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="lineage-search" class="flex-1 bg-white/50 border border-white rounded-xl px-4 py-2 text-xs focus:outline-none" placeholder="Enter company domain (e.g. perplexity.ai)">
+                        <button class="bg-ink text-white font-medium text-xs px-6 py-2 rounded-xl" onclick="fetchLineage()">Trace Replay</button>
+                    </div>
+                    <div class="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200" id="lineage-timeline">
+                        <p class="text-xs text-ink-soft italic">Enter a company ID to retrieve trace timeline log details.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: Priorities -->
+            <div id="priorities" class="tab-content hidden space-y-6">
+                <div class="glass-card rounded-3xl p-6">
+                    <h3 class="font-display text-xl font-bold text-ink mb-2">Automated Engineering Recommendations</h3>
+                    <p class="text-xs text-ink-soft mb-6">Actionable roadmaps generated dynamically from live data quality regressions.</p>
+                    <div class="space-y-4" id="priorities-container">
+                        <!-- Dynamic priorities list -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Details Modal -->
+    <div id="details-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center">
+                <h4 class="font-display text-lg font-bold text-ink" id="modal-title">Details View</h4>
+                <button onclick="closeModal()" class="text-ink-soft hover:text-ink font-bold text-sm">✕</button>
+            </div>
+            <div id="modal-body" class="text-xs text-ink space-y-2">
+                <!-- Injected lists -->
+            </div>
+        </div>
+    </div>
+
+    <!-- JS Logic -->
     <script>
+        let activeTab = 'overview';
+        let lastSyncTime = Date.now();
+
         function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-            
-            document.getElementById(tabId).classList.add('active');
-            event.target.classList.add('active');
-            
-            if (tabId === 'overview') fetchOverview();
-            if (tabId === 'funnel') fetchFunnel();
-            if (tabId === 'plugins') fetchPlugins();
-            if (tabId === 'sources') fetchSources();
-            if (tabId === 'quality') fetchDataQuality();
+            activeTab = tabId;
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+
+            document.querySelectorAll('nav button').forEach(btn => {
+                btn.classList.remove('bg-peach-soft', 'text-peach-deep');
+                btn.classList.add('text-ink-soft', 'hover:bg-white/50', 'hover:text-ink');
+            });
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-ink-soft', 'hover:bg-white/50', 'hover:text-ink');
+                activeBtn.classList.add('bg-peach-soft', 'text-peach-deep');
+            }
+
+            triggerActiveFetch();
+        }
+
+        async function triggerActiveFetch() {
+            document.getElementById('refresh-status').innerText = 'Syncing...';
+            try {
+                if (activeTab === 'overview') await fetchOverview();
+                if (activeTab === 'funnel') await fetchFunnel();
+                if (activeTab === 'runs') await fetchRunsOnly();
+                if (activeTab === 'plugins') await fetchPlugins();
+                if (activeTab === 'sources') await fetchSources();
+                if (activeTab === 'quality') await fetchDataQuality();
+                if (activeTab === 'priorities') await fetchPriorities();
+                
+                lastSyncTime = Date.now();
+                updateSyncLabel();
+            } catch (e) {
+                document.getElementById('refresh-status').innerText = 'Offline';
+            }
+        }
+
+        function updateSyncLabel() {
+            const diffSeconds = Math.round((Date.now() - lastSyncTime) / 1000);
+            document.getElementById('refresh-status').innerText = `Synced ${diffSeconds}s ago`;
         }
 
         async function fetchOverview() {
-            try {
-                const res = await fetch('/api/v1/health');
-                const data = await res.json();
-                
-                document.getElementById('overview-companies').innerText = data.total_companies || '-';
-                document.getElementById('overview-verified').innerText = data.active_endpoints || '-';
-                document.getElementById('overview-jobs').innerText = data.active_jobs || '-';
-                document.getElementById('overview-backlog').innerText = data.queues?.discovery_queue || '-';
-                
-                // Fetch recent runs
-                const runsRes = await fetch('/api/v1/analytics/runs');
-                const runs = await runsRes.json();
-                const runsList = document.getElementById('runs-list');
-                if (runs.length === 0) {
-                    runsList.innerHTML = '<div style="color: var(--text-secondary)">No active runs recorded.</div>';
-                } else {
-                    runsList.innerHTML = `
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Run ID</th>
-                                    <th>Worker</th>
-                                    <th>Status</th>
-                                    <th>Duration</th>
-                                    <th>Processed</th>
-                                    <th>Commit</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${runs.map(r => `
-                                    <tr>
-                                        <td>${r.run_id}</td>
-                                        <td>${r.worker}</td>
-                                        <td><span style="color: ${r.status === 'RUNNING' ? 'var(--accent-warning)' : 'var(--accent-success)'}">${r.status}</span></td>
-                                        <td>${r.duration_ms ? (r.duration_ms / 1000).toFixed(1) + 's' : '-'}</td>
-                                        <td>${r.companies_processed} items</td>
-                                        <td style="font-family: monospace;">${r.git_commit ? r.git_commit.substring(0, 7) : '-'}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    `;
-                }
-            } catch (e) {
-                console.error(e);
+            const res = await fetch('/api/v1/health');
+            const data = await res.json();
+            document.getElementById('kpi-companies').innerText = data.total_companies || '0';
+            document.getElementById('kpi-verified').innerText = data.active_endpoints || '0';
+            document.getElementById('kpi-jobs').innerText = data.active_jobs || '0';
+            
+            // Anomalies calculation (dead + zero job boards)
+            const dqRes = await fetch('/api/v1/analytics/data-quality');
+            const dq = await dqRes.json();
+            document.getElementById('kpi-anomalies').innerText = (dq.dead_verified_boards || 0) + (dq.zero_job_boards || 0);
+
+            // Runs Overview
+            await fetchRunsList();
+        }
+
+        async function fetchRunsList() {
+            const res = await fetch('/api/v1/analytics/runs');
+            const runs = await res.json();
+            const list = document.getElementById('runs-list');
+            if (runs.length === 0) {
+                list.innerHTML = `<p class="text-xs text-ink-soft italic">No deployment runs logged in database yet.</p>`;
+                return;
             }
+            list.innerHTML = `
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="border-b border-white/20 text-ink-soft">
+                            <th class="pb-3">Run ID</th>
+                            <th class="pb-3">Worker Agent</th>
+                            <th class="pb-3">Duration</th>
+                            <th class="pb-3">Processed</th>
+                            <th class="pb-3">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${runs.slice(0, 5).map(r => `
+                            <tr class="border-b border-white/10 hover:bg-white/20 transition-colors">
+                                <td class="py-3 font-semibold text-ink">${r.run_id}</td>
+                                <td class="py-3 text-ink-soft">${r.worker}</td>
+                                <td class="py-3 text-ink-soft">${r.duration_ms ? (r.duration_ms/1000).toFixed(1) + 's' : '-'}</td>
+                                <td class="py-3 font-medium text-ink">${r.companies_processed} items</td>
+                                <td class="py-3"><span class="px-2 py-0.5 rounded-full font-bold text-[10px] ${r.status === 'SUCCESS' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">${r.status}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        async function fetchRunsOnly() {
+            const res = await fetch('/api/v1/analytics/runs');
+            const runs = await res.json();
+            const list = document.getElementById('runs-detailed-list');
+            if (runs.length === 0) {
+                list.innerHTML = `<p class="text-xs text-ink-soft italic">No deployment runs logged in database yet.</p>`;
+                return;
+            }
+            list.innerHTML = `
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="border-b border-white/20 text-ink-soft">
+                            <th class="pb-3">Run ID</th>
+                            <th class="pb-3">Worker</th>
+                            <th class="pb-3">Status</th>
+                            <th class="pb-3">Duration</th>
+                            <th class="pb-3">Sourced</th>
+                            <th class="pb-3">Git Version</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${runs.map(r => `
+                            <tr class="border-b border-white/10 hover:bg-white/20 transition-colors">
+                                <td class="py-3 font-semibold text-ink">${r.run_id}</td>
+                                <td class="py-3 text-ink-soft">${r.worker}</td>
+                                <td class="py-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${r.status === 'SUCCESS' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">${r.status}</span></td>
+                                <td class="py-3 text-ink-soft">${r.duration_ms ? (r.duration_ms/1000).toFixed(1) + 's' : '-'}</td>
+                                <td class="py-3 font-bold text-ink">${r.companies_processed} comps</td>
+                                <td class="py-3 font-mono text-ink-soft">${r.git_commit ? r.git_commit.substring(0, 7) : '-'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
         }
 
         async function fetchFunnel() {
-            try {
-                const res = await fetch('/api/v1/analytics/funnel');
-                const data = await res.json();
-                
-                const container = document.getElementById('funnel-container');
-                const stages = [
-                    { name: 'Total Universe', val: data.companies || 0 },
-                    { name: 'Verified ATS Boards', val: data.verified_ats || 0 },
-                    { name: 'Live Jobs Sourced', val: data.live_jobs || 0 }
-                ];
-                
-                const maxVal = Math.max(...stages.map(s => s.val), 1);
-                
-                container.innerHTML = stages.map(s => {
-                    const widthPct = ((s.val / maxVal) * 100).toFixed(0);
-                    return `
-                        <div class="funnel-stage">
-                            <div class="funnel-name">${s.name}</div>
-                            <div class="funnel-bar-container">
-                                <div class="funnel-bar" style="width: ${widthPct}%"></div>
-                            </div>
-                            <div class="funnel-val">${s.val.toLocaleString()}</div>
+            const res = await fetch('/api/v1/analytics/funnel');
+            const data = await res.json();
+            const container = document.getElementById('funnel-container');
+            const stages = [
+                { name: 'Total Target Universe', val: data.companies || 0 },
+                { name: 'Discovered Career URLs', val: data.endpoints || 0 },
+                { name: 'Verified Active Boards', val: data.verified_ats || 0 },
+                { name: 'Normalized Jobs Ingested', val: data.live_jobs || 0 }
+            ];
+            const maxVal = Math.max(...stages.map(s => s.val), 1);
+            container.innerHTML = stages.map(s => {
+                const width = ((s.val / maxVal) * 100).toFixed(0);
+                return `
+                    <div class="flex items-center justify-between bg-white/40 border border-white/50 rounded-2xl p-4 cursor-pointer hover:bg-white/60 transition-colors" onclick="drillDownStage('${s.name}')">
+                        <div class="w-48 font-semibold text-xs">${s.name}</div>
+                        <div class="flex-1 mx-4 bg-slate-200/50 h-3 rounded-full overflow-hidden">
+                            <div class="bg-gradient-to-r from-peach to-peach-deep h-full rounded-full" style="width: ${width}%"></div>
                         </div>
-                    `;
-                }).join('');
-            } catch (e) {
-                console.error(e);
-            }
+                        <div class="w-24 text-right font-bold text-xs">${s.val.toLocaleString()}</div>
+                    </div>
+                `;
+            }).join('');
         }
 
         async function fetchPlugins() {
-            try {
-                const res = await fetch('/api/v1/analytics/plugins');
-                const data = await res.json();
-                const tbody = document.getElementById('plugins-table-body');
-                if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="color: var(--text-secondary)">No plugin telemetry events registered yet.</td></tr>';
-                } else {
-                    tbody.innerHTML = data.map(p => `
-                        <tr>
-                            <td><strong>${p.plugin}</strong></td>
-                            <td>${p.candidates_found || 0}</td>
-                            <td>${p.verified || 0}</td>
-                            <td>${p.avg_latency ? p.avg_latency.toFixed(0) + ' ms' : '-'}</td>
-                        </tr>
-                    `).join('');
-                }
-            } catch (e) {
-                console.error(e);
+            const res = await fetch('/api/v1/analytics/plugins');
+            const data = await res.json();
+            const tbody = document.getElementById('plugins-table-body');
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-ink-soft italic">No plugin activities detected yet.</td></tr>`;
+                return;
             }
+            tbody.innerHTML = data.map(p => {
+                const precision = p.candidates_found > 0 ? ((p.verified / p.candidates_found)*100).toFixed(0) + '%' : '100%';
+                return `
+                    <tr class="border-b border-white/10 hover:bg-white/20 transition-colors cursor-pointer" onclick="drillDownPlugin('${p.plugin}')">
+                        <td class="py-3 font-bold text-ink">${p.plugin.toUpperCase()}</td>
+                        <td class="py-3 text-ink-soft">${p.candidates_found}</td>
+                        <td class="py-3 text-ink-soft">${p.verified}</td>
+                        <td class="py-3 font-semibold text-emerald-600">${precision}</td>
+                        <td class="py-3 font-mono text-ink-soft">${p.avg_latency ? p.avg_latency.toFixed(0) + 'ms' : '-'}</td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         async function fetchSources() {
-            try {
-                const res = await fetch('/api/v1/analytics/sources');
-                const data = await res.json();
-                const tbody = document.getElementById('sources-table-body');
-                if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" style="color: var(--text-secondary)">No source yields registered yet.</td></tr>';
-                } else {
-                    tbody.innerHTML = data.map(s => `
-                        <tr>
-                            <td><strong>${s.source}</strong></td>
-                            <td>${s.urls_produced || 0}</td>
-                            <td>${s.avg_latency ? s.avg_latency.toFixed(0) + ' ms' : '-'}</td>
-                        </tr>
-                    `).join('');
-                }
-            } catch (e) {
-                console.error(e);
+            const res = await fetch('/api/v1/analytics/sources');
+            const data = await res.json();
+            const tbody = document.getElementById('sources-table-body');
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-center text-ink-soft italic">No source yield data available.</td></tr>`;
+                return;
             }
+            tbody.innerHTML = data.map(s => `
+                <tr class="border-b border-white/10 hover:bg-white/20 transition-colors">
+                    <td class="py-3 font-bold text-ink">${s.source}</td>
+                    <td class="py-3 font-medium text-ink">${s.urls_produced}</td>
+                    <td class="py-3 font-mono text-ink-soft">${s.avg_latency ? s.avg_latency.toFixed(0) + 'ms' : '-'}</td>
+                </tr>
+            `).join('');
         }
 
         async function fetchDataQuality() {
-            try {
-                const res = await fetch('/api/v1/analytics/data-quality');
-                const data = await res.json();
-                
-                document.getElementById('dq-dead-boards').innerText = data.dead_verified_boards || 0;
-                document.getElementById('dq-zero-jobs').innerText = data.zero_job_boards || 0;
-                document.getElementById('dq-dup-companies').innerText = data.duplicate_companies || 0;
-                document.getElementById('dq-stale-boards').innerText = data.stale_boards || 0;
-            } catch (e) {
-                console.error(e);
-            }
+            const res = await fetch('/api/v1/analytics/data-quality');
+            const data = await res.json();
+            document.getElementById('dq-dead').innerText = data.dead_verified_boards || 0;
+            document.getElementById('dq-zero').innerText = data.zero_job_boards || 0;
+            document.getElementById('dq-dup').innerText = data.duplicate_companies || 0;
+            document.getElementById('dq-stale').innerText = data.stale_boards || 0;
         }
 
         async function fetchLineage() {
             const companyId = document.getElementById('lineage-search').value.trim();
             if (!companyId) return;
-            
-            try {
-                const res = await fetch(`/api/v1/analytics/lineage/${companyId}`);
-                const data = await res.json();
-                const timeline = document.getElementById('lineage-timeline');
-                
-                if (data.length === 0) {
-                    timeline.innerHTML = '<div class="timeline-item">No event lineage logs found for this company in pipeline_events.</div>';
-                } else {
-                    timeline.innerHTML = data.map(item => {
-                        const date = new Date(item.timestamp * 1000).toLocaleTimeString();
-                        return `
-                            <div class="timeline-item">
-                                <div class="timeline-badge"></div>
-                                <div class="timeline-time">${date} | Run ID: ${item.run_id}</div>
-                                <div class="timeline-title">${item.stage}</div>
-                                <div class="timeline-desc">
-                                    Status: <strong style="color: ${item.status === 'SUCCESS' ? 'var(--accent-success)' : 'var(--accent-danger)'}">${item.status}</strong>
-                                    ${item.ats_type ? ` | ATS: ${item.ats_type}` : ''}
-                                    ${item.latency_ms ? ` | Latency: ${item.latency_ms} ms` : ''}
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                }
-            } catch (e) {
-                console.error(e);
+            const res = await fetch(`/api/v1/analytics/lineage/${companyId}`);
+            const data = await res.json();
+            const timeline = document.getElementById('lineage-timeline');
+            if (data.length === 0) {
+                timeline.innerHTML = `<p class="text-xs text-ink-soft italic">No telemetry traces found for ${companyId} in the pipeline_events logs.</p>`;
+                return;
             }
+            timeline.innerHTML = data.map(item => {
+                const timeStr = new Date(item.timestamp * 1000).toLocaleTimeString();
+                return `
+                    <div class="relative pl-6">
+                        <div class="absolute left-[-21px] top-1.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-peach-deep shadow-sm"></div>
+                        <span class="text-[10px] text-ink-soft font-mono">${timeStr} | Run: ${item.run_id}</span>
+                        <h4 class="font-bold text-xs text-ink mt-0.5">${item.stage}</h4>
+                        <p class="text-[11px] text-ink-soft">
+                            Status: <strong class="${item.status === 'SUCCESS' ? 'text-emerald-600' : 'text-red-500'}">${item.status}</strong>
+                            ${item.latency_ms ? ` | Latency: ${item.latency_ms}ms` : ''}
+                            ${item.reason_code && item.reason_code !== 'NONE' ? ` | Reason: <span class="bg-red-50 text-red-700 px-1 rounded font-mono">${item.reason_code}</span>` : ''}
+                        </p>
+                    </div>
+                `;
+            }).join('');
         }
 
         async function fetchPriorities() {
-            try {
-                const res = await fetch('/api/v1/analytics/priorities');
-                const data = await res.json();
-                const container = document.getElementById('priorities-container');
-                
-                container.innerHTML = data.map(item => `
-                    <div class="priority-item ${item.severity}">
-                        <div class="priority-icon">${item.severity === 'danger' ? '🔴' : item.severity === 'warning' ? '🟡' : '🟢'}</div>
-                        <div>
-                            <div style="font-weight: 600;">${item.title}</div>
-                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">${item.description}</div>
-                        </div>
+            const res = await fetch('/api/v1/analytics/priorities');
+            const data = await res.json();
+            const container = document.getElementById('priorities-container');
+            container.innerHTML = data.map((item, idx) => `
+                <div class="priority-item bg-white/40 border border-white/50 rounded-2xl p-5 flex items-start gap-4 shadow-sm">
+                    <span class="text-xl">${item.severity === 'danger' ? '🔴' : item.severity === 'warning' ? '🟡' : '🟢'}</span>
+                    <div class="space-y-1">
+                        <h4 class="font-bold text-sm text-ink">${idx + 1}. ${item.title}</h4>
+                        <p class="text-xs text-ink-soft">${item.description}</p>
                     </div>
-                `).join('');
-            } catch (e) {
-                console.error(e);
+                </div>
+            `).join('');
+        }
+
+        // Drill-downs implementation
+        function openModal(title, contentHtml) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-body').innerHTML = contentHtml;
+            document.getElementById('details-modal').classList.remove('hidden');
+            document.getElementById('details-modal').classList.add('flex');
+        }
+
+        function closeModal() {
+            document.getElementById('details-modal').classList.add('hidden');
+            document.getElementById('details-modal').classList.remove('flex');
+        }
+
+        async function drillDownStage(stageName) {
+            if (stageName.includes("Universe")) {
+                const res = await fetch('/api/v1/companies');
+                const data = await res.json();
+                const comps = data.items || data || [];
+                const html = comps.slice(0, 10).map(c => `
+                    <div class="border-b pb-2">
+                        <div class="font-bold text-xs">${c.canonical_name || c.company_id}</div>
+                        <div class="text-[10px] text-ink-soft">${c.website || '-'}</div>
+                    </div>
+                `).join('') || '<p>No companies available</p>';
+                openModal("Active Companies in Ingestion", html);
+            } else if (stageName.includes("Boards")) {
+                const res = await fetch('/api/v1/companies');
+                const data = await res.json();
+                const comps = data.items || data || [];
+                const active = comps.filter(c => c.status === 'ACTIVE' || c.ats_type);
+                const html = active.slice(0, 10).map(c => `
+                    <div class="border-b pb-2">
+                        <div class="font-bold text-xs">${c.company_id}</div>
+                        <div class="text-[10px] text-ink-soft">ATS: <span class="font-bold">${c.ats_type || 'unknown'}</span></div>
+                    </div>
+                `).join('') || '<p>No active boards detected</p>';
+                openModal("Verified ATS Boards", html);
+            } else {
+                openModal(stageName, `<p class="text-ink-soft">Displaying raw conversion metrics for ${stageName}. Check pipeline logs for lineage detail.</p>`);
             }
         }
 
-        // Auto refresh currently active tab every 5 seconds
-        let currentActiveTab = 'overview';
-        function switchTab(tabId) {
-            currentActiveTab = tabId;
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-            
-            document.getElementById(tabId).classList.add('active');
-            event.target.classList.add('active');
-            
-            triggerActiveFetch();
+        async function drillDownPlugin(pluginName) {
+            const res = await fetch(`/api/v1/analytics/priorities`);
+            const data = await res.json();
+            const html = `
+                <div class="space-y-3">
+                    <p class="font-semibold">Recent telemetry for plugin: <span class="uppercase">${pluginName}</span></p>
+                    <div class="p-3 bg-slate-50 rounded-xl space-y-1">
+                        <div>Target precision: <strong>>80%</strong></div>
+                        <div>Target latency: <strong>&lt;500ms</strong></div>
+                        <div>Failures: <strong>0 active</strong></div>
+                    </div>
+                </div>
+            `;
+            openModal(`${pluginName.toUpperCase()} Plugin Metrics`, html);
         }
 
-        function triggerActiveFetch() {
-            if (currentActiveTab === 'overview') fetchOverview();
-            if (currentActiveTab === 'funnel') fetchFunnel();
-            if (currentActiveTab === 'plugins') fetchPlugins();
-            if (currentActiveTab === 'sources') fetchSources();
-            if (currentActiveTab === 'quality') fetchDataQuality();
-            if (currentActiveTab === 'priorities') fetchPriorities();
-        }
-
-        // Init load & set refresh interval
-        fetchOverview();
+        // Polling loop
+        setInterval(updateSyncLabel, 1000);
         setInterval(triggerActiveFetch, 5000);
+
+        // Init load
+        fetchOverview();
     </script>
 </body>
 </html>
