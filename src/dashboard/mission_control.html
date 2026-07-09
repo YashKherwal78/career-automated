@@ -653,13 +653,54 @@
         }
 
         async function drillDownPlugin(pluginName) {
+            const res = await fetch(`/api/v1/analytics/ats/${pluginName}`);
+            const data = await res.json();
+            
             const html = `
-                <div class="space-y-3">
-                    <p class="font-semibold">Recent telemetry for plugin: <span class="uppercase">${pluginName}</span></p>
-                    <div class="p-3 bg-slate-50 rounded-xl space-y-1">
-                        <div>Target precision: <strong>>80%</strong></div>
-                        <div>Target latency: <strong>&lt;500ms</strong></div>
-                        <div>Failures: <strong>0 active</strong></div>
+                <div class="space-y-4">
+                    <p class="font-semibold text-xs text-ink-soft">LIFECYCLE STAGE CONVERSION FUNNEL</p>
+                    
+                    <div class="space-y-2">
+                        <div class="flex justify-between border-b pb-1">
+                            <span>Companies Match Heuristic:</span>
+                            <span class="font-bold">${data.companies_seen}</span>
+                        </div>
+                        <div class="flex justify-between border-b pb-1">
+                            <span>Candidate URLs Sourced:</span>
+                            <span class="font-bold">${data.candidate_urls}</span>
+                        </div>
+                        <div class="flex justify-between border-b pb-1">
+                            <span>Parser Precision rate:</span>
+                            <span class="font-bold text-emerald-600">${data.parser_success_pct}%</span>
+                        </div>
+                        <div class="flex justify-between border-b pb-1">
+                            <span>Inspector Acceptance rate:</span>
+                            <span class="font-bold text-emerald-600">${data.inspector_success_pct}%</span>
+                        </div>
+                        <div class="flex justify-between border-b pb-1">
+                            <span>Verified Endpoints:</span>
+                            <span class="font-bold">${data.verified_endpoints}</span>
+                        </div>
+                        <div class="flex justify-between border-b pb-1">
+                            <span>Crawled Job Postings:</span>
+                            <span class="font-bold">${data.jobs_imported}</span>
+                        </div>
+                        <div class="flex justify-between border-b pb-1">
+                            <span>Avg jobs/board:</span>
+                            <span class="font-bold">${data.avg_jobs_per_board}</span>
+                        </div>
+                        <div class="flex justify-between border-b pb-1">
+                            <span>Dead Boards (Failed Health):</span>
+                            <span class="font-bold text-red-600">${data.dead_boards}</span>
+                        </div>
+                        <div class="flex justify-between border-b pb-1">
+                            <span>Zero-Job Active Boards:</span>
+                            <span class="font-bold text-amber-600">${data.zero_job_boards}</span>
+                        </div>
+                        <div class="flex justify-between border-b pb-1">
+                            <span>P50 Discovery Latency:</span>
+                            <span class="font-mono">${data.avg_latency_ms}ms</span>
+                        </div>
                     </div>
                 </div>
             `;

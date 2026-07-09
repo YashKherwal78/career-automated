@@ -63,3 +63,7 @@ def get_zero_job_boards(repo: AnalyticsRepository = Depends(get_analytics_repo))
 @router.get("/data-quality/duplicate-companies")
 def get_duplicate_companies(repo: AnalyticsRepository = Depends(get_analytics_repo)):
     return repo.get_duplicate_companies()
+
+@router.get("/ats/{ats_type}")
+def get_ats_drilldown(ats_type: str, repo: AnalyticsRepository = Depends(get_analytics_repo)):
+    return repo.get_ats_drilldown(ats_type)
