@@ -310,45 +310,65 @@ class AnalyticsRepository:
         universe = get_count("company_identities")
         homepage = get_event_stats("HOMEPAGE_FETCH")
         search = get_event_stats("SEARCH_FETCH")
+        sitemap = get_event_stats("SITEMAP_FETCH")
+        redirects = get_event_stats("REDIRECT_FETCH")
         merge = get_event_stats("URL_COLLECTED")
         dedup = get_event_stats("URL_DEDUPLICATED")
         ats = get_event_stats("ATS_DETECTED")
-        verified = get_event_stats("ENDPOINT_VERIFIED")
-        registry = get_count("ats_registry", "status = 'ACTIVE'")
-        crawled = get_event_stats("CRAWL_EXECUTED")
-        normalized = get_count("normalized_jobs", "status = 'ACTIVE'")
         
         unknown_ats = get_count("ats_registry", "status = 'FAILED' OR status = 'UNKNOWN'")
         
-        nodes = {
+        core_nodes = {
             "universe": {"label": "Company Universe", "input": universe, "output": universe, "latency": None, "available": True},
-            "homepage": {"label": "Homepage Fetch", "input": universe, "output": homepage["count"], "latency": homepage["latency_ms"], "available": homepage["count"] is not None},
-            "search": {"label": "Search APIs", "input": universe, "output": search["count"], "latency": search["latency_ms"], "available": search["count"] is not None},
-            "merge": {"label": "Candidate Merge", "input": homepage["count"] or 0 + (search["count"] or 0), "output": merge["count"], "latency": merge["latency_ms"], "available": merge["count"] is not None},
+            "homepage": {"label": "Homepage", "input": universe, "output": homepage["count"], "latency": homepage["latency_ms"], "available": homepage["count"] is not None},
+            "search": {"label": "Search", "input": universe, "output": search["count"], "latency": search["latency_ms"], "available": search["count"] is not None},
+            "sitemap": {"label": "Sitemap", "input": universe, "output": sitemap["count"], "latency": sitemap["latency_ms"], "available": sitemap["count"] is not None},
+            "redirects": {"label": "Redirects", "input": universe, "output": redirects["count"], "latency": redirects["latency_ms"], "available": redirects["count"] is not None},
+            "merge": {"label": "Candidate Merge", "input": universe, "output": merge["count"], "latency": merge["latency_ms"], "available": merge["count"] is not None},
             "dedup": {"label": "Deduplication", "input": merge["count"], "output": dedup["count"], "latency": dedup["latency_ms"], "available": dedup["count"] is not None},
             "ats": {"label": "ATS Detection", "input": dedup["count"], "output": ats["count"], "latency": ats["latency_ms"], "available": ats["count"] is not None},
-            "verify": {"label": "Verification", "input": ats["count"], "output": verified["count"], "latency": verified["latency_ms"], "available": verified["count"] is not None},
-            "registry": {"label": "Registry Promotion", "input": verified["count"], "output": registry, "latency": None, "available": True},
-            "crawler": {"label": "Crawlers", "input": registry, "output": crawled["count"], "latency": crawled["latency_ms"], "available": crawled["count"] is not None},
-            "normalizer": {"label": "Normalization", "input": crawled["count"], "output": normalized, "latency": None, "available": True},
-            "unknown": {"label": "Unknown Pipeline", "input": unknown_ats, "output": unknown_ats, "latency": None, "available": True},
+            "unknown": {"label": "Unknown Pipeline (Needs Eng)", "input": unknown_ats, "output": unknown_ats, "latency": None, "available": True},
         }
         
-        # Add ATS specific branches
-        c.execute("SELECT ats_type, COUNT(*) FROM ats_registry WHERE status = 'ACTIVE' GROUP BY ats_type")
+        # Add ATS specific branches based on plugin_metrics
+        c.execute("SELECT plugin, candidates_found, verified, jobs_imported, dead_boards FROM plugin_metrics")
         ats_branches = {}
+        total_verified = 0
+        total_jobs = 0
+        
         for row in c.fetchall():
-            atype, count = row
-            if atype:
-                ats_branches[f"ats_{atype.lower()}"] = {
-                    "label": atype.capitalize(),
-                    "input": count,
-                    "output": count,
-                    "latency": None,
-                    "available": True
-                }
+            plugin, candidates, verified, jobs, dead = row
+            if not plugin: continue
+            pid = plugin.lower()
+            
+            # Each ATS is a miniature pipeline: Detection -> Candidates -> Verified -> Registry -> Crawler -> Jobs
+            ats_branches[pid] = {
+                "label": plugin.capitalize(),
+                "candidates": {"input": ats["count"] or 0, "output": candidates, "latency": None, "available": candidates is not None},
+                "verified": {"input": candidates, "output": verified, "latency": None, "available": verified is not None},
+                "jobs": {"input": verified, "output": jobs, "latency": None, "available": jobs is not None},
+            }
+            total_verified += (verified or 0)
+            total_jobs += (jobs or 0)
+            
+        # Job Pipeline (Post-ATS merge)
+        crawler = get_event_stats("CRAWL_EXECUTED")
+        parser = get_event_stats("JOB_PARSED")
+        normalizer = get_event_stats("JOB_NORMALIZED")
+        enrichment = get_event_stats("JOB_ENRICHED")
+        ranking = get_event_stats("JOB_RANKED")
+        
+        job_nodes = {
+            "crawler": {"label": "Crawler", "input": total_verified, "output": crawler["count"], "latency": crawler["latency_ms"], "available": crawler["count"] is not None},
+            "parser": {"label": "Parser", "input": crawler["count"], "output": parser["count"], "latency": parser["latency_ms"], "available": parser["count"] is not None},
+            "normalizer": {"label": "Normalizer", "input": parser["count"], "output": normalizer["count"], "latency": normalizer["latency_ms"], "available": normalizer["count"] is not None},
+            "enrichment": {"label": "Enrichment", "input": normalizer["count"], "output": enrichment["count"], "latency": enrichment["latency_ms"], "available": enrichment["count"] is not None},
+            "ranking": {"label": "Ranking", "input": enrichment["count"], "output": ranking["count"], "latency": ranking["latency_ms"], "available": ranking["count"] is not None},
+            "visible": {"label": "Visible Jobs", "input": total_jobs, "output": total_jobs, "latency": None, "available": True},
+        }
         
         return {
-            "core_nodes": nodes,
-            "ats_branches": ats_branches
+            "core_nodes": core_nodes,
+            "ats_branches": ats_branches,
+            "job_nodes": job_nodes
         }
