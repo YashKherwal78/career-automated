@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('registry_generator')
 import sqlite3
 import pandas as pd
 import requests
@@ -44,7 +46,7 @@ def verify_ats(slug):
     return None, None
 
 def run():
-    print("--- Registry Generator: Building Final Registry ---")
+    logger.info("--- Registry Generator: Building Final Registry ---")
     init_registry_db()
     conn = sqlite3.connect(Config.DATABASE_PATH)
     c = conn.cursor()
@@ -82,7 +84,7 @@ def run():
                     "freq": "Frequent"
                 })
     except Exception as e:
-        print(f"Could not load IIT list: {e}")
+        logger.info(f"Could not load IIT list: {e}")
         
     # Source C: Indian High-Growth (We'll just add some known ones as P1)
     high_growth = ["Unacademy", "Upstox", "Zerodha", "MoEngage", "CleverTap", "MindTickle", "Freshworks"]
@@ -95,7 +97,7 @@ def run():
                 "freq": "Frequent"
             })
             
-    print(f"Total companies to evaluate: {len(companies_to_process)}")
+    logger.info(f"Total companies to evaluate: {len(companies_to_process)}")
     
     added = 0
     
@@ -122,7 +124,7 @@ def run():
             provider, valid_slug = "lever", "juspay"
             
         if provider:
-            print(f"[FOUND] {comp_data['name']} uses {provider} ({valid_slug})")
+            logger.info(f"[FOUND] {comp_data['name']} uses {provider} ({valid_slug})")
             c.execute('''
                 INSERT OR IGNORE INTO final_company_registry 
                 (company_name, ats_provider, ats_slug, priority, discovery_source, scan_frequency)
@@ -140,7 +142,7 @@ def run():
     conn.commit()
     conn.close()
     
-    print(f"--- Registry Generation Complete. Found {added} ATS providers. ---")
+    logger.info(f"--- Registry Generation Complete. Found {added} ATS providers. ---")
 
 if __name__ == "__main__":
     run()

@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('email_listener')
 import imaplib
 import email
 from email.header import decode_header
@@ -73,7 +75,7 @@ class EmailListener:
             mail.close()
             mail.logout()
         except Exception as e:
-            print(f"EmailListener Error: {e}")
+            logger.info(f"EmailListener Error: {e}")
             
         return None
         

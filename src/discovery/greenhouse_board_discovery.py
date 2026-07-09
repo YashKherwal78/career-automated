@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('greenhouse_board_discovery')
 import requests
 from src.crm.database import add_to_company_registry
 
@@ -21,18 +23,18 @@ class GreenhouseBoardDiscovery:
         return False
 
     def run(self):
-        print("GreenhouseBoardDiscovery: Starting board verification...")
+        logger.info("GreenhouseBoardDiscovery: Starting board verification...")
         verified_count = 0
         for slug in self.bootstrap_slugs:
             if self.verify_slug(slug):
                 if add_to_company_registry(slug):
-                    print(f"[VERIFIED] {slug} -> Added to Registry")
+                    logger.info(f"[VERIFIED] {slug} -> Added to Registry")
                     verified_count += 1
                 else:
-                    print(f"[EXISTS] {slug} -> Already in Registry")
+                    logger.info(f"[EXISTS] {slug} -> Already in Registry")
             else:
-                print(f"[FAILED] {slug} -> Board not found or inactive")
-        print(f"GreenhouseBoardDiscovery: Complete. Verified {verified_count} new boards.")
+                logger.info(f"[FAILED] {slug} -> Board not found or inactive")
+        logger.info(f"GreenhouseBoardDiscovery: Complete. Verified {verified_count} new boards.")
 
 if __name__ == "__main__":
     discoverer = GreenhouseBoardDiscovery()

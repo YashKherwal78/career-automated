@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('connector_registry')
 import yaml
 from typing import Dict, Any, List
 from src.discovery.discovery_connector import DiscoveryConnector
@@ -17,7 +19,7 @@ class ConnectorRegistry:
             with open(self.config_path, 'r') as f:
                 self.config = yaml.safe_load(f) or {}
         except Exception as e:
-            print(f"Failed to load connectors config: {e}")
+            logger.info(f"Failed to load connectors config: {e}")
             self.config = {}
 
     def register(self, name: str, connector: DiscoveryConnector):
@@ -33,9 +35,9 @@ class ConnectorRegistry:
                 if connector.health_check():
                     healthy.append(connector)
                 else:
-                    print(f"ConnectorRegistry: {name} failed health check. Disabling.")
+                    logger.info(f"ConnectorRegistry: {name} failed health check. Disabling.")
             except Exception as e:
-                print(f"ConnectorRegistry: {name} failed initialization: {e}")
+                logger.info(f"ConnectorRegistry: {name} failed initialization: {e}")
                 
         # Sort by priority defined in config
         healthy.sort(key=lambda c: self.config.get(c.name.lower().replace("connector", ""), {}).get('priority', 99))

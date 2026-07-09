@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('email_discovery')
 import requests
 import json
 from src.config.config import Config
@@ -26,7 +28,7 @@ def discover_email(contact_name: str, company_name: str) -> Tuple[str, int]:
                     confidence = data["data"]["score"]
                     return email, confidence
         except Exception as e:
-            print(f"Hunter API Error: {e}")
+            logger.info(f"Hunter API Error: {e}")
             
     # Mock fallback if no keys configured
     return f"{first_name.lower()}.{last_name.lower()}@{domain}", 30

@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('llm_router')
 import os
 import json
 import time
@@ -54,7 +56,7 @@ class LLMRouter:
             try:
                 self.gemini_client = genai.Client(api_key=gemini_key)
             except Exception as e:
-                print(f"[LLMRouter] Failed to initialize Gemini Client: {e}")
+                logger.info(f"[LLMRouter] Failed to initialize Gemini Client: {e}")
 
         self.openrouter_client = None
         or_key = os.environ.get("OPENROUTER_API_KEY")
@@ -98,7 +100,7 @@ class LLMRouter:
                 return FakeResponse(content, tokens)
                 
             except Exception as e:
-                print(f"[LLMRouter] Provider {provider} failed on intent '{intent}': {e}")
+                logger.info(f"[LLMRouter] Provider {provider} failed on intent '{intent}': {e}")
                 fallback_count += 1
                 
         raise Exception(f"All LLM providers failed for intent: {intent}")
@@ -152,7 +154,7 @@ class LLMRouter:
                 tokens = response.usage.total_tokens if hasattr(response, 'usage') and response.usage else 0
                 return response.choices[0].message.content, tokens, model
             except Exception as e:
-                print(f"[LLMRouter] OpenRouter model {model} failed: {e}")
+                logger.info(f"[LLMRouter] OpenRouter model {model} failed: {e}")
                 last_error = e
                 
         raise Exception(f"All OpenRouter fallback models failed. Last error: {last_error}")

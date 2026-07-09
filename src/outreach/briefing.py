@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('briefing')
 import sqlite3
 import smtplib
 from datetime import datetime
@@ -7,7 +9,7 @@ from src.config.config import Config
 from src.crm.database import DB_PATH
 
 def generate_and_send_briefing():
-    print("\n[Briefing] Generating Daily Executive Briefing...")
+    logger.info("\n[Briefing] Generating Daily Executive Briefing...")
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -100,9 +102,9 @@ def generate_and_send_briefing():
         server.login(Config.GMAIL_ADDRESS, Config.GMAIL_APP_PASSWORD)
         server.send_message(msg)
         server.quit()
-        print("✅ Briefing sent to", Config.GMAIL_ADDRESS)
+        logger.info("✅ Briefing sent to", Config.GMAIL_ADDRESS)
     except Exception as e:
-        print(f"❌ Failed to send briefing: {e}")
+        logger.info(f"❌ Failed to send briefing: {e}")
 
 if __name__ == "__main__":
     generate_and_send_briefing()

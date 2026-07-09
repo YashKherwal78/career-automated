@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('profile_intelligence')
 import json
 from typing import Dict
 from src.config.config import Config
@@ -12,7 +14,7 @@ def scrape_profile(linkedin_url: str) -> Dict:
     if not linkedin_url:
         return {}
         
-    print(f"Scraping profile: {linkedin_url}")
+    logger.info(f"Scraping profile: {linkedin_url}")
     
     # Mocking Apify Actor output for V0.1
     # If the URL contains an IIT hint, we inject IIT Roorkee for testing

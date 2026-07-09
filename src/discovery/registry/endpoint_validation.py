@@ -1,113 +1,95 @@
 import sqlite3
-import hashlib
-from typing import List, Dict, Any
+import aiohttp
+import asyncio
+import logging
+from typing import List
+from src.discovery.registry.ats_providers import ProviderRegistry, VerificationResult, EndpointIdentity
 
-class NormalizedJob:
-    def __init__(self, company_id: str, title: str, location: str, employment_type: str, 
-                 remote: bool, department: str, description: str, apply_url: str, 
-                 connector: str, ats_id: str):
-        self.company_id = company_id
-        self.title = title
-        self.location = location
-        self.employment_type = employment_type
-        self.remote = remote
-        self.department = department
-        self.description = description
-        self.apply_url = apply_url
-        self.connector = connector
-        self.ats_id = ats_id
-        
-        # SHA256(company + title + location + employment + ATS ID)
-        fp_str = f"{company_id}|{title}|{location}|{employment_type}|{ats_id}".lower()
-        self.fingerprint = hashlib.sha256(fp_str.encode()).hexdigest()
+logger = logging.getLogger("EndpointValidationEngine")
 
 class EndpointValidationEngine:
     def __init__(self, db_path: str):
         self.db_path = db_path
         
-    def _ensure_normalized_jobs_table(self, c):
-        c.execute('''
-            CREATE TABLE IF NOT EXISTS normalized_jobs (
-                fingerprint TEXT PRIMARY KEY,
-                company_id TEXT,
-                title TEXT,
-                location TEXT,
-                employment_type TEXT,
-                remote BOOLEAN,
-                department TEXT,
-                description TEXT,
-                apply_url TEXT,
-                connector TEXT,
-                ats_id TEXT,
-                discovered_at TEXT DEFAULT CURRENT_TIMESTAMP,
-                last_seen_at TEXT DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        
-    def _mock_fetch_jobs(self, endpoint_url: str, company_id: str, ats_provider: str) -> List[NormalizedJob]:
-        """Mock implementation of fetching from ATS."""
-        # For POC, simulate returning jobs for Greenhouse, 0 jobs for Lever
-        if "greenhouse" in ats_provider.lower():
-            return [
-                NormalizedJob(company_id, "Product Analyst", "Bangalore", "Full Time", False, "Product", 
-                              "Mock description", f"{endpoint_url}/apply/123", ats_provider, "123")
-            ]
-        return []
-
-    def validate_endpoints(self):
-        conn = sqlite3.connect(self.db_path)
-        c = conn.cursor()
-        self._ensure_normalized_jobs_table(c)
-        
-        # Fetch DISCOVERED_ENDPOINT
-        c.execute('''
-            SELECT endpoint_id, company_id, career_url, ats_provider 
-            FROM career_endpoints 
-            WHERE status = 'DISCOVERED_ENDPOINT' OR status = 'VERIFYING'
-        ''')
-        targets = c.fetchall()
-        
-        verified_count = 0
-        jobs_found = 0
-        
-        for eid, cid, url, ats in targets:
-            c.execute("UPDATE career_endpoints SET status = 'VERIFYING' WHERE endpoint_id = ?", (eid,))
-            conn.commit()
+    async def validate_endpoints(self, target_list: List[tuple] = None) -> List[VerificationResult]:
+        if target_list is not None:
+            targets = target_list
+        else:
+            conn = sqlite3.connect(self.db_path)
+            c = conn.cursor()
             
-            try:
-                jobs = self._mock_fetch_jobs(url, cid, ats)
-                
-                # Insert normalized jobs with fingerprint
-                for job in jobs:
-                    c.execute('''
-                        INSERT INTO normalized_jobs (fingerprint, company_id, title, location, 
-                                                    employment_type, remote, department, description, 
-                                                    apply_url, connector, ats_id)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        ON CONFLICT(fingerprint) DO UPDATE SET last_seen_at = CURRENT_TIMESTAMP
-                    ''', (job.fingerprint, job.company_id, job.title, job.location, 
-                          job.employment_type, job.remote, job.department, job.description, 
-                          job.apply_url, job.connector, job.ats_id))
-                    jobs_found += 1
-                
-                # Mark as verified regardless of job count
-                c.execute('''
-                    UPDATE career_endpoints 
-                    SET status = 'VERIFIED', confidence = 0.99, health_status = 'HEALTHY', 
-                        last_verified_at = CURRENT_TIMESTAMP 
-                    WHERE endpoint_id = ?
-                ''', (eid,))
-                verified_count += 1
-                
-            except Exception as e:
-                # Store failure
-                c.execute('''
-                    UPDATE career_endpoints 
-                    SET status = 'FAILED', health_status = 'BROKEN', failure_reason = ? 
-                    WHERE endpoint_id = ?
-                ''', (str(e), eid))
-                
-        conn.commit()
-        conn.close()
+            # Query career_endpoints with company name from identities
+            c.execute('''
+                SELECT e.endpoint_id, e.company_id, e.career_url, e.ats_provider, c.legal_name
+                FROM career_endpoints e
+                JOIN company_identities c ON e.company_id = c.company_id
+                WHERE e.status = 'DISCOVERED_ENDPOINT' OR e.status = 'VERIFYING'
+            ''')
+            targets = c.fetchall()
+            conn.close()
+            
+        if not targets:
+            return []
+            
+        results = []
         
-        return len(targets), verified_count, jobs_found
+        async with aiohttp.ClientSession() as session:
+            # We can run checks concurrently using asyncio.gather
+            async def validate_single(eid, cid, url, ats, company_name):
+                # Try to resolve provider by name or by URL
+                provider = ProviderRegistry.get_provider_by_name(ats)
+                if not provider:
+                    provider = ProviderRegistry.resolve(url)
+                    
+                if not provider:
+                    # Return a failed verification result
+                    return VerificationResult(
+                        endpoint_id=eid,
+                        company_id=cid,
+                        company_name=company_name,
+                        provider=ats or "Unknown",
+                        endpoint=url,
+                        canonical_endpoint=url,
+                        endpoint_identity=EndpointIdentity(provider=ats or "Unknown", identifiers={}),
+                        healthy=False,
+                        verified=False,
+                        confidence=0.0,
+                        inspector_score=0.0,
+                        identity_score=0.0,
+                        reason=f"Unknown ATS provider: '{ats}'",
+                        metadata={},
+                        plugin_name="None",
+                        plugin_version="1.0",
+                        provider_version="None",
+                        latency_ms=0
+                    )
+                
+                # Perform verification via base provider logic
+                try:
+                    return await provider.verify(session, url, company_name, eid, cid)
+                except Exception as e:
+                    return VerificationResult(
+                        endpoint_id=eid,
+                        company_id=cid,
+                        company_name=company_name,
+                        provider=provider.name,
+                        endpoint=url,
+                        canonical_endpoint=url,
+                        endpoint_identity=EndpointIdentity(provider=provider.name, identifiers={}),
+                        healthy=False,
+                        verified=False,
+                        confidence=0.0,
+                        inspector_score=0.0,
+                        identity_score=0.0,
+                        reason=str(e),
+                        metadata={},
+                        plugin_name=provider.__class__.__name__,
+                        plugin_version=provider.plugin_version,
+                        provider_version=provider.provider_version,
+                        latency_ms=0
+                    )
+
+            tasks = [validate_single(eid, cid, url, ats, name) for eid, cid, url, ats, name in targets]
+            results = await asyncio.gather(*tasks)
+            
+        return list(results)

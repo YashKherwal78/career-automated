@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('linkedin_jobs_provider')
 import yaml
 import urllib.parse
 from typing import List, Optional
@@ -50,7 +52,7 @@ class LinkedInJobsProvider(BaseProvider):
         if not client:
             raise Exception("No Apify client available for LinkedIn jobs")
             
-        print(f"LinkedInJobsProvider (Pipeline B): Searching {len(urls)} target combinations...")
+        logger.info(f"LinkedInJobsProvider (Pipeline B): Searching {len(urls)} target combinations...")
         
         run_input = {
             "urls": urls,

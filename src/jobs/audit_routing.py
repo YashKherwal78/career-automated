@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('audit_routing')
 from src.jobs.ranking import rank_job
 from src.config.config import Config
 
@@ -11,9 +13,9 @@ def audit_routing():
         "Software Development Engineer II"
     ]
     
-    print("="*60)
-    print("RESUME ROUTING AUDIT")
-    print("="*60)
+    logger.info("="*60)
+    logger.info("RESUME ROUTING AUDIT")
+    logger.info("="*60)
     
     for role in test_roles:
         # Dummy job description
@@ -44,12 +46,12 @@ def audit_routing():
             profile = "UNKNOWN"
             resume_file = "UNKNOWN"
             
-        print(f"\nJob Title:      {role}")
-        print(f"Routing Reason: {', '.join(reasons)}")
-        print(f"Resume Scores:  Confidence: {confidence}")
-        print(f"Selected Resume:{resume_file} ({recommended_resume})")
-        print(f"Select Profile: {profile}")
-        print("-"*60)
+        logger.info(f"\nJob Title:      {role}")
+        logger.info(f"Routing Reason: {', '.join(reasons)}")
+        logger.info(f"Resume Scores:  Confidence: {confidence}")
+        logger.info(f"Selected Resume:{resume_file} ({recommended_resume})")
+        logger.info(f"Select Profile: {profile}")
+        logger.info("-"*60)
 
 if __name__ == "__main__":
     audit_routing()

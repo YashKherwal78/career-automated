@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('clean_contacts')
 import pandas as pd
 import re
 import os
@@ -12,17 +14,17 @@ from src.config.config import Config
 EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
 
 def clean_contacts(input_file: str):
-    print(f"Loading {input_file}...")
+    logger.info(f"Loading {input_file}...")
     try:
         df = pd.read_excel(input_file)
     except Exception as e:
-        print(f"Error loading excel: {e}")
+        logger.info(f"Error loading excel: {e}")
         return
 
     # Check for Email column
     email_col = next((c for c in df.columns if c.strip().lower() == 'email'), None)
     if not email_col:
-        print("Could not find 'Email' column.")
+        logger.info("Could not find 'Email' column.")
         return
 
     total_rows_initial = len(df)
@@ -56,7 +58,7 @@ def clean_contacts(input_file: str):
     # Export
     output_path = Config.DATA_DIR / "clean_leads.xlsx"
     df.to_excel(output_path, index=False)
-    print(f"Exported clean leads to {output_path}")
+    logger.info(f"Exported clean leads to {output_path}")
     
     # Sample rows for report
     sample_rows = df.head(5).to_dict(orient='records')
@@ -91,7 +93,7 @@ At 400 emails per day, this clean dataset provides **{final_rows / 400:.1f} days
     with open(report_path, "w") as f:
         f.write(report_content)
         
-    print(f"Generated report at {report_path}")
+    logger.info(f"Generated report at {report_path}")
 
 if __name__ == "__main__":
     clean_contacts("/Users/yashkherwal/Downloads/hrmailfiles/hr_data_wo_name (1).xlsx")

@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('generic_parser')
 from typing import List, Dict, Optional
 from src.discovery.discovery_connector import DiscoveryConnector
 
@@ -14,7 +16,7 @@ class GenericParserFallback:
         Executes the fallback chain to extract jobs from a generic careers page.
         """
         # Placeholder for the actual implementation which would launch Firecrawl, then Jina, then Playwright
-        print(f"[GenericParser] Falling back to parsing pipeline for {company_name} at {url}...")
+        logger.info(f"[GenericParser] Falling back to parsing pipeline for {company_name} at {url}...")
         
         return {
             "status": "DEGRADED",

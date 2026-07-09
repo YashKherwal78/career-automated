@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('indian_startups_importer')
 from src.crm.database import get_connection
 
 INDIAN_STARTUPS = [
@@ -41,11 +43,11 @@ def import_indian_startups():
             ''', (company_name,))
             count += 1
         except Exception as e:
-            print(f"Failed to seed {company_name}: {e}")
+            logger.info(f"Failed to seed {company_name}: {e}")
             
     conn.commit()
     conn.close()
-    print(f"Successfully imported {count} Indian startups.")
+    logger.info(f"Successfully imported {count} Indian startups.")
     
 if __name__ == "__main__":
     import_indian_startups()

@@ -1,137 +1,56 @@
-# YASH PROJECT PROFILES
+# PROJECT INTELLIGENCE DATABASE
 
-## Project Name: GDSC Search Engine
+## YAAR — AI Behavioral Companion
+**Tags:** product, consumer, personalization, recommendation, engagement, genai, llm, react native, behavioral
 
-### Origin Story
-GDSC had an open project focused on improving search across their learning resources and documentation.
-I picked up the project and decided to solve it.
-
-### Problem
-The existing search experience relied primarily on BM25 keyword search across documents.
-Students often had to know the exact keywords to find relevant information, and navigating large collections of PDFs could be cumbersome.
-
-### Goal
-Build a more natural way for students to interact with the knowledge base by allowing them to ask questions and receive answers directly from the documents.
-
-### What I Thought Would Be Hard
-At first, I thought the difficult part would be integrating the LLM and building the chat experience.
-
-### What Was Actually Hard
-The harder problem turned out to be retrieval.
-The model could only generate useful answers if the right context was retrieved first.
-I ended up spending much more time thinking about retrieval quality, ranking, and combining semantic search with keyword search than I initially expected.
-
-### Interesting Realization
-I realized that improving retrieval often had a larger impact on answer quality than changing the language model itself.
-The quality of the context mattered more than the sophistication of the model.
-
-### What I Built
-A hybrid search system that combined semantic retrieval and keyword search.
-Instead of manually searching through PDFs, users could ask questions naturally and receive context-aware answers from the document collection.
-
-### What This Project Says About Me
-I enjoy taking ownership of open-ended problems.
-I tend to start with a practical problem and then work backward to design a system that solves it.
-I also learned that many AI applications succeed or fail based on the quality of their retrieval pipeline rather than the model alone.
-
-### Role Relevance
-AI Engineer, LLM Engineer, Applied AI Engineer, ML Engineer, Backend Engineer, Software Engineer
+**Elevator Pitch:** A zero-input AI companion for Gen Z in Tier 2/3 India that learns your personality from how you react to content — not what you tell it — and gets more "you" over time. Primary revenue is contextual native brand integration.
+**Stack:** React Native, LLM APIs (Gemini Flash), FastAPI, shared_preferences, EAS Build
+**Key Technical Decisions:**
+- Preference engine tracks 3 personality dimensions (humour tolerance, self-awareness index, reaction intensity) from tap reactions — no retraining, purely inference-time via dynamic prompt construction
+- Output variance deliberately preserved (not minimised) to prevent staleness
+- Server-side state persistence across sessions
+**Key Product Decisions:**
+- Brand integration framed as behavioral state-triggered suggestion, not ad placement
+- Identity card share mechanic designed as viral acquisition loop (deep-linked, friend sees teaser, gets own output)
+**What This Says About Yash:** He ships. He thinks about retention mechanics, growth loops, and monetisation at product design time — not as afterthoughts. Understands Gen Z consumer psychology for India's Tier 2/3 market.
 
 ---
 
-## Project Name: YAAR
+## Echo Pod — AI Stillness Companion
+**Tags:** wellness, interaction-design, on-device, voice, latency, consumer, mobile
 
-### Origin Story
-The idea did not start as a social app.
-It started with a much simpler question:
-"Why does everyone consume the same content even though people are interested in completely different things?"
-I became interested in personalization and how technology could create more relevant experiences for individuals rather than showing everyone the same thing.
-
-### Initial Idea
-The original focus was personalized content creation.
-The goal was to create a system that could understand user preferences and generate content tailored specifically to the individual.
-As I explored the problem further, I realized the interesting challenge wasn't generating content.
-The interesting challenge was understanding the user.
-
-### Problem
-Most digital products focus heavily on content generation.
-I realized that personalization is often the bigger problem.
-Generating content is relatively easy.
-Understanding what someone actually wants to see is much harder.
-
-### What I Thought Would Be Hard
-Initially, I thought content generation and AI would be the difficult part.
-
-### What Was Actually Hard
-The harder problem turned out to be personalization.
-Questions started appearing:
-- How do you model preferences?
-- How do you understand changing interests?
-- How do you avoid showing repetitive content?
-- How do you balance relevance with discovery?
-
-I spent much more time thinking about user behavior and recommendation logic than content generation itself.
-
-### Interesting Realization
-I realized that personalization is often more valuable than creation.
-People don't necessarily need more content.
-They need better content selection.
-The bottleneck is frequently relevance, not generation.
-
-### What I Built
-YAAR evolved into a platform focused on personalized experiences, using user behavior, interests, and context to create more relevant interactions.
-
-### What This Project Says About Me
-I enjoy starting with a problem and refining it repeatedly until I find the actual bottleneck.
-I tend to question assumptions.
-In this case, I started by thinking content creation was the problem and eventually realized personalization was the real opportunity.
-
-### Role Relevance
-Product Management, AI Product Management, Software Engineering, Recommendation Systems, Consumer Products, Growth, Applied AI
+**Elevator Pitch:** An on-device AI product that intercepts idle moments on your phone and redirects you toward reflection instead of more scrolling — not by blocking, by competing for the same moment.
+**Origin:** Diagnosed that screen blocker apps have 25% first-session churn because they fight behavior instead of rewiring reward. Designed around interception and redirection.
+**Key Product Insight:** People don't fear boredom — they fear unmediated thought. The problem isn't attention span, it's discomfort avoidance. People don't have an information problem — they have a time and attention problem.
+**Key Technical Decision:** On-device inference (not cloud) — zero round-trip latency is a product constraint, not just an engineering preference. A 3-second ambient trigger window does not tolerate cloud round-trip.
+**What This Says About Yash:** Diagnoses the failure mode of competitors before designing. Thinks about why existing solutions fail, not just what the solution should do.
 
 ---
 
-## Project Name: EchoPod
+## AI Data Analyst Agent
+**Tags:** automation, agents, workflow, recruitment, langgraph, crewai, orchestration, python, fastapi, aws
 
-### Origin Story
-The idea started from a simple observation.
-There is an enormous amount of valuable information available online, but consuming it requires time and attention that people often don't have.
-I noticed that many articles, blogs, newsletters, and long-form content were being saved but never actually consumed.
+**Elevator Pitch:** A 5-agent LangGraph system where non-technical users type a question in plain English and get a data analysis result in under 60 seconds — no SQL, no engineer required.
+**Stack:** Python, LangGraph, CrewAI, n8n (orchestration), MCP (tool standardisation), FastAPI, Docker (sandboxed execution), AWS EC2
+**Architecture:** Query Planner → Code Writer → Executor → Error Fixer → Insight Generator
+**Key Technical Decisions:**
+- LangGraph for stateful agent workflow (not vanilla LangChain) — explicit state management per agent
+- Query Planner does intent classification BEFORE generation — eliminates downstream type errors
+- n8n as orchestration layer separate from agent logic — non-technical operators can modify routing without redeployment
+- MCP to expose tools (files, DBs, APIs) as standardised context — extensible by design
+- Error Fixer agent: classify exception → regenerate targeted fix → retry 3x before user escalation (ReAct-style)
+- Docker sandbox to isolate LLM-generated code from host
+**What This Says About Yash:** Thinks about production constraints at design time. The Error Fixer, sandbox, and n8n decoupling are all failure-mode-first decisions. This is systems thinking, not tutorial execution.
 
-### Problem
-People frequently discover useful content but postpone reading it.
-Bookmarks pile up.
-Read-later lists grow.
-Most content never gets consumed.
-The problem wasn't access to information.
-The problem was convenience.
+---
 
-### What I Thought Would Be Hard
-Initially, I thought the difficult part would be content generation and audio conversion.
+## Semantic Document Search — GDSC IIT Roorkee
+**Tags:** search, retrieval, rag, vector-db, semantic-search, embeddings, hybrid-search, full-stack
 
-### What Was Actually Hard
-The harder challenge was creating an experience that felt natural.
-Questions started appearing:
-- What content is worth converting?
-- How should information be summarized?
-- How much detail should be preserved?
-- How do you make audio consumption feel useful rather than repetitive?
-
-The challenge became balancing convenience with information quality.
-
-### Interesting Realization
-I realized that people often don't have an information problem.
-They have a time and attention problem.
-Making knowledge more accessible can be more valuable than creating new knowledge.
-
-### What I Built
-EchoPod converts written content into a more accessible audio-first experience, allowing users to consume information while commuting, walking, exercising, or performing other activities.
-The goal was to reduce friction between discovering information and actually consuming it.
-
-### What This Project Says About Me
-I enjoy identifying friction in everyday workflows.
-Rather than asking how to create more content, I often ask how to make existing content easier to use.
-This project reinforced the idea that improving accessibility and convenience can sometimes create more value than adding new features.
-
-### Role Relevance
-Product Management, Consumer Products, AI Product Management, Software Engineering, Applied AI, Content Platforms, Creator Economy
+**Elevator Pitch:** Rebuilt a 500+ document knowledge base from keyword search to hybrid RAG — users get direct grounded answers instead of a list of documents to manually search.
+**Architecture:** Hybrid Search (BM25 + Vector Embeddings) → Re-ranking → LLM Synthesis
+**Key Challenges & Decisions:**
+- Pure semantic search failed on acronyms (e.g., "IITR", "GDSC"). Reverted to hybrid search combining BM25 (exact keyword match) with dense embeddings (semantic intent).
+- Implemented aggressive caching at the query layer to avoid re-embedding standard queries.
+- Optimised for speed: Users drop off if search takes > 2s. Kept the synthesis prompt extremely short and focused on extractive rather than abstractive answering.
+**What This Says About Yash:** Pragmatic builder. Discovered the limitations of purely theoretical AI architectures (pure vector search) when applied to real-world messy data (acronyms) and correctly pivoted to a hybrid architecture.

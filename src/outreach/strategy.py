@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('strategy')
 import json
 from src.config.config import Config
 from groq import Groq
@@ -5,7 +7,7 @@ from src.crm.database import add_or_update_lead, get_lead
 
 def generate_email_strategy(groq_client: Groq, company_name: str, job_description: str, selected_project: str) -> dict:
     """Agent 7: Determines the email strategy before writing the actual email."""
-    print(f"Agent 7: Generating Email Strategy for {company_name}...")
+    logger.info(f"Agent 7: Generating Email Strategy for {company_name}...")
     
     try:
         with open(Config.DATA_DIR / "context" / "yash_master_profile.md", "r") as f:
@@ -70,9 +72,9 @@ def generate_email_strategy(groq_client: Groq, company_name: str, job_descriptio
         }) 
         return strategy
     except Exception as e:
-        print(f"Agent 7 Error: {e}")
+        logger.info(f"Agent 7 Error: {e}")
         return {}
 
 if __name__ == "__main__":
     client = Groq(api_key=Config.GROQ_API_KEY)
-    print(generate_email_strategy(client, "Google", "AI Engineer Intern...", "Hybrid RAG Retrieval System"))
+    logger.info(generate_email_strategy(client, "Google", "AI Engineer Intern...", "Hybrid RAG Retrieval System"))

@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('application_judge')
 import sqlite3
 import json
 import datetime
@@ -42,7 +44,7 @@ class ApplicationJudge:
         self.client = LLMRouter()
         
     def evaluate_queue(self):
-        print("Agent 4: Initiating Application Judge V1...")
+        logger.info("Agent 4: Initiating Application Judge V1...")
         
         # Fetch Top 50 mathematically ranked jobs
         self.cursor.execute("""
@@ -71,7 +73,7 @@ class ApplicationJudge:
                     stats[decision] += 1
                 continue
                 
-            print(f"Judging: {job['job_title']} at {job['company_name']}...")
+            logger.info(f"Judging: {job['job_title']} at {job['company_name']}...")
             
             # Truncate description to save tokens
             desc = (job["job_description"] or "")[:3000]
@@ -116,7 +118,7 @@ class ApplicationJudge:
                     decision = "MAYBE"
                     
             except Exception as e:
-                print(f"LLM Error on job {job['id']}: {e}")
+                logger.info(f"LLM Error on job {job['id']}: {e}")
                 decision = "MAYBE"
                 confidence = 0
                 reasoning = "LLM Failure"
@@ -138,19 +140,19 @@ class ApplicationJudge:
             judged_count += 1
             
         # Analytics
-        print("\n========================================")
-        print(" APPLICATION JUDGE V1 ANALYTICS ")
-        print("========================================")
-        print(f"Total Top 50 Processed: 50")
-        print(f"Newly Judged This Run:  {judged_count}")
-        print(f"STRONG_APPLY Count:     {stats['STRONG_APPLY']}")
-        print(f"APPLY Count:            {stats['APPLY']}")
-        print(f"MAYBE Count:            {stats['MAYBE']}")
-        print(f"REJECT Count:           {stats['REJECT']}")
+        logger.info("\n========================================")
+        logger.info(" APPLICATION JUDGE V1 ANALYTICS ")
+        logger.info("========================================")
+        logger.info(f"Total Top 50 Processed: 50")
+        logger.info(f"Newly Judged This Run:  {judged_count}")
+        logger.info(f"STRONG_APPLY Count:     {stats['STRONG_APPLY']}")
+        logger.info(f"APPLY Count:            {stats['APPLY']}")
+        logger.info(f"MAYBE Count:            {stats['MAYBE']}")
+        logger.info(f"REJECT Count:           {stats['REJECT']}")
         
         override_rate = (stats['MAYBE'] + stats['REJECT']) / 50.0 * 100
-        print(f"Judge Override Rate:    {override_rate:.1f}%")
-        print("========================================\n")
+        logger.info(f"Judge Override Rate:    {override_rate:.1f}%")
+        logger.info("========================================\n")
 
 if __name__ == "__main__":
     judge = ApplicationJudge()

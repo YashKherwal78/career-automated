@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('sync_sent_mail')
 import os
 import imaplib
 import email
@@ -18,34 +20,34 @@ def sync_sent_emails():
     APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")
 
     if not EMAIL or not APP_PASSWORD:
-        print("Error: GMAIL_ADDRESS and GMAIL_APP_PASSWORD not found in .env")
+        logger.info("Error: GMAIL_ADDRESS and GMAIL_APP_PASSWORD not found in .env")
         return
 
     init_db()
     
-    print(f"Connecting to IMAP as {EMAIL}...")
+    logger.info(f"Connecting to IMAP as {EMAIL}...")
     try:
         mail = imaplib.IMAP4_SSL("imap.gmail.com")
         mail.login(EMAIL, APP_PASSWORD)
     except Exception as e:
-        print(f"Failed to connect to IMAP: {e}")
+        logger.info(f"Failed to connect to IMAP: {e}")
         return
 
-    print("Selecting '[Gmail]/Sent Mail' folder...")
+    logger.info("Selecting '[Gmail]/Sent Mail' folder...")
     status, messages = mail.select('"[Gmail]/Sent Mail"')
     if status != 'OK':
-        print("Failed to select Sent Mail folder.")
+        logger.info("Failed to select Sent Mail folder.")
         return
 
     # Search all emails
     status, response = mail.search(None, 'ALL')
     if status != 'OK':
-        print("Failed to search emails.")
+        logger.info("Failed to search emails.")
         return
 
     email_ids = response[0].split()
     total_emails = len(email_ids)
-    print(f"Found {total_emails} sent emails. Processing in bulk chunks...")
+    logger.info(f"Found {total_emails} sent emails. Processing in bulk chunks...")
 
     processed = 0
     extracted = 0
@@ -97,10 +99,10 @@ def sync_sent_emails():
                         extracted += 1
                         
         processed += len(chunk)
-        print(f"Processed {processed}/{total_emails} emails...")
+        logger.info(f"Processed {processed}/{total_emails} emails...")
 
     mail.logout()
-    print(f"Sync complete. Extracted {extracted} recipient instances across {total_emails} emails.")
+    logger.info(f"Sync complete. Extracted {extracted} recipient instances across {total_emails} emails.")
 
 if __name__ == "__main__":
     sync_sent_emails()

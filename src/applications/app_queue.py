@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('app_queue')
 import sqlite3
 import datetime
 from src.config.config import Config
@@ -6,7 +8,7 @@ def generate_daily_queue():
     """
     Generates the daily application queue by isolating the top 20 HIGH priority jobs.
     """
-    print("Agent 0: Generating Daily Application Queue...")
+    logger.info("Agent 0: Generating Daily Application Queue...")
     conn = sqlite3.connect(Config.DATABASE_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -20,7 +22,7 @@ def generate_daily_queue():
     remaining_slots = 20 - queued_today
     
     if remaining_slots <= 0:
-        print(f"Queue is already full for today ({queued_today}/20).")
+        logger.info(f"Queue is already full for today ({queued_today}/20).")
         conn.close()
         return
 
@@ -82,7 +84,7 @@ def generate_daily_queue():
     conn.commit()
     conn.close()
     
-    print(f"Queue generation complete. Added {queued} jobs to today's queue.")
+    logger.info(f"Queue generation complete. Added {queued} jobs to today's queue.")
 
 if __name__ == "__main__":
     generate_daily_queue()

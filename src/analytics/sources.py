@@ -1,10 +1,12 @@
+from src.system.logger import setup_logger
+logger = setup_logger('sources')
 import sqlite3
 from src.config.config import Config
 
 def print_source_rankings():
-    print("========================================")
-    print(" SOURCE QUALITY RANKINGS ")
-    print("========================================")
+    logger.info("========================================")
+    logger.info(" SOURCE QUALITY RANKINGS ")
+    logger.info("========================================")
     
     conn = sqlite3.connect(Config.DATABASE_PATH)
     cursor = conn.cursor()
@@ -29,8 +31,8 @@ def print_source_rankings():
     cursor.execute(query)
     rows = cursor.fetchall()
     
-    print(f"{'Source':<35} | {'Jobs':<5} | {'High Qual':<10} | {'Outreach':<8} | {'Replies':<7} | {'Interviews':<10}")
-    print("-" * 90)
+    logger.info(f"{'Source':<35} | {'Jobs':<5} | {'High Qual':<10} | {'Outreach':<8} | {'Replies':<7} | {'Interviews':<10}")
+    logger.info("-" * 90)
     
     for row in rows:
         source = str(row[0])[:34]
@@ -39,9 +41,9 @@ def print_source_rankings():
         outreach = row[3]
         replies = row[4]
         interviews = row[5]
-        print(f"{source:<35} | {jobs:<5} | {hq:<10} | {outreach:<8} | {replies:<7} | {interviews:<10}")
+        logger.info(f"{source:<35} | {jobs:<5} | {hq:<10} | {outreach:<8} | {replies:<7} | {interviews:<10}")
         
-    print("========================================\n")
+    logger.info("========================================\n")
     conn.close()
 
 if __name__ == "__main__":

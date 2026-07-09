@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('manual_importer')
 import sys
 import argparse
 from src.crm.database import get_connection
@@ -22,9 +24,9 @@ def import_manual_company(name, website, ats, slug, hiring_in_india=False):
         ''', (name,))
         
         conn.commit()
-        print(f"Successfully imported {name} ({ats}: {slug})")
+        logger.info(f"Successfully imported {name} ({ats}: {slug})")
     except Exception as e:
-        print(f"Failed to insert {name}: {e}")
+        logger.info(f"Failed to insert {name}: {e}")
     finally:
         conn.close()
 

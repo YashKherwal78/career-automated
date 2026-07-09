@@ -1,28 +1,29 @@
-FROM python:3.11-slim
-
-# Prevent interactive prompts during apt installations
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Install LaTeX and timezone data
-RUN apt-get update && apt-get install -y \
-    texlive-latex-base \
-    texlive-fonts-recommended \
-    texlive-latex-extra \
-    tzdata \
-    && rm -rf /var/lib/apt/lists/*
-
-# Set local timezone so that schedule triggers at the correct time in IST
-ENV TZ="Asia/Kolkata"
+FROM mcr.microsoft.com/playwright/python:v1.45.0-jammy
 
 WORKDIR /app
 
-# Install Python dependencies
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    sqlite3 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first to leverage Docker cache
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy all source files
+# Ensure playwright browsers are fully installed
+RUN playwright install --with-deps chromium
+
+# Copy the rest of the application
 COPY . .
 
-# Run the autonomous scheduler
-ENV PYTHONPATH="/app"
-CMD ["python3", "-m", "src.autonomous"]
+# Environment setup
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+
+# By default, we expose Streamlit port
+EXPOSE 8501
+
+# The default command will be to run the health check, then start the cron loop
+# Alternatively, users can override this to start the dashboard
+CMD ["bash", "-c", "python3 src/system/health_check.py && python3 src/production/main_cron.py"]

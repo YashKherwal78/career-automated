@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('connector_manager')
 import concurrent.futures
 from typing import List, Dict, Any
 from src.discovery.connector_registry import ConnectorRegistry
@@ -21,11 +23,11 @@ class ConnectorManager:
             payload = {}
 
         raw_payloads = []
-        print(f"ConnectorManager: Launching {len(self.connectors)} healthy connectors in parallel...")
+        logger.info(f"ConnectorManager: Launching {len(self.connectors)} healthy connectors in parallel...")
         
         def run_connector(connector):
             try:
-                print(f"ConnectorManager: Running {connector.name}...")
+                logger.info(f"ConnectorManager: Running {connector.name}...")
                 results = connector.discover(session.session_id, payload)
                 
                 # Log metrics for this specific run
@@ -35,7 +37,7 @@ class ConnectorManager:
                 )
                 return results
             except Exception as e:
-                print(f"ConnectorManager: {connector.name} failed during discover(): {e}")
+                logger.info(f"ConnectorManager: {connector.name} failed during discover(): {e}")
                 session.log_metrics(connectors_executed=1, errors=1)
                 return []
 
@@ -51,6 +53,6 @@ class ConnectorManager:
                         else:
                             raw_payloads.append(result)
                 except Exception as exc:
-                    print(f'{connector.name} generated an exception: {exc}')
+                    logger.info(f'{connector.name} generated an exception: {exc}')
                     
         return raw_payloads

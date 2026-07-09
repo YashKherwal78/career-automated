@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('company_search_provider')
 from typing import List, Optional
 import time
 from src.discovery.providers.base_provider import BaseProvider, StandardJob, ProviderCapabilities
@@ -32,7 +34,7 @@ class CompanySearchProvider(BaseProvider):
         """
         # Using a mock here for demonstration, since DuckDuckGo blocking requires a specific scraper implementation.
         # Ideally, we would use duckduckgo_search library or similar.
-        print("CompanySearchProvider: Executing search for 'AI startup India careers'...")
+        logger.info("CompanySearchProvider: Executing search for 'AI startup India careers'...")
         time.sleep(1)
         
         # Simulated search results

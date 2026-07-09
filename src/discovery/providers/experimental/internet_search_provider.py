@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('internet_search_provider')
 import requests
 import re
 import urllib.parse
@@ -18,7 +20,7 @@ class InternetSearchProvider(BaseDiscoveryProvider):
         budget = Config.GOOGLE_SEARCH_MAX_QUERIES_PER_RUN
         strategies_to_run = strategies[:budget]
         
-        print(f"InternetSearchProvider: Running {len(strategies_to_run)} adaptive strategies (Budget: {budget})")
+        logger.info(f"InternetSearchProvider: Running {len(strategies_to_run)} adaptive strategies (Budget: {budget})")
         
         for strategy in strategies_to_run:
             query = strategy["query"]
@@ -57,7 +59,7 @@ class InternetSearchProvider(BaseDiscoveryProvider):
                 pass
                 
         if not seeds:
-            print("InternetSearchProvider: Real search failed (bot protection). Injecting mock seeds with generated strategy_ids.")
+            logger.info("InternetSearchProvider: Real search failed (bot protection). Injecting mock seeds with generated strategy_ids.")
             mock_urls = [
                 "https://boards.greenhouse.io/anthropic/jobs/5183044008",
                 "https://boards.greenhouse.io/figma/jobs/5989185004"

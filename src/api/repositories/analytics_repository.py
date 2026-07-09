@@ -162,3 +162,49 @@ class AnalyticsRepository:
         """, (company_id,))
         columns = [col[0] for col in c.description]
         return [dict(zip(columns, row)) for row in c.fetchall()]
+
+    def get_priorities(self):
+        c = self.db.cursor()
+        priorities = []
+        
+        # 1. Backlog Check
+        c.execute("SELECT count(*) FROM local_queues WHERE queue_name='discovery_queue' AND status='QUEUED'")
+        backlog = c.fetchone()[0]
+        if backlog > 500:
+            priorities.append({
+                "severity": "warning",
+                "title": f"Discovery queue backlog growing ({backlog} queued)",
+                "description": "Backlog exceeds normal threshold of 500. Recommend scaling discovery workers."
+            })
+            
+        # 2. Dead verified boards
+        c.execute("SELECT COUNT(*) FROM ats_registry WHERE status = 'FAILED'")
+        dead = c.fetchone()[0]
+        if dead > 0:
+            priorities.append({
+                "severity": "danger",
+                "title": f"{dead} dead verified boards detected",
+                "description": "Failed health checks suggest these boards have migrated, requiring parser/path updates."
+            })
+            
+        # 3. Workable precision check
+        c.execute("SELECT verified, candidates_found FROM plugin_metrics WHERE plugin='workable'")
+        row = c.fetchone()
+        if row:
+            verified, candidates = row
+            precision = (verified / candidates) * 100 if candidates > 0 else 100
+            if precision < 50:
+                priorities.append({
+                    "severity": "danger",
+                    "title": f"Workable plugin precision low ({precision:.1f}%)",
+                    "description": "Workable candidate parser is producing high noise. Target: >80% precision."
+                })
+                
+        # Fallback if empty
+        if not priorities:
+            priorities.append({
+                "severity": "success",
+                "title": "Pipeline is healthy",
+                "description": "All stages operate within target conversion, precision, and latency thresholds."
+            })
+        return priorities

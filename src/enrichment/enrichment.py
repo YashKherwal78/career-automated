@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('enrichment')
 from abc import ABC, abstractmethod
 import requests
 from src.config.config import Config
@@ -19,7 +21,7 @@ class HunterProvider(EnrichmentProvider):
     def enrich_domain(self, domain_url: str) -> dict:
         if not self.api_key:
             return {}
-        print(f"[HunterProvider] Searching for {domain_url}...")
+        logger.info(f"[HunterProvider] Searching for {domain_url}...")
         url = f"https://api.hunter.io/v2/domain-search?domain={domain_url}&api_key={self.api_key}"
         result = {}
         try:
@@ -43,7 +45,7 @@ class HunterProvider(EnrichmentProvider):
                     elif "hr" in position or "human resources" in position:
                         result["hr_email"] = val
         except Exception as e:
-            print(f"[HunterProvider] Error: {e}")
+            logger.info(f"[HunterProvider] Error: {e}")
         return result
 
 class GetProspectProvider(EnrichmentProvider):
@@ -70,7 +72,7 @@ def enrich_company(company_name: str, domain_url: str = None) -> dict:
         try:
             last_date = datetime.fromisoformat(lead["last_enriched_date"])
             if (datetime.now() - last_date).days < 30:
-                print(f"[{company_name}] Enrichment Cached. Skipping API call.")
+                logger.info(f"[{company_name}] Enrichment Cached. Skipping API call.")
                 return dict(lead)
         except:
             pass

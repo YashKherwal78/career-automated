@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('greenhouse')
 import re
 import time
 import os
@@ -5,6 +7,7 @@ from playwright.sync_api import Page
 from src.applications.question_engine import QuestionEngine
 from src.applications.profile import ProfileManager
 from src.applications.question_classifier import QuestionClassifier
+from src.system.state import WorkflowState
 
 class GreenhouseHandler:
     def __init__(self, page: Page, job_title: str, company_name: str, location: str, resume_path: str, test_mode: bool = False, execution_dir: str = "", profile_manager=None, rag_client=None, llm_client=None, company_context: str = ""):
@@ -50,7 +53,7 @@ class GreenhouseHandler:
         return score
         
     def _enter_application_flow(self):
-        print("GreenhouseHandler: Entering application flow...")
+        logger.info("GreenhouseHandler: Entering application flow...")
         if not hasattr(self, "telemetry"): self.telemetry = {}
         
         # 1. Check if we are already in flow
@@ -67,13 +70,14 @@ class GreenhouseHandler:
                 best_score = f_score
                 best_context = frame
                 
-        print(f"  -> Initial Form Confidence Score: {best_score}")
+        logger.info(f"  -> Initial Form Confidence Score: {best_score}")
         
         if best_score >= 50:
-            print("  -> Application form detected initially. Proceeding.")
+            logger.info("  -> Application form detected initially. Proceeding.")
+            self.active_context = best_context
             return
             
-        print("  -> Form not detected. Searching for Apply button...")
+        logger.info("  -> Form not detected. Searching for Apply button...")
         
         apply_texts = ["Apply for this role", "Apply for this job", "Apply now", "Apply", "Continue application"]
         
@@ -99,7 +103,7 @@ class GreenhouseHandler:
             raise Exception("APPLICATION_FORM_NOT_DETECTED: No Apply button found and initial score < 50.")
             
         url_before = self.page.url
-        print(f"  -> Clicking Apply button: '{target_text}'")
+        logger.info(f"  -> Clicking Apply button: '{target_text}'")
         
         # Handle potential new tab
         try:
@@ -108,7 +112,7 @@ class GreenhouseHandler:
             new_page = new_page_info.value
             new_page.wait_for_load_state("domcontentloaded")
             new_page.wait_for_timeout(2000)
-            print("  -> Navigation Type: Popup/New Tab")
+            logger.info("  -> Navigation Type: Popup/New Tab")
             self.page = new_page # Switch primary context
             self.active_context = self.page
         except Exception:
@@ -117,12 +121,12 @@ class GreenhouseHandler:
                 target_btn.click(timeout=5000)
                 self.page.wait_for_timeout(3000)
             except Exception as e:
-                print(f"  -> Warning: Click on Apply failed: {e}")
+                logger.info(f"  -> Warning: Click on Apply failed: {e}")
                 
             nav_type = "Same Page/Modal"
             if self.page.url != url_before:
                 nav_type = "Redirect"
-            print(f"  -> Navigation Type: {nav_type}")
+            logger.info(f"  -> Navigation Type: {nav_type}")
             
         url_after = self.page.url
         
@@ -139,32 +143,33 @@ class GreenhouseHandler:
                 final_score = f_score
                 
         self.telemetry["form_confidence_score"] = final_score
-        print(f"  -> Post-click Form Confidence Score: {final_score}")
+        logger.info(f"  -> Post-click Form Confidence Score: {final_score}")
         
         if final_score < 50:
             raise Exception("APPLICATION_FORM_NOT_DETECTED: Apply button clicked but form confidence score < 50.")
             
-        print("  -> Application flow entered successfully.")
+        self.active_context = best_context
+        logger.info("  -> Application flow entered successfully.")
         
     def _detect_and_set_iframe(self):
-        print("GreenhouseHandler: Scanning for iframes...")
+        logger.info("GreenhouseHandler: Scanning for iframes...")
         try:
             self.page.wait_for_timeout(2000) # Give frames a moment to load
             iframes = self.page.frames
-            print(f"  -> Found {len(iframes)} frames.")
+            logger.info(f"  -> Found {len(iframes)} frames.")
             for frame in iframes:
                 url = frame.url.lower()
-                print(f"  -> Frame URL: {url}")
+                logger.info(f"  -> Frame URL: {url}")
                 if "boards.greenhouse.io" in url or "greenhouse.io" in url or "application" in url:
-                    print(f"GreenhouseHandler: Detected Greenhouse iframe ({url}). Promoting to active_context.")
+                    logger.info(f"GreenhouseHandler: Detected Greenhouse iframe ({url}). Promoting to active_context.")
                     self.active_context = frame
                     if not hasattr(self, "telemetry"): self.telemetry = {}
                     self.telemetry["iframe_detected"] = True
                     self.telemetry["iframe_url"] = url
                     return
         except Exception as e:
-            print(f"  -> Iframe scan error: {e}")
-        print("GreenhouseHandler: No matching iframe found. Using main page as active_context.")
+            logger.info(f"  -> Iframe scan error: {e}")
+        logger.info("GreenhouseHandler: No matching iframe found. Using main page as active_context.")
         
     def _capture_screenshot(self, name: str):
         if self.execution_dir:
@@ -173,7 +178,7 @@ class GreenhouseHandler:
             self.page.screenshot(path=os.path.join(self.execution_dir, name))
         
     def _fill_and_verify_standard_fields(self) -> bool:
-        print("GreenhouseHandler: Verifying standard fields...")
+        logger.info("GreenhouseHandler: Verifying standard fields...")
         safe_to_proceed = True
         
         fields = {
@@ -202,23 +207,37 @@ class GreenhouseHandler:
                     
                     self.page.wait_for_timeout(200)
                     if not input_el.input_value():
-                        print(f"GreenhouseHandler: Field {key} empty after fill. Retrying...")
+                        logger.info(f"GreenhouseHandler: Field {key} empty after fill. Retrying...")
                         input_el.fill(val, timeout=3000)
                         self.page.wait_for_timeout(200)
                         if not input_el.input_value():
-                            print(f"GreenhouseHandler: CRITICAL - Field {key} failed to populate.")
+                            logger.info(f"GreenhouseHandler: CRITICAL - Field {key} failed to populate.")
                             safe_to_proceed = False
+                        elif key == "email" and "filled_fields" in self.telemetry:
+                            self.telemetry["filled_fields"]["Email"] = True
+                        elif key == "phone" and "filled_fields" in self.telemetry:
+                            self.telemetry["filled_fields"]["Phone"] = True
+                    else:
+                        if key == "email" and "filled_fields" in self.telemetry:
+                            self.telemetry["filled_fields"]["Email"] = True
+                        elif key == "phone" and "filled_fields" in self.telemetry:
+                            self.telemetry["filled_fields"]["Phone"] = True
                 except Exception as e:
-                    print(f"GreenhouseHandler: Error filling {key}: {e}")
+                    logger.info(f"GreenhouseHandler: Error filling {key}: {e}")
                     safe_to_proceed = False
                     
         return safe_to_proceed
 
     def _upload_resume(self) -> bool:
-        print(f"GreenhouseHandler: Uploading resume {self.resume_path}...")
+        logger.info(f"GreenhouseHandler: Uploading resume {self.resume_path}...")
+        
+        if "filled_fields" not in self.telemetry:
+            self.telemetry["filled_fields"] = {}
+        self.telemetry["resume_filename"] = os.path.basename(self.resume_path)
+        self.telemetry["resume_upload_success"] = False
         
         if not os.path.exists(self.resume_path):
-            print(f"Resume Upload Failed: File does not exist at {self.resume_path}")
+            logger.info(f"Resume Upload Failed: File does not exist at {self.resume_path}")
             return False
             
         # Copy and rename resume for ATS parsing
@@ -238,14 +257,14 @@ class GreenhouseHandler:
             
         try:
             shutil.copy2(self.resume_path, upload_path)
-            print(f"  -> Renamed to: {new_resume_name}")
+            logger.info(f"  -> Renamed to: {new_resume_name}")
         except Exception as e:
-            print(f"  -> Rename failed, using original: {e}")
+            logger.info(f"  -> Rename failed, using original: {e}")
             upload_path = self.resume_path
 
         file_size = os.path.getsize(upload_path)
-        print(f"  -> File Exists: True")
-        print(f"  -> File Size: {file_size} bytes")
+        logger.info(f"  -> File Exists: True")
+        logger.info(f"  -> File Size: {file_size} bytes")
         
         for attempt in range(2):
             try:
@@ -274,7 +293,7 @@ class GreenhouseHandler:
                     strategies = [s for s in strategies if s["name"] == known_strategy] + [s for s in strategies if s["name"] != known_strategy]
                     
                 for strat in strategies:
-                    print(f"  -> Trying Strategy {strat['name']}: {strat['desc']}")
+                    logger.info(f"  -> Trying Strategy {strat['name']}: {strat['desc']}")
                     loc = self.active_context.locator(strat['loc']).first
                     if loc.count() > 0:
                         try:
@@ -290,7 +309,7 @@ class GreenhouseHandler:
                                 upload_success = True
                                 
                             if upload_success:
-                                print(f"  -> Strategy {strat['name']} executed successfully.")
+                                logger.info(f"  -> Strategy {strat['name']} executed successfully.")
                                 # Save strategy
                                 try:
                                     s_data = {}
@@ -303,10 +322,10 @@ class GreenhouseHandler:
                                 except: pass
                                 break
                         except Exception as e:
-                            print(f"  -> Strategy {strat['name']} failed: {e}")
+                            logger.info(f"  -> Strategy {strat['name']} failed: {e}")
                             
                 if not upload_success:
-                    print(f"  -> All upload strategies failed. (Attempt {attempt+1})")
+                    logger.info(f"  -> All upload strategies failed. (Attempt {attempt+1})")
                     if attempt == 0: continue
                     return False
                 
@@ -315,35 +334,41 @@ class GreenhouseHandler:
                 # Check for error banners
                 error_banners = self.active_context.locator('.error-message, .validation-error, [role="alert"]').all_inner_texts()
                 if any("resume" in err.lower() or "upload" in err.lower() or "file" in err.lower() for err in error_banners):
-                    print(f"  -> Upload Verified: False (Error banner detected). (Attempt {attempt+1})")
+                    logger.info(f"  -> Upload Verified: False (Error banner detected). (Attempt {attempt+1})")
                     if attempt == 0: continue
                     return False
                 
                 try:
                     # Wait for either the full name or the name without extension
                     self.active_context.wait_for_selector(f"text={resume_name_only}", timeout=8000)
-                    print(f"  -> Upload Verified: True")
+                    logger.info(f"  -> Upload Verified: True")
+                    self.telemetry["resume_upload_success"] = True
+                    self.telemetry["resume_upload_time"] = datetime.now().isoformat()
+                    self.telemetry["filled_fields"]["Resume"] = True
                     return True
                 except Exception:
                     try:
                         # Fallback: check for 'Remove' link which appears after upload
                         self.active_context.wait_for_selector('button:has-text("Remove"), a:has-text("Remove")', timeout=4000)
-                        print(f"  -> Upload Verified: True (via Remove button)")
+                        logger.info(f"  -> Upload Verified: True (via Remove button)")
+                        self.telemetry["resume_upload_success"] = True
+                        self.telemetry["resume_upload_time"] = datetime.now().isoformat()
+                        self.telemetry["filled_fields"]["Resume"] = True
                         return True
                     except Exception:
-                        print(f"  -> Upload Verified: False (Could not verify DOM). (Attempt {attempt+1})")
+                        logger.info(f"  -> Upload Verified: False (Could not verify DOM). (Attempt {attempt+1})")
                         self._capture_screenshot(f"resume_verification_failure_attempt_{attempt}.png")
                         if attempt == 0: continue
                         return False
             except Exception as e:
-                print(f"GreenhouseHandler: Error during resume upload strategy attempt: {e}")
+                logger.info(f"GreenhouseHandler: Error during resume upload strategy attempt: {e}")
                 if attempt == 0: continue
                 return False
         return False
 
 
     def _extract_questions(self) -> list[dict]:
-        print("GreenhouseHandler: DOM PARSER V3 - Extracting questions...")
+        logger.info("GreenhouseHandler: DOM PARSER V3 - Extracting questions...")
         questions = []
         ignored_options = 0
         total_options = 0
@@ -415,12 +440,12 @@ class GreenhouseHandler:
             except Exception as e:
                 pass
                 
-        print("\n==================================================")
-        print("Detected Questions")
-        print(f"Question Count: {len(questions)}")
-        print(f"Option Count: {total_options}")
-        print(f"Ignored Option Labels: {ignored_options}")
-        print("==================================================\n")
+        logger.info("\n==================================================")
+        logger.info("Detected Questions")
+        logger.info(f"Question Count: {len(questions)}")
+        logger.info(f"Option Count: {total_options}")
+        logger.info(f"Ignored Option Labels: {ignored_options}")
+        logger.info("==================================================\n")
         
         return questions
 
@@ -428,7 +453,7 @@ class GreenhouseHandler:
         """
         Iterates over custom fields. Returns True if all successfully answered and safe to auto-submit.
         """
-        print("GreenhouseHandler: Processing custom fields...")
+        logger.info("GreenhouseHandler: Processing custom fields...")
         safe_to_submit = True
         
         if 'interaction_log' not in telemetry:
@@ -469,12 +494,12 @@ class GreenhouseHandler:
                         opts = self.active_context.locator('div[class*="-option"]').all_inner_texts()
                         options = [o.strip() for o in opts if o.strip()]
                 except Exception as e:
-                    print(f"Failed to pre-load react_select options: {e}")
+                    logger.info(f"Failed to pre-load react_select options: {e}")
                     
             # 1.6A: Classify the question before answering
             classification = QuestionClassifier.classify(clean_label, widget_type)
             if classification == "ESCALATE":
-                print(f"GreenhouseHandler: Escalating complex question '{clean_label}' -> REVIEW_REQUIRED")
+                logger.info(f"GreenhouseHandler: Escalating complex question '{clean_label}' -> REVIEW_REQUIRED")
                 safe_to_submit = False
                 continue
 
@@ -494,7 +519,7 @@ class GreenhouseHandler:
                 
             conf = dom_meta.get("confidence", 100)
             if conf < 70:
-                print(f"Validation Error: Answer for '{clean_label}' has confidence {conf} < 70. Triggering REVIEW_REQUIRED.")
+                logger.info(f"Validation Error: Answer for '{clean_label}' has confidence {conf} < 70. Triggering REVIEW_REQUIRED.")
                 if "missing_fields" not in telemetry:
                     telemetry["missing_fields"] = []
                 telemetry["missing_fields"].append({
@@ -505,10 +530,10 @@ class GreenhouseHandler:
                 safe_to_submit = False
                 continue
             elif conf < 90:
-                print(f"Warning: Answer for '{clean_label}' has confidence {conf} (70-89). Proceeding with warning.")
+                logger.info(f"Warning: Answer for '{clean_label}' has confidence {conf} (70-89). Proceeding with warning.")
                 
             if answer == "REVIEW_REQUIRED":
-                print(f"Validation Error: Answer for '{clean_label}' resolved to REVIEW_REQUIRED. Aborting interaction.")
+                logger.info(f"Validation Error: Answer for '{clean_label}' resolved to REVIEW_REQUIRED. Aborting interaction.")
                 if "missing_fields" not in telemetry:
                     telemetry["missing_fields"] = []
                 telemetry["missing_fields"].append({
@@ -670,7 +695,7 @@ class GreenhouseHandler:
 
     def _pre_submit_audit(self) -> bool:
         """Fix 4: Scan all required fields for empty or invalid values."""
-        print("GreenhouseHandler: Running Pre-Submit Audit...")
+        logger.info("GreenhouseHandler: Running Pre-Submit Audit...")
         safe = True
         missing_count = 0
         
@@ -693,7 +718,7 @@ class GreenhouseHandler:
                     for i in range(inputs.count()):
                         el = inputs.nth(i)
                         if el.is_visible() and not el.input_value():
-                            print(f"Pre-Submit Audit Failed: Empty required input near '{label_text}'")
+                            logger.info(f"Pre-Submit Audit Failed: Empty required input near '{label_text}'")
                             safe = False
                             missing_count += 1
                 elif widget_type == "textarea":
@@ -701,7 +726,7 @@ class GreenhouseHandler:
                     for i in range(textareas.count()):
                         el = textareas.nth(i)
                         if el.is_visible() and not el.input_value():
-                            print(f"Pre-Submit Audit Failed: Empty required textarea near '{label_text}'")
+                            logger.info(f"Pre-Submit Audit Failed: Empty required textarea near '{label_text}'")
                             safe = False
                             missing_count += 1
                 elif widget_type == "native_select":
@@ -709,7 +734,7 @@ class GreenhouseHandler:
                     for i in range(selects.count()):
                         el = selects.nth(i)
                         if el.is_visible() and not el.input_value():
-                            print(f"Pre-Submit Audit Failed: Empty required select near '{label_text}'")
+                            logger.info(f"Pre-Submit Audit Failed: Empty required select near '{label_text}'")
                             safe = False
                             missing_count += 1
                 elif widget_type == "react_select":
@@ -719,7 +744,7 @@ class GreenhouseHandler:
                         if el.is_visible():
                             val = el.inner_text()
                             if not val or val == "[]" or val == "Select...":
-                                print(f"Pre-Submit Audit Failed: Invalid React Select value '{val}' near '{label_text}'")
+                                logger.info(f"Pre-Submit Audit Failed: Invalid React Select value '{val}' near '{label_text}'")
                                 safe = False
                                 missing_count += 1
                 elif widget_type in ["radio_group", "checkbox_group"]:
@@ -730,14 +755,14 @@ class GreenhouseHandler:
                             checked = True
                             break
                     if not checked:
-                        print(f"Pre-Submit Audit Failed: No option selected near '{label_text}'")
+                        logger.info(f"Pre-Submit Audit Failed: No option selected near '{label_text}'")
                         safe = False
                         missing_count += 1
             except Exception as e:
-                print(f"Pre-Submit Audit Warning near label: {e}")
+                logger.info(f"Pre-Submit Audit Warning near label: {e}")
                 
         if missing_count > 0:
-            print(f"GreenhouseHandler: ABORTING SUBMISSION. Detected {missing_count} empty required fields!")
+            logger.info(f"GreenhouseHandler: ABORTING SUBMISSION. Detected {missing_count} empty required fields!")
             return False
             
         return safe
@@ -803,7 +828,7 @@ class GreenhouseHandler:
         import time
         
         self._capture_screenshot("02_otp_page.png")
-        print("GreenhouseHandler: Entering OTP_RETRIEVING state.")
+        logger.info("GreenhouseHandler: Entering OTP_RETRIEVING state.")
         telemetry['otp_detected'] = True
         
         start_time = datetime.now(timezone.utc) - timedelta(minutes=2)
@@ -812,7 +837,7 @@ class GreenhouseHandler:
         
         retries = [10, 20, 40]
         for delay in retries:
-            print(f"GreenhouseHandler: Fetching OTP... (Wait: {delay}s)")
+            logger.info(f"GreenhouseHandler: Fetching OTP... (Wait: {delay}s)")
             self.page.wait_for_timeout(delay * 1000)
             cumulative_wait += delay
             result = retrieve_greenhouse_otp(start_time)
@@ -825,12 +850,12 @@ class GreenhouseHandler:
                 break
                 
         if not code:
-            print("GreenhouseHandler: OTP Retrieval Failed after max retries.")
+            logger.info("GreenhouseHandler: OTP Retrieval Failed after max retries.")
             telemetry['otp_received'] = False
-            return "REVIEW_REQUIRED"
+            return WorkflowState.OTP_REQUIRED.name
             
         telemetry['otp_received'] = True
-        print(f"GreenhouseHandler: OTP Retrieved -> {code}. Entering OTP_SUBMITTED state.")
+        logger.info(f"GreenhouseHandler: OTP Retrieved -> {code}. Entering OTP_SUBMITTED state.")
         
         # Fill the OTP inputs
         try:
@@ -850,11 +875,11 @@ class GreenhouseHandler:
             
             telemetry['otp_submitted'] = True
             self._capture_screenshot("03_after_otp_filled.png")
-            print("GreenhouseHandler: OTP Filled. Awaiting submit...")
+            logger.info("GreenhouseHandler: OTP Filled. Awaiting submit...")
             return "OTP_SUBMITTED"
         except Exception as e:
-            print(f"GreenhouseHandler: Error filling OTP: {e}")
-            return "REVIEW_REQUIRED"
+            logger.info(f"GreenhouseHandler: Error filling OTP: {e}")
+            return WorkflowState.REVIEW_REQUIRED.name
 
     def _diagnose_submission_blocker(self) -> dict:
         diagnosis = {
@@ -917,7 +942,7 @@ class GreenhouseHandler:
         
         # 1. Handle OTP
         if diagnosis.get("otp_detected"):
-            print("GreenhouseHandler: OTP Challenge Detected. Launching OTP Retriever...")
+            logger.info("GreenhouseHandler: OTP Challenge Detected. Launching OTP Retriever...")
             
             # Log this learning action
             if not hasattr(self, "learning_log"):
@@ -931,9 +956,9 @@ class GreenhouseHandler:
             
             if otp_code:
                 try:
-                    print("OTP Detected")
-                    print("OTP Retrieved")
-                    print(f"OTP Length: {len(otp_code)}")
+                    logger.info("OTP Detected")
+                    logger.info("OTP Retrieved")
+                    logger.info(f"OTP Length: {len(otp_code)}")
                     
                     # 1. Look for split inputs (security-input-0, security-input-1, etc.)
                     security_inputs = self.active_context.locator('input[id^="security-input-"]')
@@ -951,13 +976,13 @@ class GreenhouseHandler:
                             otp_input.fill(otp_code)
                             boxes_filled += 1
                             
-                    print(f"Boxes Filled: {boxes_filled}")
+                    logger.info(f"Boxes Filled: {boxes_filled}")
                             
                     if boxes_filled > 0:
                         verify_btn = self.active_context.locator('button:has-text("Verify"), button:has-text("Submit")').first
                         if verify_btn.is_visible():
                             verify_btn.click(timeout=5000)
-                            print("Verification Result: Submitted")
+                            logger.info("Verification Result: Submitted")
                             
                             self.learning_log.append({
                                 "problem": "OTP Verification Required",
@@ -973,10 +998,10 @@ class GreenhouseHandler:
                             
                             return True
                 except Exception as e:
-                    print(f"Verification Result: Failed to fill OTP: {e}")
+                    logger.info(f"Verification Result: Failed to fill OTP: {e}")
                     
-            print("REVIEW_REQUIRED")
-            print("Reason: OTP_EMAIL_NOT_FOUND")
+            logger.info("OTP_REQUIRED")
+            logger.info("Reason: OTP_EMAIL_NOT_FOUND")
             self.learning_log.append({
                 "problem": "OTP Verification Required",
                 "repair": "Retrieve OTP from Gmail",
@@ -987,7 +1012,7 @@ class GreenhouseHandler:
         if not diagnosis.get("missing_fields"):
             return False
             
-        print("GreenhouseHandler: Attempting Auto-Repair for missing fields...")
+        logger.info("GreenhouseHandler: Attempting Auto-Repair for missing fields...")
         
         repair_map = {
             "gender": self.profile.get_field("gender") or "Male",
@@ -1011,7 +1036,7 @@ class GreenhouseHandler:
                         break
                 
                 if fix_value:
-                    print(f"  -> Auto-Repairing '{clean_label}' with '{fix_value}'")
+                    logger.info(f"  -> Auto-Repairing '{clean_label}' with '{fix_value}'")
                     
                     try:
                         if widget_type == "react_select":
@@ -1050,10 +1075,24 @@ class GreenhouseHandler:
         telemetry = {
             "question_count": 0,
             "llm_question_count": 0,
-            "profile_question_count": 0
+            "profile_question_count": 0,
+            "filled_fields": {
+                "Resume": False,
+                "Email": False,
+                "Phone": False,
+                "LinkedIn": False,
+                "Questions": False,
+                "Attachments": False
+            }
         }
         if hasattr(self, "telemetry"):
+            # Merge nested dicts carefully
+            filled_fields = telemetry["filled_fields"]
+            if "filled_fields" in self.telemetry:
+                filled_fields.update(self.telemetry["filled_fields"])
             telemetry.update(self.telemetry)
+            telemetry["filled_fields"] = filled_fields
+            
         self.telemetry = telemetry
         
         try:
@@ -1066,27 +1105,27 @@ class GreenhouseHandler:
             # Use the new robust method
             standard_fields_safe = self._fill_and_verify_standard_fields()
             if not standard_fields_safe:
-                print("GreenhouseHandler: Standard field validation failed. Safety Pause.")
+                logger.info("GreenhouseHandler: Standard field validation failed. Safety Pause.")
                 self._capture_screenshot("05_pre_submit.png")
-                return {"status": "REVIEW_REQUIRED", "audit_log": self.engine.audit_log, "telemetry": telemetry}
+                return {"status": WorkflowState.REVIEW_REQUIRED.name, "audit_log": self.engine.audit_log, "telemetry": telemetry}
                 
             self._capture_screenshot("03_profile_completed.png")
             upload_success = self._upload_resume()
             if not upload_success:
-                print("GreenhouseHandler: Resume upload failed after retries. Aborting.")
+                logger.info("GreenhouseHandler: Resume upload failed after retries. Aborting.")
                 self._capture_screenshot("03b_resume_upload_failed.png")
-                return {"status": "REVIEW_REQUIRED", "audit_log": self.engine.audit_log, "telemetry": telemetry}
+                return {"status": WorkflowState.REVIEW_REQUIRED.name, "audit_log": self.engine.audit_log, "telemetry": telemetry}
                 
             self._capture_screenshot("02_resume_uploaded.png")
             
-            result_status = "FAILED"
+            result_status = WorkflowState.FAILED.name
             
             # Main Application Loop (Handles both retries and multi-step pages)
             cycles = 0
             while cycles < 10:
                 cycles += 1
                 attempt = cycles - 1
-                print(f"GreenhouseHandler: Starting cycle {cycles}/10...")
+                logger.info(f"GreenhouseHandler: Starting cycle {cycles}/10...")
                 
                 safe_to_submit = self._process_custom_fields(telemetry)
                 self._capture_screenshot(f"04_questions_completed_attempt_{attempt}.png")
@@ -1096,11 +1135,11 @@ class GreenhouseHandler:
                     safe_to_submit = self._pre_submit_audit()
                 
                 if safe_to_submit:
-                    print(f"GreenhouseHandler: All checks passed. AUTO-SUBMITTING (Attempt {attempt+1}).")
+                    logger.info(f"GreenhouseHandler: All checks passed. AUTO-SUBMITTING (Attempt {attempt+1}).")
                     if self.test_mode:
-                        print("GreenhouseHandler: TEST MODE ACTIVE. Skipping final submit.")
+                        logger.info("GreenhouseHandler: TEST MODE ACTIVE. Skipping final submit.")
                         self._capture_screenshot("05_pre_submit.png")
-                        result_status = "SUBMITTED_CONFIRMED"
+                        result_status = WorkflowState.COMPLETED.name
                         # Mock proof for test mode
                         telemetry["submission_proof"] = {
                             "url": self.page.url,
@@ -1120,7 +1159,7 @@ class GreenhouseHandler:
                                 break
                                 
                         if next_btn:
-                            print("GreenhouseHandler: ➡️ Multi-Step Form Detected. Clicking 'Next'...")
+                            logger.info("GreenhouseHandler: ➡️ Multi-Step Form Detected. Clicking 'Next'...")
                             telemetry["MULTI_STEP_DETECTED"] = True
                             telemetry["step_number"] = telemetry.get("step_number", 1) + 1
                             next_btn.click(timeout=10000)
@@ -1139,7 +1178,7 @@ class GreenhouseHandler:
                             
                         # PRE-SUBMIT OTP CHECK (OTP may appear and disable the submit button)
                         if self._check_for_otp():
-                            print("GreenhouseHandler: Verification -> OTP_REQUIRED (Detected before click)")
+                            logger.info("GreenhouseHandler: Verification -> OTP_REQUIRED (Detected before click)")
                             otp_status = self._handle_otp(telemetry)
                             if otp_status == "OTP_SUBMITTED":
                                 submit_btn = self.active_context.locator('button[type="submit"], #submit_app').first
@@ -1149,22 +1188,22 @@ class GreenhouseHandler:
                                 break
                                 
                         if is_disabled:
-                            print("GreenhouseHandler: 🚫 Submit button is DISABLED. Initiating Diagnosis...")
+                            logger.info("GreenhouseHandler: 🚫 Submit button is DISABLED. Initiating Diagnosis...")
                             diagnosis = self._diagnose_submission_blocker()
                             import json
                             diag_json = json.dumps(diagnosis)
-                            print(f"GreenhouseHandler Diagnosis: {diag_json}")
+                            logger.info(f"GreenhouseHandler Diagnosis: {diag_json}")
                             
                             telemetry["diagnosis_json"] = diag_json
                             telemetry["repair_attempts"] = telemetry.get("repair_attempts", 0) + 1
                             
                             repaired = self._attempt_repair(diagnosis)
                             if repaired:
-                                print("GreenhouseHandler: Auto-Repair applied. Retrying...")
+                                logger.info("GreenhouseHandler: Auto-Repair applied. Retrying...")
                                 continue # Loop back to submit again
                             else:
-                                print("GreenhouseHandler: Auto-Repair failed or no deterministic fix available.")
-                                result_status = "REVIEW_REQUIRED"
+                                logger.info("GreenhouseHandler: Auto-Repair failed or no deterministic fix available.")
+                                result_status = WorkflowState.REVIEW_REQUIRED.name
                                 break
                         
                         # Actual click if enabled
@@ -1172,14 +1211,14 @@ class GreenhouseHandler:
                             self._capture_screenshot("01_before_submit.png")
                             telemetry['submit_clicked'] = True
                             submit_btn.click(timeout=10000)
-                            print("GreenhouseHandler: Submit button clicked. Waiting 3s for processing...")
+                            logger.info("GreenhouseHandler: Submit button clicked. Waiting 3s for processing...")
                             self.page.wait_for_timeout(3000)
                             if telemetry.get('otp_submitted'):
                                 self._capture_screenshot("04_after_otp_submit.png")
                                 self._post_otp_analysis()
                         except Exception as click_err:
-                            print(f"GreenhouseHandler: Submit click failed: {click_err}")
-                            result_status = "FAILED"
+                            logger.info(f"GreenhouseHandler: Submit click failed: {click_err}")
+                            result_status = WorkflowState.FAILED.name
                             break
                         
                         # PRIORITY EVALUATION
@@ -1188,19 +1227,19 @@ class GreenhouseHandler:
                         telemetry["submission_proof"] = verification["proof"]
                         
                         if verification['status'] == "SUBMITTED_CONFIRMED":
-                            print(f"GreenhouseHandler: Verification -> SUCCESS (Confidence: {verification['confidence']}%)")
+                            logger.info(f"GreenhouseHandler: Verification -> SUCCESS (Confidence: {verification['confidence']}%)")
                             self._capture_screenshot("06_post_submit.png")
                             if self.execution_dir:
                                 verification["proof"]["screenshot"] = os.path.join(self.execution_dir, "06_post_submit.png")
                             telemetry["submission_proof"] = verification["proof"]
                             if telemetry.get('otp_submitted'):
                                 telemetry['otp_verified'] = True
-                            result_status = "SUBMITTED_CONFIRMED"
+                            result_status = WorkflowState.COMPLETED.name
                             break
                             
                         # 2. OTP Challenge
                         if self._check_for_otp():
-                            print("GreenhouseHandler: Verification -> OTP_REQUIRED")
+                            logger.info("GreenhouseHandler: Verification -> OTP_REQUIRED")
                             otp_status = self._handle_otp(telemetry)
                             if otp_status == "OTP_SUBMITTED":
                                 continue # Loop back to click submit for the OTP
@@ -1211,30 +1250,30 @@ class GreenhouseHandler:
                         # 3. Validation Error
                         if verification['status'] == "FAILED_RECOVERABLE" or verification['proof'].get('failure_signals_found', 0) > 0:
                             if telemetry.get('submit_clicked'):
-                                print(f"GreenhouseHandler: Verification -> VALIDATION_ERROR. Rule 1 Enforced: NEVER RESUBMIT. Aborting.")
+                                logger.info(f"GreenhouseHandler: Verification -> VALIDATION_ERROR. Rule 1 Enforced: NEVER RESUBMIT. Aborting.")
                                 self._capture_screenshot(f"05_post_submit_failure_{attempt}.png")
-                                result_status = "REVIEW_REQUIRED"
+                                result_status = WorkflowState.REVIEW_REQUIRED.name
                                 break
                             else:
-                                print(f"GreenhouseHandler: Verification -> VALIDATION_ERROR. Retrying...")
+                                logger.info(f"GreenhouseHandler: Verification -> VALIDATION_ERROR. Retrying...")
                                 self._capture_screenshot(f"05_post_submit_failure_{attempt}.png")
                                 continue
                             
                         # 4. Generic Failure
-                        print(f"GreenhouseHandler: Verification -> {verification['status']} detected: {verification['proof'].get('error_text')}")
+                        logger.info(f"GreenhouseHandler: Verification -> {verification['status']} detected: {verification['proof'].get('error_text')}")
                         self._capture_screenshot(f"05_post_submit_failure_{attempt}.png")
-                        result_status = "REVIEW_REQUIRED"
+                        result_status = WorkflowState.REVIEW_REQUIRED.name
                         break
                 else:
-                    print("GreenhouseHandler: Safety rules triggered. Moving to REVIEW_REQUIRED.")
+                    logger.info("GreenhouseHandler: Safety rules triggered. Moving to REVIEW_REQUIRED.")
                     self._capture_screenshot("05_pre_submit.png")
-                    result_status = "REVIEW_REQUIRED"
+                    result_status = WorkflowState.REVIEW_REQUIRED.name
                     break
             else:
                 # Loop exhausted without breaking
-                print("GreenhouseHandler: Maximum retry attempts reached. Moving to REVIEW_REQUIRED.")
+                logger.info("GreenhouseHandler: Maximum retry attempts reached. Moving to REVIEW_REQUIRED.")
                 self._capture_screenshot("05_post_submit_failure_final.png")
-                result_status = "REVIEW_REQUIRED"
+                result_status = WorkflowState.REVIEW_REQUIRED.name
                 
             self._capture_screenshot("05_final_page.png")
             
@@ -1248,11 +1287,11 @@ class GreenhouseHandler:
             }
             
         except Exception as e:
-            print(f"GreenhouseHandler Execution Error: {e}")
+            logger.info(f"GreenhouseHandler Execution Error: {e}")
             if hasattr(self, "learning_log"):
                 telemetry["learning_log"] = self.learning_log
             return {
-                "status": "FAILED",
+                "status": WorkflowState.FAILED.name,
                 "error": str(e),
                 "audit_log": self.engine.audit_log,
                 "telemetry": telemetry

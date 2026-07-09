@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('autonomous')
 import time
 import schedule
 from datetime import datetime
@@ -7,57 +9,57 @@ from src.outreach.inbox_reader import monitor_inbox
 from src.outreach.briefing import generate_and_send_briefing
 
 def run_discovery_phase():
-    print(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 🚀 STARTING DISCOVERY PHASE")
+    logger.info(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 🚀 STARTING DISCOVERY PHASE")
     try:
         # 1. Discover New Jobs (Safe Architecture)
         ingest_jobs("safe")
     except Exception as e:
-        print(f"Discovery phase failed: {e}")
+        logger.info(f"Discovery phase failed: {e}")
 
 def run_outreach_phase():
     now = datetime.now()
     if 9 <= now.hour < 21:
-        print(f"\n[{now.strftime('%Y-%m-%d %H:%M:%S')}] 🚀 STARTING OUTREACH PHASE")
+        logger.info(f"\n[{now.strftime('%Y-%m-%d %H:%M:%S')}] 🚀 STARTING OUTREACH PHASE")
         try:
             # We'll rely on orchestrator's run_batch_operations to pick up new leads
             # It already restricts to max_daily_emails
             run_batch_operations()
         except Exception as e:
-            print(f"Outreach phase failed: {e}")
+            logger.info(f"Outreach phase failed: {e}")
     else:
-        print(f"\n[{now.strftime('%Y-%m-%d %H:%M:%S')}] Outside outreach window (09:00 - 21:00). Skipping.")
+        logger.info(f"\n[{now.strftime('%Y-%m-%d %H:%M:%S')}] Outside outreach window (09:00 - 21:00). Skipping.")
 
 def run_inbox_monitor():
-    print(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 📥 CHECKING INBOX")
+    logger.info(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 📥 CHECKING INBOX")
     try:
         monitor_inbox()
     except Exception as e:
-        print(f"Inbox monitor failed: {e}")
+        logger.info(f"Inbox monitor failed: {e}")
 
 def run_briefing():
-    print(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 📊 GENERATING DAILY BRIEFING")
+    logger.info(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 📊 GENERATING DAILY BRIEFING")
     try:
         generate_and_send_briefing()
     except Exception as e:
-        print(f"Briefing failed: {e}")
+        logger.info(f"Briefing failed: {e}")
 
 def run_autoapply_phase():
     now = datetime.now()
     if 9 <= now.hour < 21:
-        print(f"\n[{now.strftime('%Y-%m-%d %H:%M:%S')}] 🚀 STARTING AUTOAPPLY PHASE")
+        logger.info(f"\n[{now.strftime('%Y-%m-%d %H:%M:%S')}] 🚀 STARTING AUTOAPPLY PHASE")
         try:
             from src.applications.engine import AutoapplyEngine
             engine = AutoapplyEngine(dry_run=False)
             engine.run_daily_batch()
         except Exception as e:
-            print(f"Autoapply phase failed: {e}")
+            logger.info(f"Autoapply phase failed: {e}")
     else:
-        print(f"\n[{now.strftime('%Y-%m-%d %H:%M:%S')}] Outside autoapply window (09:00 - 21:00). Skipping.")
+        logger.info(f"\n[{now.strftime('%Y-%m-%d %H:%M:%S')}] Outside autoapply window (09:00 - 21:00). Skipping.")
 
 if __name__ == "__main__":
-    print("=======================================================")
-    print("🤖 AUTONOMOUS RECRUITING PLATFORM V1 INITIATED")
-    print("=======================================================")
+    logger.info("=======================================================")
+    logger.info("🤖 AUTONOMOUS RECRUITING PLATFORM V1 INITIATED")
+    logger.info("=======================================================")
     
     schedule.every().day.at("07:00").do(run_discovery_phase)
     schedule.every().day.at("09:00").do(run_outreach_phase)
@@ -65,11 +67,11 @@ if __name__ == "__main__":
     schedule.every().hour.do(run_inbox_monitor)
     schedule.every().day.at("22:00").do(run_briefing)
     
-    print("Schedule Loaded:")
+    logger.info("Schedule Loaded:")
     for job in schedule.jobs:
-        print(f" - {job}")
+        logger.info(f" - {job}")
         
-    print("\nSystem running. Press Ctrl+C to stop.")
+    logger.info("\nSystem running. Press Ctrl+C to stop.")
     
     # Run inbox monitor immediately on startup just to test
     run_inbox_monitor()

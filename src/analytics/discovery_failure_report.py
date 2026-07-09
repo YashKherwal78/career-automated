@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('discovery_failure_report')
 import sqlite3
 import pandas as pd
 from src.config.config import Config
@@ -99,12 +101,12 @@ def generate_discovery_failure_report(print_report=True):
         impact_data = [{"Provider": k.title(), "Companies Blocked": v, "Estimated Jobs Lost": f"~{v * 8}"} for k, v in sorted(provider_impact.items(), key=lambda item: item[1], reverse=True)]
         impact_df = pd.DataFrame(impact_data)
         
-        print("=== PROVIDER IMPACT REPORT (ROI) ===")
-        print(impact_df.to_string(index=False))
-        print("\n=== AUTO DEBUG QUEUE / FAILURE REPORT ===")
+        logger.info("=== PROVIDER IMPACT REPORT (ROI) ===")
+        logger.info(impact_df.to_string(index=False))
+        logger.info("\n=== AUTO DEBUG QUEUE / FAILURE REPORT ===")
         # Filter out successful jobs for the debug queue
         debug_df = report_df[report_df['Jobs'] == 0].sort_values(by=['Priority', 'Company'])
-        print(debug_df.to_string(index=False))
+        logger.info(debug_df.to_string(index=False))
         
     return report_df
 

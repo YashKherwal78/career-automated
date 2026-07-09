@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('question_engine')
 import re
 import json
 from src.applications.profile import ProfileManager
@@ -182,7 +184,7 @@ class ResponseNormalizer:
         if not llm_client:
             return "REVIEW_REQUIRED"
             
-        print(f"[Dropdown] Attempting LLM Fallback (Groq) for: '{label_text}'")
+        logger.info(f"[Dropdown] Attempting LLM Fallback (Groq) for: '{label_text}'")
         
         prompt = f"""
 You are mapping an applicant's intent to a required dropdown field.
@@ -215,17 +217,17 @@ Example: {{"selected_option": "Yes", "confidence": 95, "reasoning": "Intent expl
             reason = data.get("reasoning", "")
             
             if conf > 90 and selected in options:
-                print(f"  -> LLM Fallback (Groq) mapped '{selected}' with >90% conf.")
+                logger.info(f"  -> LLM Fallback (Groq) mapped '{selected}' with >90% conf.")
                 return selected
             elif conf >= 60 and selected in options:
-                print(f"  -> LLM Fallback (Groq) mapped '{selected}' with {conf}% conf. Reason: {reason}")
+                logger.info(f"  -> LLM Fallback (Groq) mapped '{selected}' with {conf}% conf. Reason: {reason}")
                 return selected
             else:
-                print(f"  -> LLM Fallback (Groq) returned confidence {conf} < 60%. REVIEW_REQUIRED.")
+                logger.info(f"  -> LLM Fallback (Groq) returned confidence {conf} < 60%. REVIEW_REQUIRED.")
                 return "REVIEW_REQUIRED"
                 
         except Exception as e:
-            print(f"[Dropdown] LLM Fallback Failed: {e}")
+            logger.info(f"[Dropdown] LLM Fallback Failed: {e}")
             return "REVIEW_REQUIRED"
 
     @staticmethod
@@ -257,7 +259,7 @@ Example: {{"selected_option": "Yes", "confidence": 95, "reasoning": "Intent expl
             # Cache Check
             cache_key = f"{label_text}_{ans_lower}_{str(options)}"
             if cache_key in ResponseNormalizer._dropdown_cache:
-                print(f"  -> Cache Hit: {ResponseNormalizer._dropdown_cache[cache_key]}")
+                logger.info(f"  -> Cache Hit: {ResponseNormalizer._dropdown_cache[cache_key]}")
                 return ResponseNormalizer._dropdown_cache[cache_key]
             
             # Phase A: Exact Match
@@ -495,11 +497,11 @@ class QuestionEngine:
             
             # Because dom_meta is technically an item in telemetry['interaction_log'] usually, 
             # we'll just log it clearly to console which gets picked up, and set the value.
-            print(f"\n[LocationResolver]")
-            print(f"  -> Question: {question}")
-            print(f"  -> Options: {options}")
-            print(f"  -> Selected: {loc_result['selected_location']}")
-            print(f"  -> Reasoning: {loc_result['reasoning']} (Conf: {loc_result['confidence']})")
+            logger.info(f"\n[LocationResolver]")
+            logger.info(f"  -> Question: {question}")
+            logger.info(f"  -> Options: {options}")
+            logger.info(f"  -> Selected: {loc_result['selected_location']}")
+            logger.info(f"  -> Reasoning: {loc_result['reasoning']} (Conf: {loc_result['confidence']})")
             
             normalized = loc_result["selected_location"]
             dom_meta["confidence"] = loc_result["confidence"]
@@ -675,7 +677,7 @@ class QuestionEngine:
                 
         # If it's a PROFILE_FACT but failed deterministic mapping, DO NOT SEND TO LLM
         if not raw_answer and classification == "PROFILE_FACT":
-            print(f"  -> [Warning] PROFILE_FACT missing deterministic mapping. Bypassing LLM.")
+            logger.info(f"  -> [Warning] PROFILE_FACT missing deterministic mapping. Bypassing LLM.")
             return "REVIEW_REQUIRED"
 
         # TYPE 2, 3, 4: RAG + LLM Calls
@@ -690,19 +692,19 @@ class QuestionEngine:
             # Log Retrieval Scores & Check Confidence
             max_score = 0
             chunk_texts = []
-            print(f"\n[Essay Debug] Question: {question}")
+            logger.info(f"\n[Essay Debug] Question: {question}")
             for i, item in enumerate(retrieved_items):
                 score = item.get("score", 0)
                 text = item.get("text", "")
                 if score > max_score: max_score = score
                 chunk_texts.append(text)
                 title = text.split("\n")[0] if "\n" in text else text[:50]
-                print(f"  -> Retrieved Chunk {i+1}: {title} (Score: {score:.2f})")
+                logger.info(f"  -> Retrieved Chunk {i+1}: {title} (Score: {score:.2f})")
                 
             # If retrieval confidence is low, fallback to REVIEW_REQUIRED
             # Assuming a BM25 base score + tag boost, a score < 1.0 means practically no matching terms.
             if max_score < 1.0 and classification in ["TECHNICAL", "BEHAVIORAL"]:
-                print(f"  -> [Warning] Low retrieval confidence ({max_score:.2f}). Triggering REVIEW_REQUIRED.")
+                logger.info(f"  -> [Warning] Low retrieval confidence ({max_score:.2f}). Triggering REVIEW_REQUIRED.")
                 raw_answer = "REVIEW_REQUIRED"
                 normalized = "REVIEW_REQUIRED"
                 source = "Low_Confidence_Gate"
@@ -743,7 +745,7 @@ Instructions:
                         intent="utility"
                     )
                     raw_answer = response.choices[0].message.content.strip()
-                    print(f"  -> Final LLM Answer: {raw_answer}")
+                    logger.info(f"  -> Final LLM Answer: {raw_answer}")
                     
                     # Metric Validation
                     import re
@@ -755,21 +757,21 @@ Instructions:
                     gen_nums = set(re.findall(r'\b\d+(?:\.\d+)?\b', raw_answer))
                     unsupported = gen_nums - chunk_nums
                     
-                    print(f"  [Metric Grounding] Numbers in Context: {chunk_nums}")
-                    print(f"  [Metric Grounding] Numbers Generated: {gen_nums}")
+                    logger.info(f"  [Metric Grounding] Numbers in Context: {chunk_nums}")
+                    logger.info(f"  [Metric Grounding] Numbers Generated: {gen_nums}")
                     
                     if unsupported:
-                        print(f"  [Metric Grounding] Validation FAILED! Unsupported Numbers: {unsupported}")
-                        print(f"  [Metric Grounding] Replacing with fallback.")
+                        logger.info(f"  [Metric Grounding] Validation FAILED! Unsupported Numbers: {unsupported}")
+                        logger.info(f"  [Metric Grounding] Replacing with fallback.")
                         raw_answer = "I focused on building the system and validating the workflow. I do not have production metrics available for this project."
                     else:
-                        print(f"  [Metric Grounding] Validation Passed.")
+                        logger.info(f"  [Metric Grounding] Validation Passed.")
 
                     approx_tokens = (len(SYSTEM_PROMPT) + len(current_prompt) + len(raw_answer)) // 4
                     dom_meta["llm_tokens_used"] = approx_tokens
                     confidence = 90
                 except Exception as e:
-                    print(f"QuestionEngine LLM Error: {e}")
+                    logger.info(f"QuestionEngine LLM Error: {e}")
                     raw_answer = ""
                     confidence = 0
                 
@@ -820,14 +822,14 @@ Instructions:
             normalized = "REVIEW_REQUIRED"
         
         # Telemetry Logging
-        print(f"\n[Classification]: {classification} -> {question}")
+        logger.info(f"\n[Classification]: {classification} -> {question}")
         if options:
-            print(f"[Dropdown Debug]")
-            print(f"  -> Question: {question}")
-            print(f"  -> Detected Type: {classification}")
-            print(f"  -> Mapped Value (Raw): {raw_answer}")
-            print(f"  -> Available Options: {options}")
-            print(f"  -> Selected Option (Normalized): {normalized}")
+            logger.info(f"[Dropdown Debug]")
+            logger.info(f"  -> Question: {question}")
+            logger.info(f"  -> Detected Type: {classification}")
+            logger.info(f"  -> Mapped Value (Raw): {raw_answer}")
+            logger.info(f"  -> Available Options: {options}")
+            logger.info(f"  -> Selected Option (Normalized): {normalized}")
             
         dom_meta["confidence"] = confidence
         dom_meta["label_text"] = label_text

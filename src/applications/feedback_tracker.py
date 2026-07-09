@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('feedback_tracker')
 import sqlite3
 import os
 import json
@@ -50,7 +52,7 @@ class FeedbackTracker:
         ))
         conn.commit()
         conn.close()
-        print(f"[FeedbackTracker] Logged {outcome} for {role} at {company}")
+        logger.info(f"[FeedbackTracker] Logged {outcome} for {role} at {company}")
 
 if __name__ == "__main__":
     # Seed mock data for V1.3 report generation

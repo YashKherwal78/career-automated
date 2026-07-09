@@ -23,7 +23,7 @@ class DiscoveryWorker:
         duplicate_count = 0
         
         for job in jobs:
-            # We insert with status = DISCOVERED
+            # We insert with stage = DISCOVERED
             data = {
                 "company": job["company"],
                 "role": job["title"],
@@ -55,7 +55,7 @@ class DiscoveryWorker:
             
         end_time = time.time()
         end_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        log_heartbeat("Discovery Worker", "SUCCESS", start_str, end_str, end_time - start_time, inserted_count)
+        log_heartbeat("Discovery Worker", WorkflowState.COMPLETED.name, start_str, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), end_time - start_time, inserted_count)
             
 if __name__ == "__main__":
     worker = DiscoveryWorker()

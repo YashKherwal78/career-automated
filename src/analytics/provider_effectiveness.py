@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('provider_effectiveness')
 import sqlite3
 from src.config.config import Config
 
@@ -102,8 +104,8 @@ def generate_effectiveness_report():
     c.execute("SELECT * FROM provider_analytics ORDER BY scan_priority DESC, interviews DESC")
     rows = c.fetchall()
     
-    print(f"{'Provider':<20} | {'Scanned':<8} | {'Jobs':<6} | {'Apps':<6} | {'Intervs':<7} | {'Success%':<8} | {'Priority':<8}")
-    print("-" * 80)
+    logger.info(f"{'Provider':<20} | {'Scanned':<8} | {'Jobs':<6} | {'Apps':<6} | {'Intervs':<7} | {'Success%':<8} | {'Priority':<8}")
+    logger.info("-" * 80)
     for row in rows:
         provider = row[0]
         scanned = row[1]
@@ -116,11 +118,11 @@ def generate_effectiveness_report():
         if apps > 0:
             success_pct = (interviews / apps) * 100
             
-        print(f"{provider:<20} | {scanned:<8} | {jobs:<6} | {apps:<6} | {interviews:<7} | {success_pct:>.1f}%    | {priority:<8}")
+        logger.info(f"{provider:<20} | {scanned:<8} | {jobs:<6} | {apps:<6} | {interviews:<7} | {success_pct:>.1f}%    | {priority:<8}")
         
     conn.close()
 
 if __name__ == "__main__":
     init_analytics_schema()
-    print("Analytics schema initialized.")
+    logger.info("Analytics schema initialized.")
     # generate_effectiveness_report()

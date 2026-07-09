@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('generic_careers_provider')
 import requests
 import sqlite3
 import datetime
@@ -31,7 +33,7 @@ class GenericCareersProvider(BaseProvider):
         
         jobs = []
         for company, website, careers_url in companies:
-            print(f"Fetching Generic Careers for {company}...")
+            logger.info(f"Fetching Generic Careers for {company}...")
             url = careers_url if careers_url else (f"{website.rstrip('/')}/careers" if website else "")
             if not url:
                 continue
@@ -80,6 +82,6 @@ class GenericCareersProvider(BaseProvider):
                             date_posted=datetime.datetime.now().isoformat()
                         ))
             except Exception as e:
-                print(f"Generic Careers fail for {company}: {e}")
+                logger.info(f"Generic Careers fail for {company}: {e}")
                 
         return jobs

@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('orchestrator')
 import os
 import json
 import random
@@ -34,7 +36,7 @@ def send_email(to_email, subject, body, resume_path):
             attach.add_header('Content-Disposition', 'attachment', filename="Yash_Kherwal_Resume.pdf")
             msg.attach(attach)
     except Exception as e:
-        print(f"Could not attach resume: {e}")
+        logger.info(f"Could not attach resume: {e}")
 
     try:
         server = smtplib.SMTP("smtp.gmail.com", 587)
@@ -42,16 +44,16 @@ def send_email(to_email, subject, body, resume_path):
         server.login(Config.GMAIL_ADDRESS, Config.GMAIL_APP_PASSWORD)
         server.send_message(msg)
         server.quit()
-        print(f"✅ Successfully sent email to {to_email}")
+        logger.info(f"✅ Successfully sent email to {to_email}")
         return True
     except Exception as e:
-        print(f"❌ Failed to send email: {e}")
+        logger.info(f"❌ Failed to send email: {e}")
         return False
 
 def run_outreach_for_job(job_id: int, lead: dict, mc):
-    print(f"\n=======================================================")
-    print(f"🚀 RECRUITING INTELLIGENCE PLATFORM: Processing Job ID {job_id}")
-    print(f"=======================================================")
+    logger.info(f"\n=======================================================")
+    logger.info(f"🚀 RECRUITING INTELLIGENCE PLATFORM: Processing Job ID {job_id}")
+    logger.info(f"=======================================================")
     
     conn = sqlite3.connect(Config.DATABASE_PATH)
     conn.row_factory = sqlite3.Row
@@ -74,7 +76,7 @@ def run_outreach_for_job(job_id: int, lead: dict, mc):
     
     lead = get_lead(company_name)
     if not lead:
-        print(f"[{company_name}] Lead not found in CRM. Skipping.")
+        logger.info(f"[{company_name}] Lead not found in CRM. Skipping.")
         return False
         
     # Hardcode AI Resume as requested by user
@@ -84,12 +86,12 @@ def run_outreach_for_job(job_id: int, lead: dict, mc):
     active_groq_client = Groq(api_key=Config.GROQ_API_KEY)
 
     # AGENT 1: Intelligence (Resume Strategy)
-    print("\n[Agent 1] Intelligence Engine (Resume Strategy & Company classification)...")
+    logger.info("\n[Agent 1] Intelligence Engine (Resume Strategy & Company classification)...")
     metadata = run_intelligence_engine(active_groq_client, company_name)
     transition_state(company_name, CRMState.SCORED)
     
     # AGENT 5: Resume Tailoring
-    print("\n[Agent 5] Resume Tailoring Engine...")
+    logger.info("\n[Agent 5] Resume Tailoring Engine...")
     
     # Determine base template
     rec_resume = job.get("recommended_resume", "AIML_RESUME")
@@ -103,7 +105,7 @@ def run_outreach_for_job(job_id: int, lead: dict, mc):
     transition_state(company_name, CRMState.RESUME_TAILORED)
     
     # ENRICHMENT OPTIMIZATION: Contact Discovery
-    print("\n[Agent 2] Contact Discovery Engine...")
+    logger.info("\n[Agent 2] Contact Discovery Engine...")
     enrichment_data = enrich_company(company_name)
     metadata.update(enrichment_data)
     transition_state(company_name, CRMState.ENRICHED)
@@ -112,11 +114,11 @@ def run_outreach_for_job(job_id: int, lead: dict, mc):
     lead.update(enrichment_data)
     
     # AGENT 7: Email Strategy
-    print("\n[Agent 7] Email Strategy Engine...")
+    logger.info("\n[Agent 7] Email Strategy Engine...")
     strategy = generate_email_strategy(active_groq_client, company_name, job_desc, selected_project)
     
     # AGENT 8 & 9: Email Writer & Critic
-    print("\n[Agent 8 & 9] Email Writer Engine & Critic Loop...")
+    logger.info("\n[Agent 8 & 9] Email Writer Engine & Critic Loop...")
     # Load context for Agent 8
     try:
         with open(Config.DATA_DIR / "context" / "yash_master_profile.md", "r") as f:
@@ -132,7 +134,7 @@ def run_outreach_for_job(job_id: int, lead: dict, mc):
     critic_data = {}
     
     for attempt in range(max_attempts):
-        print(f"Agent 8: Generating Email (Attempt {attempt+1}/{max_attempts})...")
+        logger.info(f"Agent 8: Generating Email (Attempt {attempt+1}/{max_attempts})...")
         try:
             response = active_groq_client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
@@ -146,7 +148,7 @@ def run_outreach_for_job(job_id: int, lead: dict, mc):
             email_data = json.loads(response.choices[0].message.content)
             draft_body = email_data.get("body", "")
             
-            print(f"Agent 9: Critiquing Email Draft...")
+            logger.info(f"Agent 9: Critiquing Email Draft...")
             critic_response = active_groq_client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=[
@@ -159,16 +161,16 @@ def run_outreach_for_job(job_id: int, lead: dict, mc):
             critic_data = json.loads(critic_response.choices[0].message.content)
             
             if critic_data.get("status") == "PASS":
-                print("Agent 9: PASS. Email looks authentic.")
+                logger.info("Agent 9: PASS. Email looks authentic.")
                 break
             else:
-                print(f"Agent 9: FAIL. Feedback: {critic_data.get('feedback')}")
+                logger.info(f"Agent 9: FAIL. Feedback: {critic_data.get('feedback')}")
         except Exception as e:
             if "429" in str(e) and getattr(Config, "GROQ_API_KEY_BACKUP", ""):
-                print(f"Rate limit hit! Switching to backup API key for attempt {attempt+2}...")
+                logger.info(f"Rate limit hit! Switching to backup API key for attempt {attempt+2}...")
                 active_groq_client = Groq(api_key=Config.GROQ_API_KEY_BACKUP)
                 continue
-            print(f"Error during email generation/critique: {e}")
+            logger.info(f"Error during email generation/critique: {e}")
             break
             
     subject = email_data.get("subject", subject_variant)
@@ -191,7 +193,7 @@ def run_outreach_for_job(job_id: int, lead: dict, mc):
     add_or_update_lead(company_name, {"agent_metadata": json.dumps(meta_db)})
     
     if critic_data.get("status") == "FAIL":
-        print(f"Agent 9 Final Verdict: FAILED after {max_attempts} attempts. Transitioning to REVIEW_REQUIRED.")
+        logger.info(f"Agent 9 Final Verdict: FAILED after {max_attempts} attempts. Transitioning to REVIEW_REQUIRED.")
         transition_state(company_name, CRMState.REVIEW_REQUIRED)
         return False
         
@@ -200,14 +202,14 @@ def run_outreach_for_job(job_id: int, lead: dict, mc):
     lead["generated_email_body"] = body
 
     # MISSION CONTROL V1 GATE
-    print("\n[Mission Control] Validating Rules...")
+    logger.info("\n[Mission Control] Validating Rules...")
     rule_decision = mc.validate_rules(lead)
     
     if rule_decision == "SKIP_DAILY_LIMIT":
-        print("❌ Skipped: Daily Limit Reached.")
+        logger.info("❌ Skipped: Daily Limit Reached.")
         return False
     elif rule_decision == "SKIP_BOUNCE_LIMIT" or rule_decision == "SKIP_LOW_PROB":
-        print(f"❌ Skipped by Mission Control Rules ({rule_decision}).")
+        logger.info(f"❌ Skipped by Mission Control Rules ({rule_decision}).")
         add_or_update_lead(company_name, {"status": "Rejected by Mission Control"})
         return False
         
@@ -215,12 +217,12 @@ def run_outreach_for_job(job_id: int, lead: dict, mc):
     if rule_decision == "LLM_REVIEW":
         llm_eval = mc.llm_validation(lead)
         final_decision = llm_eval.get("decision", "SKIP")
-        print(f"[Mission Control] LLM Validation returned: {final_decision}. Reasoning: {llm_eval.get('reasoning')}")
+        logger.info(f"[Mission Control] LLM Validation returned: {final_decision}. Reasoning: {llm_eval.get('reasoning')}")
         
     if final_decision == "PROCEED":
         target_email = enrichment_data.get("target_email")
         if target_email:
-            print(f"🚀 LIVE DISPATCH: Sending to {target_email}...")
+            logger.info(f"🚀 LIVE DISPATCH: Sending to {target_email}...")
             
             # Transition to Outbox Queue to protect against Gmail failure
             transition_state(company_name, CRMState.OUTBOX_QUEUE)
@@ -235,7 +237,7 @@ def run_outreach_for_job(job_id: int, lead: dict, mc):
                 })
                 transition_state(company_name, CRMState.HR_CONTACTED)
             else:
-                print("❌ Failed to dispatch email. Kept in OUTBOX_QUEUE.")
+                logger.info("❌ Failed to dispatch email. Kept in OUTBOX_QUEUE.")
                 return False
                 
             return {
@@ -249,9 +251,9 @@ def run_outreach_for_job(job_id: int, lead: dict, mc):
                 "generated_email": body
             }
         else:
-            print("❌ Approval granted, but no target email address found in CRM Enrichment.")
+            logger.info("❌ Approval granted, but no target email address found in CRM Enrichment.")
     else:
-        print("❌ Outreach Rejected at Mission Control Gate.")
+        logger.info("❌ Outreach Rejected at Mission Control Gate.")
     return None
 
 def run_batch_operations():
@@ -259,7 +261,7 @@ def run_batch_operations():
     from src.jobs.discovery import ingest_jobs
     from src.crm.database import get_all_uncontacted_scored_leads
     
-    print("\n[Mission Control] Initializing Daily Operations...")
+    logger.info("\n[Mission Control] Initializing Daily Operations...")
     mc = MissionControl()
     
     # 1. Daily Job Discovery (Using CSV for local test since Apify quota exceeded)
@@ -288,7 +290,7 @@ def run_batch_operations():
                 "days_old": 0
             }
         
-        print(f"\n[Agent 3] Job Matching & Scoring Engine for {lead['company_name']}...")
+        logger.info(f"\n[Agent 3] Job Matching & Scoring Engine for {lead['company_name']}...")
         match_data = run_job_matching(groq_client, lead['company_name'], lead['job_id'] or 0, job['job_description'], job['days_old'])
         add_or_update_lead(lead['company_name'], {"status": "Scored", "interview_probability": match_data.get("interview_probability", 0)})
 
@@ -296,7 +298,7 @@ def run_batch_operations():
     uncontacted_leads = get_all_uncontacted_scored_leads()
     prioritized_leads = mc.prioritize_opportunities(uncontacted_leads)
     
-    print(f"[Mission Control] Prioritized {len(prioritized_leads)} actionable opportunities.")
+    logger.info(f"[Mission Control] Prioritized {len(prioritized_leads)} actionable opportunities.")
     
     results = []
     
@@ -306,7 +308,7 @@ def run_batch_operations():
         from src.crm.database import get_daily_stats
         stats = get_daily_stats()
         if stats["emails_sent"] >= mc.max_daily_emails:
-            print(f"[Mission Control] Daily email limit reached ({stats['emails_sent']}/{mc.max_daily_emails}). Pausing.")
+            logger.info(f"[Mission Control] Daily email limit reached ({stats['emails_sent']}/{mc.max_daily_emails}). Pausing.")
             break
             
         # Trigger Referral Engine for jobs that passed the threshold
@@ -319,23 +321,23 @@ def run_batch_operations():
     mc.generate_daily_briefing()
     
     # Print the specific requirements for AFTER IMPLEMENTATION
-    print("\n==================================================")
-    print("TOP DISCOVERED OPPORTUNITIES (AFTER IMPLEMENTATION)")
-    print("==================================================")
+    logger.info("\n==================================================")
+    logger.info("TOP DISCOVERED OPPORTUNITIES (AFTER IMPLEMENTATION)")
+    logger.info("==================================================")
     for i, lead in enumerate(prioritized_leads[:20]):
-        print(f"{i+1}. {lead['job_title']} @ {lead['company_name']} (Interview Prob: {lead.get('interview_probability', 0)}%)")
+        logger.info(f"{i+1}. {lead['job_title']} @ {lead['company_name']} (Interview Prob: {lead.get('interview_probability', 0)}%)")
         
-    print("\n==================================================")
-    print("PROCESSED OUTCOMES")
-    print("==================================================")
+    logger.info("\n==================================================")
+    logger.info("PROCESSED OUTCOMES")
+    logger.info("==================================================")
     for r in results:
-        print(f"\nCompany: {r['company_name']}")
-        print(f"Match Score: {r['job_match_score']}")
-        print(f"Interview Prob: {r['interview_probability']}")
-        print(f"Selected Resume: {r['selected_resume']}")
-        print(f"Selected Project: {r['selected_project']}")
-        print(f"Selected Contact: {r['selected_contact']}")
-        print(f"Generated Email:\n{r['generated_email']}")
+        logger.info(f"\nCompany: {r['company_name']}")
+        logger.info(f"Match Score: {r['job_match_score']}")
+        logger.info(f"Interview Prob: {r['interview_probability']}")
+        logger.info(f"Selected Resume: {r['selected_resume']}")
+        logger.info(f"Selected Project: {r['selected_project']}")
+        logger.info(f"Selected Contact: {r['selected_contact']}")
+        logger.info(f"Generated Email:\n{r['generated_email']}")
 
 if __name__ == "__main__":
     run_batch_operations()

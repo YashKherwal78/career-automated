@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('google_jobs_provider')
 import yaml
 from typing import List, Optional
 from datetime import datetime
@@ -41,7 +43,7 @@ class GoogleJobsProvider(BaseProvider):
         if not client:
             raise Exception("No Apify client available for Google jobs")
             
-        print(f"GoogleJobsProvider (Pipeline B): Searching {len(queries)} queries...")
+        logger.info(f"GoogleJobsProvider (Pipeline B): Searching {len(queries)} queries...")
         
         run_input = {
             "queries": "\n".join(queries),

@@ -72,4 +72,4 @@ class BaseWorker:
                 "job_data": job,
                 "company_id": task.get("company_id")
             }
-            self.event_bus.push("pipeline_queue", event)
+            await self.event_bus.publish("JobDiscovered", event)

@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('resume_editor')
 import json
 from typing import List, Dict, Any
 from src.resume.models import RewriteStrategy, EditOperation
@@ -52,7 +54,7 @@ class ResumeEditor:
             elif isinstance(parsed, list):
                 ops_data = parsed
         except Exception as e:
-            print(f"Error parsing LLM output: {e}")
+            logger.info(f"Error parsing LLM output: {e}")
             return []
             
         operations = []

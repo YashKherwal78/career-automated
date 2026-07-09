@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('discovery')
 import requests
 import re
 from typing import List, Dict
@@ -13,12 +15,12 @@ def discover_contacts(company_name: str, job_title: str, job_description: str = 
     """
     contacts = []
     
-    print(f"[{company_name}] Running Contact Discovery...")
+    logger.info(f"[{company_name}] Running Contact Discovery...")
     
     # Tier 1: Job Description Parsing
     jd_emails = re.findall(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', job_description)
     if jd_emails:
-        print(f"  -> Found {len(jd_emails)} email(s) in JD.")
+        logger.info(f"  -> Found {len(jd_emails)} email(s) in JD.")
         for email in set(jd_emails):
             contacts.append({
                 "contact_name": email.split('@')[0].capitalize(),
@@ -34,7 +36,7 @@ def discover_contacts(company_name: str, job_title: str, job_description: str = 
         return contacts
         
     # Tier 2: DuckDuckGo Search
-    print(f"  -> Falling back to DuckDuckGo X-Ray search...")
+    logger.info(f"  -> Falling back to DuckDuckGo X-Ray search...")
     from src.search.duckduckgo_provider import DuckDuckGoProvider
     ddg = DuckDuckGoProvider()
     
@@ -52,7 +54,7 @@ def discover_contacts(company_name: str, job_title: str, job_description: str = 
         return contacts
         
     # Tier 3: Apify Fallback (Mocked since credits are empty)
-    print(f"  -> Falling back to Apify (Mocked for safety)...")
+    logger.info(f"  -> Falling back to Apify (Mocked for safety)...")
     contacts = [
         {"contact_name": "Rahul Sharma", "job_title": "Machine Learning Engineer", "company": company_name, "linkedin_url": "https://linkedin.com/in/rahul-sharma-mock", "discovery_source": "Apify Fallback", "contact_type": "Technical IC"},
         {"contact_name": "Sarah Johnson", "job_title": "Engineering Manager", "company": company_name, "linkedin_url": "https://linkedin.com/in/sarah-mock", "discovery_source": "Apify Fallback", "contact_type": "Hiring Manager"},

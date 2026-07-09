@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('human_review_gate')
 import json
 from rich.console import Console
 from rich.panel import Panel
@@ -20,6 +22,6 @@ def human_review_gate(company_name: str, subject: str, email_body: str, resume_p
         elif choice == "n":
             return False, email_body
         elif choice == "edit":
-            print("Feature coming soon: Manual edits.")
+            logger.info("Feature coming soon: Manual edits.")
         else:
-            print("Invalid choice. Please enter Y, n, or edit.")
+            logger.info("Invalid choice. Please enter Y, n, or edit.")

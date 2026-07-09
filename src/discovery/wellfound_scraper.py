@@ -1,13 +1,22 @@
-import os
+from src.system.logger import setup_logger
+logger = setup_logger('wellfound_scraper')
 import json
 from apify_client import ApifyClient
-from src.config.config import Config
+import tenacity
+from tenacity import retry, stop_after_attempt, wait_exponential
 from typing import List, Dict
+from src.common.credential_provider import CredentialFactory, Credential
+
+def retry_if_transient_error(exception):
+    error_str = str(exception).lower()
+    if any(x in error_str for x in ["400", "401", "403", "invalid token", "unauthorized"]):
+        return False
+    return True
 
 class WellfoundScraper:
+
     def __init__(self):
-        self.api_key = Config.APIFY_KEYS[0] if Config.APIFY_KEYS else os.getenv("APIFY_API_KEY")
-        self.client = ApifyClient(self.api_key)
+        self.credentials = CredentialFactory.get("APIFY")
         
         # Primary and Alternate Apify Actors for Wellfound
         self.actor_ids = [
@@ -19,7 +28,7 @@ class WellfoundScraper:
         """
         Calls Apify Wellfound Scraper to extract real jobs.
         """
-        print(f"WellfoundScraper: Starting discovery for {keywords} in {locations}")
+        logger.info(f"WellfoundScraper: Starting discovery for {keywords} in {locations}")
         
         # Standard input format for legacy actors
         base_input = {
@@ -39,18 +48,22 @@ class WellfoundScraper:
                     "maxItems": max_items
                 }
             try:
-                print(f"WellfoundScraper: Initiating Apify Actor {actor_id}...")
-                run = self.client.actor(actor_id).call(run_input=run_input)
+                logger.info(f"WellfoundScraper: Initiating Apify Actor {actor_id}...")
+                run = self._call_apify_actor(actor_id, run_input)
                 
                 # If run object is missing or failed, continue to next
                 if not run or run.get("status") != "SUCCEEDED":
-                    print(f"WellfoundScraper: Actor {actor_id} failed or not found.")
+                    logger.info(f"WellfoundScraper: Actor {actor_id} failed or not found.")
                     continue
                     
-                items = list(self.client.dataset(run["defaultDatasetId"]).iterate_items())
+                def fetch_items(credential: Credential):
+                    client = ApifyClient(credential.secret)
+                    return list(client.dataset(run["defaultDatasetId"]).iterate_items())
+                    
+                items = self.credentials.execute_sync(fetch_items)
                 
                 if not items:
-                    print(f"WellfoundScraper: Actor {actor_id} returned 0 items. Trying next...")
+                    logger.info(f"WellfoundScraper: Actor {actor_id} returned 0 items. Trying next...")
                     continue
                 
                 # Normalize Apify output to our standard format
@@ -66,21 +79,28 @@ class WellfoundScraper:
                         "easy_apply_available": item.get("easyApply", False)
                     })
                 
-                print(f"WellfoundScraper: Discovery complete via {actor_id}. Found {len(normalized_jobs)} jobs.")
+                logger.info(f"WellfoundScraper: Discovery complete via {actor_id}. Found {len(normalized_jobs)} jobs.")
                 return normalized_jobs
                 
             except Exception as e:
-                print(f"WellfoundScraper: Apify Error on {actor_id}: {e}")
+                logger.info(f"WellfoundScraper: Apify Error on {actor_id}: {e}")
                 
-        print("WellfoundScraper: All Apify actors failed. Falling back to Playwright discovery...")
+        logger.info("WellfoundScraper: All Apify actors failed. Falling back to Playwright discovery...")
         return self._playwright_fallback(keywords, locations, max_items)
+        
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=2, min=4, max=15), retry=tenacity.retry_if_exception(retry_if_transient_error))
+    def _call_apify_actor(self, actor_id: str, run_input: dict):
+        def fetch_run(credential: Credential):
+            client = ApifyClient(credential.secret)
+            return client.actor(actor_id).call(run_input=run_input)
+        return self.credentials.execute_sync(fetch_run)
         
     def _playwright_fallback(self, keywords, locations, max_items):
         """
         Emergency fallback using Playwright if all Apify actors fail.
         Currently returns mock data to satisfy pipeline until stealth infrastructure is built.
         """
-        print("WellfoundScraper: Triggered Playwright Fallback.")
+        logger.info("WellfoundScraper: Triggered Playwright Fallback.")
         # Returning mock data so the pipeline doesn't crash empty.
         import random
         return [
@@ -91,4 +111,4 @@ class WellfoundScraper:
 if __name__ == "__main__":
     scraper = WellfoundScraper()
     jobs = scraper.discover_jobs(["AI Product Manager"], ["Remote", "Bangalore"], max_items=5)
-    print(json.dumps(jobs, indent=2))
+    logger.info(json.dumps(jobs, indent=2))

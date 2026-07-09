@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('greenhouse_board_provider')
 from typing import List
 from src.crm.database import get_active_greenhouse_slugs
 
@@ -14,7 +16,7 @@ class GreenhouseBoardProvider:
         Reads ACTIVE board slugs from company_registry that meet
         the confidence score thresholds.
         """
-        print("GreenhouseBoardProvider: Fetching verified slugs from registry...")
+        logger.info("GreenhouseBoardProvider: Fetching verified slugs from registry...")
         slugs = get_active_greenhouse_slugs()
-        print(f"GreenhouseBoardProvider: Found {len(slugs)} active slugs.")
+        logger.info(f"GreenhouseBoardProvider: Found {len(slugs)} active slugs.")
         return slugs

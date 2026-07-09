@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('curated_repository_provider')
 from typing import List, Optional
 from src.discovery.providers.base_provider import BaseProvider, StandardJob, ProviderCapabilities
 from src.discovery.importers.source_manager import SourceManager
@@ -89,7 +91,7 @@ class CuratedRepositoryProvider(BaseProvider):
                         
                     all_jobs.extend(parsed_jobs)
                 else:
-                    print(f"Parser {parser_type} not yet implemented.")
+                    logger.info(f"Parser {parser_type} not yet implemented.")
                     
         # 3. Recompute intelligence for priority scheduler
         if all_jobs:

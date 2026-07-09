@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('company_seeder')
 import sqlite3
 from src.crm.database import get_connection
 
@@ -80,11 +82,11 @@ def seed_database():
             ''', (company_name,))
             count += 1
         except Exception as e:
-            print(f"Failed to seed {company_name}: {e}")
+            logger.info(f"Failed to seed {company_name}: {e}")
             
     conn.commit()
     conn.close()
-    print(f"Successfully seeded {count} companies into Company Intelligence Database.")
+    logger.info(f"Successfully seeded {count} companies into Company Intelligence Database.")
 
 if __name__ == "__main__":
     seed_database()

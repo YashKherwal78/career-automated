@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('indeed_provider')
 from typing import List, Optional
 import time
 from datetime import datetime
@@ -71,7 +73,7 @@ class IndeedProvider(BaseProvider):
         self.intelligence_engine.compute_all()
 
     def _discover_jobs_internal(self, last_sync_timestamp: Optional[str], target_companies: Optional[List[dict]] = None) -> List[StandardJob]:
-        print("IndeedProvider: Starting discovery loop via QueryGenerator...")
+        logger.info("IndeedProvider: Starting discovery loop via QueryGenerator...")
         jobs_found = []
         
         queries = self.query_generator.generate_indeed_queries()

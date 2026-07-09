@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('engine')
 import os
 import glob
 import pandas as pd
@@ -45,6 +47,7 @@ class OutreachEngine:
         {TEMPLATE_GENERATION_PROMPT}
         
         Company: {company}
+        Recipient Role: {role if role else 'Recruiter/Hiring Manager'}
         Company Domain: {domain}
         Company Intelligence: {json.dumps(intel_dict)}
         Selected Project to Highlight: {project}
@@ -61,15 +64,15 @@ class OutreachEngine:
                 intent="outreach"
             )
             data = json.loads(response.choices[0].message.content)
-            obs = data.get("observation", "")
-            rel = data.get("relevance", "")
+            obs = data.get("observation", "").replace("aligns with", "matches").replace("thrilled", "glad")
+            rel = data.get("relevance", "").replace("aligns with", "matches").replace("thrilled", "glad")
             
             networking_asks = [
                 "I'd love to learn more about the problems your team is solving.",
                 "I'd be happy to connect if my background seems relevant.",
                 "If you're open to it, I'd love to hear more about your team's current technical priorities.",
-                "I would be thrilled to connect and learn more about the engineering challenges you are tackling.",
-                "If my background aligns with any early-career opportunities, I'd be glad to connect."
+                "I would be glad to connect and learn more about the engineering challenges you are tackling.",
+                "If my background matches any early-career opportunities, I'd be glad to connect."
             ]
             ask = random.choice(networking_asks)
             
@@ -95,7 +98,7 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
 
             return subject, body
         except Exception as e:
-            print(f"Error generating email parts: {e}")
+            logger.info(f"Error generating email parts: {e}")
             return "", ""
 
     def is_already_contacted(self, email: str) -> bool:
@@ -147,13 +150,13 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
         from src.outreach.email_client import ResumeAttachmentError
         
         critic = EmailCritic()
-        print("Starting Autonomous Outreach Engine V2...")
+        logger.info("Starting Autonomous Outreach Engine V2...")
         excel_path = self.get_latest_excel()
         if not excel_path:
-            print("No Excel file found in data/")
+            logger.info("No Excel file found in data/")
             return
             
-        print(f"Loading {excel_path}")
+        logger.info(f"Loading {excel_path}")
         try:
             df = pd.read_excel(excel_path)
             # Standardize columns
@@ -167,18 +170,18 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
             notes_col = next((c for c in df.columns if 'note' in c), None)
             
             if not email_col:
-                print("Could not find email column.")
+                logger.info("Could not find email column.")
                 return
                 
         except Exception as e:
-            print(f"Error reading Excel: {e}")
+            logger.info(f"Error reading Excel: {e}")
             return
             
         processed, sent, skipped, failures = 0, 0, 0, 0
         
         for _, row in df.iterrows():
             if sent >= self.limit:
-                print("Reached daily limit.")
+                logger.info("Reached daily limit.")
                 break
                 
             email_val = str(row.get(email_col, "")).strip()
@@ -187,7 +190,7 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
                 
             processed += 1
             if self.is_already_contacted(email_val):
-                print(f"Skipping {email_val} - Already contacted.")
+                logger.info(f"Skipping {email_val} - Already contacted.")
                 skipped += 1
                 continue
                 
@@ -196,14 +199,13 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
             role_val = str(row.get(role_col, "")) if role_col else ""
             notes_val = str(row.get(notes_col, "")) if notes_col else ""
             
-            print(f"Processing {email_val} at {company_val}...")
+            logger.info(f"Processing {email_val} at {company_val}...")
             
             # 1. Company Intelligence
             intel = run_intelligence_engine(company_val)
             domain = intel.get("domain", "Other")
             
-            # 2. Project Selection
-            project, proj_rejected, proj_reason, proj_conf = ProjectSelector.select(domain)
+            project, proj_rejected, proj_reason, proj_conf = ProjectSelector.select(company_val, intel)
             
             # 3. Email Generation & Critic Loop
             subject, body = "", ""
@@ -219,13 +221,13 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
                     critic_passed = True
                     break
                 else:
-                    print(f"Critic Rejected Attempt {attempt+1}: {critic_result.get('reason')}")
+                    logger.info(f"Critic Rejected Attempt {attempt+1}: {critic_result.get('reason')}")
                     
             if not critic_passed:
-                print(f"Failed to pass Email Critic for {email_val}. Skipping.")
+                logger.info(f"Failed to pass Email Critic for {email_val}. Skipping.")
                 failures += 1
                 if failures >= 5:
-                    print("Too many consecutive failures. Aborting batch early due to likely API rate limits.")
+                    logger.info("Too many consecutive failures. Aborting batch early due to likely API rate limits.")
                     break
                 continue
             else:
@@ -239,7 +241,7 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
             
             # 5. Trace Mode / Send Email
             if getattr(Config, "OUTREACH_TRACE_MODE", False):
-                print(f"--- TRACE MODE ACTIVATED for {company_val} ---")
+                logger.info(f"--- TRACE MODE ACTIVATED for {company_val} ---")
                 word_count = len(body.split())
                 trace_path = Config.DATA_DIR / "outreach_trace_report.md"
                 with open(trace_path, "a") as f:
@@ -250,7 +252,12 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
                     f.write(f"**Rejected Projects:** {', '.join(proj_rejected)}\n")
                     f.write(f"**Reasoning:** {proj_reason}\n")
                     f.write(f"**Confidence:** {proj_conf}\n")
-                    f.write(f"**Critic Score:** {'PASS' if critic_passed else 'FAIL'}\n")
+                    f.write(f"**Critic Overall Score:** {critic_result.get('Overall Score', 'N/A')}\n")
+                    f.write(f"**Critic Status:** {'PASS' if critic_passed else 'FAIL'}\n")
+                    f.write(f"**Critic Details:**\n")
+                    for k, v in critic_result.items():
+                        if k not in ['Overall Score', 'status', 'reason']:
+                            f.write(f"  - {k}: {v}\n")
                     f.write(f"**Critic Feedback:** {critic_result.get('reason', 'None')}\n")
                     f.write(f"**Word Count:** {word_count}\n")
                     f.write(f"**Final Email Subject:** {subject}\n")
@@ -267,22 +274,22 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
                         break
                     time.sleep(2)
             except (ResumeAttachmentError, ValueError) as e:
-                print(f"Pre-send Validation Failed: {e}")
+                logger.info(f"Pre-send Validation Failed: {e}")
                 attachment_status = f"FAILED: {e}"
                 success = False
                 
             status = "SENT" if success else "FAILED"
             
             # Trace Logging
-            print(f"--- TRACE LOG ---")
-            print(f"Company: {company_val}")
-            print(f"Domain: {domain}")
-            print(f"Selected Project: {project}")
-            print(f"Critic Result: PASS")
-            print(f"Resume Path: {resume_path}")
-            print(f"Attachment Status: {attachment_status}")
-            print(f"Send Status: {status}")
-            print(f"-----------------")
+            logger.info(f"--- TRACE LOG ---")
+            logger.info(f"Company: {company_val}")
+            logger.info(f"Domain: {domain}")
+            logger.info(f"Selected Project: {project}")
+            logger.info(f"Critic Result: PASS")
+            logger.info(f"Resume Path: {resume_path}")
+            logger.info(f"Attachment Status: {attachment_status}")
+            logger.info(f"Send Status: {status}")
+            logger.info(f"-----------------")
             
             if not self.dry_run or True: 
                 self.log_outreach(email_val, name_val, company_val, role_val, subject, body, status)
@@ -291,4 +298,4 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
             else: failures += 1
             
         self.generate_report(processed, sent, skipped, failures)
-        print("Daily Outreach V2 complete.")
+        logger.info("Daily Outreach V2 complete.")

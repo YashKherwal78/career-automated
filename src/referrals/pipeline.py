@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('pipeline')
 import json
 import sqlite3
 from src.crm.database import DB_PATH
@@ -15,15 +17,15 @@ def run_referral_engine(company_name: str, job_title: str, job_description: str 
     4. Email Discovery (Top 3 only)
     5. Save to CRM
     """
-    print(f"\n🚀 [Referral Engine] Initiating for {company_name} - {job_title}")
+    logger.info(f"\n🚀 [Referral Engine] Initiating for {company_name} - {job_title}")
     
     # Step 1: Discovery
     contacts = discover_contacts(company_name, job_title, job_description)
     if not contacts:
-        print("❌ [Referral Engine] No contacts discovered.")
+        logger.info("❌ [Referral Engine] No contacts discovered.")
         return
         
-    print(f"✅ Discovered {len(contacts)} potential contacts.")
+    logger.info(f"✅ Discovered {len(contacts)} potential contacts.")
     
     # Step 2 & 3: Intelligence & Scoring
     scored_contacts = []
@@ -72,4 +74,4 @@ def run_referral_engine(company_name: str, job_title: str, job_description: str 
     conn.commit()
     conn.close()
     
-    print(f"✅ [Referral Engine] Successfully logged {len(scored_contacts)} contacts into the CRM.")
+    logger.info(f"✅ [Referral Engine] Successfully logged {len(scored_contacts)} contacts into the CRM.")

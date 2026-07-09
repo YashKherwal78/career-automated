@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('profile_learner')
 import os
 import json
 
@@ -8,7 +10,7 @@ JSON_PATH = os.path.join(CONTEXT_DIR, "master_candidate_profile.json")
 
 def load_profile():
     if not os.path.exists(JSON_PATH):
-        print("No master_candidate_profile.json found. Run extraction first.")
+        logger.info("No master_candidate_profile.json found. Run extraction first.")
         return None
     with open(JSON_PATH, 'r') as f:
         return json.load(f)
@@ -22,14 +24,14 @@ def run_learner():
     if not profile:
         return
         
-    print("\n=== Candidate Profile Learner ===")
-    print("Answer the following missing questions permanently.\n")
+    logger.info("\n=== Candidate Profile Learner ===")
+    logger.info("Answer the following missing questions permanently.\n")
     
     updated = False
     
     for field, data in profile.items():
         if data.get("confidence", 0) < 70 and not data.get("human_verified", False):
-            print(f"Missing Field: {field}")
+            logger.info(f"Missing Field: {field}")
             ans = input(f"Enter your deterministic value for {field} (or press Enter to skip): ").strip()
             if ans:
                 profile[field] = {
@@ -39,13 +41,13 @@ def run_learner():
                     "human_verified": True
                 }
                 updated = True
-                print(f" -> Saved {field} permanently.\n")
+                logger.info(f" -> Saved {field} permanently.\n")
                 
     if updated:
         save_profile(profile)
-        print("All answers saved. master_candidate_profile.json updated!")
+        logger.info("All answers saved. master_candidate_profile.json updated!")
     else:
-        print("No updates made.")
+        logger.info("No updates made.")
 
 if __name__ == "__main__":
     run_learner()

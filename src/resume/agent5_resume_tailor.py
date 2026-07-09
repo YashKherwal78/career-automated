@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('agent5_resume_tailor')
 import os
 import re
 import json
@@ -106,7 +108,7 @@ def parse_jd(llm_router: LLMRouter, job_title: str, job_description: str) -> dic
         cleaned = content.replace("```json", "").replace("```", "").strip()
         return json.loads(cleaned)
     except Exception as e:
-        print(f"JD Parser warning: {e}")
+        logger.info(f"JD Parser warning: {e}")
         # Deterministic fallback
         title_lower = job_title.lower()
         role_type = "SDE"
@@ -133,11 +135,11 @@ def compile_and_count_pages(tex_path, out_dir_path):
         if match: return int(match.group(1))
         return 1
     except Exception as e:
-        print(f"Agent 5: pdflatex compilation failed. Error: {e}")
+        logger.info(f"Agent 5: pdflatex compilation failed. Error: {e}")
         return -1
 
 def tailor_resume(llm_router: LLMRouter, base_resume_path: str, company_name: str, job_title: str, job_description: str, job_id: int, output_dir: str = None, mode: str = "application") -> tuple[str, str]:
-    print(f"Agent 5: Tailoring resume for Job {job_id} ({job_title} at {company_name}) | Mode: {mode.upper()}...")
+    logger.info(f"Agent 5: Tailoring resume for Job {job_id} ({job_title} at {company_name}) | Mode: {mode.upper()}...")
     
     if not output_dir:
         output_dir = str(Config.DATA_DIR)
@@ -145,14 +147,13 @@ def tailor_resume(llm_router: LLMRouter, base_resume_path: str, company_name: st
     out_dir_path.mkdir(parents=True, exist_ok=True)
     
     if not os.path.exists(base_resume_path):
-        print(f"Cannot find base resume at {base_resume_path}")
-        return "", ""
+        raise FileNotFoundError(f"CRITICAL: Cannot find base resume at {base_resume_path}. Agent 5 is strictly forbidden from generating resumes from scratch.")
         
     with open(base_resume_path, "r") as f:
         base_template = f.read()
         
     # 1. JD Parsing
-    print("Agent 5: Parsing Job Description...")
+    logger.info("Agent 5: Parsing Job Description...")
     jd_intel = parse_jd(llm_router, job_title, job_description)
     role_type = jd_intel["role_type"]
     
@@ -168,7 +169,7 @@ def tailor_resume(llm_router: LLMRouter, base_resume_path: str, company_name: st
         priority_projects = ["CareerAutomated", "AI Data Analyst Agent", "Backend Systems"]
         
     # 3. RAG Retrieval
-    print(f"Agent 5: Retrieving context for Role Type: {role_type}...")
+    logger.info(f"Agent 5: Retrieving context for Role Type: {role_type}...")
     rag = RAGClient()
     search_query = f"{job_title} {job_description[:500]} {' '.join(jd_intel['skills'])} {' '.join(priority_projects)}"
     retrieved_chunks = rag.retrieve(search_query, top_k_initial=15, top_k_final=5)
@@ -196,7 +197,7 @@ def tailor_resume(llm_router: LLMRouter, base_resume_path: str, company_name: st
     {base_template}
     """
     
-    print("Agent 5: Generating tailored LaTeX...")
+    logger.info("Agent 5: Generating tailored LaTeX...")
     messages = [
         {"role": "system", "content": RESUME_WRITER_SYSTEM_PROMPT},
         {"role": "user", "content": user_prompt}
@@ -212,7 +213,7 @@ def tailor_resume(llm_router: LLMRouter, base_resume_path: str, company_name: st
         tailored_tex = tailored_tex.replace("```latex", "").replace("```", "").strip()
     
     # 4. Validation Gate & Metric Grounding
-    print("Agent 5: Validating Output and Metric Grounding...")
+    logger.info("Agent 5: Validating Output and Metric Grounding...")
     
     base_projects = extract_projects_from_tex(base_template)
     tailored_projects = extract_projects_from_tex(tailored_tex)
@@ -226,7 +227,7 @@ def tailor_resume(llm_router: LLMRouter, base_resume_path: str, company_name: st
         proj_numbers = extract_numbers(bullet_text)
         unsupported = proj_numbers - allowed_numbers
         if unsupported:
-            print(f"  [Metric Grounding] Violation in Project '{proj_name}': {unsupported}. Restoring original bullet block.")
+            logger.info(f"  [Metric Grounding] Violation in Project '{proj_name}': {unsupported}. Restoring original bullet block.")
             # Find closest match in base resume
             closest_base_proj = None
             for bp_name, bp_block in base_projects.items():
@@ -239,15 +240,15 @@ def tailor_resume(llm_router: LLMRouter, base_resume_path: str, company_name: st
             else:
                 # If we can't find original, we might have to delete it, but user said DO NOT DELETE.
                 # So we just fallback to base template entirely if it's too mangled.
-                print(f"  [Metric Grounding] Could not find original for '{proj_name}'.")
+                logger.info(f"  [Metric Grounding] Could not find original for '{proj_name}'.")
 
     # 5. Telemetry & Scoring
-    print(f"--- TELEMETRY FOR JOB {job_id} ---")
-    print(f"Selected Template: {os.path.basename(base_resume_path)}")
-    print(f"Role Type: {role_type}")
-    print(f"Retrieved Chunks: {len(retrieved_chunks)}")
-    print(f"JD Skills Found: {len(jd_intel['skills'])}")
-    print("-----------------------------------")
+    logger.info(f"--- TELEMETRY FOR JOB {job_id} ---")
+    logger.info(f"Selected Template: {os.path.basename(base_resume_path)}")
+    logger.info(f"Role Type: {role_type}")
+    logger.info(f"Retrieved Chunks: {len(retrieved_chunks)}")
+    logger.info(f"JD Skills Found: {len(jd_intel['skills'])}")
+    logger.info("-----------------------------------")
     
     # 6. Compilation
     tex_path = out_dir_path / f"tailored_resume_{job_id}.tex"
@@ -256,15 +257,15 @@ def tailor_resume(llm_router: LLMRouter, base_resume_path: str, company_name: st
     with open(tex_path, "w", encoding="utf-8") as f:
         f.write(tailored_tex)
         
-    print("Agent 5: Compiling PDF...")
+    logger.info("Agent 5: Compiling PDF...")
     pages = compile_and_count_pages(tex_path, out_dir_path)
     
     if pages > 1:
-        print("Agent 5 Warning: Resume exceeds 1 page! Using base resume as safe fallback.")
+        logger.info("Agent 5 Warning: Resume exceeds 1 page! Using base resume as safe fallback.")
         return base_resume_path, "Base Resume (Fallback)"
         
     if not os.path.exists(pdf_path):
-        print("Agent 5 Error: PDF compilation failed. Using base resume.")
+        logger.info("Agent 5 Error: PDF compilation failed. Using base resume.")
         return base_resume_path, "Base Resume (Fallback)"
         
     return str(pdf_path), priority_projects[0] if priority_projects else "Dynamic Tailored"

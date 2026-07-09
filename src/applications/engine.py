@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('engine')
 import os
 import sqlite3
 import datetime
@@ -60,10 +62,10 @@ class AutoapplyEngine:
         return pdf_path, profile_type
 
     def run_daily_batch(self):
-        print("==================================================")
-        print("🚀 STARTING AUTOAPPLY ENGINE BATCH")
-        print(f"Timestamp: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        print("==================================================")
+        logger.info("==================================================")
+        logger.info("🚀 STARTING AUTOAPPLY ENGINE BATCH")
+        logger.info(f"Timestamp: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        logger.info("==================================================")
         
         # 1. Fill the queue
         generate_daily_queue()
@@ -85,10 +87,10 @@ class AutoapplyEngine:
         jobs_to_process = cursor.fetchall()
         
         if not jobs_to_process:
-            print("Autoapply Engine: No jobs queued for today. Exiting.")
+            logger.info("Autoapply Engine: No jobs queued for today. Exiting.")
             return
             
-        print(f"Autoapply Engine: Processing {len(jobs_to_process)} jobs...")
+        logger.info(f"Autoapply Engine: Processing {len(jobs_to_process)} jobs...")
         
         for job in jobs_to_process:
             job_id = job["job_id"]
@@ -98,14 +100,14 @@ class AutoapplyEngine:
             location = job["location"] or "Unknown"
             rec_resume = job["recommended_resume"]
             
-            print(f"\n--- Applying to Job {job_id}: {title} at {company} ---")
+            logger.info(f"\n--- Applying to Job {job_id}: {title} at {company} ---")
             
             # 3. Dynamic Routing & Pre-flight
             resume_path, profile_type = self._map_resume_to_profile(rec_resume)
-            print(f"Routing logic: Selected Profile '{profile_type}' with Resume '{resume_path}'")
+            logger.info(f"Routing logic: Selected Profile '{profile_type}' with Resume '{resume_path}'")
             
             if not os.path.exists(resume_path):
-                print(f"[PRE-FLIGHT FAILED] Resume file not found at {resume_path}")
+                logger.info(f"[PRE-FLIGHT FAILED] Resume file not found at {resume_path}")
                 self._update_queue_status(job_id, "FAILED", f"Resume missing: {resume_path}")
                 continue
                 
@@ -137,15 +139,15 @@ class AutoapplyEngine:
             
             try:
                 final_status = executor.execute()
-                print(f"Result for Job {job_id}: {final_status}")
+                logger.info(f"Result for Job {job_id}: {final_status}")
                 self._update_queue_status(job_id, final_status, "")
             except Exception as e:
-                print(f"Critical execution error for Job {job_id}: {e}")
+                logger.info(f"Critical execution error for Job {job_id}: {e}")
                 self._update_queue_status(job_id, "FAILED", str(e))
                 
-        print("\n==================================================")
-        print("🏁 AUTOAPPLY BATCH COMPLETE")
-        print("==================================================")
+        logger.info("\n==================================================")
+        logger.info("🏁 AUTOAPPLY BATCH COMPLETE")
+        logger.info("==================================================")
         
     def _update_queue_status(self, job_id: int, status: str, notes: str):
         cursor = self.conn.cursor()

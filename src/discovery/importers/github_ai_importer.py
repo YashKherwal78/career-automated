@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('github_ai_importer')
 from src.crm.database import get_connection
 
 AI_COMPANIES = [
@@ -33,11 +35,11 @@ def import_ai_companies():
             ''', (company_name,))
             count += 1
         except Exception as e:
-            print(f"Failed to seed {company_name}: {e}")
+            logger.info(f"Failed to seed {company_name}: {e}")
             
     conn.commit()
     conn.close()
-    print(f"Successfully imported {count} AI companies.")
+    logger.info(f"Successfully imported {count} AI companies.")
     
 if __name__ == "__main__":
     import_ai_companies()

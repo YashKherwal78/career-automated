@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('ats_detector')
 import requests
 import re
 import time
@@ -64,4 +66,4 @@ class ATSDetector:
 # Standalone execution for testing
 if __name__ == "__main__":
     detector = ATSDetector()
-    print(detector.detect_ats("Rippling"))
+    logger.info(detector.detect_ats("Rippling"))

@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('enrichment')
 import sqlite3
 import datetime
 import requests
@@ -19,14 +21,14 @@ class EnrichmentLayer:
         self.cursor.execute("SELECT SUM(calls_made) FROM apify_metrics WHERE date(created_at) = ?", (today,))
         daily_runs = self.cursor.fetchone()[0] or 0
         if daily_runs >= Config.MAX_APIFY_RUNS_PER_DAY:
-            print(f"Apify blocked: Daily limit reached ({daily_runs}/{Config.MAX_APIFY_RUNS_PER_DAY})")
+            logger.info(f"Apify blocked: Daily limit reached ({daily_runs}/{Config.MAX_APIFY_RUNS_PER_DAY})")
             return False
             
         # Check monthly budget
         self.cursor.execute("SELECT SUM(cost_usd) FROM apify_metrics WHERE strftime('%Y-%m', created_at) = ?", (month,))
         monthly_cost = self.cursor.fetchone()[0] or 0.0
         if monthly_cost >= Config.MAX_APIFY_MONTHLY_BUDGET:
-            print(f"Apify blocked: Monthly budget reached (${monthly_cost:.2f}/${Config.MAX_APIFY_MONTHLY_BUDGET:.2f})")
+            logger.info(f"Apify blocked: Monthly budget reached (${monthly_cost:.2f}/${Config.MAX_APIFY_MONTHLY_BUDGET:.2f})")
             return False
             
         return True
@@ -40,7 +42,7 @@ class EnrichmentLayer:
 
     def find_contacts(self, company, title):
         """Uses Apify to find Hiring Managers and Recruiters."""
-        print(f"Attempting Apify enrichment for {title} at {company}...")
+        logger.info(f"Attempting Apify enrichment for {title} at {company}...")
         
         if not self.check_apify_budget():
             return self.fallback_duckduckgo_search(company, title)
@@ -60,7 +62,7 @@ class EnrichmentLayer:
                 default_dataset_id = data['data']['defaultDatasetId']
                 
                 # We would typically poll here, but for now we simulate the completion
-                print(f"Apify Run {run_id} started. Waiting for results...")
+                logger.info(f"Apify Run {run_id} started. Waiting for results...")
                 
                 # Mock results for architecture validation
                 contacts = [
@@ -71,30 +73,30 @@ class EnrichmentLayer:
                 self.log_apify_metric(0, "google_search", 1, 0.001, 0.001, len(contacts))
                 return contacts
             else:
-                print(f"Apify API Error: {res.status_code} - {res.text}")
+                logger.info(f"Apify API Error: {res.status_code} - {res.text}")
                 return self.fallback_duckduckgo_search(company, title)
                 
         except Exception as e:
-            print(f"Apify Exception: {e}")
+            logger.info(f"Apify Exception: {e}")
             return self.fallback_duckduckgo_search(company, title)
 
     def fallback_duckduckgo_search(self, company, title):
-        print(f"-> Falling back to DuckDuckGo/X-Ray search for {company}...")
+        logger.info(f"-> Falling back to DuckDuckGo/X-Ray search for {company}...")
         # Future implementation
         return []
 
     def enrich_queue(self):
-        print("Agent 3: Starting Apify Enrichment Layer...")
+        logger.info("Agent 3: Starting Apify Enrichment Layer...")
         today = datetime.datetime.now().strftime("%Y-%m-%d")
         
         self.cursor.execute("SELECT * FROM application_queue WHERE queue_date = ? AND queue_status = 'QUEUED'", (today,))
         queue = self.cursor.fetchall()
         
         if not queue:
-            print("No jobs in today's queue to enrich.")
+            logger.info("No jobs in today's queue to enrich.")
             return
             
-        print(f"Found {len(queue)} jobs in queue to enrich.")
+        logger.info(f"Found {len(queue)} jobs in queue to enrich.")
         for row in queue:
             job_id = row["job_id"]
             company = row["company"]
@@ -110,7 +112,7 @@ class EnrichmentLayer:
                 
             self.conn.commit()
             
-        print("Agent 3: Enrichment complete.")
+        logger.info("Agent 3: Enrichment complete.")
 
 if __name__ == "__main__":
     layer = EnrichmentLayer()

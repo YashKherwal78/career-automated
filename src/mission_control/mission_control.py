@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('mission_control')
 import json
 import sqlite3
 from typing import List, Dict
@@ -72,14 +74,14 @@ class MissionControl:
         
         # Check Daily Limits
         if emails_sent >= self.max_daily_emails:
-            print(f"[Mission Control] Daily email limit reached ({emails_sent}/{self.max_daily_emails}).")
+            logger.info(f"[Mission Control] Daily email limit reached ({emails_sent}/{self.max_daily_emails}).")
             return "SKIP_DAILY_LIMIT"
             
         # Check Bounce Rate
         if emails_sent > 10:
             bounce_rate = bounces / emails_sent
             if bounce_rate > self.max_bounce_rate:
-                print(f"[Mission Control] CRITICAL: Bounce rate {bounce_rate*100:.1f}% exceeds limit. Pausing outreach.")
+                logger.info(f"[Mission Control] CRITICAL: Bounce rate {bounce_rate*100:.1f}% exceeds limit. Pausing outreach.")
                 return "SKIP_BOUNCE_LIMIT"
 
         # Check job matching metadata
@@ -95,7 +97,7 @@ class MissionControl:
         agent_conf = job_matching.get("confidence", 1.0)
         
         if interview_prob < Config.MIN_INTERVIEW_PROBABILITY:
-            print(f"[Mission Control] Rejecting {lead['company_name']} - Interview Probability too low ({interview_prob}%).")
+            logger.info(f"[Mission Control] Rejecting {lead['company_name']} - Interview Probability too low ({interview_prob}%).")
             return "SKIP_LOW_PROB"
             
         contact_conf = lead.get("contact_confidence", 0)
@@ -108,7 +110,7 @@ class MissionControl:
         return "PROCEED"
 
     def llm_validation(self, lead: Dict) -> Dict:
-        print(f"[Mission Control] Running LLM Executive Review for {lead['company_name']} due to ambiguity/low confidence...")
+        logger.info(f"[Mission Control] Running LLM Executive Review for {lead['company_name']} due to ambiguity/low confidence...")
         prompt = f"""
         You are the Mission Control Executive Agent.
         Review the following opportunity and decide if we should PROCEED, SKIP, or REVIEW manually.
@@ -135,7 +137,7 @@ class MissionControl:
             )
             return json.loads(response.choices[0].message.content)
         except Exception as e:
-            print(f"Mission Control LLM Error: {e}")
+            logger.info(f"Mission Control LLM Error: {e}")
             return {"decision": "SKIP", "confidence": 0.0, "reasoning": "Error in LLM review."}
 
     def generate_daily_briefing(self):
@@ -185,7 +187,7 @@ Bounces: {stats['bounces']}
 API Credits Used: Not tracked yet
 ==================================================
         """
-        print(briefing)
+        logger.info(briefing)
         return briefing
 
         # Removed run_daily_operations as orchestrator.py will handle the batch logic.

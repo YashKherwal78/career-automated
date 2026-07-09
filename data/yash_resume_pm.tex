@@ -73,11 +73,12 @@
 \resumeSubHeadingListStart
 
   \resumeSubheading
-    {Product Manager Intern}{Feb 2026 -- Apr 2026}
+    {AI Product Manager Intern}{Feb 2026 -- Apr 2026}
     {OrangeLabs (EdTech)}{}
   \resumeItemListStart
-    \resumeItem{Contributed to \kw{0-to-1 product development} of an AI-powered school ERP --- defined product vision, user personas, and feature scope for two flagship AI products from initial concept to structured requirements.}
-    \resumeItem{Shaped \kw{AI Attendance System}: identified teacher time-on-task as the primary pain point; scoped CCTV-based auto-detection as the solution, eliminating register-based roll calls and freeing $\sim$10 minutes per class for instruction.}
+    \resumeItem{Owned end-to-end product development of two AI features --- defined the problem, designed the solution, and worked directly with engineering to ship; \kw{AI Attendance System} (CCTV-based auto-detection) eliminated manual roll calls, freeing $\sim$10 minutes of instruction time per class period.}
+    \resumeItem{Conducted \kw{customer discovery} with school administrators and teachers; identified student revision and missed-lecture recovery as the two highest-value use cases; defined and shipped \kw{AI Video Lecture Generator} --- pipeline extracts and structures teacher-recorded sessions into personalised async content.}
+    \resumeItem{Contributed to \kw{product roadmap} in collaboration with co-founders; maintained cross-functional alignment between product, engineering, and operations throughout both build cycles.}
   \resumeItemListEnd
 
   \resumeSubheading
@@ -101,31 +102,26 @@
 \resumeSubHeadingListStart
 
   \resumeProjectHeading
-    {\textbf{AI Data Analyst Agent} $|$ \emph{Python, LangGraph, CrewAI, n8n, MCP, FastAPI, Docker, AWS EC2}}{2025}
+    {\textbf{CareerAutomated} $|$ \emph{Python, Groq/LLaMA, LangGraph, SQLite, Pandas, Playwright, IMAP/SMTP}}{2025}
   \resumeItemListStart
-    \resumeItem{Built a \kw{5-agent LangGraph workflow} (Query Planner $\rightarrow$ Code Writer $\rightarrow$ Executor $\rightarrow$ Error Fixer $\rightarrow$ Insight Generator) --- \kw{reduced time-to-insight from hours to under 60s}; Query Planner routes deterministically to \kw{SQL or Python} by source type; supports \kw{CSV, SQL databases, and PDF} inputs.}
-    \resumeItem{\kw{Error Fixer agent} classifies exceptions, regenerates fix, retries up to \kw{3 attempts} before surfacing to user; \kw{n8n} orchestrates triggers; \kw{MCP} exposes files, DBs, and APIs as tool context; Executor in \kw{Docker sandbox}; \kw{FastAPI} on \kw{AWS EC2}.}
-  \resumeItemListEnd
-
-  \resumeProjectHeading
-    {\textbf{Semantic Document Search --- GDSC IIT Roorkee} $|$ \emph{Python, LangChain, BGE-M3, AstraDB, FastAPI, AWS EC2}}{2024}
-  \resumeItemListStart
-    \resumeItem{Replaced keyword search on a \kw{500+ document corpus} with \kw{hybrid RAG} (dense \kw{BGE-M3} + sparse BM25) --- eliminated zero-result failure mode; users receive grounded direct answers instead of document lists.}
-    \resumeItem{Offline embedding pipeline into \kw{AstraDB} decoupled from \kw{FastAPI serving} on \kw{AWS EC2} --- \kw{sub-second query response}; corpus updates without downtime; prompt constraints enforce \kw{response groundedness}.}
+    \resumeItem{Building an \kw{autonomous AI recruiting platform} that orchestrates job discovery, candidate-job matching, resume tailoring, recruiter outreach, \kw{ATS application execution}, CRM tracking, and inbox intelligence through a unified \kw{multi-agent workflow}.}
+    \resumeItem{Designed a \kw{Generator-Critic architecture}: specialised agents handle company intelligence, project selection, and personalised email generation; a \kw{Critic agent} validates quality, contextual relevance, formatting constraints, and placeholder safety before any outreach is sent --- bad emails are blocked, not just flagged.}
+    \resumeItem{Engineered \kw{scalable data pipelines} using \kw{SQLite}, \kw{Pandas}, \kw{IMAP}, and \kw{SMTP} to maintain recruiter state, \kw{deduplicate 10,000+ contacts}, synchronise Gmail Sent history, and automate personalised outreach at scale; \kw{Playwright}-based browser automation executes ATS-specific application flows end-to-end.}
   \resumeItemListEnd
 
   \resumeProjectHeading
     {\textbf{YAAR --- AI Behavioral Companion} $|$ \emph{React Native, LLM APIs, FastAPI, EAS Build}}{2025}
   \resumeItemListStart
-    \resumeItem{\kw{Shipped Android APK} (React Native + EAS Build) --- tap-based reaction probes, adaptive LLM generation, shareable identity card export; \kw{sub-2s streamed response latency}; validated end-to-end on device.}
-    \resumeItem{Preference engine tracks \kw{3 personality dimensions} (humour tolerance, self-awareness index, reaction intensity) --- steers LLM tone via dynamic prompt construction; \kw{personalised output from first session} deepening across interactions without retraining.}
-    \resumeItem{Designed \kw{zero-input engagement loop} (Open $\rightarrow$ Hook $\rightarrow$ React $\rightarrow$ Preference Update) for Gen Z in Tier 2/3 India; revenue via \kw{contextual native brand integration} triggered by behavioral state at higher CPM than display.}
+    \resumeItem{\kw{Shipped Android APK} (React Native + EAS Build) --- chat UI, tap-based reaction probes, adaptive LLM generation, and shareable identity card export; \kw{sub-2s streamed response latency} via FastAPI; validated end-to-end on device.}
+    \resumeItem{Designed a \kw{zero-input personalisation loop} (Open $\rightarrow$ Hook $\rightarrow$ React $\rightarrow$ Preference Update) for Gen Z in Tier 2/3 India; preference engine tracks \kw{3 personality dimensions} from tap reactions, narrowing LLM output to identity-calibrated responses without retraining.}
+    \resumeItem{Primary revenue via \kw{contextual native brand integration} --- behavioral state triggers in-character brand moments at peak-receptivity windows; freemium tier (50 reactions/day free vs.\ Rs.49/mo premium) as secondary.}
   \resumeItemListEnd
 
   \resumeProjectHeading
-    {\textbf{Echo Pod --- AI Stillness Companion} $|$ \emph{Android, On-Device Voice AI, Event-Driven Triggers}}{2025}
+    {\textbf{Semantic Document Search --- GDSC IIT Roorkee} $|$ \emph{Python, LangChain, BGE-M3, AstraDB, FastAPI, AWS EC2}}{2024}
   \resumeItemListStart
-    \resumeItem{Diagnosed \kw{25\% first-session churn} on screen blocker apps; designed a \kw{3-layer AI UX} (ambient trigger $\rightarrow$ on-device voice AI $\rightarrow$ daily stillness score) with \kw{on-device inference} for zero latency and privacy by default; \kw{pause completion rate} as primary activation signal.}
+    \resumeItem{Replaced keyword search on a \kw{500+ document corpus} with \kw{hybrid RAG} (dense \kw{BGE-M3} + sparse BM25) --- eliminated zero-result failure mode that caused query abandonment; users receive grounded direct answers instead of document lists.}
+    \resumeItem{Offline \kw{BGE-M3} embedding pipeline into \kw{AstraDB} decoupled from \kw{FastAPI serving} on \kw{AWS EC2} --- sub-second query response; corpus updates without downtime; prompt constraints enforce \kw{response groundedness}.}
   \resumeItemListEnd
 
 \resumeSubHeadingListEnd
@@ -133,10 +129,10 @@
 \section{Technical Skills}
 \begin{itemize}[leftmargin=0.15in, label={}]
   \small{\item{
-    \textbf{AI/ML:} LangGraph, LangChain, CrewAI, MCP, Hybrid RAG, Multi-Agent Orchestration, Prompt Engineering, Human-in-the-Loop Design, Retrieval Evaluation \\
-    \textbf{Product:} PRD Writing, MVP Scoping, Prioritisation (RICE, Knapsack), A/B Testing, Funnel Analysis, Latency--Accuracy Tradeoffs, Failure Handling \\
-    \textbf{Backend \& Infra:} Python, FastAPI, Docker, AWS EC2, n8n, Stream Processing, REST APIs \\
-    \textbf{Data \& Analytics:} SQL (window functions, cohort queries), Pandas, OOP, DSA (graphs, trees, complexity)
+    \textbf{AI/ML:} LangGraph, LangChain, Groq/LLaMA, MCP, Hybrid RAG, Multi-Agent Systems, Prompt Engineering, Generator-Critic Architecture, Human-in-the-Loop Design \\
+    \textbf{Product:} PRD Writing, MVP Scoping, Customer Discovery, Roadmapping, Prioritisation (RICE, Knapsack), A/B Testing, Funnel Analysis \\
+    \textbf{Backend \& Infra:} Python, FastAPI, Docker, AWS EC2, Playwright, IMAP/SMTP, Stream Processing, REST APIs \\
+    \textbf{Data \& Analytics:} SQL, SQLite, Pandas, Cohort Queries, OOP, DSA (graphs, trees, complexity)
   }}
 \end{itemize}
 

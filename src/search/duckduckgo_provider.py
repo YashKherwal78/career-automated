@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('duckduckgo_provider')
 from duckduckgo_search import DDGS
 from typing import List, Dict, Optional
 
@@ -32,7 +34,7 @@ class DuckDuckGoProvider:
                     # Return the first direct link that looks like a career page
                     return url
         except Exception as e:
-            print(f"[DDG Provider] Career page search failed for {company}: {e}")
+            logger.info(f"[DDG Provider] Career page search failed for {company}: {e}")
         return None
 
     def _execute_people_search(self, query: str, company: str, max_results: int, default_type: str) -> List[Dict]:
@@ -60,6 +62,6 @@ class DuckDuckGoProvider:
                         "contact_type": default_type
                     })
         except Exception as e:
-            print(f"[DDG Provider] People search failed: {e}")
+            logger.info(f"[DDG Provider] People search failed: {e}")
             
         return contacts

@@ -1,74 +1,141 @@
+import sqlite3
+import time
 import logging
-from src.discovery.importers.source_manager import SourceManager
-from src.discovery.role_discovery_engine import RoleDiscoveryEngine
-from src.discovery.event_bus import event_bus
-from src.crm.database import get_connection
+import asyncio
+import aiohttp
+from typing import List, Dict, Any, Optional
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from src.discovery.pipeline.discovery_orchestrator import DiscoveryOrchestrator
+from src.discovery.pipeline.sources import HeadProbeSource, StaticLandingPageSource, ExternalSearchSource
+from src.discovery.pipeline.plugins.greenhouse_plugin import GreenhouseDiscoveryPlugin
+from src.discovery.pipeline.plugins.lever_plugin import LeverDiscoveryPlugin
+from src.discovery.pipeline.plugins.workday_plugin import WorkdayDiscoveryPlugin
+from src.discovery.pipeline.caches import ReplayCache
+from src.discovery.pipeline.fallback_models import DiscoveryBudget
 
-class CompanyDiscoveryEngine:
-    """
-    Central orchestrator for discovering startups.
-    Coordinates VC Portfolios, YC Directory, Curated Repos, Product Hunt, 
-    and the Role Discovery Inbox.
-    Outputs exclusively to the Event Bus (CompanyCreatedEvent).
-    """
-    
-    def __init__(self):
-        self.source_manager = SourceManager()
-        self.role_discovery = RoleDiscoveryEngine()
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger('ContinuousDiscoveryEngine')
+
+class DiscoveryDB:
+    def __init__(self, db_path: str):
+        self.db_path = db_path
+
+class ContinuousDiscoveryEngine:
+    def __init__(self, db_path: str):
+        self.db = DiscoveryDB(db_path)
         
-    def _get_existing_companies(self) -> set:
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT company_name FROM company_registry")
-        existing = {row[0].lower() for row in cursor.fetchall()}
-        conn.close()
-        return existing
+        # Instantiate orchestrator with HeadProbe, StaticPage, and Search sources,
+        # along with Greenhouse, Lever, and Workday discovery plugins.
+        sources = [HeadProbeSource(), StaticLandingPageSource(), ExternalSearchSource()]
+        plugins = [GreenhouseDiscoveryPlugin(), LeverDiscoveryPlugin(), WorkdayDiscoveryPlugin()]
+        replay_cache = ReplayCache(db_path)
         
-    def run_discovery(self):
-        """
-        Executes all company discovery streams.
-        """
-        logger.info("Starting Company Discovery Engine Orchestration...")
+        self.orchestrator = DiscoveryOrchestrator(
+            sources=sources,
+            plugins=plugins,
+            replay_cache=replay_cache
+        )
         
-        existing_companies = self._get_existing_companies()
+    async def run(self, limit: Optional[int] = None) -> Dict[str, Any]:
+        logger.info("Starting Continuous Company Discovery Engine...")
         
-        # 1. Run Data Source Importers (VCs, Repos, CSVs)
-        logger.info("Polling Curated Data Sources...")
-        datasets = self.source_manager.run_all_sources()
+        # 1. Fetch companies to process from company_identities
+        with sqlite3.connect(self.db.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.execute("SELECT company_id, legal_name, website, domain FROM company_identities")
+            companies = [dict(row) for row in cursor.fetchall()]
+            
+        total_companies = len(companies)
+        logger.info(f"Loaded {total_companies} company identities from database.")
         
-        # In a real implementation, datasets would be parsed into standardized company dicts
-        for company_data in datasets:
-            company_name = company_data.get('company_name')
-            if not company_name:
+        metrics = {
+            "companies_processed": 0,
+            "registry_hits": 0,
+            "homepage_discoveries": 0,
+            "greenhouse_discoveries": 0,
+            "lever_discoveries": 0,
+            "ashby_discoveries": 0,
+            "workable_discoveries": 0,
+            "ddg_discoveries": 0,
+            "exa_discoveries": 0,
+            "verified": 0,
+            "failed_discoveries": 0,
+            "jobs_crawled": 0,
+            "processed": 0
+        }
+        
+        # Track started time
+        start_time = time.time()
+        
+        processed_count = 0
+        for company in companies:
+            # Check configured limit
+            if limit is not None and processed_count >= limit:
+                break
+                
+            company_id = company["company_id"]
+            company_name = company["legal_name"] or company_id
+            
+            # Check if ACTIVE endpoint already exists in ats_registry
+            active_endpoint = self.orchestrator.registry.get_active_endpoint(company_id)
+            if active_endpoint:
+                metrics["registry_hits"] += 1
+                metrics["companies_processed"] += 1
                 continue
                 
-            company_lower = company_name.lower()
-            if company_lower not in existing_companies:
-                logger.info(f"Company Discovery found NEW company via datasets: {company_name}")
-                event_bus.publish('CompanyCreatedEvent', {
-                    'company_name': company_name,
-                    'source': company_data.get('source_name', 'Unknown Source'),
-                    'discovery_type': company_data.get('discovery_type', 'Company Discovery'),
-                    'website': company_data.get('website', ''),
-                    'careers_url': company_data.get('careers_url', '')
-                })
-                existing_companies.add(company_lower)
-            else:
-                event_bus.publish('CompanySeenEvent', {
-                    'company_name': company_name,
-                    'source': company_data.get('source_name', 'Unknown Source'),
-                    'discovery_type': company_data.get('discovery_type', 'Company Discovery')
-                })
+            # Perform discovery on new companies
+            processed_count += 1
+            metrics["processed"] += 1
+            metrics["companies_processed"] += 1
+            
+            website = company.get("website") or company.get("domain")
+            if not website:
+                metrics["failed_discoveries"] += 1
+                continue
                 
-        # 2. Run Role Discovery Inbox (The 5% targeted search)
-        logger.info("Executing Role Discovery Inbox...")
-        self.role_discovery.run_discovery_inbox()
-        
-        logger.info("Company Discovery Engine Orchestration Complete.")
-
-if __name__ == "__main__":
-    engine = CompanyDiscoveryEngine()
-    engine.run_discovery()
+            if not website.startswith("http"):
+                website = f"https://{website}"
+                
+            logger.info(f"[{processed_count}] Discovering: {company_name} ({website})")
+            
+            # Budget parameters
+            budget = DiscoveryBudget(max_http_requests=25, max_latency_seconds=30.0, max_search_queries=5)
+            
+            try:
+                res = await self.orchestrator.execute(company_id, website, budget)
+                verified = res.get("verified", [])
+                all_candidates = res.get("all_candidates", [])
+                
+                if verified:
+                    metrics["verified"] += 1
+                    best_candidate = verified[0]
+                    
+                    # Extract source and provider info
+                    top_source = "Unknown"
+                    if best_candidate.evidence:
+                        top_source = sorted(best_candidate.evidence, key=lambda e: e.weight, reverse=True)[0].source
+                        
+                    if "HeadProbe" in top_source or "StaticLandingPage" in top_source:
+                        metrics["homepage_discoveries"] += 1
+                    elif "DDG" in top_source:
+                        metrics["ddg_discoveries"] += 1
+                    elif "Exa" in top_source:
+                        metrics["exa_discoveries"] += 1
+                        
+                    # Map plugin types
+                    plugin_name = best_candidate.plugin_name.lower() if hasattr(best_candidate, 'plugin_name') else ""
+                    if "greenhouse" in plugin_name:
+                        metrics["greenhouse_discoveries"] += 1
+                    elif "lever" in plugin_name:
+                        metrics["lever_discoveries"] += 1
+                    elif "workday" in plugin_name:
+                        # Workday plugin is used
+                        pass
+                else:
+                    metrics["failed_discoveries"] += 1
+            except Exception as e:
+                logger.error(f"Failed discovering {company_name}: {e}")
+                metrics["failed_discoveries"] += 1
+                
+        metrics["total_elapsed_sec"] = time.time() - start_time
+        return metrics

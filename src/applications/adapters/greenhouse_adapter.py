@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('greenhouse_adapter')
 import os
 import json
 from typing import Dict, Any
@@ -13,7 +15,7 @@ class GreenhouseAdapter(BaseAdapter):
         self.llm_router = llm_router
 
     def apply(self, job: Dict[str, Any], resume_path: str, profile_manager: Any) -> ApplicationResult:
-        print(f"[GreenhouseAdapter] Launching browser for Job: {job.get('id')} - {job.get('company_name')}")
+        logger.info(f"[GreenhouseAdapter] Launching browser for Job: {job.get('id')} - {job.get('company_name')}")
         
         execution_dir = f"executions/job_{job.get('id')}"
         os.makedirs(execution_dir, exist_ok=True)
@@ -63,7 +65,7 @@ class GreenhouseAdapter(BaseAdapter):
                 )
                 
             except Exception as e:
-                print(f"[GreenhouseAdapter] Exception: {e}")
+                logger.info(f"[GreenhouseAdapter] Exception: {e}")
                 screenshot_path = os.path.join(execution_dir, "error_state.png")
                 try:
                     page.screenshot(path=screenshot_path)

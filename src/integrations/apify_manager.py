@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('apify_manager')
 import sqlite3
 import datetime
 from apify_client import ApifyClient
@@ -7,18 +9,16 @@ class ApifyManager:
     def __init__(self):
         self.conn = sqlite3.connect(Config.DATABASE_PATH)
         self.conn.row_factory = sqlite3.Row
-        self._register_keys()
         
-    def _register_keys(self):
-        """Registers keys from Config into SQLite on startup to track them across runs."""
+    def register_credential_ids(self, credential_ids: list):
+        """Registers credential IDs into SQLite."""
         cursor = self.conn.cursor()
-        for i, key_val in enumerate(Config.APIFY_KEYS, 1):
-            env_var_name = f"APIFY_KEY_{i}"
-            cursor.execute("SELECT id FROM apify_keys WHERE env_var_name = ?", (env_var_name,))
+        for c_id in credential_ids:
+            cursor.execute("SELECT id FROM apify_keys WHERE env_var_name = ?", (c_id,))
             if not cursor.fetchone():
                 cursor.execute(
                     "INSERT INTO apify_keys (env_var_name, status) VALUES (?, 'ACTIVE')", 
-                    (env_var_name,)
+                    (c_id,)
                 )
         self.conn.commit()
         
@@ -27,24 +27,15 @@ class ApifyManager:
         cursor.execute("SELECT SUM(credits_used) FROM apify_keys")
         res = cursor.fetchone()[0]
         return res if res else 0.0
-        
-    def get_client(self, tier: int, category: str):
+
+    def get_active_credential_id(self):
         """
-        Tier 1: Recruiter, Hiring Manager, Referral Discovery
-        Tier 2: Product Discovery, People Search
-        Tier 3: Company Intel
-        Tier 4: Bulk Job Discovery
+        Returns (db_id, credential_id) of the least used active credential.
         """
         total_spend = self.get_total_spend()
         
-        # Hard Limit
         if total_spend >= Config.APIFY_HARD_LIMIT:
-            print(f"ApifyManager: HARD LIMIT REACHED (${total_spend:.2f} >= ${Config.APIFY_HARD_LIMIT:.2f}). Rejecting {category}.")
-            return None, None
-            
-        # Soft Limit
-        if total_spend >= Config.APIFY_SOFT_LIMIT and tier > 2:
-            print(f"ApifyManager: SOFT LIMIT REACHED (${total_spend:.2f} >= ${Config.APIFY_SOFT_LIMIT:.2f}). Rejecting Tier {tier} {category}.")
+            logger.info(f"ApifyManager: HARD LIMIT REACHED. Rejecting usage.")
             return None, None
             
         cursor = self.conn.cursor()
@@ -57,22 +48,15 @@ class ApifyManager:
         key_record = cursor.fetchone()
         
         if not key_record:
-            print("ApifyManager: No ACTIVE keys available!")
+            logger.info("ApifyManager: No ACTIVE keys available!")
             return None, None
             
-        key_id = key_record["id"]
-        env_var_name = key_record["env_var_name"]
-        
-        # Find the actual key value from config
-        key_index = int(env_var_name.split("_")[-1]) - 1
-        if key_index < 0 or key_index >= len(Config.APIFY_KEYS):
-            print(f"ApifyManager Error: {env_var_name} mapped in DB but missing in .env")
-            return None, None
-            
-        actual_key_val = Config.APIFY_KEYS[key_index]
-        
-        print(f"ApifyManager: Routing {category} (Tier {tier}) to {env_var_name}")
-        return ApifyClient(actual_key_val), key_id
+        return key_record["id"], key_record["env_var_name"]
+
+    def disable_credential(self, key_id: int):
+        cursor = self.conn.cursor()
+        cursor.execute("UPDATE apify_keys SET status = 'AUTH_FAILURE' WHERE id = ?", (key_id,))
+        self.conn.commit()
 
     def record_usage(self, key_id: int, category: str, credits: float, useful_results: int, success: bool = True):
         now = datetime.datetime.now().isoformat()
@@ -89,7 +73,6 @@ class ApifyManager:
                 WHERE id = ?
             """, (credits, now, now, key_id))
         else:
-            # We degrade success rate slightly on failure
             cursor.execute("""
                 UPDATE apify_keys 
                 SET runs_executed = runs_executed + 1, 
@@ -98,14 +81,11 @@ class ApifyManager:
                 WHERE id = ?
             """, (now, key_id))
             
-            # If success rate drops below 50, rate limit or disable
             cursor.execute("SELECT success_rate FROM apify_keys WHERE id = ?", (key_id,))
             sr = cursor.fetchone()[0]
             if sr < 50.0:
                 cursor.execute("UPDATE apify_keys SET status = 'RATE_LIMITED' WHERE id = ?", (key_id,))
-                print(f"ApifyManager: Key {key_id} degraded to RATE_LIMITED")
                 
-        # Update global analytics
         cursor.execute("""
             INSERT INTO apify_analytics (category, runs, credits_consumed, useful_results) 
             VALUES (?, 1, ?, ?)

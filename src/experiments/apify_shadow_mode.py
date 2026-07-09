@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('apify_shadow_mode')
 import sqlite3
 import datetime
 import requests
@@ -26,7 +28,7 @@ def check_ats_duplicate(cursor, company, title):
     return cursor.fetchone()[0] > 0
 
 def run_shadow_mode():
-    print("Agent 5: Initiating Apify Shadow Mode Discovery...")
+    logger.info("Agent 5: Initiating Apify Shadow Mode Discovery...")
     conn = sqlite3.connect(Config.DATABASE_PATH)
     cursor = conn.cursor()
     setup_shadow_table(cursor)
@@ -37,7 +39,7 @@ def run_shadow_mode():
     runs_today = cursor.fetchone()[0] or 0
     
     if runs_today >= Config.MAX_APIFY_DISCOVERY_RUNS_PER_DAY:
-        print(f"Shadow Mode Aborted: Max daily discovery runs reached ({runs_today}/{Config.MAX_APIFY_DISCOVERY_RUNS_PER_DAY})")
+        logger.info(f"Shadow Mode Aborted: Max daily discovery runs reached ({runs_today}/{Config.MAX_APIFY_DISCOVERY_RUNS_PER_DAY})")
         conn.close()
         return
 
@@ -51,11 +53,11 @@ def run_shadow_mode():
     
     try:
         # Mocking for architectural validation
-        print(f"Apify Run Started: shadow_run_8899")
+        logger.info(f"Apify Run Started: shadow_run_8899")
         time.sleep(2)
-        print(f"Status: RUNNING")
+        logger.info(f"Status: RUNNING")
         time.sleep(2)
-        print(f"Status: SUCCEEDED")
+        logger.info(f"Status: SUCCEEDED")
         
         # Mocked Results simulating real-world messy data
         results = [
@@ -89,20 +91,20 @@ def run_shadow_mode():
         cost = 0.005
         credits = 0.005
         
-        print("\n==============================")
-        print(" SHADOW MODE METRICS ")
-        print("==============================")
-        print(f"Total Results: {len(results)}")
-        print(f"Relevant Product Roles: {relevant}")
-        print(f"Duplicate Roles (Found via ATS): {duplicates}")
-        print(f"Novel Roles: {novel}")
-        print(f"Credits Consumed: {credits}")
-        print("==============================\n")
+        logger.info("\n==============================")
+        logger.info(" SHADOW MODE METRICS ")
+        logger.info("==============================")
+        logger.info(f"Total Results: {len(results)}")
+        logger.info(f"Relevant Product Roles: {relevant}")
+        logger.info(f"Duplicate Roles (Found via ATS): {duplicates}")
+        logger.info(f"Novel Roles: {novel}")
+        logger.info(f"Credits Consumed: {credits}")
+        logger.info("==============================\n")
         
-        print(f"Shadow mode successfully stored {len(results)} jobs securely without polluting production rankings.")
+        logger.info(f"Shadow mode successfully stored {len(results)} jobs securely without polluting production rankings.")
         
     except Exception as e:
-        print(f"Shadow Mode Error: {e}")
+        logger.info(f"Shadow Mode Error: {e}")
         
     conn.close()
 

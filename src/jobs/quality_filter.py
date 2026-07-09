@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('quality_filter')
 import re
 import sqlite3
 from src.config.config import Config
@@ -80,4 +82,4 @@ def apply_quality_filters():
     
 if __name__ == "__main__":
     apply_quality_filters()
-    print("Quality filters applied successfully.")
+    logger.info("Quality filters applied successfully.")

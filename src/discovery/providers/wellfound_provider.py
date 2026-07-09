@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('wellfound_provider')
 from typing import List, Optional
 import time
 from src.discovery.providers.base_provider import BaseProvider, StandardJob, ProviderCapabilities
@@ -18,7 +20,7 @@ class WellfoundProvider(BaseProvider):
         return True
 
     def _discover_jobs_internal(self, last_sync_timestamp: Optional[str]) -> List[StandardJob]:
-        print("WellfoundProvider: Discovering jobs in India for APM/AI roles...")
+        logger.info("WellfoundProvider: Discovering jobs in India for APM/AI roles...")
         time.sleep(1)
         # Mocking 2 specific Wellfound jobs
         return [

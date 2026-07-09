@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('github_jobs')
 import requests
 import re
 from datetime import datetime
@@ -24,7 +26,7 @@ def fetch_github_jobs():
     seen_repos = set()
     
     for query in QUERIES:
-        print(f"Searching GitHub for repos matching: {query}")
+        logger.info(f"Searching GitHub for repos matching: {query}")
         try:
             # Search for repos that contain these terms in their README
             search_url = f"https://api.github.com/search/code?q={query}+in:file+filename:README.md&per_page=5"
@@ -39,7 +41,7 @@ def fetch_github_jobs():
                         continue
                     seen_repos.add(repo_name)
                     
-                    print(f"-> Found promising repo: {repo_name}")
+                    logger.info(f"-> Found promising repo: {repo_name}")
                     
                     # Fetch the raw README content
                     raw_url = f"https://raw.githubusercontent.com/{repo_name}/main/README.md"
@@ -51,15 +53,15 @@ def fetch_github_jobs():
                     if readme_res.status_code == 200:
                         jobs = parse_markdown_table(readme_res.text, repo_name)
                         all_jobs.extend(jobs)
-                        print(f"   Extracted {len(jobs)} jobs from {repo_name}")
+                        logger.info(f"   Extracted {len(jobs)} jobs from {repo_name}")
             else:
-                print(f"GitHub Search API rate limit or error: {response.status_code}")
+                logger.info(f"GitHub Search API rate limit or error: {response.status_code}")
                 
             # Respect rate limit (10 req / min for unauthenticated search)
             time.sleep(6)
             
         except Exception as e:
-            print(f"Error executing GitHub search for {query}: {e}")
+            logger.info(f"Error executing GitHub search for {query}: {e}")
             
     # As a fallback and safety measure, we'll explicitly pull the core repos just in case 
     # search API misses them.
@@ -72,13 +74,13 @@ def fetch_github_jobs():
     for repo_name in core_repos:
         if repo_name in seen_repos:
             continue
-        print(f"Fetching core fallback repo: {repo_name}...")
+        logger.info(f"Fetching core fallback repo: {repo_name}...")
         raw_url = f"https://raw.githubusercontent.com/{repo_name}/main/README.md"
         res = requests.get(raw_url)
         if res.status_code == 200:
             jobs = parse_markdown_table(res.text, repo_name)
             all_jobs.extend(jobs)
-            print(f"   Extracted {len(jobs)} jobs from {repo_name}")
+            logger.info(f"   Extracted {len(jobs)} jobs from {repo_name}")
             
     return all_jobs
 
@@ -195,6 +197,6 @@ def extract_url_from_md_link(md_string: str):
 
 if __name__ == "__main__":
     jobs = fetch_github_jobs()
-    print(f"Total jobs extracted: {len(jobs)}")
+    logger.info(f"Total jobs extracted: {len(jobs)}")
     if jobs:
-        print(f"Sample: {jobs[0]}")
+        logger.info(f"Sample: {jobs[0]}")

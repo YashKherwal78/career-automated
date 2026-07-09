@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('profile_extractor_v2')
 import os
 import sqlite3
 import json
@@ -57,18 +59,18 @@ class ProfileExtractorV2:
         self.missing_fields = []
         
     def run(self):
-        print("Starting Profile Extraction V2.2...")
+        logger.info("Starting Profile Extraction V2.2...")
         self._extract_from_db()
         self._extract_from_markdown()
         self._detect_gaps()
         self._llm_ambiguity_resolution()
         self._generate_reports()
-        print("Extraction complete.")
+        logger.info("Extraction complete.")
         
     def _extract_from_db(self):
-        print(" -> Extracting from crm.db (application_answer_audit)")
+        logger.info(" -> Extracting from crm.db (application_answer_audit)")
         if not os.path.exists(DB_PATH):
-            print("    [WARNING] crm.db not found.")
+            logger.info("    [WARNING] crm.db not found.")
             return
             
         try:
@@ -97,11 +99,11 @@ class ProfileExtractorV2:
                             "confidence": 100,
                             "human_verified": False
                         }
-                        print(f"    [LEARNING] Promoted '{field_key}' = '{answer}' from {freq} ATS occurrences.")
+                        logger.info(f"    [LEARNING] Promoted '{field_key}' = '{answer}' from {freq} ATS occurrences.")
                         
             conn.close()
         except Exception as e:
-            print(f"    [ERROR] DB extraction failed: {e}")
+            logger.info(f"    [ERROR] DB extraction failed: {e}")
 
     def _map_category_to_field(self, category):
         cat = category.lower()
@@ -112,7 +114,7 @@ class ProfileExtractorV2:
         return None
 
     def _extract_from_markdown(self):
-        print(" -> Extracting from markdown profiles using Regex")
+        logger.info(" -> Extracting from markdown profiles using Regex")
         master_profile_path = os.path.join(CONTEXT_DIR, "yash_master_profile.md")
         
         if not os.path.exists(master_profile_path):
@@ -150,7 +152,7 @@ class ProfileExtractorV2:
                     "confidence": 95,
                     "human_verified": False
                 }
-                print(f"    [REGEX] Found {field}: {val}")
+                logger.info(f"    [REGEX] Found {field}: {val}")
 
     def _detect_gaps(self):
         for field, data in self.profile.items():
@@ -158,7 +160,7 @@ class ProfileExtractorV2:
                 self.missing_fields.append(field)
                 
     def _llm_ambiguity_resolution(self):
-        print(" -> Running LLM Ambiguity Resolution (Max 5 calls)")
+        logger.info(" -> Running LLM Ambiguity Resolution (Max 5 calls)")
         master_profile_path = os.path.join(CONTEXT_DIR, "yash_master_profile.md")
         if not os.path.exists(master_profile_path): return
         
@@ -170,7 +172,7 @@ class ProfileExtractorV2:
         
         for missing in list(self.missing_fields):
             if self.llm_calls_used >= 5:
-                print("    [WARNING] LLM token budget exceeded. Stopping resolution.")
+                logger.info("    [WARNING] LLM token budget exceeded. Stopping resolution.")
                 break
                 
             # Find a tiny snippet related to the missing field
@@ -179,7 +181,7 @@ class ProfileExtractorV2:
                 continue
                 
             self.llm_calls_used += 1
-            print(f"    [LLM] Attempting resolution for: {missing}...")
+            logger.info(f"    [LLM] Attempting resolution for: {missing}...")
             prompt = f"Extract '{missing}' from this text. If ambiguous, return 'UNKNOWN'. Text: {snippet}"
             
             try:
@@ -194,7 +196,7 @@ class ProfileExtractorV2:
                     }
                     self.missing_fields.remove(missing)
                     resolved_count += 1
-                    print(f"      -> Resolved: {ans}")
+                    logger.info(f"      -> Resolved: {ans}")
             except Exception as e:
                 pass
                 
@@ -244,7 +246,7 @@ class ProfileExtractorV2:
             f.write(f"- **Profile Coverage Score**: {coverage:.1f}%\n")
             f.write(f"- **LLM Calls Used**: {self.llm_calls_used}/5\n")
             
-        print(f"Generated reports in artifacts dir. Coverage: {coverage:.1f}%")
+        logger.info(f"Generated reports in artifacts dir. Coverage: {coverage:.1f}%")
 
 if __name__ == "__main__":
     extractor = ProfileExtractorV2()

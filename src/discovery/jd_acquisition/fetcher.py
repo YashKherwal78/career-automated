@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('fetcher')
 import requests
 import re
 from bs4 import BeautifulSoup
@@ -36,7 +38,7 @@ class JDFetcher:
                 data = resp.json()
                 return self._strip_html(data.get("content", ""))
         except Exception as e:
-            print(f"Greenhouse fetch error: {e}")
+            logger.info(f"Greenhouse fetch error: {e}")
         return None
 
     def fetch_lever(self, slug: str, job_id: str) -> Optional[str]:
@@ -53,7 +55,7 @@ class JDFetcher:
                     list_texts.append(lst.get("content", ""))
                 return desc + "\n\n" + "\n\n".join(list_texts)
         except Exception as e:
-            print(f"Lever fetch error: {e}")
+            logger.info(f"Lever fetch error: {e}")
         return None
 
     def fetch_ashby(self, slug: str, job_id: str) -> Optional[str]:
@@ -66,7 +68,7 @@ class JDFetcher:
                     if str(job.get("id")) == str(job_id):
                         return self._strip_html(job.get("descriptionHtml", ""))
         except Exception as e:
-            print(f"Ashby fetch error: {e}")
+            logger.info(f"Ashby fetch error: {e}")
         return None
 
     def fetch_workday(self, tenant: str, region: str, custom_site: str, ext_path: str) -> Optional[str]:
@@ -82,7 +84,7 @@ class JDFetcher:
             if resp.status_code == 200:
                 return self._strip_html(resp.json().get("jobPostingInfo", {}).get("jobDescription", ""))
         except Exception as e:
-            print(f"Workday fetch error: {e}")
+            logger.info(f"Workday fetch error: {e}")
         return None
 
     def fetch_jd(self, provider: str, **kwargs) -> Optional[str]:

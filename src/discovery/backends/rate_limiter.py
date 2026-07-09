@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('rate_limiter')
 import time
 import random
 from typing import Callable, Any
@@ -28,5 +30,5 @@ class RateLimiter:
                 
                 # Exponential backoff with jitter
                 delay = (self.base_delay * (2 ** retries)) + random.uniform(0, 1)
-                print(f"Request failed: {e}. Retrying in {delay:.2f}s (Attempt {retries}/{self.max_retries})")
+                logger.info(f"Request failed: {e}. Retrying in {delay:.2f}s (Attempt {retries}/{self.max_retries})")
                 time.sleep(delay)

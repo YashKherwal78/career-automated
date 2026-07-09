@@ -1,10 +1,4 @@
-from enum import Enum
-
-class ApplicationState(Enum):
-    SUBMITTED = 1
-    MANUAL_REVIEW = 2
-    REVIEW_REQUIRED = 3
-    PAUSED = 4
+from src.system.state import WorkflowState
     
 class ApplicationHandler:
     def __init__(self, url: str):
@@ -13,5 +7,5 @@ class ApplicationHandler:
     def can_handle(self, url: str) -> bool:
         return False
         
-    def execute(self) -> ApplicationState:
-        return ApplicationState.MANUAL_REVIEW
+    def execute(self) -> WorkflowState:
+        return WorkflowState.REVIEW_REQUIRED

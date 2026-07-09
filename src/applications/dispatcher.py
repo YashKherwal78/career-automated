@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('dispatcher')
 import os
 from typing import Dict, Any
 
@@ -37,11 +39,11 @@ class ApplicationDispatcher:
                 failure_reason=f"No adapter implemented for connector: {connector}"
             )
             
-        print(f"[Dispatcher] Routing job {job.get('id')} to {connector.capitalize()}Adapter")
+        logger.info(f"[Dispatcher] Routing job {job.get('id')} to {connector.capitalize()}Adapter")
         try:
             return adapter.apply(job, resume_path, self.profile_manager)
         except Exception as e:
-            print(f"[Dispatcher] Unhandled adapter error: {e}")
+            logger.info(f"[Dispatcher] Unhandled adapter error: {e}")
             return ApplicationResult(
                 status="FAILED",
                 failure_reason=f"Unhandled Adapter Exception: {str(e)}"

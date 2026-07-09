@@ -15,7 +15,7 @@ class SQLiteQueue(BaseQueue):
         self._init_db()
         
     def _init_db(self):
-        with sqlite3.connect(self.db_path) as conn:
+        with sqlite3.connect(self.db_path, timeout=30.0) as conn:
             conn.execute('''
                 CREATE TABLE IF NOT EXISTS local_queues (
                     item_id TEXT PRIMARY KEY,
@@ -33,7 +33,7 @@ class SQLiteQueue(BaseQueue):
         item_id = str(uuid.uuid4())
         created_at = int(time.time())
         
-        with sqlite3.connect(self.db_path) as conn:
+        with sqlite3.connect(self.db_path, timeout=30.0) as conn:
             conn.execute('''
                 INSERT INTO local_queues (item_id, queue_name, payload, created_at)
                 VALUES (?, ?, ?, ?)
@@ -47,7 +47,7 @@ class SQLiteQueue(BaseQueue):
         now = int(time.time())
         lock_until = now + 300 # 5 minute lock
         
-        with sqlite3.connect(self.db_path) as conn:
+        with sqlite3.connect(self.db_path, timeout=30.0) as conn:
             # Find the oldest available item
             cursor = conn.execute('''
                 SELECT item_id, payload FROM local_queues 
@@ -71,15 +71,16 @@ class SQLiteQueue(BaseQueue):
             
     def ack(self, queue_name: str, item_id: str) -> bool:
         """Deletes the item from the queue."""
-        with sqlite3.connect(self.db_path) as conn:
+        with sqlite3.connect(self.db_path, timeout=30.0) as conn:
             cursor = conn.execute('DELETE FROM local_queues WHERE item_id = ? AND queue_name = ?', (item_id, queue_name))
             return cursor.rowcount > 0
             
     def nack(self, queue_name: str, item_id: str, reason: str = "") -> bool:
-        """Unlocks the item so it can be retried."""
-        with sqlite3.connect(self.db_path) as conn:
+        """Unlocks the item so it can be retried, applying a 1-hour backoff."""
+        lock_until = int(time.time()) + 3600
+        with sqlite3.connect(self.db_path, timeout=30.0) as conn:
             cursor = conn.execute('''
-                UPDATE local_queues SET status = 'QUEUED', locked_until = 0
+                UPDATE local_queues SET status = 'QUEUED', locked_until = ?
                 WHERE item_id = ? AND queue_name = ?
-            ''', (item_id, queue_name))
+            ''', (lock_until, item_id, queue_name))
             return cursor.rowcount > 0

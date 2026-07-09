@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('source_manager')
 import yaml
 from typing import List, Dict
 from src.discovery.importers.repository_manager import RepositoryManager
@@ -59,9 +61,9 @@ class SourceManager:
                     # Update status
                     self._update_sync_state(source, sync_data["current_hash"], "SUCCESS")
                 except Exception as e:
-                    print(f"Error syncing {source['name']}: {e}")
+                    logger.info(f"Error syncing {source['name']}: {e}")
                     # Update failure state in DB if fully implemented
             else:
-                print(f"Source type {source['type']} not yet implemented.")
+                logger.info(f"Source type {source['type']} not yet implemented.")
                 
         return results

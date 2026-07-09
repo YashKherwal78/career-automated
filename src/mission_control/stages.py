@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('stages')
 import time
 import sqlite3
 from typing import Dict, Any, List
@@ -17,10 +19,10 @@ class ExtractionStage(PipelineStage):
     
     def run(self, context: PipelineContext) -> PipelineContext:
         if context.dry_run:
-            print("[DRY RUN] Bypassing ProviderManager.")
+            logger.info("[DRY RUN] Bypassing ProviderManager.")
             return context
             
-        print("-> Running ProviderManager (Pipeline 1 & 2)")
+        logger.info("-> Running ProviderManager (Pipeline 1 & 2)")
         manager = ProviderManager()
         # Ensure we return dictionaries for the next stage
         raw_jobs = manager.run_all_providers()
@@ -33,7 +35,7 @@ class DeduplicationStage(PipelineStage):
     def name(self) -> str: return "Deduplication"
     
     def run(self, context: PipelineContext) -> PipelineContext:
-        print("-> Running DiscoveryDeduplicator")
+        logger.info("-> Running DiscoveryDeduplicator")
         deduper = DiscoveryDeduplicator()
         context.deduplicated_jobs = deduper.deduplicate(context.raw_jobs)
         context.metrics["jobs_deduplicated"] = len(context.raw_jobs) - len(context.deduplicated_jobs)
@@ -44,7 +46,7 @@ class IntentStage(PipelineStage):
     def name(self) -> str: return "Intent Filter (Seniority & Role)"
     
     def run(self, context: PipelineContext) -> PipelineContext:
-        print("-> Running IntentFilter")
+        logger.info("-> Running IntentFilter")
         filter_engine = IntentFilter()
         # Mock SearchTask config
         task = SearchTask(
@@ -70,7 +72,7 @@ class HardRejectStage(PipelineStage):
     def name(self) -> str: return "Hard Reject Filter"
     
     def run(self, context: PipelineContext) -> PipelineContext:
-        print("-> Running HardRejectFilter")
+        logger.info("-> Running HardRejectFilter")
         filter_engine = HardRejectFilter()
         # Mock SearchTask config; in reality, load from platform.yaml
         task = SearchTask(
@@ -96,10 +98,10 @@ class PersistenceStage(PipelineStage):
     
     def run(self, context: PipelineContext) -> PipelineContext:
         if context.dry_run:
-            print("[DRY RUN] Bypassing SQLite save.")
+            logger.info("[DRY RUN] Bypassing SQLite save.")
             return context
             
-        print("-> Saving to normalized_jobs")
+        logger.info("-> Saving to normalized_jobs")
         # In a real implementation, this would upsert to data/crm.db
         return context
 
@@ -109,10 +111,10 @@ class ScoringStage(PipelineStage):
     
     def run(self, context: PipelineContext) -> PipelineContext:
         if context.dry_run:
-            print("[DRY RUN] Bypassing JobScoringEngine.")
+            logger.info("[DRY RUN] Bypassing JobScoringEngine.")
             return context
             
-        print("-> Running JobScoringEngine")
+        logger.info("-> Running JobScoringEngine")
         # Instantiate and run existing scoring engine
         engine = JobScoringEngine(db_path="data/crm.db")
         engine.score_active_jobs()
@@ -124,7 +126,7 @@ class ResumeTailorStage(PipelineStage):
     def name(self) -> str: return "Resume Tailoring"
     
     def run(self, context: PipelineContext) -> PipelineContext:
-        print("-> Running agent5_resume_tailor (Mock)")
+        logger.info("-> Running agent5_resume_tailor (Mock)")
         if not context.dry_run:
             pass # Hook to agent5
         context.metrics["resumes_tailored"] = 0
@@ -135,7 +137,7 @@ class ContactDiscoveryStage(PipelineStage):
     def name(self) -> str: return "Contact Discovery"
     
     def run(self, context: PipelineContext) -> PipelineContext:
-        print("-> Running Contact Discovery (Mock)")
+        logger.info("-> Running Contact Discovery (Mock)")
         context.metrics["contacts_found"] = 0
         return context
 
@@ -144,6 +146,6 @@ class StrategyQueueStage(PipelineStage):
     def name(self) -> str: return "Application Strategy Queue"
     
     def run(self, context: PipelineContext) -> PipelineContext:
-        print("-> Populating Strategy Queue (Mock)")
+        logger.info("-> Populating Strategy Queue (Mock)")
         context.metrics["strategy_queue_size"] = context.metrics["jobs_scored"]
         return context

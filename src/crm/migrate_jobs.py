@@ -1,8 +1,10 @@
+from src.system.logger import setup_logger
+logger = setup_logger('migrate_jobs')
 import sqlite3
 from src.config.config import Config
 
 def migrate_database():
-    print(f"Migrating database {Config.DATABASE_PATH}...")
+    logger.info(f"Migrating database {Config.DATABASE_PATH}...")
     conn = sqlite3.connect(Config.DATABASE_PATH)
     cursor = conn.cursor()
 
@@ -103,12 +105,12 @@ def migrate_database():
     for col_name, col_type in new_columns:
         try:
             cursor.execute(f"ALTER TABLE leads ADD COLUMN {col_name} {col_type}")
-            print(f"Added column {col_name} to leads")
+            logger.info(f"Added column {col_name} to leads")
         except sqlite3.OperationalError as e:
             if "duplicate column name" in str(e).lower():
                 pass
             else:
-                print(f"Error adding {col_name} to leads: {e}")
+                logger.info(f"Error adding {col_name} to leads: {e}")
                 
     jobs_new_columns = [
         ("canonical_id", "TEXT UNIQUE"),
@@ -129,16 +131,16 @@ def migrate_database():
     for col_name, col_type in jobs_new_columns:
         try:
             cursor.execute(f"ALTER TABLE jobs ADD COLUMN {col_name} {col_type}")
-            print(f"Added column {col_name} to jobs")
+            logger.info(f"Added column {col_name} to jobs")
         except sqlite3.OperationalError as e:
             if "duplicate column name" in str(e).lower():
                 pass
             else:
-                print(f"Error adding {col_name} to jobs: {e}")
+                logger.info(f"Error adding {col_name} to jobs: {e}")
 
     conn.commit()
     conn.close()
-    print("Database migration complete.")
+    logger.info("Database migration complete.")
 
 if __name__ == "__main__":
     migrate_database()

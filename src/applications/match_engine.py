@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('match_engine')
 import json
 import os
 from src.config.config import Config
@@ -177,7 +179,7 @@ if __name__ == "__main__":
     
     for t, c, l, j, e in test_jobs:
         res = engine.evaluate(t, c, l, j, e)
-        print(f"[{res['opportunity_score']}] {t} @ {c} -> Passed: {res['passed']} {res['rejection_reason'] or ''}")
-        print("Why this Job:")
-        print(res["why_this_job"])
-        print("-" * 20)
+        logger.info(f"[{res['opportunity_score']}] {t} @ {c} -> Passed: {res['passed']} {res['rejection_reason'] or ''}")
+        logger.info("Why this Job:")
+        logger.info(res["why_this_job"])
+        logger.info("-" * 20)

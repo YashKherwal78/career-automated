@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('rie_pipeline')
 import json
 import yaml
 import os
@@ -104,7 +106,7 @@ class RIEPipeline:
         compiler = ResumeCompiler()
         compiler.compile(updated_knowledge, "scratch/TailoredResume.pdf")
         
-        print("RIE Pipeline Completed Successfully!")
+        logger.info("RIE Pipeline Completed Successfully!")
 
 if __name__ == "__main__":
     job = StructuredJob("1", "OpenAI", "AI Engineer", "...", 2, 5, ["Python"], [], ["Build AI"], "AI", 0.99)

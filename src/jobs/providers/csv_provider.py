@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('csv_provider')
 import csv
 from datetime import datetime
 from typing import List, Dict
@@ -28,5 +30,5 @@ class CSVProvider(JobProvider):
                     }
                     jobs.append(job)
         except Exception as e:
-            print(f"Error reading from CSV provider: {e}")
+            logger.info(f"Error reading from CSV provider: {e}")
         return jobs

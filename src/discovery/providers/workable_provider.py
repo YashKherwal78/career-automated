@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('workable_provider')
 import requests
 import sqlite3
 import datetime
@@ -31,7 +33,7 @@ class WorkableProvider(BaseProvider):
         
         jobs = []
         for company, slug in companies:
-            print(f"Fetching Workable for {company} ({slug})...")
+            logger.info(f"Fetching Workable for {company} ({slug})...")
             # Workable has a public API / jobs endpoint
             url = f"https://apply.workable.com/api/v3/accounts/{slug}/jobs"
             try:
@@ -56,6 +58,6 @@ class WorkableProvider(BaseProvider):
                             date_posted=item.get('published_on', datetime.datetime.now().isoformat())
                         ))
             except Exception as e:
-                print(f"Workable fail for {company}: {e}")
+                logger.info(f"Workable fail for {company}: {e}")
                 
         return jobs

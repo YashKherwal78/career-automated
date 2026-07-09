@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('database')
 import sqlite3
 import pandas as pd
 from src.config.config import Config
@@ -18,7 +20,7 @@ def fetch_table(table_name: str) -> pd.DataFrame:
         conn.close()
         return df
     except Exception as e:
-        print(f"Error reading {table_name}: {e}")
+        logger.info(f"Error reading {table_name}: {e}")
         return pd.DataFrame()
 
 def fetch_query(query: str, params=()) -> pd.DataFrame:
@@ -28,7 +30,7 @@ def fetch_query(query: str, params=()) -> pd.DataFrame:
         conn.close()
         return df
     except Exception as e:
-        print(f"Error executing query: {e}")
+        logger.info(f"Error executing query: {e}")
         return pd.DataFrame()
 
 def get_latest_heartbeats() -> pd.DataFrame:

@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('rag')
 import os
 from src.config.config import Config
 from rank_bm25 import BM25Okapi
@@ -20,7 +22,7 @@ class RAGClient:
         """Dynamically generates chunks from yash_master_profile.md."""
         master_path = str(Config.DATA_DIR / "context" / "yash_master_profile.md")
         if not os.path.exists(master_path):
-            print(f"RAGClient Warning: {master_path} not found.")
+            logger.info(f"RAGClient Warning: {master_path} not found.")
             return
             
         with open(master_path, "r", encoding="utf-8") as f:
@@ -59,7 +61,7 @@ class RAGClient:
                 
         if self.tokenized_corpus:
             self.bm25 = BM25Okapi(self.tokenized_corpus)
-            print(f"RAGClient: Initialised with {len(self.chunks)} chunks from Master Profile.")
+            logger.info(f"RAGClient: Initialised with {len(self.chunks)} chunks from Master Profile.")
 
     def _add_chunk(self, chunk_type: str, text: str):
         self.chunks.append({

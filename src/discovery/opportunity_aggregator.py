@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('opportunity_aggregator')
 import os
 import json
 import re
@@ -39,7 +41,7 @@ class OpportunityAggregator:
         self.ensure_tables()
         conn = get_connection()
         cursor = conn.cursor()
-        print("OpportunityAggregator: Starting V7.2 Discovery Run...")
+        logger.info("OpportunityAggregator: Starting V7.2 Discovery Run...")
         
         stats = {
             "seeds_discovered": 0,
@@ -56,7 +58,7 @@ class OpportunityAggregator:
                 all_seeds.extend(seeds)
                 stats["seeds_discovered"] += len(seeds)
             except Exception as e:
-                print(f"Provider {provider.__class__.__name__} failed: {e}")
+                logger.info(f"Provider {provider.__class__.__name__} failed: {e}")
                 
         unique_urls = set()
         unique_seeds = []
@@ -78,7 +80,7 @@ class OpportunityAggregator:
                 except Exception as e:
                     pass
                 
-        print(f"Collected {len(unique_seeds)} unique OpportunitySeeds.")
+        logger.info(f"Collected {len(unique_seeds)} unique OpportunitySeeds.")
         
         final_opps = []
         for seed in unique_seeds:
@@ -123,7 +125,7 @@ class OpportunityAggregator:
                             stats["rejected"] += 1
                     
         conn.close()
-        print(f"Discovery Complete! Extracted {stats['jobs_extracted']} jobs.")
-        print(f"Eligible: {stats['eligible']} | Rejected: {stats['rejected']}")
+        logger.info(f"Discovery Complete! Extracted {stats['jobs_extracted']} jobs.")
+        logger.info(f"Eligible: {stats['eligible']} | Rejected: {stats['rejected']}")
         
         return final_opps, stats

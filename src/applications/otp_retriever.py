@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('otp_retriever')
 import re
 import time
 from datetime import datetime, timezone
@@ -17,8 +19,8 @@ def retrieve_greenhouse_otp(application_start_time: datetime) -> dict:
         }
     """
     from datetime import timedelta
-    print(f"\n[OTP Retriever] === OTP EMAIL AUDIT MODE ===")
-    print(f"[OTP Retriever] Requested At (Application Start): {application_start_time.isoformat()}")
+    logger.info(f"\n[OTP Retriever] === OTP EMAIL AUDIT MODE ===")
+    logger.info(f"[OTP Retriever] Requested At (Application Start): {application_start_time.isoformat()}")
     
     result = {
         "code": None,
@@ -58,12 +60,12 @@ def retrieve_greenhouse_otp(application_start_time: datetime) -> dict:
                 }
                 result["audit_logs"].append(log_entry)
                 
-                print(f"  -> Email: {sender} | Subj: {msg.subject} | Received: {msg_date.isoformat()}")
+                logger.info(f"  -> Email: {sender} | Subj: {msg.subject} | Received: {msg_date.isoformat()}")
                 
                 # Check if it's the OTP email
                 if ("greenhouse" in sender or "greenhouse.io" in sender) and msg_date >= start_time_aware:
                     result["email_existed"] = True
-                    print(f"[OTP Retriever] >> MATCH: Greenhouse email detected! Analyzing body...")
+                    logger.info(f"[OTP Retriever] >> MATCH: Greenhouse email detected! Analyzing body...")
                     
                     clean_body = re.sub(r'<[^>]+>', ' ', body)
                     clean_body = re.sub(r'\{[^\}]+\}', ' ', clean_body) # Remove CSS
@@ -72,7 +74,7 @@ def retrieve_greenhouse_otp(application_start_time: datetime) -> dict:
                     raw_words = re.findall(r'\b[A-Za-z0-9]{5,10}\b', clean_body)
                     candidates = re.findall(r'\b[A-Za-z0-9]{8}\b|\b[0-9]{6}\b', clean_body)
                     
-                    print(f"[OTP Retriever] >> Candidate Tokens (8-char / 6-digit): {candidates}")
+                    logger.info(f"[OTP Retriever] >> Candidate Tokens (8-char / 6-digit): {candidates}")
                     
                     best_code = None
                     for c in candidates:
@@ -82,22 +84,22 @@ def retrieve_greenhouse_otp(application_start_time: datetime) -> dict:
                         break
                         
                     latency = (msg_date - start_time_aware).total_seconds()
-                    print(f"[OTP Retriever] >> Delivery Latency: {latency} seconds")
+                    logger.info(f"[OTP Retriever] >> Delivery Latency: {latency} seconds")
                     result["delivery_latency_seconds"] = latency
                         
                     if best_code:
-                        print(f"[OTP Retriever] >> SUCCESS: Extracted '{best_code}'")
+                        logger.info(f"[OTP Retriever] >> SUCCESS: Extracted '{best_code}'")
                         result["code"] = best_code
                         return result
                     else:
                         reason = f"Found {len(candidates)} candidates, but all failed strict validation (likely english words or wrong format)."
-                        print(f"[OTP Retriever] >> EXTRACTION FAILED: {reason}")
-                        print(f"[OTP Retriever] >> Raw words in body (5-10 chars): {raw_words}")
+                        logger.info(f"[OTP Retriever] >> EXTRACTION FAILED: {reason}")
+                        logger.info(f"[OTP Retriever] >> Raw words in body (5-10 chars): {raw_words}")
                         result["extraction_failed_reason"] = reason
                         
     except Exception as e:
-        print(f"[OTP Retriever] IMAP Error: {e}")
+        logger.info(f"[OTP Retriever] IMAP Error: {e}")
         result["extraction_failed_reason"] = f"IMAP Error: {e}"
         
-    print(f"[OTP Retriever] === END AUDIT ===\n")
+    logger.info(f"[OTP Retriever] === END AUDIT ===\n")
     return result

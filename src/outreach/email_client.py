@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('email_client')
 import smtplib
 import imaplib
 import email
@@ -6,11 +8,24 @@ from email.mime.multipart import MIMEMultipart
 from src.config.config import Config
 
 import os
+import tenacity
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 class ResumeAttachmentError(Exception):
     pass
 
+
+def retry_if_transient_error(exception):
+    import smtplib
+    if isinstance(exception, smtplib.SMTPAuthenticationError):
+        return False
+    error_str = str(exception).lower()
+    if any(x in error_str for x in ["auth", "credentials", "login"]):
+        return False
+    return True
+
 class EmailClient:
+
     def __init__(self):
         self.email_address = Config.GMAIL_ADDRESS
         self.password = Config.GMAIL_APP_PASSWORD
@@ -18,6 +33,7 @@ class EmailClient:
         self.smtp_port = 587
         self.imap_server = "imap.gmail.com"
         
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=2, min=4, max=15), retry=tenacity.retry_if_exception(retry_if_transient_error))
     def send_email(self, to_email: str, subject: str, body: str, resume_path: str = None, dry_run: bool = False) -> bool:
         if resume_path:
             if not os.path.exists(resume_path):
@@ -32,7 +48,7 @@ class EmailClient:
                 raise ValueError(f"Unresolved placeholder detected before send: {ph}")
                 
         if dry_run:
-            print(f"[DRY RUN] Would send to: {to_email} | Subject: {subject} | Attachment: {resume_path}")
+            logger.info(f"[DRY RUN] Would send to: {to_email} | Subject: {subject} | Attachment: {resume_path}")
             return True
             
         try:
@@ -53,18 +69,23 @@ class EmailClient:
                 if len(msg.get_payload()) < 2:
                     raise ResumeAttachmentError("MIME payload does not contain the attachment.")
             
-            with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+            with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=30) as server:
                 server.starttls()
                 server.login(self.email_address, self.password)
                 server.send_message(msg)
             return True
         except Exception as e:
-            print(f"Failed to send email to {to_email}: {e}")
+            logger.info(f"Failed to send email to {to_email}: {e}")
+            raise  # Let tenacity retry it
             return False
 
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=2, min=4, max=15), retry=tenacity.retry_if_exception(retry_if_transient_error))
     def check_replies(self) -> list:
         replies = []
         try:
+            # IMAP timeout handling is implicit in python 3.9+, passing it directly
+            import socket
+            socket.setdefaulttimeout(30)
             mail = imaplib.IMAP4_SSL(self.imap_server)
             mail.login(self.email_address, self.password)
             mail.select("INBOX")
@@ -98,5 +119,5 @@ class EmailClient:
             mail.logout()
             return replies
         except Exception as e:
-            print(f"Error checking replies: {e}")
-            return []
+            logger.info(f"Error checking replies: {e}")
+            raise  # Let tenacity retry it

@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List
+from src.discovery.models import RawJob
 
 class SourceAdapter(ABC):
     """
@@ -41,15 +42,14 @@ class SourceAdapter(ABC):
         pass
         
     @abstractmethod
-    def discover_jobs(self, parsed_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def discover_jobs(self, parsed_data: Dict[str, Any], board_identity=None) -> RawJob:
         """
         Extracts individual job postings from the parsed data.
         """
         pass
         
-    @abstractmethod
     def discover_companies(self, parsed_data: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         Extracts newly discovered companies (e.g. from an aggregator payload).
         """
-        pass
+        return []

@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('inbox_reader')
 import json
 from imap_tools import MailBox, AND
 from src.utils.llm_router import LLMRouter
@@ -36,11 +38,11 @@ def classify_reply(llm_router: LLMRouter, email_body: str) -> dict:
         )
         return json.loads(response.choices[0].message.content)
     except Exception as e:
-        print(f"Classifier error: {e}")
+        logger.info(f"Classifier error: {e}")
         return {"classification": "UNKNOWN", "reason": str(e)}
 
 def monitor_inbox():
-    print("\n[Inbox Monitor] Connecting to Gmail via IMAP...")
+    logger.info("\n[Inbox Monitor] Connecting to Gmail via IMAP...")
     try:
         router = LLMRouter()
         
@@ -49,12 +51,12 @@ def monitor_inbox():
             for msg in mailbox.fetch(AND(seen=False)):
                 sender = msg.from_
                 body = msg.text or msg.html
-                print(f"Unread email from: {sender}")
+                logger.info(f"Unread email from: {sender}")
                 
                 # Look up sender in CRM
                 lead = get_lead_by_hr_email(sender)
                 if not lead:
-                    print(f"Sender {sender} not found in CRM. Skipping.")
+                    logger.info(f"Sender {sender} not found in CRM. Skipping.")
                     continue
                     
                 company_name = lead["company_name"]
@@ -63,7 +65,7 @@ def monitor_inbox():
                 classification_data = classify_reply(router, body)
                 cls = classification_data.get("classification", "UNKNOWN")
                 
-                print(f"Classified {company_name} reply as: {cls}")
+                logger.info(f"Classified {company_name} reply as: {cls}")
                 
                 # Update CRM
                 update_data = {
@@ -86,7 +88,7 @@ def monitor_inbox():
                 add_or_update_lead(company_name, update_data)
                 
     except Exception as e:
-        print(f"Inbox Monitor failed: {e}")
+        logger.info(f"Inbox Monitor failed: {e}")
 
 if __name__ == "__main__":
     monitor_inbox()

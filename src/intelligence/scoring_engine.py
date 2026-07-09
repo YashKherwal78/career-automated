@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('scoring_engine')
 import yaml
 import sqlite3
 import json
@@ -68,7 +70,7 @@ class JobScoringEngine:
         return total, match_score, priority_score, confidence, reason, breakdown
 
     def run(self):
-        print("========== RUNNING SCORING ENGINE ==========")
+        logger.info("========== RUNNING SCORING ENGINE ==========")
         conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
         
@@ -87,7 +89,7 @@ class JobScoringEngine:
             WHERE job_id = ?
         ''', updates)
         conn.commit()
-        print(f"Scored {len(jobs)} active jobs successfully.")
+        logger.info(f"Scored {len(jobs)} active jobs successfully.")
         conn.close()
 
 if __name__ == "__main__":

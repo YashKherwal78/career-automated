@@ -1,7 +1,9 @@
+from src.system.logger import setup_logger
+logger = setup_logger('state_machine')
 from enum import Enum
 from src.crm.database import add_or_update_lead
 
-class CRMState(Enum):
+class PipelineStage(Enum):
     NEW = "NEW"
     ENRICHED = "ENRICHED"
     SCORED = "SCORED"
@@ -18,6 +20,6 @@ class CRMState(Enum):
     HARD_BOUNCE = "HARD_BOUNCE"
     REVIEW_REQUIRED = "REVIEW_REQUIRED"
 
-def transition_state(company_name: str, new_state: CRMState):
-    add_or_update_lead(company_name, {"status": new_state.value})
-    print(f"[{company_name}] 🔄 State Transition -> {new_state.value}")
+def transition_state(company_name: str, new_stage: PipelineStage):
+    add_or_update_lead(company_name, {"stage": new_stage.value})
+    logger.info(f"[{company_name}] 🔄 Pipeline Stage Transition -> {new_stage.value}")

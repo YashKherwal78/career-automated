@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('executor')
 import re
 import sqlite3
 import datetime
@@ -86,7 +88,7 @@ class ApplicationExecutor:
                 with open(proof_path, "w") as f:
                     json.dump(self.telemetry["submission_proof"], f, indent=4)
             except Exception as e:
-                print(f"Executor Error saving proof: {e}")
+                logger.info(f"Executor Error saving proof: {e}")
 
     def _log_early_abort_telemetry(self, status: str, reason: str):
         import os
@@ -117,7 +119,7 @@ class ApplicationExecutor:
             ])
 
     def execute(self):
-        print(f"Executor: Starting job {self.job_id} on {self.platform} ({self.url})")
+        logger.info(f"Executor: Starting job {self.job_id} on {self.platform} ({self.url})")
         
         # DATABASE LOCKING & FINGERPRINT
         cursor = self.conn.cursor()
@@ -131,7 +133,7 @@ class ApplicationExecutor:
             if row:
                 if row['status'] in ['IN_PROGRESS', 'SUBMITTED']:
                     self.conn.commit()
-                    print(f"Executor: Job {self.job_id} is already {row['status']}. Skipping.")
+                    logger.info(f"Executor: Job {self.job_id} is already {row['status']}. Skipping.")
                     return f"SKIPPED_ALREADY_{row['status']}"
                     
             # Check fingerprint
@@ -144,7 +146,7 @@ class ApplicationExecutor:
             if cursor.fetchone():
                 self.conn.commit()
                 self.conn.commit()
-                print(f"Executor: Identical SUBMITTED record found for fingerprint. Skipping.")
+                logger.info(f"Executor: Identical SUBMITTED record found for fingerprint. Skipping.")
                 return "SKIPPED_ALREADY_SUBMITTED"
                 
             # Pre-flight Eligibility Check
@@ -160,7 +162,7 @@ class ApplicationExecutor:
                 if not eligibility["is_eligible"]:
                     self.conn.commit()
                     reason = eligibility["skip_reason"]
-                    print(f"Executor: Job {self.job_id} failed eligibility check. Reason: {reason}")
+                    logger.info(f"Executor: Job {self.job_id} failed eligibility check. Reason: {reason}")
                     self._log_early_abort_telemetry("SKIPPED_INELIGIBLE", reason)
                     return "SKIPPED_INELIGIBLE"
                 
@@ -181,11 +183,11 @@ class ApplicationExecutor:
             
         except sqlite3.OperationalError as e:
             # If the database is locked by another process
-            print(f"Executor: Failed to acquire lock for job {self.job_id}: {e}")
+            logger.info(f"Executor: Failed to acquire lock for job {self.job_id}: {e}")
             self.conn.rollback()
             return "SKIPPED_LOCKED"
         except Exception as e:
-            print(f"Executor: DB Error during locking: {e}")
+            logger.info(f"Executor: DB Error during locking: {e}")
             self.conn.rollback()
             return "FAILED"
             
@@ -193,7 +195,7 @@ class ApplicationExecutor:
         
         if self.platform == "UNKNOWN":
             self.log_execution("REVIEW_REQUIRED", "Unknown Platform")
-            print("Executor: Paused - Unknown platform detected.")
+            logger.info("Executor: Paused - Unknown platform detected.")
             return "REVIEW_REQUIRED"
             
         try:
@@ -208,7 +210,7 @@ class ApplicationExecutor:
                 title_lower = page.title().lower()
                 has_captcha_frame = page.locator("iframe[src*='recaptcha'], iframe[src*='hcaptcha'], iframe[src*='cloudflare']").count() > 0
                 if "just a moment" in title_lower or "attention required" in title_lower or "captcha" in title_lower or has_captcha_frame:
-                    print("Executor: Paused - Anti-Bot/CAPTCHA Protection detected.")
+                    logger.info("Executor: Paused - Anti-Bot/CAPTCHA Protection detected.")
                     self.log_execution("REVIEW_REQUIRED", "CAPTCHA_DETECTED")
                     browser.close()
                     return "REVIEW_REQUIRED"
@@ -221,13 +223,13 @@ class ApplicationExecutor:
                     scan_result = scanner.scan_page(page_text)
                     
                     if scan_result["status"] == "SKIPPED_INELIGIBLE":
-                        print(f"Executor: 🚫 EARLY ABORT - {scan_result['reason']}")
+                        logger.info(f"Executor: 🚫 EARLY ABORT - {scan_result['reason']}")
                         self.log_execution("SKIPPED_INELIGIBLE", scan_result['reason'])
                         self._log_early_abort_telemetry(scan_result["status"], scan_result['reason'])
                         browser.close()
                         return "SKIPPED_INELIGIBLE"
                     elif scan_result["status"] == "REVIEW":
-                        print(f"Executor: ⚠️ EARLY ABORT (REVIEW) - {scan_result['reason']}")
+                        logger.info(f"Executor: ⚠️ EARLY ABORT (REVIEW) - {scan_result['reason']}")
                         self.log_execution("REVIEW_REQUIRED", scan_result['reason'])
                         self._log_early_abort_telemetry(scan_result["status"], scan_result['reason'])
                         browser.close()
@@ -235,7 +237,7 @@ class ApplicationExecutor:
                     else:
                         self._log_early_abort_telemetry("OK", "Passed Early Scanner")
                 except Exception as e:
-                    print(f"Executor: Early Eligibility Scanner failed to read page text: {e}")
+                    logger.info(f"Executor: Early Eligibility Scanner failed to read page text: {e}")
                 
                 
                 # Route to Handlers (Phase 1)
@@ -246,7 +248,7 @@ class ApplicationExecutor:
                 elif self.platform == "ASHBY":
                     result = self._handle_ashby(page)
                 else:
-                    print(f"Executor: Handler for {self.platform} not implemented yet.")
+                    logger.info(f"Executor: Handler for {self.platform} not implemented yet.")
                     result = "REVIEW_REQUIRED"
                     self.log_execution(result, f"No Handler for {self.platform}")
                     
@@ -254,22 +256,22 @@ class ApplicationExecutor:
                 
                 # FINAL EMAIL CONFIRMATION CHECK
                 if result != "SUBMITTED":
-                    print(f"Executor: UI verification resulted in {result}. Checking for email confirmation...")
+                    logger.info(f"Executor: UI verification resulted in {result}. Checking for email confirmation...")
                     from src.applications.email_confirmation import EmailConfirmationChecker
                     if EmailConfirmationChecker.check_for_confirmation(self.company_name, self.job_title):
-                        print("Executor: Email confirmation found! Overriding status to SUBMITTED.")
+                        logger.info("Executor: Email confirmation found! Overriding status to SUBMITTED.")
                         result = "SUBMITTED"
                         self.log_execution("SUBMITTED", "Success verified via email")
                         
                 return result
         except Exception as e:
-            print(f"Executor Error: {e}")
+            logger.info(f"Executor Error: {e}")
             self.log_execution("FAILED", str(e))
             return "FAILED"
 
     def _handle_greenhouse(self, page):
         from src.applications.handlers.greenhouse import GreenhouseHandler
-        print("Executor [Greenhouse]: Initializing Greenhouse Handler...")
+        logger.info("Executor [Greenhouse]: Initializing Greenhouse Handler...")
         handler = GreenhouseHandler(
             page, 
             self.job_title, 
@@ -298,41 +300,41 @@ class ApplicationExecutor:
         self.log_execution(result_data["status"], error_reason)
         
         # FINAL FORENSIC SUMMARY
-        print("\n==================================================")
-        print("GREENHOUSE OTP FAILURE FORENSICS")
+        logger.info("\n==================================================")
+        logger.info("GREENHOUSE OTP FAILURE FORENSICS")
         t = self.telemetry
         if result_data["status"] == "SUBMITTED_CONFIRMED" or result_data["status"] == "SUBMITTED":
-            print("The automation stopped because success signals were confirmed.")
+            logger.info("The automation stopped because success signals were confirmed.")
         elif t.get("otp_detected"):
             v2 = t.get("otp_forensics_v2", {})
             existed = v2.get("email_existed", False)
-            print(f"Did the OTP email exist? {'YES' if existed else 'NO'}")
+            logger.info(f"Did the OTP email exist? {'YES' if existed else 'NO'}")
             
             if existed:
                 reason = v2.get("extraction_failed_reason", "Unknown reason.")
-                print(f"Why extraction failed: {reason}")
+                logger.info(f"Why extraction failed: {reason}")
             else:
                 waited = v2.get("waited_seconds", 0)
-                print(f"How long we waited: {waited} seconds.")
+                logger.info(f"How long we waited: {waited} seconds.")
                 if waited < 120:
-                    print("Whether increasing timeout would solve it: Likely. 70s total might be too short for some providers.")
+                    logger.info("Whether increasing timeout would solve it: Likely. 70s total might be too short for some providers.")
                 else:
-                    print("Whether increasing timeout would solve it: Unlikely. We waited a long time.")
+                    logger.info("Whether increasing timeout would solve it: Unlikely. We waited a long time.")
             
-            print("---")
+            logger.info("---")
             if not t.get("otp_received") and not existed:
-                print("The automation stopped because OTP Retrieval failed from IMAP after max retries (Email never arrived).")
+                logger.info("The automation stopped because OTP Retrieval failed from IMAP after max retries (Email never arrived).")
             elif not t.get("otp_received") and existed:
-                print("The automation stopped because OTP Retrieval failed (Email arrived but parsing failed).")
+                logger.info("The automation stopped because OTP Retrieval failed (Email arrived but parsing failed).")
             elif t.get("otp_received") and not t.get("otp_submitted"):
-                print("The automation stopped because OTP was received but an error occurred while filling the fields.")
+                logger.info("The automation stopped because OTP was received but an error occurred while filling the fields.")
             elif t.get("otp_submitted") and not t.get("otp_verified"):
-                print("The automation stopped because OTP was filled but the submit button was disabled or timed out.")
+                logger.info("The automation stopped because OTP was filled but the submit button was disabled or timed out.")
             else:
-                print("The automation stopped because OTP was submitted but validation errors appeared on the page.")
+                logger.info("The automation stopped because OTP was submitted but validation errors appeared on the page.")
         else:
-            print("The automation stopped because it encountered a generic validation error or failure before reaching OTP.")
-        print("==================================================\n")
+            logger.info("The automation stopped because it encountered a generic validation error or failure before reaching OTP.")
+        logger.info("==================================================\n")
         
         return result_data["status"]
 
@@ -355,17 +357,17 @@ class ApplicationExecutor:
             ])
 
     def _handle_lever(self, page):
-        print("Executor [Lever]: Looking for apply button...")
+        logger.info("Executor [Lever]: Looking for apply button...")
         try:
             page.locator('a.postings-btn').first.click(timeout=5000)
         except:
             pass
             
-        print("Executor [Lever]: Attempting to fill standard profile...")
+        logger.info("Executor [Lever]: Attempting to fill standard profile...")
         self.log_execution("REVIEW_REQUIRED", "Lever Human Review Gate")
         return "REVIEW_REQUIRED"
 
     def _handle_ashby(self, page):
-        print("Executor [Ashby]: Attempting to fill standard profile...")
+        logger.info("Executor [Ashby]: Attempting to fill standard profile...")
         self.log_execution("REVIEW_REQUIRED", "Ashby Human Review Gate")
         return "REVIEW_REQUIRED"

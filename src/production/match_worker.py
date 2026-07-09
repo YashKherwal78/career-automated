@@ -1,9 +1,19 @@
 import os
+import sys
 import time
 from datetime import datetime
-from src.applications.match_engine import MatchEngine
-from src.crm.database import get_jobs_by_status, update_job_status, log_heartbeat
+
+# Ensure absolute imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+
+from src.system.logger import setup_logger
+from src.jobs.quality_filter import apply_hard_reject_rules
+from src.crm.database import get_jobs_by_stage, update_job_state, log_heartbeat
 from src.config.config import Config
+from src.system.state import WorkflowState
+from src.crm.state_machine import PipelineStage
+
+logger = setup_logger("MatchWorker")
 
 class MatchWorker:
     def __init__(self):
@@ -12,19 +22,19 @@ class MatchWorker:
     def run(self):
         start_time = time.time()
         start_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        print(f"[{start_str}] MatchWorker: Starting...")
+        logger.info(f"[{start_str}] MatchWorker: Starting...")
         
         # Pull all jobs sitting in DISCOVERED queue
-        jobs = get_jobs_by_status("DISCOVERED")
+        jobs = get_jobs_by_stage("DISCOVERED")
         
         if not jobs:
-            print("MatchWorker: No DISCOVERED jobs in queue.")
+            logger.info("MatchWorker: No DISCOVERED jobs in queue.")
             self._write_report(0, 0, 0, [])
             end_time = time.time()
-            log_heartbeat("Match Worker", "SUCCESS", start_str, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), end_time - start_time, 0)
+            log_heartbeat("Match Worker", WorkflowState.COMPLETED.name, start_str, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), end_time - start_time, 0)
             return
             
-        print(f"MatchWorker: Processing {len(jobs)} jobs...")
+        logger.info(f"MatchWorker: Processing {len(jobs)} jobs...")
         
         scored_jobs = []
         for j in jobs:
@@ -48,30 +58,36 @@ class MatchWorker:
         rejected_count = 0
         
         for j in scored_jobs:
-            new_status = "MATCHED" if j["passed"] else "REJECTED"
-            update_job_status(
-                j["id"], 
-                new_status,
-                extra_data={
-                    "opportunity_score": j["opportunity_score"],
-                    "why_this_job": j["why_this_job"],
-                    "rejection_reason": j["rejection_reason"]
-                }
-            )
-            
-            if j["passed"]:
-                passed_count += 1
-            else:
+            try:
+                new_status = "MATCHED" if j["passed"] else "REJECTED"
+                update_job_state(
+                    j["id"], 
+                    new_status,
+                    WorkflowState.COMPLETED.name,
+                    {
+                        "opportunity_score": j["opportunity_score"],
+                        "why_this_job": j["why_this_job"],
+                        "rejection_reason": j["rejection_reason"]
+                    }
+                )
+                
+                if j["passed"]:
+                    passed_count += 1
+                else:
+                    rejected_count += 1
+            except Exception as e:
+                logger.error(f"Match Error: {e}")
+                update_job_state(j["id"], "REJECTED", WorkflowState.FAILED.name, {"rejection_reason": f"Match Error: {e}"})
                 rejected_count += 1
                 
-        print(f"MatchWorker: Finished. {passed_count} MATCHED, {rejected_count} REJECTED.")
+        logger.info(f"MatchWorker: Finished. {passed_count} MATCHED, {rejected_count} REJECTED.")
         self._write_report(len(jobs), passed_count, rejected_count, scored_jobs)
         
         end_time = time.time()
-        log_heartbeat("Match Worker", "SUCCESS", start_str, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), end_time - start_time, len(jobs))
+        log_heartbeat("Match Worker", WorkflowState.COMPLETED.name, start_str, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), end_time - start_time, len(jobs))
         
     def _write_report(self, total, passed, rejected, scored_jobs):
-        report_path = os.path.join(Config.DATA_DIR, "..", "match_report.md")
+        report_path = "data/reports/match_report.md"
         
         # Get top 5 matched
         matched_jobs = [j for j in scored_jobs if j["passed"]]

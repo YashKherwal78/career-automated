@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('markdown_job_parser')
 import re
 from datetime import datetime
 from src.discovery.providers.base_provider import StandardJob
@@ -48,6 +50,6 @@ class MarkdownJobParser:
                     in_table = False
                     
         except Exception as e:
-            print(f"Error parsing markdown file {file_path}: {e}")
+            logger.info(f"Error parsing markdown file {file_path}: {e}")
             
         return jobs

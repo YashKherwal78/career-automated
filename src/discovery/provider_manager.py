@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('provider_manager')
 from typing import List
 import importlib
 import pkgutil
@@ -22,7 +24,7 @@ class ProviderManager:
                     try:
                         self.providers.append(attribute())
                     except Exception as e:
-                        print(f"Failed to instantiate {attribute_name}: {e}")
+                        logger.info(f"Failed to instantiate {attribute_name}: {e}")
 
     def fetch_opportunities(self, company_name: str) -> List[dict]:
         all_opportunities = []
@@ -38,6 +40,6 @@ class ProviderManager:
                 # In a real implementation, we would pass `company_name` to the provider.
                 pass
             except Exception as e:
-                print(f"Provider {provider.__class__.__name__} failed for {company_name}: {e}")
+                logger.info(f"Provider {provider.__class__.__name__} failed for {company_name}: {e}")
                 
         return all_opportunities

@@ -1,5 +1,8 @@
+from src.system.logger import setup_logger
+logger = setup_logger('wellfound')
 import time
-from .base import ApplicationHandler, ApplicationState
+from .base import ApplicationHandler
+from src.system.state import WorkflowState
 
 class WellfoundHandler(ApplicationHandler):
     """
@@ -8,22 +11,13 @@ class WellfoundHandler(ApplicationHandler):
     def can_handle(self, url: str) -> bool:
         return "wellfound.com" in url.lower() or "angel.co" in url.lower()
         
-    def execute(self) -> ApplicationState:
-        print(f"WellfoundHandler: Executing Easy Apply flow for {self.url}...")
-        
-        # Simulated logic for V1 Validation Phase
-        time.sleep(1)
+    def execute(self) -> WorkflowState:
+        logger.info(f"WellfoundHandler: Executing Easy Apply flow for {self.url}...")
         
         # Check if Easy Apply is available
         if "easy_apply=false" in self.url:
-            print("WellfoundHandler: No Easy Apply available. Failing back to MANUAL_REVIEW.")
-            return ApplicationState.MANUAL_REVIEW
+            logger.info("WellfoundHandler: No Easy Apply available. Failing back to MANUAL_REVIEW.")
+            return WorkflowState.REVIEW_REQUIRED
             
-        print("WellfoundHandler: Easy Apply button detected.")
-        print("WellfoundHandler: Injecting Resume...")
-        
-        # Simulate question engine form fill
-        print("WellfoundHandler: Answering custom questions...")
-        
-        print("WellfoundHandler: Submitting Application...")
-        return ApplicationState.SUBMITTED
+        logger.info("WellfoundHandler: Automation engine not yet linked for Wellfound. Cannot apply.")
+        return WorkflowState.NOT_IMPLEMENTED

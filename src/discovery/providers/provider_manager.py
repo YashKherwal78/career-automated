@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('provider_manager')
 import os
 import importlib
 import inspect
@@ -28,7 +30,7 @@ class ProviderManager:
                                 provider_instance = obj()
                                 self.providers.append(provider_instance)
                 except Exception as e:
-                    print(f"Failed to load provider {filename}: {e}")
+                    logger.info(f"Failed to load provider {filename}: {e}")
 
     def run_all_providers(self, last_sync_timestamps: Dict[str, str] = None, target_companies: List[Dict] = None) -> List[StandardJob]:
         """
@@ -41,7 +43,7 @@ class ProviderManager:
         def run_provider(provider):
             if not provider.validate_configuration():
                 provider.status.record_failure("Missing API Configuration or Failed Health Check")
-                print(f"Skipping {provider.name}: Missing Configuration")
+                logger.info(f"Skipping {provider.name}: Missing Configuration")
                 return []
                 
             last_sync = last_sync_timestamps.get(provider.name)
@@ -56,7 +58,7 @@ class ProviderManager:
                 provider.status.record_failure(str(e))
                 return []
 
-        print(f"ProviderManager: Launching {len(self.providers)} providers in parallel...")
+        logger.info(f"ProviderManager: Launching {len(self.providers)} providers in parallel...")
         with concurrent.futures.ThreadPoolExecutor(max_workers=15) as executor:
             future_to_provider = {executor.submit(run_provider, p): p for p in self.providers}
             for future in concurrent.futures.as_completed(future_to_provider):
@@ -66,7 +68,7 @@ class ProviderManager:
                     if jobs:
                         all_jobs.extend(jobs)
                 except Exception as exc:
-                    print(f'{provider.name} generated an exception: {exc}')
+                    logger.info(f'{provider.name} generated an exception: {exc}')
                     
         # Normalization and Deduplication
         return self._normalize_and_deduplicate(all_jobs)

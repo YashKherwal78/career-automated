@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('run_batch')
 import os
 import sqlite3
 from datetime import datetime
@@ -26,17 +28,17 @@ def check_duplicate_run(limit: int) -> bool:
     sent_today = c.fetchone()[0]
     conn.close()
     
-    print(f"[Duplicate Protection] Emails already sent today ({today_str} local): {sent_today}/{limit}")
+    logger.info(f"[Duplicate Protection] Emails already sent today ({today_str} local): {sent_today}/{limit}")
     return sent_today >= limit
 
 def run_daily_outreach(target_limit: int = 400):
-    print("==================================================")
-    print(f"🚀 STARTING DAILY OUTREACH BATCH (Target: {target_limit})")
-    print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print("==================================================")
+    logger.info("==================================================")
+    logger.info(f"🚀 STARTING DAILY OUTREACH BATCH (Target: {target_limit})")
+    logger.info(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info("==================================================")
 
     if check_duplicate_run(target_limit):
-        print("\n[ABORT] Daily limit already reached. Duplicate run prevented.")
+        logger.info("\n[ABORT] Daily limit already reached. Duplicate run prevented.")
         return
 
     # Initialize Engine
@@ -54,24 +56,24 @@ def run_daily_outreach(target_limit: int = 400):
         if os.path.exists(file_path):
             # Check mid-run if we hit the limit across files
             if check_duplicate_run(target_limit):
-                print(f"\nTarget limit of {target_limit} reached mid-batch. Stopping.")
+                logger.info(f"\nTarget limit of {target_limit} reached mid-batch. Stopping.")
                 break
                 
-            print(f"\n--- PROCESSING FILE: {file_path} ---")
+            logger.info(f"\n--- PROCESSING FILE: {file_path} ---")
             # Monkey patch the file getter so the engine processes this specific file
             engine.get_latest_excel = lambda f=file_path: f
             
             try:
                 engine.run_daily_batch()
             except Exception as e:
-                print(f"Error processing {file_path}: {e}")
+                logger.info(f"Error processing {file_path}: {e}")
                 
         else:
-            print(f"\n--- SKIPPING: {file_path} (File not found) ---")
+            logger.info(f"\n--- SKIPPING: {file_path} (File not found) ---")
 
-    print("\n==================================================")
-    print("🏁 DAILY OUTREACH BATCH COMPLETE")
-    print("==================================================")
+    logger.info("\n==================================================")
+    logger.info("🏁 DAILY OUTREACH BATCH COMPLETE")
+    logger.info("==================================================")
 
 if __name__ == "__main__":
     run_daily_outreach(400)

@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('normalizer')
 from typing import List, Dict, Any
 import datetime
 from src.discovery.providers.base_provider import StandardJob
@@ -78,5 +80,5 @@ class DiscoveryNormalizer:
         if raw_payload and isinstance(raw_payload[0], StandardJob):
             return raw_payload
             
-        print(f"Normalizer warning: Unknown connector {connector_name}. Returning empty list.")
+        logger.info(f"Normalizer warning: Unknown connector {connector_name}. Returning empty list.")
         return []

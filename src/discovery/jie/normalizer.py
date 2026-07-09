@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('normalizer')
 import yaml
 import os
 from src.discovery.jie.models import StructuredJob
@@ -17,7 +19,7 @@ class Normalizer:
                         for alias in aliases:
                             self.skill_map[alias.lower()] = canonical
         except Exception as e:
-            print(f"Warning: Failed to load skills config: {e}")
+            logger.info(f"Warning: Failed to load skills config: {e}")
 
     def _normalize_skill(self, raw_skill: str) -> str:
         return self.skill_map.get(raw_skill.lower(), raw_skill.title())

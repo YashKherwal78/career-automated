@@ -1,16 +1,16 @@
-import os
 import datetime
 from typing import Dict, Any, List, Tuple
 from apify_client import ApifyClient
 from src.discovery.connectors.search_connector_base import SearchConnectorBase
 from src.discovery.discovery_connector import ConnectorCapabilityMatrix
 from src.discovery.search_planner import SearchTask
+from src.common.credential_provider import CredentialFactory, Credential
 
 class LinkedinConnector(SearchConnectorBase):
     def __init__(self, config: Dict[str, Any]):
         self.config = config
         self.actor_id = config.get("actor", "hKByXkMQaC5Qt9UMN")
-        self.client = None
+        self.credentials = CredentialFactory.get("APIFY")
 
     @property
     def name(self) -> str:
@@ -35,26 +35,21 @@ class LinkedinConnector(SearchConnectorBase):
         )
 
     def initialize(self) -> None:
-        api_key = os.getenv("APIFY_KEY_1") or os.getenv("APIFY_API_KEY")
-        if not api_key:
-            raise ValueError("APIFY_KEY_1 is missing.")
-        self.client = ApifyClient(api_key)
+        pass
 
     def health_check(self) -> bool:
         try:
-            # Just fetching actor info to ensure access
-            actor = self.client.actor(self.actor_id).get()
-            return actor is not None
+            def fetch_health(credential: Credential):
+                client = ApifyClient(credential.secret)
+                actor = client.actor(self.actor_id).get()
+                return actor is not None
+            return self.credentials.execute_sync(fetch_health)
         except Exception:
             return False
 
     def execute_search(self, task: SearchTask) -> Tuple[List[Any], List[str]]:
-        """
-        Translates a business-level SearchTask into the platform-specific LinkedIn Apify query.
-        """
         warnings = []
         
-        # Map freshness_days to f_TPR seconds
         freshness_map = {
             1: "r86400",
             3: "r259200",
@@ -62,13 +57,9 @@ class LinkedinConnector(SearchConnectorBase):
         }
         f_tpr = freshness_map.get(task.freshness_days, "r86400")
         
-        # Map experience_profile to f_E
-        # 1=Internship, 2=Entry level, 3=Associate, 4=Mid-Senior level, 5=Director, 6=Executive
         exp_map = {"Internship": "1", "Entry": "2", "Associate": "3", "Mid": "4", "Senior": "4", "Director": "5", "Executive": "6"}
         f_e = ",".join([exp_map[e] for e in task.experience_profile if e in exp_map])
         
-        # Map work_modes to f_WT
-        # 1=On-site, 2=Remote, 3=Hybrid
         wt_map = {"On-site": "1", "Remote": "2", "Hybrid": "3"}
         f_wt = ",".join([wt_map[m] for m in task.work_modes if m in wt_map])
         
@@ -85,17 +76,21 @@ class LinkedinConnector(SearchConnectorBase):
             "maxItems": task.budget.get("max_results", 50)
         }
 
-        # Hard 90s timeout is enforced logic-side in Base
-        run = self.client.actor(self.actor_id).call(run_input=run_input)
-        
-        dataset_id = getattr(run, "default_dataset_id", None)
-        if not dataset_id and isinstance(run, dict):
-            dataset_id = run.get("defaultDatasetId")
+        def fetch_run(credential: Credential):
+            client = ApifyClient(credential.secret)
+            run = client.actor(self.actor_id).call(run_input=run_input)
             
-        jobs = []
-        if dataset_id:
-            for item in self.client.dataset(dataset_id).iterate_items():
-                jobs.append(item)
+            dataset_id = getattr(run, "default_dataset_id", None)
+            if not dataset_id and isinstance(run, dict):
+                dataset_id = run.get("defaultDatasetId")
+                
+            jobs = []
+            if dataset_id:
+                for item in client.dataset(dataset_id).iterate_items():
+                    jobs.append(item)
+            return jobs
+            
+        jobs = self.credentials.execute_sync(fetch_run)
                 
         return jobs, warnings
 

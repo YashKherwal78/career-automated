@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('cto_scraper')
 import json
 from ddgs import DDGS
 from groq import Groq
@@ -56,10 +58,10 @@ def collect_company_metadata(groq_client: Groq, company_name: str) -> dict:
         
         return json.loads(content)
     except Exception as e:
-        print(f"Error extracting metadata for {company_name}: {e}")
+        logger.info(f"Error extracting metadata for {company_name}: {e}")
         return {}
 
 if __name__ == "__main__":
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
     res = collect_company_metadata(client, "OpenAI")
-    print(json.dumps(res, indent=2))
+    logger.info(json.dumps(res, indent=2))

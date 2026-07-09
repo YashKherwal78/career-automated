@@ -1,8 +1,10 @@
+from src.system.logger import setup_logger
+logger = setup_logger('migrate_schema')
 import sqlite3
 from config import Config
 
 def migrate_database():
-    print(f"Migrating database {Config.DATABASE_PATH}...")
+    logger.info(f"Migrating database {Config.DATABASE_PATH}...")
     conn = sqlite3.connect(Config.DATABASE_PATH)
     cursor = conn.cursor()
 
@@ -42,16 +44,16 @@ def migrate_database():
     for col_name, col_type in new_columns:
         try:
             cursor.execute(f"ALTER TABLE leads ADD COLUMN {col_name} {col_type}")
-            print(f"Added column {col_name}")
+            logger.info(f"Added column {col_name}")
         except sqlite3.OperationalError as e:
             if "duplicate column name" in str(e).lower():
-                print(f"Column {col_name} already exists.")
+                logger.info(f"Column {col_name} already exists.")
             else:
-                print(f"Error adding {col_name}: {e}")
+                logger.info(f"Error adding {col_name}: {e}")
 
     conn.commit()
     conn.close()
-    print("Database migration complete.")
+    logger.info("Database migration complete.")
 
 if __name__ == "__main__":
     migrate_database()

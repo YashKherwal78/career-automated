@@ -20,6 +20,16 @@ class CompanyIntelligenceEngine:
     def handle_ats_detected(self, payload: dict):
         self._score_company(payload.get('company_name'))
 
+    def compute_all(self):
+        conn = get_connection()
+        conn.row_factory = self._dict_factory
+        c = conn.cursor()
+        c.execute("SELECT company_name FROM company_intelligence_static")
+        companies = [row["company_name"] for row in c.fetchall()]
+        conn.close()
+        for name in companies:
+            self._score_company(name)
+
     def _score_company(self, company_name: str):
         if not company_name:
             return

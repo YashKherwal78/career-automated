@@ -1,5 +1,7 @@
+from src.system.logger import setup_logger
+logger = setup_logger('intelligence')
 import json
-from ddgs import DDGS
+from duckduckgo_search import DDGS
 from groq import Groq
 from src.utils.llm_router import LLMRouter
 from src.crm.database import add_or_update_lead, get_cached_intelligence, set_cached_intelligence
@@ -35,7 +37,7 @@ def calculate_priority_score(metadata: dict) -> int:
 def run_intelligence_engine(company_name: str) -> dict:
     cached = get_cached_intelligence(company_name)
     if cached:
-        print(f"Using cached intelligence for {company_name}")
+        logger.info(f"Using cached intelligence for {company_name}")
         return cached
 
     query_general = f"{company_name} company employee count industry domain hiring careers"
@@ -67,7 +69,7 @@ def run_intelligence_engine(company_name: str) -> dict:
             intent="outreach"
         )
     except Exception as e:
-        print(f"Error in intelligence engine (All keys failed) for {company_name}: {e}")
+        logger.info(f"Error in intelligence engine (All keys failed) for {company_name}: {e}")
         return {"domain": "Other", "employee_count": None, "is_hiring": False, "priority_score": 0}
     try:
         content = response.choices[0].message.content
@@ -81,5 +83,5 @@ def run_intelligence_engine(company_name: str) -> dict:
         set_cached_intelligence(company_name, metadata)
         return metadata
     except Exception as e:
-        print(f"Error parsing intelligence engine response for {company_name}: {e}")
+        logger.info(f"Error parsing intelligence engine response for {company_name}: {e}")
         return {"domain": "Other", "employee_count": None, "is_hiring": False, "priority_score": 0}

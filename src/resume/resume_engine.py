@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('resume_engine')
 from database import add_or_update_lead
 
 def recommend_resume(domain: str, company_name: str) -> str:
@@ -15,7 +17,7 @@ def recommend_resume(domain: str, company_name: str) -> str:
         family = "Hybrid Resume"
         
     add_or_update_lead(company_name, {"resume_family": family})
-    print(f"[{company_name}] Recommended Resume Family: {family}")
+    logger.info(f"[{company_name}] Recommended Resume Family: {family}")
     return family
 
 if __name__ == "__main__":

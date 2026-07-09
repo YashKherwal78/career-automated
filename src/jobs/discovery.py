@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('discovery')
 import sqlite3
 from src.config.config import Config
 from src.discovery.providers.provider_manager import ProviderManager
@@ -6,15 +8,15 @@ from src.jobs.ranking import apply_ranking_engine
 
 def run_discovery_pipeline():
     """Pipeline A & B: Opportunity Discovery Engine"""
-    print("Agent 0: Initializing Dual Discovery Pipeline...")
+    logger.info("Agent 0: Initializing Dual Discovery Pipeline...")
     
     manager = ProviderManager()
     
     # We will pass empty dict for last_sync_timestamps for now
-    print("-> Running ProviderManager (Parallel Execution)...")
+    logger.info("-> Running ProviderManager (Parallel Execution)...")
     opportunities = manager.run_all_providers()
     
-    print(f"-> Discovered {len(opportunities)} raw opportunities.")
+    logger.info(f"-> Discovered {len(opportunities)} raw opportunities.")
     
     jobs_ingested = 0
     new_companies = 0
@@ -55,15 +57,15 @@ def run_discovery_pipeline():
             process_job(job_dict)
             jobs_ingested += 1
         except Exception as e:
-            print(f"Error processing opportunity {opt.role} at {opt.company}: {e}")
+            logger.info(f"Error processing opportunity {opt.role} at {opt.company}: {e}")
             
     conn.close()
     
-    print("-> Applying Opportunity Ranking (Phase 5)...")
+    logger.info("-> Applying Opportunity Ranking (Phase 5)...")
     apply_ranking_engine()
     
-    print(f"Agent 0: Successfully ingested {jobs_ingested} opportunities into cache.")
-    print(f"Agent 0: Dynamically registered {new_companies} new P3 startups.")
+    logger.info(f"Agent 0: Successfully ingested {jobs_ingested} opportunities into cache.")
+    logger.info(f"Agent 0: Dynamically registered {new_companies} new P3 startups.")
 
 if __name__ == "__main__":
     run_discovery_pipeline()

@@ -43,3 +43,7 @@ def get_data_quality(repo: AnalyticsRepository = Depends(get_analytics_repo)):
 @router.get("/lineage/{company_id}")
 def get_lineage(company_id: str, repo: AnalyticsRepository = Depends(get_analytics_repo)):
     return repo.get_lineage(company_id)
+
+@router.get("/priorities")
+def get_priorities(repo: AnalyticsRepository = Depends(get_analytics_repo)):
+    return repo.get_priorities()

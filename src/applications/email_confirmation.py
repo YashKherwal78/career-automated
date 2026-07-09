@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('email_confirmation')
 import re
 from datetime import datetime, timezone, timedelta
 from imap_tools import MailBox, AND
@@ -53,9 +55,9 @@ class EmailConfirmationChecker:
                     company_match = company_name.lower() in sender or company_name.lower() in subject or company_name.lower() in body
                     
                     if has_success_phrase and company_match and role_match:
-                        print(f"[EmailConfirmationChecker] Found confirmation email from {sender}: {msg.subject}")
+                        logger.info(f"[EmailConfirmationChecker] Found confirmation email from {sender}: {msg.subject}")
                         return True
         except Exception as e:
-            print(f"[EmailConfirmationChecker] Error checking emails: {e}")
+            logger.info(f"[EmailConfirmationChecker] Error checking emails: {e}")
             
         return False

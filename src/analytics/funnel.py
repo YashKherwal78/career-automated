@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('funnel')
 import sqlite3
 import datetime
 import re
@@ -60,15 +62,15 @@ def print_source_attribution(cursor):
         elif re.search(r'\b(ai engineer|ml engineer|machine learning|applied ai)\b', title):
             sources[source_name]["AI"] += 1
             
-    print("\n========================================")
-    print(" SOURCE ATTRIBUTION ANALYTICS ")
-    print("========================================")
-    print(f"{'Source':<20} | {'Total':<5} | {'SWE':<5} | {'Prod':<5} | {'Data':<5} | {'AI':<5} | {'Conv %':<6}")
-    print("-" * 75)
+    logger.info("\n========================================")
+    logger.info(" SOURCE ATTRIBUTION ANALYTICS ")
+    logger.info("========================================")
+    logger.info(f"{'Source':<20} | {'Total':<5} | {'SWE':<5} | {'Prod':<5} | {'Data':<5} | {'AI':<5} | {'Conv %':<6}")
+    logger.info("-" * 75)
     for s, counts in sources.items():
         # Using "Eligible" rate as a proxy for Interview Conversion until the CRM handles state
         conv_rate = (counts["Eligible"] / counts["Total"] * 100) if counts["Total"] > 0 else 0
-        print(f"{s[:19]:<20} | {counts['Total']:<5} | {counts['SWE']:<5} | {counts['Product']:<5} | {counts['Data']:<5} | {counts['AI']:<5} | {conv_rate:.1f}%")
+        logger.info(f"{s[:19]:<20} | {counts['Total']:<5} | {counts['SWE']:<5} | {counts['Product']:<5} | {counts['Data']:<5} | {counts['AI']:<5} | {conv_rate:.1f}%")
 
 def print_apify_analytics(cursor):
     # Attempt to query Apify Metrics if the table exists
@@ -85,21 +87,21 @@ def print_apify_analytics(cursor):
         
         cpc = (cost / contacts) if contacts > 0 else 0.0
         
-        print("\n========================================")
-        print(" APIFY ENRICHMENT ANALYTICS ")
-        print("========================================")
-        print(f"Total API Calls:        {calls}")
-        print(f"Credits Consumed:       {credits:.3f}")
-        print(f"Total Cost (USD):       ${cost:.3f}")
-        print(f"Contacts Discovered:    {total_contacts}")
-        print(f"Cost per Contact:       ${cpc:.3f}\n")
+        logger.info("\n========================================")
+        logger.info(" APIFY ENRICHMENT ANALYTICS ")
+        logger.info("========================================")
+        logger.info(f"Total API Calls:        {calls}")
+        logger.info(f"Credits Consumed:       {credits:.3f}")
+        logger.info(f"Total Cost (USD):       ${cost:.3f}")
+        logger.info(f"Contacts Discovered:    {total_contacts}")
+        logger.info(f"Cost per Contact:       ${cpc:.3f}\n")
     except sqlite3.OperationalError:
         pass
 
 def print_funnel_metrics():
-    print("========================================")
-    print(" RECRUITMENT FUNNEL ANALYTICS ")
-    print("========================================")
+    logger.info("========================================")
+    logger.info(" RECRUITMENT FUNNEL ANALYTICS ")
+    logger.info("========================================")
     
     conn = sqlite3.connect(Config.DATABASE_PATH)
     cursor = conn.cursor()
@@ -118,27 +120,27 @@ def print_funnel_metrics():
     cursor.execute("SELECT AVG(eligibility_score) FROM jobs WHERE eligibility_status = 'Eligible'")
     avg_score = cursor.fetchone()[0] or 0
     
-    print(f"Jobs Processed:         {total_raw}")
-    print(f"Unique Jobs:            {unique_jobs}")
-    print(f"Eligible Jobs:          {eligible_jobs}")
-    print(f"Average Eligible Score: {avg_score:.1f}\n")
+    logger.info(f"Jobs Processed:         {total_raw}")
+    logger.info(f"Unique Jobs:            {unique_jobs}")
+    logger.info(f"Eligible Jobs:          {eligible_jobs}")
+    logger.info(f"Average Eligible Score: {avg_score:.1f}\n")
     
     # Role Distributions
     raw_counts = get_role_counts(cursor, None)
     eligible_counts = get_role_counts(cursor, 'Eligible')
     
-    print("Role Distribution (Raw vs Eligible):")
-    print(f"{'Role':<30} | {'Raw':<5} | {'Eligible':<5}")
-    print("-" * 50)
+    logger.info("Role Distribution (Raw vs Eligible):")
+    logger.info(f"{'Role':<30} | {'Raw':<5} | {'Eligible':<5}")
+    logger.info("-" * 50)
     for role in raw_counts.keys():
-        print(f"{role:<30} | {raw_counts[role]:<5} | {eligible_counts[role]:<5}")
+        logger.info(f"{role:<30} | {raw_counts[role]:<5} | {eligible_counts[role]:<5}")
         
     print_source_attribution(cursor)
     print_apify_analytics(cursor)
         
-    print("\n========================================")
-    print(" TOP 20 OPPORTUNITIES (RANKED) ")
-    print("========================================")
+    logger.info("\n========================================")
+    logger.info(" TOP 20 OPPORTUNITIES (RANKED) ")
+    logger.info("========================================")
     
     cursor.execute("""
         SELECT company_name, job_title, location, eligibility_score, ranking_score, recommended_resume
@@ -149,8 +151,8 @@ def print_funnel_metrics():
     """)
     top_20 = cursor.fetchall()
     
-    print(f"{'Company':<15} | {'Role':<30} | {'Location':<20} | {'Elig':<4} | {'Rank':<4} | {'Resume':<15}")
-    print("-" * 105)
+    logger.info(f"{'Company':<15} | {'Role':<30} | {'Location':<20} | {'Elig':<4} | {'Rank':<4} | {'Resume':<15}")
+    logger.info("-" * 105)
     for row in top_20:
         company = str(row[0])[:14]
         title = str(row[1])[:29]
@@ -158,9 +160,9 @@ def print_funnel_metrics():
         elig = row[3]
         rank = row[4]
         resume = str(row[5])
-        print(f"{company:<15} | {title:<30} | {loc:<20} | {elig:<4} | {rank:<4} | {resume:<15}")
+        logger.info(f"{company:<15} | {title:<30} | {loc:<20} | {elig:<4} | {rank:<4} | {resume:<15}")
         
-    print("========================================\n")
+    logger.info("========================================\n")
     
     # 5. Today's Queue
     today = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -172,20 +174,20 @@ def print_funnel_metrics():
     """, (today,))
     queue_jobs = cursor.fetchall()
     
-    print("========================================")
-    print(f" TODAY'S QUEUE ({len(queue_jobs)}/20) ")
-    print("========================================")
-    print(f"{'Company':<15} | {'Role':<30} | {'Rank':<4} | {'Resume':<15} | {'Status'}")
-    print("-" * 90)
+    logger.info("========================================")
+    logger.info(f" TODAY'S QUEUE ({len(queue_jobs)}/20) ")
+    logger.info("========================================")
+    logger.info(f"{'Company':<15} | {'Role':<30} | {'Rank':<4} | {'Resume':<15} | {'Status'}")
+    logger.info("-" * 90)
     for row in queue_jobs:
         company = str(row[0])[:14]
         title = str(row[1])[:29]
         rank = row[2]
         resume = str(row[3])
         status = str(row[4])
-        print(f"{company:<15} | {title:<30} | {rank:<4} | {resume:<15} | {status}")
+        logger.info(f"{company:<15} | {title:<30} | {rank:<4} | {resume:<15} | {status}")
         
-    print("========================================\n")
+    logger.info("========================================\n")
     
     conn.close()
 

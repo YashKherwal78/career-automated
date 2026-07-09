@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('database')
 import sqlite3
 import os
 from datetime import datetime, date
@@ -32,7 +34,8 @@ def init_db():
             founder_replied INTEGER DEFAULT 0,
             interview_scheduled INTEGER DEFAULT 0,
             bounced INTEGER DEFAULT 0,
-            status TEXT DEFAULT 'New',
+            stage TEXT DEFAULT 'NEW',
+            workflow_state TEXT DEFAULT 'PENDING',
             agent_metadata TEXT,
             days_old INTEGER DEFAULT 0,
             job_match_score INTEGER DEFAULT 0,
@@ -139,7 +142,8 @@ def init_db():
             description TEXT,
             employee_count TEXT,
             source TEXT,
-            status TEXT DEFAULT 'DISCOVERED',
+            stage TEXT DEFAULT 'DISCOVERED',
+            workflow_state TEXT DEFAULT 'PENDING',
             opportunity_score INTEGER DEFAULT 0,
             why_this_job TEXT,
             rejection_reason TEXT,
@@ -444,28 +448,30 @@ def get_lead(company_name: str) -> Optional[Dict]:
         return dict(row)
     return None
 
-def get_leads_by_status(status: str) -> List[Dict]:
+def get_leads_by_stage(stage: str) -> List[Dict]:
     conn = get_connection()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM leads WHERE status = ?", (status,))
+    cursor.execute("SELECT * FROM leads WHERE stage = ?", (stage,))
     rows = cursor.fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
-def update_status(company_name: str, new_status: str, update_date_field: str = None):
-    data = {"status": new_status}
+def update_lead_state(company_name: str, stage: str, workflow_state: str = None, update_date_field: str = None):
+    data = {"stage": stage}
+    if workflow_state:
+        data["workflow_state"] = workflow_state
     if update_date_field:
         data[update_date_field] = datetime.now().isoformat()
-        if new_status == 'HR Contacted':
+        if stage == 'HR_CONTACTED':
             data["hr_contacted"] = 1
-        elif new_status == 'Founder Contacted':
+        elif stage == 'FOUNDER_CONTACTED':
             data["founder_contacted"] = 1
-        elif new_status == 'HR Replied':
+        elif stage == 'HR_REPLIED':
             data["hr_replied"] = 1
-        elif new_status == 'Founder Replied':
+        elif stage == 'FOUNDER_REPLIED':
             data["founder_replied"] = 1
-        elif new_status == 'Interview Scheduled':
+        elif stage == 'INTERVIEW_SCHEDULED':
             data["interview_scheduled"] = 1
             
     add_or_update_lead(company_name, data)
@@ -521,7 +527,7 @@ def log_llm_usage(workload: str, provider: str, model: str, tokens: int, latency
 
 if __name__ == "__main__":
     init_db()
-    print("Database initialized.")
+    logger.info("Database initialized.")
 
 def insert_discovered_job(data: Dict) -> bool:
     """Inserts a job if URL is unique. Returns True if inserted, False if duplicate."""
@@ -538,23 +544,26 @@ def insert_discovered_job(data: Dict) -> bool:
     finally:
         conn.close()
 
-def get_jobs_by_status(status: str, limit: int = None) -> List[Dict]:
+def get_jobs_by_stage(stage: str, limit: int = None) -> List[Dict]:
     conn = get_connection()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    query = "SELECT * FROM discovered_jobs WHERE status = ?"
+    query = "SELECT * FROM discovered_jobs WHERE stage = ?"
     if limit:
         query += f" LIMIT {limit}"
-    cursor.execute(query, (status,))
+    cursor.execute(query, (stage,))
     rows = cursor.fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
-def update_job_status(job_id: int, new_status: str, extra_data: Dict = None):
+def update_job_state(job_id: int, stage: str, workflow_state: str = None, extra_data: Dict = None):
     conn = get_connection()
     cursor = conn.cursor()
-    query = "UPDATE discovered_jobs SET status = ?, updated_at = CURRENT_TIMESTAMP"
-    values = [new_status]
+    query = "UPDATE discovered_jobs SET stage = ?, updated_at = CURRENT_TIMESTAMP"
+    values = [stage]
+    if workflow_state:
+        query += ", workflow_state = ?"
+        values.append(workflow_state)
     if extra_data:
         for k, v in extra_data.items():
             query += f", {k} = ?"
@@ -575,7 +584,7 @@ def log_heartbeat(worker_name: str, status: str, started_at: str, finished_at: s
         ''', (worker_name, status, started_at, finished_at, execution_time, items, error))
         conn.commit()
     except Exception as e:
-        print(f"Error logging heartbeat: {e}")
+        logger.info(f"Error logging heartbeat: {e}")
     finally:
         conn.close()
 
@@ -636,7 +645,7 @@ def add_to_opportunity_cache(opp: dict, decision: dict = None, strategy_id: str 
         conn.commit()
         return True
     except Exception as e:
-        print(f"Error inserting into opportunity_cache: {e}")
+        logger.info(f"Error inserting into opportunity_cache: {e}")
         return False
     finally:
         conn.close()
@@ -664,7 +673,7 @@ def add_discovery_source(company_name: str, source: str, discovery_type: str = "
         conn.commit()
         return unique_sources
     except Exception as e:
-        print(f"Error updating discovery source: {e}")
+        logger.info(f"Error updating discovery source: {e}")
         return 1
     finally:
         conn.close()

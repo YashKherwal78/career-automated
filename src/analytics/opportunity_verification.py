@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('opportunity_verification')
 import sqlite3
 import requests
 import concurrent.futures
@@ -54,7 +56,7 @@ def verify_top_opportunities(limit=100):
     """, (limit,))
     
     jobs = c.fetchall()
-    print(f"Verifying {len(jobs)} top-ranked opportunities...")
+    logger.info(f"Verifying {len(jobs)} top-ranked opportunities...")
     
     def process_job(job):
         job_id, url = job
@@ -92,7 +94,7 @@ def verify_top_opportunities(limit=100):
     conn.commit()
     conn.close()
     
-    print(f"Verification complete: {updated} checked, {closed} found closed and removed from top ranking.")
+    logger.info(f"Verification complete: {updated} checked, {closed} found closed and removed from top ranking.")
 
 if __name__ == "__main__":
     verify_top_opportunities(limit=100)

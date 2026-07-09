@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('discovery_cache')
 from typing import Dict, Any, Optional
 from datetime import datetime, timedelta
 from src.discovery.backends.base_backend import BaseBackend
@@ -18,11 +20,11 @@ class DiscoveryCache:
         if cache_key in self._memory_cache:
             entry = self._memory_cache[cache_key]
             if datetime.utcnow() < entry['expires_at']:
-                print(f"DiscoveryCache: Cache HIT for {cache_key}")
+                logger.info(f"DiscoveryCache: Cache HIT for {cache_key}")
                 return entry['data']
                 
         # Cache miss, fetch from backend
-        print(f"DiscoveryCache: Cache MISS for {cache_key}. Hitting network via {self.backend.__class__.__name__}...")
+        logger.info(f"DiscoveryCache: Cache MISS for {cache_key}. Hitting network via {self.backend.__class__.__name__}...")
         data = self.backend.fetch(query, location, **kwargs)
         
         # Store in cache

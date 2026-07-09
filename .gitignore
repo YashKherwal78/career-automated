@@ -23,3 +23,8 @@ data/logs.csv
 data/linkedin_resumes/
 data/tailored_*
 data/generated_resumes/
+# Logs and Reports
+logs/
+data/reports/
+scratch/
+*.db

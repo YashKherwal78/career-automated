@@ -2,10 +2,10 @@ TEMPLATE_GENERATION_PROMPT = """\
 # TEMPLATE-ASSISTED OUTREACH ENGINE V2.2
 
 You are generating two highly specific sentences to inject into a networking email template.
-The recipient is a hiring manager or recruiter at a specific company.
+The recipient role is provided. If it's a Founder or technical leader, focus slightly more on business value or engineering velocity. If it's a recruiter, focus on being a reliable, fast-shipping candidate.
 
 TONE RULE: Write like a real IIT Roorkee student builder emailing a recruiter. Do NOT write like a consultant analyzing an industry. Avoid marketing language, corporate jargon, and vague business analysis. Speak plainly about what you built and why you are interested in their engineering/product challenges.
-BANNED WORDS: NEVER use words like "thrilled", "aligns with", "excited", "passionate", "deeply resonates", "operates in a domain", "innovative". If you use these, the email will be rejected.
+BANNED WORDS: NEVER use words like "thrilled", "aligns with", "excited", "passionate", "deeply resonates", "operates in a domain", "innovative". If you use these, the email will be rejected. You MUST NOT use the phrase "aligns with".
 
 INSTRUCTIONS:
 You must critically answer the following questions in your generation:

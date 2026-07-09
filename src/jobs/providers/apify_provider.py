@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('apify_provider')
 import urllib.parse
 from typing import List, Dict
 from datetime import datetime
@@ -38,10 +40,10 @@ class ApifyProvider(JobProvider):
         try:
             client, key_id = self.manager.get_client(tier=4, category="job_discovery")
             if not client:
-                print("ApifyProvider: Discovery skipped (Budget limit reached or no active keys).")
+                logger.info("ApifyProvider: Discovery skipped (Budget limit reached or no active keys).")
                 return []
                 
-            print(f"ApifyProvider: Starting Apify actor {self.actor_id} via Manager...")
+            logger.info(f"ApifyProvider: Starting Apify actor {self.actor_id} via Manager...")
             
             urls = self._generate_urls()
             
@@ -58,7 +60,7 @@ class ApifyProvider(JobProvider):
                 dataset_id = run.get("defaultDatasetId") or run.get("default_dataset_id")
             
             if not dataset_id:
-                print("ApifyProvider: Could not find dataset ID in run response.")
+                logger.info("ApifyProvider: Could not find dataset ID in run response.")
                 self.manager.record_usage(key_id, "job_discovery", credits=0.0, useful_results=0, success=False)
                 return []
                 
@@ -106,13 +108,13 @@ class ApifyProvider(JobProvider):
                 }
                 jobs.append(job)
                 
-            print(f"ApifyProvider: Successfully fetched {len(jobs)} jobs.")
+            logger.info(f"ApifyProvider: Successfully fetched {len(jobs)} jobs.")
             
             # Record usage (assuming standard actor run cost of ~0.05 credits for a small run)
             self.manager.record_usage(key_id, "job_discovery", credits=0.05, useful_results=len(jobs), success=True)
             
         except Exception as e:
-            print(f"Error reading from Apify provider: {e}")
+            logger.info(f"Error reading from Apify provider: {e}")
             if 'key_id' in locals():
                 self.manager.record_usage(key_id, "job_discovery", credits=0.0, useful_results=0, success=False)
             

@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('greenhouse_source')
 import time
 import random
 import requests
@@ -14,7 +16,7 @@ class GreenhouseSource(BaseDiscoverySource):
 
     def get_job(self, slug: str, job_id: str) -> list:
         url = f"{self.base_url}/{slug}/jobs/{job_id}"
-        print(f"GreenhouseSource: Direct extracting {slug} job {job_id}...")
+        logger.info(f"GreenhouseSource: Direct extracting {slug} job {job_id}...")
         try:
             response = requests.get(url, timeout=10)
             if response.status_code == 200:
@@ -34,15 +36,15 @@ class GreenhouseSource(BaseDiscoverySource):
                 }
                 return [opp]
             else:
-                print(f"  -> Failed to fetch {job_id}. Status: {response.status_code}")
+                logger.info(f"  -> Failed to fetch {job_id}. Status: {response.status_code}")
                 return []
         except Exception as e:
-            print(f"  -> Error fetching {job_id}: {e}")
+            logger.info(f"  -> Error fetching {job_id}: {e}")
             return []
 
     def discover_opportunities(self, slugs: List[str]) -> List[Dict[str, Any]]:
         opportunities = []
-        print(f"GreenhouseSource: Starting opportunity retrieval for {len(slugs)} slugs...")
+        logger.info(f"GreenhouseSource: Starting opportunity retrieval for {len(slugs)} slugs...")
         
         for slug in slugs:
             url = f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs"
@@ -51,7 +53,7 @@ class GreenhouseSource(BaseDiscoverySource):
                 if response.status_code == 200:
                     data = response.json()
                     jobs = data.get("jobs", [])
-                    print(f"GreenhouseSource: Retrieved {len(jobs)} raw jobs from {slug}")
+                    logger.info(f"GreenhouseSource: Retrieved {len(jobs)} raw jobs from {slug}")
                     
                     for job in jobs:
                         # Normalize to standard Opportunity object
@@ -70,9 +72,9 @@ class GreenhouseSource(BaseDiscoverySource):
                             "discovery_timestamp": time.time()
                         })
                 else:
-                    print(f"GreenhouseSource: Failed to fetch {slug} - HTTP {response.status_code}")
+                    logger.info(f"GreenhouseSource: Failed to fetch {slug} - HTTP {response.status_code}")
             except Exception as e:
-                print(f"GreenhouseSource: Error fetching {slug}: {e}")
+                logger.info(f"GreenhouseSource: Error fetching {slug}: {e}")
             
             # Rate limiting
             time.sleep(random.uniform(0.3, 0.5))

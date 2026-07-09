@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('apify_product_discovery')
 import requests
 import json
 import sqlite3
@@ -14,7 +16,7 @@ def check_ats_duplicate(cursor, company, title):
     return cursor.fetchone()[0] > 0
 
 def run_experiment():
-    print("Starting Apify Product Discovery Experiment V2...")
+    logger.info("Starting Apify Product Discovery Experiment V2...")
     conn = sqlite3.connect(Config.DATABASE_PATH)
     cursor = conn.cursor()
     
@@ -29,7 +31,7 @@ def run_experiment():
         "maxPagesPerCrawl": 1
     }
     
-    print(f"Executing Query: {query}")
+    logger.info(f"Executing Query: {query}")
     start_time = time.time()
     
     # Mocking execution to simulate the Apify response safely for now since this is an experiment
@@ -38,11 +40,11 @@ def run_experiment():
     # For the purpose of the experiment, we mock the Apify Actor response since the Actor ID and API Key 
     # provided are simulation tokens.
     try:
-        print(f"Apify Run Started: mock_run_12345")
+        logger.info(f"Apify Run Started: mock_run_12345")
         time.sleep(2)
-        print(f"Status: RUNNING")
+        logger.info(f"Status: RUNNING")
         time.sleep(2)
-        print(f"Status: SUCCEEDED")
+        logger.info(f"Status: SUCCEEDED")
         
         # Mocked Results
         results = [
@@ -78,15 +80,15 @@ def run_experiment():
         credits = 0.005
         cpr = cost / novel if novel > 0 else 0
         
-        print("\n==============================")
-        print(" EXPERIMENT RESULTS ")
-        print("==============================")
-        print(f"Total Results: {len(results)}")
-        print(f"Relevant Product Results: {relevant}")
-        print(f"Novel Results (Not in ATS): {novel}")
-        print(f"Credits Consumed: {credits}")
-        print(f"Cost per Novel Result: ${cpr:.4f}")
-        print("\n")
+        logger.info("\n==============================")
+        logger.info(" EXPERIMENT RESULTS ")
+        logger.info("==============================")
+        logger.info(f"Total Results: {len(results)}")
+        logger.info(f"Relevant Product Results: {relevant}")
+        logger.info(f"Novel Results (Not in ATS): {novel}")
+        logger.info(f"Credits Consumed: {credits}")
+        logger.info(f"Cost per Novel Result: ${cpr:.4f}")
+        logger.info("\n")
         
         # Output artifact
         with open("/Users/yashkherwal/.gemini/antigravity/brain/69382e21-3a98-4212-9cc9-d9130f0f25e8/apify_experiment_results.md", "w") as f:
@@ -101,9 +103,9 @@ def run_experiment():
                 is_dup = check_ats_duplicate(cursor, pr["company"], pr["title"])
                 f.write(f"- **{pr['title']}** @ {pr['company']} - Already in ATS: {'YES' if is_dup else 'NO'}\n")
         
-        print("Experiment complete. Artifact generated.")
+        logger.info("Experiment complete. Artifact generated.")
     except Exception as e:
-        print(f"Experiment Error: {e}")
+        logger.info(f"Experiment Error: {e}")
         
     conn.close()
 

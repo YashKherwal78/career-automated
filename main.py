@@ -169,11 +169,9 @@ def get_company_context(company_name: str) -> str:
 def generate_email(client: Groq, company_name: str, context: str) -> tuple[str, str]:
     """Use Groq LLM to generate a personalized email subject and body with Critic Loop."""
     try:
-        with open(Config.DATA_DIR / "context" / "yash_profile.md", "r") as f:
-            yash_profile = f.read()
-        with open(Config.DATA_DIR / "context" / "projects.md", "r") as f:
-            projects_context = f.read()
-        context_str = f"\n\n--- YASH PROFILE ---\n{yash_profile}\n\n--- PROJECTS CONTEXT ---\n{projects_context}"
+        with open(Config.DATA_DIR / "context" / "yash_master_profile.md", "r") as f:
+            yash_master_profile = f.read()
+        context_str = f"\n\n--- YASH MASTER PROFILE ---\n{yash_master_profile}"
     except Exception:
         context_str = ""
 
@@ -187,6 +185,7 @@ def generate_email(client: Groq, company_name: str, context: str) -> tuple[str, 
     
     max_attempts = 3
     email_data = {}
+    critic_data = {}
     
     for attempt in range(max_attempts):
         try:
@@ -221,8 +220,8 @@ def generate_email(client: Groq, company_name: str, context: str) -> tuple[str, 
                 continue
             raise e
             
-    if critic_data.get("status") == "FAIL":
-        raise Exception(f"Email Critic failed after {max_attempts} attempts. Feedback: {critic_data.get('feedback')}")
+    if critic_data.get("status") != "PASS":
+        raise Exception(f"Email Critic failed after {max_attempts} attempts. Feedback: {critic_data.get('feedback', 'No feedback (e.g. rate limit)')}")
         
     return email_data.get("subject", subject_variant), email_data.get("body", "")
 

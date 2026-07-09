@@ -1,3 +1,5 @@
+from src.system.logger import setup_logger
+logger = setup_logger('career_pages')
 import requests
 from bs4 import BeautifulSoup
 
@@ -14,7 +16,7 @@ def fetch_career_pages():
     ]
     
     for company in target_companies:
-        print(f"Fetching bespoke career page for {company['name']}...")
+        logger.info(f"Fetching bespoke career page for {company['name']}...")
         try:
             # Fake/Generic implementation
             # res = requests.get(company["url"])
@@ -25,10 +27,10 @@ def fetch_career_pages():
             # this module serves as the entrypoint for custom scrapers.
             pass
         except Exception as e:
-            print(f"Error fetching {company['name']}: {e}")
+            logger.info(f"Error fetching {company['name']}: {e}")
             
     return all_jobs
 
 if __name__ == "__main__":
     jobs = fetch_career_pages()
-    print(f"Extracted {len(jobs)} jobs from custom career pages.")
+    logger.info(f"Extracted {len(jobs)} jobs from custom career pages.")
