@@ -1,21 +1,13 @@
-from typing import AsyncIterator
 import logging
-from src.discovery.registry.source_registry import SourceRegistry
-from src.discovery.models import RawJob, ConnectorCapability, Board
-from src.discovery.registry.connector import Connector
+from typing import AsyncIterator
+from src.discovery.models import RawJob, ConnectorCapability, Board, FetchResult
+from src.discovery.registry.connector import Connector, FreshnessStrategy, DefaultFreshnessStrategy
+from src.discovery.pipeline.http_client import HttpClient
 
 logger = logging.getLogger("WorkdayConnector")
 
 class WorkdayConnector(Connector):
-    """
-    DEPRECATED: This class is a legacy Workday connector used by the YC/cluster crawler.
-    Do not use this for the modern BoardSyncSession pipeline. Use src/discovery/connectors/workday.py instead.
-    """
-    @property
-    def source_name(self) -> str:
-        return "workday"
-        
-
+    
     def capabilities(self) -> ConnectorCapability:
         return ConnectorCapability(
             pagination="offset",
@@ -26,44 +18,46 @@ class WorkdayConnector(Connector):
             supports_parallel_fetch=False,
             supports_snapshot=True,
         )
-
+        
     def crawl_policy(self):
         from src.discovery.registry.connector import CrawlPolicy, CrawlPriority
         return CrawlPolicy(
             version="v1",
-            normal_interval=900, # 15 minutes
+            normal_interval=900,  # 15 minutes
             priority=CrawlPriority.LOW
         )
+
+    def freshness_strategy(self) -> FreshnessStrategy:
+        return DefaultFreshnessStrategy()
         
-    async def sync(self, board: Board, http_client) -> AsyncIterator[RawJob]:
+    async def sync(self, board: Board, http_client: HttpClient) -> AsyncIterator[RawJob | FetchResult]:
         api_url = board.endpoint
         if "/wday/cxs/" not in api_url:
-            # Reconstruct api_url from identity if it's not the api_url
             domain = board.endpoint.split("://")[-1].split("/")[0]
             api_url = f"https://{domain}/wday/cxs/{board.identity.tenant}/{board.identity.site}/jobs"
             
         limit = 20
         offset = 0
-        
         headers = {
             "Accept": "application/json",
             "Content-Type": "application/json"
         }
         
-        # Check freshness on first page
+        # Page 1 fetch
         payload = {"appliedFacets": {}, "limit": limit, "offset": offset, "searchText": ""}
         result = await http_client.fetch("POST", api_url, headers=headers, json=payload)
         
-        if result.status_code == 304:
+        # Evaluate freshness
+        should_sync = self.freshness_strategy().should_sync(board, result)
+        yield result
+        
+        if not should_sync:
+            logger.info(f"WorkdayConnector[{getattr(board.identity, 'board_token', 'unknown')}] - Content unchanged. Skipping sync.")
             return
             
-        if not self.should_sync(board, result):
-            return
+
             
-        if result.content_hash:
-            board.metadata["last_content_hash"] = result.content_hash
-            
-        # Process first page
+        # Process Page 1
         if result.status_code == 200 and isinstance(result.payload, dict):
             job_list = result.payload.get("jobPostings", [])
             for job in job_list:
@@ -73,12 +67,15 @@ class WorkdayConnector(Connector):
                 return
                 
             offset += limit
+        else:
+            return
             
         # Paginate the rest
         while True:
             payload = {"appliedFacets": {}, "limit": limit, "offset": offset, "searchText": ""}
             result = await http_client.fetch("POST", api_url, headers=headers, json=payload)
             
+            yield result
             if result.status_code != 200 or not isinstance(result.payload, dict):
                 break
                 
@@ -94,4 +91,5 @@ class WorkdayConnector(Connector):
                 
             offset += limit
 
-SourceRegistry.register(WorkdayConnector)
+from src.discovery.registry.connector_registry import ConnectorRegistry
+ConnectorRegistry.register('workday', WorkdayConnector)
