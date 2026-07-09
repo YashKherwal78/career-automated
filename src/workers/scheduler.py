@@ -24,6 +24,7 @@ class WorkerRegistry:
 # Register standard workers according to feature flags
 if settings.enable_discovery:
     WorkerRegistry.register("CompanyDiscoveryWorker", ["src/workers/company_discovery_worker.py"])
+    WorkerRegistry.register("SeedDiscoveryWorker", ["src/workers/seed_discovery_worker.py"])
 if settings.enable_verification:
     WorkerRegistry.register("EndpointVerificationWorker", ["src/workers/endpoint_verification_worker.py"])
 if settings.enable_crawler:
@@ -73,6 +74,7 @@ class PipelineScheduler:
         os.makedirs("logs", exist_ok=True)
         log_map = {
             "CompanyDiscoveryWorker": "logs/discovery.log",
+            "SeedDiscoveryWorker": "logs/seed_discovery.log",
             "EndpointVerificationWorker": "logs/verification.log",
             "JobCrawlerWorker": "logs/crawler.log",
             "CleanupWorker": "logs/cleanup.log",
