@@ -208,3 +208,38 @@ class AnalyticsRepository:
                 "description": "All stages operate within target conversion, precision, and latency thresholds."
             })
         return priorities
+
+    def get_queue_items(self, queue_name: str):
+        c = self.db.cursor()
+        c.execute("""
+            SELECT item_id, payload, status, failures, created_at 
+            FROM local_queues 
+            WHERE queue_name = ? AND status = 'QUEUED' 
+            ORDER BY created_at ASC LIMIT 50
+        """, (queue_name,))
+        columns = [col[0] for col in c.description]
+        return [dict(zip(columns, row)) for row in c.fetchall()]
+
+    def get_dead_boards(self):
+        c = self.db.cursor()
+        c.execute("SELECT company_id, endpoint, ats_type, failure_count FROM ats_registry WHERE status = 'FAILED' LIMIT 50")
+        columns = [col[0] for col in c.description]
+        return [dict(zip(columns, row)) for row in c.fetchall()]
+
+    def get_zero_job_boards(self):
+        c = self.db.cursor()
+        c.execute("SELECT company_id, endpoint, ats_type, job_count FROM ats_registry WHERE job_count = 0 LIMIT 50")
+        columns = [col[0] for col in c.description]
+        return [dict(zip(columns, row)) for row in c.fetchall()]
+
+    def get_duplicate_companies(self):
+        c = self.db.cursor()
+        c.execute("""
+            SELECT company_id, canonical_name, website 
+            FROM company_identities 
+            WHERE company_id IN (
+                SELECT company_id FROM company_identities GROUP BY company_id HAVING COUNT(*) > 1
+            ) LIMIT 50
+        """)
+        columns = [col[0] for col in c.description]
+        return [dict(zip(columns, row)) for row in c.fetchall()]

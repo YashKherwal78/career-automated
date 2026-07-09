@@ -47,3 +47,19 @@ def get_lineage(company_id: str, repo: AnalyticsRepository = Depends(get_analyti
 @router.get("/priorities")
 def get_priorities(repo: AnalyticsRepository = Depends(get_analytics_repo)):
     return repo.get_priorities()
+
+@router.get("/queues/{queue_name}/items")
+def get_queue_items(queue_name: str, repo: AnalyticsRepository = Depends(get_analytics_repo)):
+    return repo.get_queue_items(queue_name)
+
+@router.get("/data-quality/dead-boards")
+def get_dead_boards(repo: AnalyticsRepository = Depends(get_analytics_repo)):
+    return repo.get_dead_boards()
+
+@router.get("/data-quality/zero-job-boards")
+def get_zero_job_boards(repo: AnalyticsRepository = Depends(get_analytics_repo)):
+    return repo.get_zero_job_boards()
+
+@router.get("/data-quality/duplicate-companies")
+def get_duplicate_companies(repo: AnalyticsRepository = Depends(get_analytics_repo)):
+    return repo.get_duplicate_companies()

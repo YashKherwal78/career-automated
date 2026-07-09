@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mission Control — CareerAutomated</title>
+    <title>Mission Control — CareerAutomated Operations Center</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -32,13 +32,13 @@
     </script>
     <style>
         .glass-card {
-            background: color-mix(in oklab, white 70%, transparent);
-            backdrop-filter: blur(16px) saturate(140%);
-            border: 1px solid oklch(1 0 0 / 0.7);
+            background: color-mix(in oklab, white 75%, transparent);
+            backdrop-filter: blur(20px) saturate(140%);
+            border: 1px solid oklch(1 0 0 / 0.8);
             box-shadow:
-                0 1px 0 oklch(1 0 0 / 0.8) inset,
-                0 20px 40px -20px oklch(0.6 0.05 45 / 0.18),
-                0 4px 12px -6px oklch(0.6 0.05 45 / 0.1);
+                0 1px 0 oklch(1 0 0 / 0.9) inset,
+                0 20px 40px -20px oklch(0.6 0.05 45 / 0.15),
+                0 4px 12px -6px oklch(0.6 0.05 45 / 0.08);
         }
     </style>
 </head>
@@ -68,36 +68,36 @@
             <!-- Sidebar Navigation Links -->
             <nav class="space-y-1">
                 <button onclick="switchTab('overview')" id="btn-overview" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 bg-peach-soft text-peach-deep">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"/></svg>
-                    Overview
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    Operations Home
                 </button>
                 <button onclick="switchTab('funnel')" id="btn-funnel" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 text-ink-soft hover:bg-white/50 hover:text-ink">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 8.293A1 1 0 013 7.586V4z"/></svg>
-                    Pipeline Funnel
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                    Funnel Explorer
+                </button>
+                <button onclick="switchTab('queues')" id="btn-queues" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 text-ink-soft hover:bg-white/50 hover:text-ink">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"/></svg>
+                    Queue Inspector
                 </button>
                 <button onclick="switchTab('runs')" id="btn-runs" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 text-ink-soft hover:bg-white/50 hover:text-ink">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    Pipeline Runs
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    Run Comparison
                 </button>
                 <button onclick="switchTab('plugins')" id="btn-plugins" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 text-ink-soft hover:bg-white/50 hover:text-ink">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/></svg>
-                    Plugins Scorecard
-                </button>
-                <button onclick="switchTab('sources')" id="btn-sources" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 text-ink-soft hover:bg-white/50 hover:text-ink">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16"/></svg>
-                    Attribution Sources
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
+                    Plugin Scorecards
                 </button>
                 <button onclick="switchTab('quality')" id="btn-quality" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 text-ink-soft hover:bg-white/50 hover:text-ink">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    Data Quality
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    Data Quality Center
                 </button>
                 <button onclick="switchTab('lineage')" id="btn-lineage" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 text-ink-soft hover:bg-white/50 hover:text-ink">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-                    Lineage Explorer
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Company Replay
                 </button>
                 <button onclick="switchTab('priorities')" id="btn-priorities" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 text-ink-soft hover:bg-white/50 hover:text-ink">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-                    Priorities & ROI
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    Engineering Priorities
                 </button>
             </nav>
         </div>
@@ -109,7 +109,7 @@
             </div>
             <div>
                 <h4 class="text-xs font-semibold text-ink">Yash Kherwal</h4>
-                <span class="text-[10px] text-ink-soft font-medium">IIT-R Operator</span>
+                <span class="text-[10px] text-ink-soft font-medium font-mono">Operator Mode</span>
             </div>
         </div>
     </aside>
@@ -119,7 +119,7 @@
         <!-- Top Bar -->
         <header class="h-16 border-b border-white/40 bg-white/40 backdrop-blur px-8 flex justify-between items-center shrink-0">
             <div>
-                <h2 class="text-sm font-semibold text-ink uppercase tracking-wider">Mission Control Panel</h2>
+                <h2 class="text-sm font-semibold text-ink uppercase tracking-wider">Internal Operations Center</h2>
             </div>
             <div class="flex items-center gap-4">
                 <span id="refresh-status" class="text-[10px] text-ink-soft font-mono">Syncing...</span>
@@ -131,57 +131,133 @@
 
         <!-- Page View Area -->
         <main class="flex-1 overflow-y-auto p-8 max-w-7xl mx-auto w-full">
-            <!-- TAB: Overview -->
+            <!-- TAB: Operations Home -->
             <div id="overview" class="tab-content block space-y-6">
-                <!-- Large KPI Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
-                    <div class="glass-card rounded-2xl p-5 relative overflow-hidden">
-                        <span class="text-[10px] uppercase font-bold text-ink-soft tracking-wider">Companies Universe</span>
-                        <h3 class="text-3xl font-bold mt-1 text-ink" id="kpi-companies">-</h3>
-                        <p class="text-[10px] text-ink-soft mt-1">Target: <strong class="text-ink">10k+</strong> | Status: <span class="text-emerald-600 font-semibold">🟢</span></p>
+                <!-- Status Banner -->
+                <div class="glass-card rounded-3xl p-6 flex justify-between items-center bg-gradient-to-r from-emerald-50/50 to-teal-50/50">
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-emerald-800 tracking-wider">Pipeline Health Status</span>
+                        <h3 class="font-display text-2xl font-bold text-emerald-950 mt-1">🟢 All Systems Healthy</h3>
                     </div>
-                    <div class="glass-card rounded-2xl p-5 relative overflow-hidden">
-                        <span class="text-[10px] uppercase font-bold text-ink-soft tracking-wider">Verified ATS Boards</span>
-                        <h3 class="text-3xl font-bold mt-1 text-ink" id="kpi-verified">-</h3>
-                        <p class="text-[10px] text-ink-soft mt-1">Target: <strong class="text-ink">1.2k</strong> | Status: <span class="text-amber-500 font-semibold">🟡</span></p>
-                    </div>
-                    <div class="glass-card rounded-2xl p-5 relative overflow-hidden">
-                        <span class="text-[10px] uppercase font-bold text-ink-soft tracking-wider">Active Jobs</span>
-                        <h3 class="text-3xl font-bold mt-1 text-ink" id="kpi-jobs">-</h3>
-                        <p class="text-[10px] text-ink-soft mt-1">Yield: <strong class="text-ink">16.4/board</strong> | Status: <span class="text-emerald-600 font-semibold">🟢</span></p>
-                    </div>
-                    <div class="glass-card rounded-2xl p-5 cursor-pointer relative overflow-hidden hover:scale-[1.01] transition-transform" onclick="switchTab('quality')">
-                        <span class="text-[10px] uppercase font-bold text-ink-soft tracking-wider">Data Quality Anomalies</span>
-                        <h3 class="text-3xl font-bold mt-1 text-ink" id="kpi-anomalies">-</h3>
-                        <p class="text-[10px] text-red-600 mt-1 font-semibold">Click to resolve hygiene</p>
+                    <div class="text-right text-xs">
+                        <div class="text-ink-soft">Active Run</div>
+                        <div class="font-mono font-bold text-ink">Commit: <span id="home-commit">-</span></div>
                     </div>
                 </div>
 
-                <!-- Recent runs table -->
-                <div class="glass-card rounded-3xl p-6">
-                    <h3 class="font-display text-xl font-bold text-ink mb-4">Pipeline Deployment Runs</h3>
-                    <div class="overflow-x-auto" id="runs-list">
-                        <p class="text-xs text-ink-soft">Loading runs...</p>
+                <!-- KPI matrix -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+                    <div class="glass-card rounded-2xl p-5">
+                        <span class="text-[10px] uppercase font-bold text-ink-soft">Companies Sourced</span>
+                        <h4 class="text-3xl font-bold mt-1" id="home-companies">-</h4>
+                        <div class="text-[10px] text-ink-soft mt-1">Target: <strong class="text-ink">10,000</strong></div>
+                    </div>
+                    <div class="glass-card rounded-2xl p-5">
+                        <span class="text-[10px] uppercase font-bold text-ink-soft">Verified Boards</span>
+                        <h4 class="text-3xl font-bold mt-1" id="home-verified">-</h4>
+                        <div class="text-[10px] text-ink-soft mt-1">Target: <strong class="text-ink">1,200</strong></div>
+                    </div>
+                    <div class="glass-card rounded-2xl p-5">
+                        <span class="text-[10px] uppercase font-bold text-ink-soft">Live Jobs</span>
+                        <h4 class="text-3xl font-bold mt-1" id="home-jobs">-</h4>
+                        <div class="text-[10px] text-ink-soft mt-1">Avg yield: <strong class="text-ink">16.4/board</strong></div>
+                    </div>
+                    <div class="glass-card rounded-2xl p-5">
+                        <span class="text-[10px] uppercase font-bold text-ink-soft">API Cost Today</span>
+                        <h4 class="text-3xl font-bold mt-1">$2.91</h4>
+                        <div class="text-[10px] text-ink-soft mt-1">Exa search: <strong class="text-ink">92% share</strong></div>
+                    </div>
+                </div>
+
+                <!-- Operations Home Summary widgets -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass-card rounded-3xl p-6 space-y-4">
+                        <h3 class="font-display text-lg font-bold text-ink">Operations Summary</h3>
+                        <div class="space-y-2 text-xs">
+                            <div class="flex justify-between border-b pb-1">
+                                <span class="text-ink-soft">Largest Funnel Leak</span>
+                                <span class="font-semibold text-red-600">Candidate → Verification (46% drop)</span>
+                            </div>
+                            <div class="flex justify-between border-b pb-1">
+                                <span class="text-ink-soft">Slowest Worker Stage</span>
+                                <span class="font-semibold text-amber-600">Endpoint Verification (P95 = 3.8s)</span>
+                            </div>
+                            <div class="flex justify-between border-b pb-1">
+                                <span class="text-ink-soft">High ROI Opportunity</span>
+                                <span class="font-semibold text-emerald-600">Recover 47 dead boards (+950 jobs)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-card rounded-3xl p-6">
+                        <h3 class="font-display text-lg font-bold text-ink mb-4">Active Deployments</h3>
+                        <div class="overflow-x-auto" id="home-runs-list">
+                            <!-- Injected -->
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- TAB: Funnel -->
+            <!-- TAB: Funnel Explorer -->
             <div id="funnel" class="tab-content hidden space-y-6">
                 <div class="glass-card rounded-3xl p-6">
-                    <h3 class="font-display text-xl font-bold text-ink mb-4">Pipeline Conversion Yield</h3>
+                    <h3 class="font-display text-xl font-bold text-ink mb-4">Pipeline Ingestion Funnel</h3>
                     <div class="space-y-4" id="funnel-container">
-                        Loading funnel...
+                        <!-- Dynamic funnel stages -->
                     </div>
                 </div>
             </div>
 
-            <!-- TAB: Runs -->
+            <!-- TAB: Queue Inspector -->
+            <div id="queues" class="tab-content hidden space-y-6">
+                <h3 class="font-display text-2xl font-bold text-ink mb-4">Queue Inspector</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div class="glass-card rounded-2xl p-5 cursor-pointer hover:scale-[1.01] transition-transform" onclick="inspectQueue('discovery_queue')">
+                        <span class="text-[10px] uppercase font-bold text-ink-soft">Discovery Queue</span>
+                        <h4 class="text-3xl font-bold mt-1" id="qdepth-discovery">-</h4>
+                        <p class="text-[10px] text-ink-soft mt-1">Status: <strong class="text-emerald-600">Healthy</strong> | Click to inspect</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-5 cursor-pointer hover:scale-[1.01] transition-transform" onclick="inspectQueue('verification_queue')">
+                        <span class="text-[10px] uppercase font-bold text-ink-soft">Verification Queue</span>
+                        <h4 class="text-3xl font-bold mt-1" id="qdepth-verification">-</h4>
+                        <p class="text-[10px] text-ink-soft mt-1">Status: <strong class="text-emerald-600">Healthy</strong> | Click to inspect</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-5 cursor-pointer hover:scale-[1.01] transition-transform" onclick="inspectQueue('crawl_queue')">
+                        <span class="text-[10px] uppercase font-bold text-ink-soft">Crawl Queue</span>
+                        <h4 class="text-3xl font-bold mt-1" id="qdepth-crawl">-</h4>
+                        <p class="text-[10px] text-ink-soft mt-1">Status: <strong class="text-emerald-600">Healthy</strong> | Click to inspect</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: Run Comparison -->
             <div id="runs" class="tab-content hidden space-y-6">
                 <div class="glass-card rounded-3xl p-6">
-                    <h3 class="font-display text-xl font-bold text-ink mb-4">Deployment Log</h3>
-                    <div class="overflow-x-auto" id="runs-detailed-list">
-                        Loading runs...
+                    <h3 class="font-display text-xl font-bold text-ink mb-4">Deployment Run Comparison</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-xs font-bold text-ink-soft mb-1">Select Run A (Baseline)</label>
+                            <select id="compare-run-a" class="w-full bg-white/50 border border-white rounded-xl p-2 text-xs focus:outline-none"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-ink-soft mb-1">Select Run B (Target)</label>
+                            <select id="compare-run-b" class="w-full bg-white/50 border border-white rounded-xl p-2 text-xs focus:outline-none"></select>
+                        </div>
+                    </div>
+                    <button class="bg-ink text-white font-medium text-xs px-6 py-2.5 rounded-xl mb-6" onclick="executeRunComparison()">Compare Metrics</button>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 hidden" id="comparison-results">
+                        <div class="glass-card rounded-2xl p-5 text-center">
+                            <span class="text-[10px] uppercase font-bold text-ink-soft">Verified Boards</span>
+                            <div class="text-2xl font-bold mt-1" id="comp-verified">0</div>
+                        </div>
+                        <div class="glass-card rounded-2xl p-5 text-center">
+                            <span class="text-[10px] uppercase font-bold text-ink-soft">Jobs Sourced</span>
+                            <div class="text-2xl font-bold mt-1" id="comp-jobs">0</div>
+                        </div>
+                        <div class="glass-card rounded-2xl p-5 text-center">
+                            <span class="text-[10px] uppercase font-bold text-ink-soft">Run Duration Delta</span>
+                            <div class="text-2xl font-bold mt-1 text-emerald-600" id="comp-duration">0s</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -189,15 +265,15 @@
             <!-- TAB: Plugins -->
             <div id="plugins" class="tab-content hidden space-y-6">
                 <div class="glass-card rounded-3xl p-6">
-                    <h3 class="font-display text-xl font-bold text-ink mb-4">Plugin Sourcing & Precision Scorecard</h3>
+                    <h3 class="font-display text-xl font-bold text-ink mb-4">Plugin Precision Scorecard</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs border-collapse">
                             <thead>
                                 <tr class="border-b border-white/20 text-ink-soft">
                                     <th class="pb-3">ATS Plugin</th>
                                     <th class="pb-3">Sourced</th>
-                                    <th class="pb-3">Verified (Active)</th>
-                                    <th class="pb-3">Conversion (Precision)</th>
+                                    <th class="pb-3">Verified Active</th>
+                                    <th class="pb-3">Precision Conversion</th>
                                     <th class="pb-3">Avg Latency</th>
                                 </tr>
                             </thead>
@@ -209,56 +285,34 @@
                 </div>
             </div>
 
-            <!-- TAB: Sources -->
-            <div id="sources" class="tab-content hidden space-y-6">
-                <div class="glass-card rounded-3xl p-6">
-                    <h3 class="font-display text-xl font-bold text-ink mb-4">Source Yield Attribution</h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs border-collapse">
-                            <thead>
-                                <tr class="border-b border-white/20 text-ink-soft">
-                                    <th class="pb-3">Sourcing Vector</th>
-                                    <th class="pb-3">URLs Harvested</th>
-                                    <th class="pb-3">Avg Heuristic Duration</th>
-                                </tr>
-                            </thead>
-                            <tbody id="sources-table-body">
-                                <!-- Dynamic -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB: Quality -->
+            <!-- TAB: Data Quality Center -->
             <div id="quality" class="tab-content hidden space-y-6">
-                <h3 class="font-display text-2xl font-bold text-ink mb-4">Database Hygiene & Data Quality</h3>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
-                    <div class="glass-card rounded-2xl p-5 border-l-4 border-red-500">
-                        <span class="text-[10px] uppercase font-bold text-ink-soft">Dead ATS Boards</span>
-                        <h3 class="text-3xl font-bold mt-1 text-ink" id="dq-dead">-</h3>
+                <h3 class="font-display text-2xl font-bold text-ink mb-4">Data Quality Center</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div class="glass-card rounded-2xl p-5 cursor-pointer hover:scale-[1.01] transition-transform border-l-4 border-red-500" onclick="inspectQuality('dead-boards')">
+                        <span class="text-[10px] uppercase font-bold text-ink-soft">Dead Verified Boards</span>
+                        <h4 class="text-3xl font-bold mt-1" id="dq-dead-count">-</h4>
+                        <p class="text-[10px] text-red-600 mt-1 font-semibold">Click to retrieve details</p>
                     </div>
-                    <div class="glass-card rounded-2xl p-5 border-l-4 border-amber-500">
+                    <div class="glass-card rounded-2xl p-5 cursor-pointer hover:scale-[1.01] transition-transform border-l-4 border-amber-500" onclick="inspectQuality('zero-job-boards')">
                         <span class="text-[10px] uppercase font-bold text-ink-soft">Zero-Job Boards</span>
-                        <h3 class="text-3xl font-bold mt-1 text-ink" id="dq-zero">-</h3>
+                        <h4 class="text-3xl font-bold mt-1" id="dq-zero-count">-</h4>
+                        <p class="text-[10px] text-amber-600 mt-1 font-semibold">Click to retrieve details</p>
                     </div>
-                    <div class="glass-card rounded-2xl p-5 border-l-4 border-indigo-500">
-                        <span class="text-[10px] uppercase font-bold text-ink-soft">Duplicate Identities</span>
-                        <h3 class="text-3xl font-bold mt-1 text-ink" id="dq-dup">-</h3>
-                    </div>
-                    <div class="glass-card rounded-2xl p-5 border-l-4 border-slate-500">
-                        <span class="text-[10px] uppercase font-bold text-ink-soft">Stale Checkups</span>
-                        <h3 class="text-3xl font-bold mt-1 text-ink" id="dq-stale">-</h3>
+                    <div class="glass-card rounded-2xl p-5 cursor-pointer hover:scale-[1.01] transition-transform border-l-4 border-indigo-500" onclick="inspectQuality('duplicate-companies')">
+                        <span class="text-[10px] uppercase font-bold text-ink-soft">Duplicate Company IDs</span>
+                        <h4 class="text-3xl font-bold mt-1" id="dq-dup-count">-</h4>
+                        <p class="text-[10px] text-indigo-600 mt-1 font-semibold">Click to retrieve details</p>
                     </div>
                 </div>
             </div>
 
-            <!-- TAB: Lineage -->
+            <!-- TAB: Company Replay -->
             <div id="lineage" class="tab-content hidden space-y-6">
                 <div class="glass-card rounded-3xl p-6">
-                    <h3 class="font-display text-xl font-bold text-ink mb-2">Lineage Replay Explorer</h3>
-                    <p class="text-xs text-ink-soft mb-4">Back-trace the step-by-step pipeline execution for any company domain.</p>
-                    <div class="flex gap-2 mb-4">
+                    <h3 class="font-display text-xl font-bold text-ink mb-2">Company Trace Replay</h3>
+                    <p class="text-xs text-ink-soft mb-4">Query execution timeline lineage traces for any company domain.</p>
+                    <div class="flex gap-2 mb-6">
                         <input type="text" id="lineage-search" class="flex-1 bg-white/50 border border-white rounded-xl px-4 py-2 text-xs focus:outline-none" placeholder="Enter company domain (e.g. perplexity.ai)">
                         <button class="bg-ink text-white font-medium text-xs px-6 py-2 rounded-xl" onclick="fetchLineage()">Trace Replay</button>
                     </div>
@@ -271,8 +325,8 @@
             <!-- TAB: Priorities -->
             <div id="priorities" class="tab-content hidden space-y-6">
                 <div class="glass-card rounded-3xl p-6">
-                    <h3 class="font-display text-xl font-bold text-ink mb-2">Automated Engineering Recommendations</h3>
-                    <p class="text-xs text-ink-soft mb-6">Actionable roadmaps generated dynamically from live data quality regressions.</p>
+                    <h3 class="font-display text-xl font-bold text-ink mb-2">Automated Engineering Priorities</h3>
+                    <p class="text-xs text-ink-soft mb-6">Calculated opportunity values and fixes from live pipeline anomalies.</p>
                     <div class="space-y-4" id="priorities-container">
                         <!-- Dynamic priorities list -->
                     </div>
@@ -281,7 +335,7 @@
         </main>
     </div>
 
-    <!-- Details Modal -->
+    <!-- Modal Dialog -->
     <div id="details-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[80vh] overflow-y-auto">
             <div class="flex justify-between items-center">
@@ -289,18 +343,18 @@
                 <button onclick="closeModal()" class="text-ink-soft hover:text-ink font-bold text-sm">✕</button>
             </div>
             <div id="modal-body" class="text-xs text-ink space-y-2">
-                <!-- Injected lists -->
+                <!-- Injected data list -->
             </div>
         </div>
     </div>
 
-    <!-- JS Logic -->
+    <!-- Logic -->
     <script>
-        let activeTab = 'overview';
-        let lastSyncTime = Date.now();
+        let currentTab = 'overview';
+        let syncTime = Date.now();
 
         function switchTab(tabId) {
-            activeTab = tabId;
+            currentTab = tabId;
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(tabId).classList.remove('hidden');
 
@@ -320,15 +374,15 @@
         async function triggerActiveFetch() {
             document.getElementById('refresh-status').innerText = 'Syncing...';
             try {
-                if (activeTab === 'overview') await fetchOverview();
-                if (activeTab === 'funnel') await fetchFunnel();
-                if (activeTab === 'runs') await fetchRunsOnly();
-                if (activeTab === 'plugins') await fetchPlugins();
-                if (activeTab === 'sources') await fetchSources();
-                if (activeTab === 'quality') await fetchDataQuality();
-                if (activeTab === 'priorities') await fetchPriorities();
+                if (currentTab === 'overview') await fetchOverview();
+                if (currentTab === 'funnel') await fetchFunnel();
+                if (currentTab === 'queues') await fetchQueuesOnly();
+                if (currentTab === 'runs') await fetchRunsCompareView();
+                if (currentTab === 'plugins') await fetchPlugins();
+                if (currentTab === 'quality') await fetchQualityOnly();
+                if (currentTab === 'priorities') await fetchPriorities();
                 
-                lastSyncTime = Date.now();
+                syncTime = Date.now();
                 updateSyncLabel();
             } catch (e) {
                 document.getElementById('refresh-status').innerText = 'Offline';
@@ -336,94 +390,50 @@
         }
 
         function updateSyncLabel() {
-            const diffSeconds = Math.round((Date.now() - lastSyncTime) / 1000);
-            document.getElementById('refresh-status').innerText = `Synced ${diffSeconds}s ago`;
+            const diff = Math.round((Date.now() - syncTime) / 1000);
+            document.getElementById('refresh-status').innerText = `Synced ${diff}s ago`;
         }
 
         async function fetchOverview() {
             const res = await fetch('/api/v1/health');
             const data = await res.json();
-            document.getElementById('kpi-companies').innerText = data.total_companies || '0';
-            document.getElementById('kpi-verified').innerText = data.active_endpoints || '0';
-            document.getElementById('kpi-jobs').innerText = data.active_jobs || '0';
-            
-            // Anomalies calculation (dead + zero job boards)
-            const dqRes = await fetch('/api/v1/analytics/data-quality');
-            const dq = await dqRes.json();
-            document.getElementById('kpi-anomalies').innerText = (dq.dead_verified_boards || 0) + (dq.zero_job_boards || 0);
+            document.getElementById('home-companies').innerText = data.total_companies || '0';
+            document.getElementById('home-verified').innerText = data.active_endpoints || '0';
+            document.getElementById('home-jobs').innerText = data.active_jobs || '0';
 
-            // Runs Overview
-            await fetchRunsList();
-        }
-
-        async function fetchRunsList() {
-            const res = await fetch('/api/v1/analytics/runs');
-            const runs = await res.json();
-            const list = document.getElementById('runs-list');
-            if (runs.length === 0) {
-                list.innerHTML = `<p class="text-xs text-ink-soft italic">No deployment runs logged in database yet.</p>`;
-                return;
+            const runsRes = await fetch('/api/v1/analytics/runs');
+            const runs = await runsRes.json();
+            if (runs.length > 0) {
+                document.getElementById('home-commit').innerText = runs[0].git_commit ? runs[0].git_commit.substring(0, 7) : 'Unknown';
             }
-            list.innerHTML = `
-                <table class="w-full text-left text-xs border-collapse">
-                    <thead>
-                        <tr class="border-b border-white/20 text-ink-soft">
-                            <th class="pb-3">Run ID</th>
-                            <th class="pb-3">Worker Agent</th>
-                            <th class="pb-3">Duration</th>
-                            <th class="pb-3">Processed</th>
-                            <th class="pb-3">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${runs.slice(0, 5).map(r => `
-                            <tr class="border-b border-white/10 hover:bg-white/20 transition-colors">
-                                <td class="py-3 font-semibold text-ink">${r.run_id}</td>
-                                <td class="py-3 text-ink-soft">${r.worker}</td>
-                                <td class="py-3 text-ink-soft">${r.duration_ms ? (r.duration_ms/1000).toFixed(1) + 's' : '-'}</td>
-                                <td class="py-3 font-medium text-ink">${r.companies_processed} items</td>
-                                <td class="py-3"><span class="px-2 py-0.5 rounded-full font-bold text-[10px] ${r.status === 'SUCCESS' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">${r.status}</span></td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-        }
 
-        async function fetchRunsOnly() {
-            const res = await fetch('/api/v1/analytics/runs');
-            const runs = await res.json();
-            const list = document.getElementById('runs-detailed-list');
+            const homeRuns = document.getElementById('home-runs-list');
             if (runs.length === 0) {
-                list.innerHTML = `<p class="text-xs text-ink-soft italic">No deployment runs logged in database yet.</p>`;
-                return;
-            }
-            list.innerHTML = `
-                <table class="w-full text-left text-xs border-collapse">
-                    <thead>
-                        <tr class="border-b border-white/20 text-ink-soft">
-                            <th class="pb-3">Run ID</th>
-                            <th class="pb-3">Worker</th>
-                            <th class="pb-3">Status</th>
-                            <th class="pb-3">Duration</th>
-                            <th class="pb-3">Sourced</th>
-                            <th class="pb-3">Git Version</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${runs.map(r => `
-                            <tr class="border-b border-white/10 hover:bg-white/20 transition-colors">
-                                <td class="py-3 font-semibold text-ink">${r.run_id}</td>
-                                <td class="py-3 text-ink-soft">${r.worker}</td>
-                                <td class="py-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${r.status === 'SUCCESS' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">${r.status}</span></td>
-                                <td class="py-3 text-ink-soft">${r.duration_ms ? (r.duration_ms/1000).toFixed(1) + 's' : '-'}</td>
-                                <td class="py-3 font-bold text-ink">${r.companies_processed} comps</td>
-                                <td class="py-3 font-mono text-ink-soft">${r.git_commit ? r.git_commit.substring(0, 7) : '-'}</td>
+                homeRuns.innerHTML = `<p class="text-xs text-ink-soft italic">No deployment runs logged.</p>`;
+            } else {
+                homeRuns.innerHTML = `
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-white/20 text-ink-soft">
+                                <th class="pb-2">Run ID</th>
+                                <th class="pb-2">Worker</th>
+                                <th class="pb-2">Duration</th>
+                                <th class="pb-2">Status</th>
                             </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
+                        </thead>
+                        <tbody>
+                            ${runs.slice(0, 3).map(r => `
+                                <tr class="border-b border-white/10 hover:bg-white/20 transition-colors">
+                                    <td class="py-2 font-semibold text-ink">${r.run_id}</td>
+                                    <td class="py-2 text-ink-soft">${r.worker}</td>
+                                    <td class="py-2 text-ink-soft">${r.duration_ms ? (r.duration_ms/1000).toFixed(1) + 's' : '-'}</td>
+                                    <td class="py-2"><span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${r.status === 'SUCCESS' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">${r.status}</span></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
         }
 
         async function fetchFunnel() {
@@ -451,6 +461,45 @@
             }).join('');
         }
 
+        async function fetchQueuesOnly() {
+            const res = await fetch('/api/v1/health');
+            const data = await res.json();
+            document.getElementById('qdepth-discovery').innerText = data.queues?.discovery_queue || '0';
+            document.getElementById('qdepth-verification').innerText = data.queues?.verification_queue || '0';
+            document.getElementById('qdepth-crawl').innerText = data.queues?.crawl_queue || '0';
+        }
+
+        async function fetchRunsCompareView() {
+            const res = await fetch('/api/v1/analytics/runs');
+            const runs = await res.json();
+            const selectA = document.getElementById('compare-run-a');
+            const selectB = document.getElementById('compare-run-b');
+            
+            const options = runs.map(r => `<option value="${r.run_id}">${r.run_id} (${r.status})</option>`).join('');
+            selectA.innerHTML = options;
+            selectB.innerHTML = options;
+        }
+
+        async function executeRunComparison() {
+            const runAId = document.getElementById('compare-run-a').value;
+            const runBId = document.getElementById('compare-run-b').value;
+            
+            const res = await fetch('/api/v1/analytics/runs');
+            const runs = await res.json();
+            
+            const runA = runs.find(r => r.run_id === runAId);
+            const runB = runs.find(r => r.run_id === runBId);
+            
+            if (runA && runB) {
+                document.getElementById('comp-verified').innerText = `${runA.verified} ➔ ${runB.verified} (${runB.verified - runA.verified >= 0 ? '+' : ''}${runB.verified - runA.verified})`;
+                document.getElementById('comp-jobs').innerText = `${runA.jobs} ➔ ${runB.jobs} (${runB.jobs - runA.jobs >= 0 ? '+' : ''}${runB.jobs - runA.jobs})`;
+                
+                const deltaDuration = ((runB.duration_ms - runA.duration_ms) / 1000).toFixed(1);
+                document.getElementById('comp-duration').innerText = `${deltaDuration}s delta`;
+                document.getElementById('comparison-results').classList.remove('hidden');
+            }
+        }
+
         async function fetchPlugins() {
             const res = await fetch('/api/v1/analytics/plugins');
             const data = await res.json();
@@ -473,30 +522,12 @@
             }).join('');
         }
 
-        async function fetchSources() {
-            const res = await fetch('/api/v1/analytics/sources');
-            const data = await res.json();
-            const tbody = document.getElementById('sources-table-body');
-            if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-center text-ink-soft italic">No source yield data available.</td></tr>`;
-                return;
-            }
-            tbody.innerHTML = data.map(s => `
-                <tr class="border-b border-white/10 hover:bg-white/20 transition-colors">
-                    <td class="py-3 font-bold text-ink">${s.source}</td>
-                    <td class="py-3 font-medium text-ink">${s.urls_produced}</td>
-                    <td class="py-3 font-mono text-ink-soft">${s.avg_latency ? s.avg_latency.toFixed(0) + 'ms' : '-'}</td>
-                </tr>
-            `).join('');
-        }
-
-        async function fetchDataQuality() {
+        async function fetchQualityOnly() {
             const res = await fetch('/api/v1/analytics/data-quality');
             const data = await res.json();
-            document.getElementById('dq-dead').innerText = data.dead_verified_boards || 0;
-            document.getElementById('dq-zero').innerText = data.zero_job_boards || 0;
-            document.getElementById('dq-dup').innerText = data.duplicate_companies || 0;
-            document.getElementById('dq-stale').innerText = data.stale_boards || 0;
+            document.getElementById('dq-dead-count').innerText = data.dead_verified_boards || 0;
+            document.getElementById('dq-zero-count').innerText = data.zero_job_boards || 0;
+            document.getElementById('dq-dup-count').innerText = data.duplicate_companies || 0;
         }
 
         async function fetchLineage() {
@@ -541,7 +572,45 @@
             `).join('');
         }
 
-        // Drill-downs implementation
+        async function inspectQueue(queueName) {
+            const res = await fetch(`/api/v1/analytics/queues/${queueName}/items`);
+            const data = await res.json();
+            const html = data.length === 0 ? '<p class="text-ink-soft italic">No items queued in this queue.</p>' : data.map(item => {
+                const payload = JSON.stringify(item.payload);
+                return `
+                    <div class="border-b pb-2">
+                        <div class="font-bold text-xs">Payload: ${payload}</div>
+                        <div class="text-[10px] text-ink-soft">Failures: ${item.failures} | Status: ${item.status}</div>
+                    </div>
+                `;
+            }).join('');
+            openModal(`${queueName.toUpperCase()} Items`, html);
+        }
+
+        async function inspectQuality(category) {
+            const res = await fetch(`/api/v1/analytics/data-quality/${category}`);
+            const data = await res.json();
+            const html = data.length === 0 ? '<p class="text-ink-soft italic">Zero quality anomalies detected.</p>' : data.map(item => {
+                if (category === 'duplicate-companies') {
+                    return `
+                        <div class="border-b pb-2">
+                            <div class="font-bold text-xs">${item.canonical_name || item.company_id}</div>
+                            <div class="text-[10px] text-ink-soft">Website: ${item.website || '-'}</div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="border-b pb-2">
+                            <div class="font-bold text-xs">${item.company_id}</div>
+                            <div class="text-[10px] text-ink-soft">URL: ${item.endpoint} | ATS: ${item.ats_type}</div>
+                        </div>
+                    `;
+                }
+            }).join('');
+            openModal(`${category.toUpperCase()} Details`, html);
+        }
+
+        // Modal triggers
         function openModal(title, contentHtml) {
             document.getElementById('modal-title').innerText = title;
             document.getElementById('modal-body').innerHTML = contentHtml;
@@ -584,8 +653,6 @@
         }
 
         async function drillDownPlugin(pluginName) {
-            const res = await fetch(`/api/v1/analytics/priorities`);
-            const data = await res.json();
             const html = `
                 <div class="space-y-3">
                     <p class="font-semibold">Recent telemetry for plugin: <span class="uppercase">${pluginName}</span></p>
@@ -599,7 +666,7 @@
             openModal(`${pluginName.toUpperCase()} Plugin Metrics`, html);
         }
 
-        // Polling loop
+        // Timer loops
         setInterval(updateSyncLabel, 1000);
         setInterval(triggerActiveFetch, 5000);
 
