@@ -4,7 +4,14 @@ from dataclasses import dataclass, field
 @dataclass
 class Settings:
     db_path: str = os.environ.get("DATABASE_PATH", "data/crm.db")
-    
+
+    # ── Pipeline-level flags ────────────────────────────────────────────────
+    # ENABLE_PIPELINE_A: Company Seed → ATS Discovery → Connector → Jobs
+    # ENABLE_PIPELINE_B: Job Boards (LinkedIn, Google Jobs, etc.) → Jobs
+    enable_pipeline_a: bool = os.environ.get("ENABLE_PIPELINE_A", "True").lower() == "true"
+    enable_pipeline_b: bool = os.environ.get("ENABLE_PIPELINE_B", "True").lower() == "true"
+
+    # ── Pipeline A worker flags (respected independently) ───────────────────
     # Feature Flags
     enable_discovery: bool = os.environ.get("ENABLE_DISCOVERY", "True").lower() == "true"
     enable_verification: bool = os.environ.get("ENABLE_VERIFICATION", "True").lower() == "true"
@@ -29,6 +36,9 @@ class Settings:
 
     # Crawler Poll Interval (when queue/jobs are empty, how long to sleep)
     crawler_poll_interval: int = int(os.environ.get("CRAWLER_POLL_INTERVAL", "30"))
+
+    # Pipeline B interval: how often JobBoardWorker runs a full provider sweep
+    pipeline_b_interval: int = int(os.environ.get("PIPELINE_B_INTERVAL", "3600"))  # 1 hour
 
     # Failures backoff schedule
     retry_schedule: list = field(default_factory=lambda: [300, 900, 1800, 3600, 21600, 86400])

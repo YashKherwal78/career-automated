@@ -21,16 +21,22 @@ class WorkerRegistry:
     def get_registered_workers(cls) -> list:
         return cls._registry
 
-# Register standard workers according to feature flags
-if settings.enable_discovery:
-    WorkerRegistry.register("CompanyDiscoveryWorker", ["src/workers/company_discovery_worker.py"])
-    WorkerRegistry.register("SeedDiscoveryWorker", ["src/workers/seed_discovery_worker.py"])
-if settings.enable_verification:
-    WorkerRegistry.register("EndpointVerificationWorker", ["src/workers/endpoint_verification_worker.py"])
-if settings.enable_crawler:
-    WorkerRegistry.register("JobCrawlerWorker", ["src/workers/job_crawler_worker.py"])
-if settings.enable_cleanup:
-    WorkerRegistry.register("CleanupWorker", ["src/workers/cleanup_worker.py"])
+# ── Pipeline A workers ─────────────────────────────────────────────────────
+if settings.enable_pipeline_a:
+    if settings.enable_discovery:
+        WorkerRegistry.register("CompanyDiscoveryWorker", ["src/workers/company_discovery_worker.py"])
+        WorkerRegistry.register("SeedDiscoveryWorker", ["src/workers/seed_discovery_worker.py"])
+    if settings.enable_verification:
+        WorkerRegistry.register("EndpointVerificationWorker", ["src/workers/endpoint_verification_worker.py"])
+    if settings.enable_crawler:
+        WorkerRegistry.register("JobCrawlerWorker", ["src/workers/job_crawler_worker.py"])
+    if settings.enable_cleanup:
+        WorkerRegistry.register("CleanupWorker", ["src/workers/cleanup_worker.py"])
+
+# ── Pipeline B workers ─────────────────────────────────────────────────────
+if settings.enable_pipeline_b:
+    WorkerRegistry.register("JobBoardWorker", ["src/workers/job_board_worker.py"])
+
 if not os.environ.get("NO_API"):
     WorkerRegistry.register("FastApiServer", ["-m", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"])
 
