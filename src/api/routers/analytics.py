@@ -11,3 +11,7 @@ def get_analytics_repo(db: sqlite3.Connection = Depends(get_db)):
 @router.get("/funnel")
 def get_funnel(repo: AnalyticsRepository = Depends(get_analytics_repo)):
     return repo.get_funnel_kpis()
+
+@router.get("/pipeline")
+def get_pipeline(repo: AnalyticsRepository = Depends(get_analytics_repo)):
+    return repo.get_pipeline_kpis()

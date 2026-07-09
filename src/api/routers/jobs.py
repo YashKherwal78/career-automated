@@ -20,3 +20,11 @@ def get_jobs(
     repo: JobRepository = Depends(get_job_repo)
 ):
     return repo.get_jobs(page, page_size, provider, company, status, min_score)
+
+@router.get("/{job_id}")
+def get_job(job_id: str, repo: JobRepository = Depends(get_job_repo)):
+    from fastapi import HTTPException
+    job = repo.get_job(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return job

@@ -37,3 +37,21 @@ class JobRepository:
             except: j["score_breakdown"] = []
             
         return jobs
+
+    def get_job(self, job_id: str):
+        c = self.db.cursor()
+        c.execute("""
+            SELECT i.canonical_name, n.job_id, n.title, n.job_score, n.provider, n.score_breakdown, 
+                   n.match_score, n.priority_score, n.scoring_confidence, n.recommendation_reason, n.application_status,
+                   n.description, n.location, n.remote_type as remote, n.salary_min, n.salary_max, n.apply_url, n.posted_at
+            FROM normalized_jobs n
+            JOIN company_identities i ON n.company_id = i.company_id
+            WHERE n.job_id = ?
+        """, (job_id,))
+        row = c.fetchone()
+        if not row:
+            return None
+        j = dict(row)
+        try: j["score_breakdown"] = json.loads(j["score_breakdown"] or "[]")
+        except: j["score_breakdown"] = []
+        return j

@@ -3,10 +3,10 @@ from src.discovery.registry.source_registry import SourceRegistry
 from src.discovery.models import RawJob, ConnectorCapability, Board
 from src.discovery.registry.connector import Connector
 
-class GreenhouseConnector(Connector):
+class AshbyConnector(Connector):
     @property
     def source_name(self) -> str:
-        return "greenhouse"
+        return "ashby"
         
 
     def capabilities(self) -> ConnectorCapability:
@@ -24,14 +24,13 @@ class GreenhouseConnector(Connector):
         from src.discovery.registry.connector import CrawlPolicy, CrawlPriority
         return CrawlPolicy(
             version="v1",
-            normal_interval=120,
+            normal_interval=180,
             priority=CrawlPriority.NORMAL
         )
         
     async def sync(self, board: Board, http_client) -> AsyncIterator[RawJob]:
-        api_url = f"https://boards-api.greenhouse.io/v1/boards/{board.identity.board_token}/jobs"
+        api_url = f"https://api.ashbyhq.com/posting-api/job-board/{board.identity.board_token}"
         
-        # We can pass etag or last_modified from board.metadata here if available
         etag = board.metadata.get("etag")
         
         result = await http_client.fetch("GET", api_url, etag=etag)
@@ -42,16 +41,15 @@ class GreenhouseConnector(Connector):
         if not self.freshness_strategy().should_sync(board, result):
             return
             
-        # Update metadata for next time
         if result.etag:
             board.metadata["etag"] = result.etag
         if result.content_hash:
             board.metadata["last_content_hash"] = result.content_hash
             
-        if result.status_code == 200 and isinstance(result.payload, dict):
-            yield RawJob(provider="greenhouse", board_identity=board.identity, payload=result.payload)
+        if result.status_code == 200:
+            yield RawJob(provider="ashby", board_identity=board.identity, payload=result.payload)
 
-SourceRegistry.register(GreenhouseConnector)
+SourceRegistry.register(AshbyConnector)
 
 from src.discovery.registry.connector_registry import ConnectorRegistry
-ConnectorRegistry.register('greenhouse', GreenhouseConnector)
+ConnectorRegistry.register('ashby', AshbyConnector)
