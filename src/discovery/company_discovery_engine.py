@@ -10,6 +10,7 @@ from src.discovery.pipeline.sources import HeadProbeSource, StaticLandingPageSou
 from src.discovery.pipeline.plugins.greenhouse_plugin import GreenhouseDiscoveryPlugin
 from src.discovery.pipeline.plugins.lever_plugin import LeverDiscoveryPlugin
 from src.discovery.pipeline.plugins.workday_plugin import WorkdayDiscoveryPlugin
+from src.discovery.pipeline.plugins.ashby_plugin import AshbyDiscoveryPlugin
 from src.discovery.pipeline.caches import ReplayCache
 from src.discovery.pipeline.fallback_models import DiscoveryBudget
 
@@ -27,7 +28,12 @@ class ContinuousDiscoveryEngine:
         # Instantiate orchestrator with HeadProbe, StaticPage, and Search sources,
         # along with Greenhouse, Lever, and Workday discovery plugins.
         sources = [HeadProbeSource(), StaticLandingPageSource(), ExternalSearchSource()]
-        plugins = [GreenhouseDiscoveryPlugin(), LeverDiscoveryPlugin(), WorkdayDiscoveryPlugin()]
+        plugins = [
+            GreenhouseDiscoveryPlugin(),
+            LeverDiscoveryPlugin(),
+            WorkdayDiscoveryPlugin(),
+            AshbyDiscoveryPlugin(),   # root cause of Notion/Linear 0% — added C1B.6
+        ]
         replay_cache = ReplayCache(db_path)
         
         self.orchestrator = DiscoveryOrchestrator(
@@ -61,7 +67,18 @@ class ContinuousDiscoveryEngine:
             "verified": 0,
             "failed_discoveries": 0,
             "jobs_crawled": 0,
-            "processed": 0
+            "jobs_crawled": 0,
+            "processed": 0,
+            "funnel": {
+                "generated": 0,
+                "parsed": 0,
+                "score_passed": 0,
+                "validation_passed": 0,
+                "inspected": 0,
+                "skipped_score": 0,
+                "skipped_validation": 0,
+                "skipped_budget": 0
+            }
         }
         
         # Track started time
@@ -105,7 +122,13 @@ class ContinuousDiscoveryEngine:
                 res = await self.orchestrator.execute(company_id, website, budget)
                 verified = res.get("verified", [])
                 all_candidates = res.get("all_candidates", [])
+                funnel = res.get("funnel", {})
                 
+                # Accumulate funnel metrics
+                for k, v in funnel.items():
+                    if k in metrics["funnel"] and isinstance(v, (int, float)):
+                        metrics["funnel"][k] += v
+
                 if verified:
                     metrics["verified"] += 1
                     best_candidate = verified[0]

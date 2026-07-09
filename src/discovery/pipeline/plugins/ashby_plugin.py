@@ -31,9 +31,33 @@ class AshbyDiscoveryPlugin(DiscoveryPlugin):
         return 1.0
 
     def canonicalize(self, endpoint: str) -> str:
+        """
+        Normalize an Ashby URL to the board-level URL.
+
+        Input examples:
+          https://jobs.ashbyhq.com/Linear/820d0d5a-0930-475c-b494-23e18ad2aa68
+          https://jobs.ashbyhq.com/Linear/820d0d5a-0930-475c-b494-23e18ad2aa68/application
+          https://jobs.ashbyhq.com/Linear?utm_source=github
+        Output:
+          https://jobs.ashbyhq.com/Linear
+        """
         import re
-        canon = endpoint.split('?')[0].strip('/')
-        return canon
+        from urllib.parse import urlparse, urlunparse
+
+        parsed = urlparse(endpoint)
+        # Keep only the first non-empty path segment (the company/board slug).
+        # Strip UUIDs (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx) and anything after them.
+        path = parsed.path.rstrip('/')
+        # Remove /application suffix
+        path = re.sub(r'/application$', '', path, flags=re.IGNORECASE)
+        # Remove UUID path segments (and anything after)
+        path = re.sub(
+            r'/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.*$',
+            '', path, flags=re.IGNORECASE
+        )
+        # Keep scheme + host + board slug only (no query, no fragment)
+        canonical = urlunparse((parsed.scheme, parsed.netloc, path, '', '', ''))
+        return canonical
 
     async def health_check(self, endpoint: str) -> bool:
         import aiohttp

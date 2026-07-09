@@ -35,16 +35,31 @@ class WorkdayDiscoveryPlugin(DiscoveryPlugin):
         return 1.0
 
     def canonicalize(self, endpoint: str) -> str:
-        # e.g., https://adobe.wd5.myworkdayjobs.com/en-US/External -> https://adobe.wd5.myworkdayjobs.com/
+        """
+        Normalize a Workday URL to the tenant board URL.
+
+        Input examples:
+          https://adobe.wd5.myworkdayjobs.com/en-US/External/job/Engineer/some-id
+          https://adobe.wd5.myworkdayjobs.com/en-US/External
+          https://adobe.wd5.myworkdayjobs.com/External
+        Output:
+          https://adobe.wd5.myworkdayjobs.com/
+        """
         import re
-        canon = endpoint.split('?')[0].strip('/')
-        # Remove trailing /en-US or /External
-        canon = re.sub(r'/[a-zA-Z]{2}-[a-zA-Z]{2}/External$', '', canon, flags=re.IGNORECASE)
-        canon = re.sub(r'/[a-zA-Z]{2}-[a-zA-Z]{2}$', '', canon, flags=re.IGNORECASE)
-        canon = re.sub(r'/External$', '', canon, flags=re.IGNORECASE)
-        if not canon.endswith('/'):
-            canon += '/'
-        return canon
+        from urllib.parse import urlparse, urlunparse
+
+        parsed = urlparse(endpoint)
+        path = parsed.path.rstrip('/')
+        # Strip everything at and after /job/ (job-level path)
+        path = re.sub(r'/job/.*$', '', path, flags=re.IGNORECASE)
+        # Strip locale prefix (e.g., /en-US)
+        path = re.sub(r'/[a-zA-Z]{2}-[a-zA-Z]{2}(/.*)?$', '', path, flags=re.IGNORECASE)
+        # Strip /External suffix
+        path = re.sub(r'/External(/.*)?$', '', path, flags=re.IGNORECASE)
+        # Workday board canonical always ends with /
+        if not path.endswith('/'):
+            path += '/'
+        return urlunparse((parsed.scheme, parsed.netloc, path, '', '', ''))
 
     async def health_check(self, endpoint: str) -> bool:
         import aiohttp

@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any, Tuple
-from enum import Enum
+from enum import Enum, auto
 from abc import ABC, abstractmethod
 import hashlib
 
@@ -173,6 +173,69 @@ class DiscoveryPlugin(ABC):
         elif status == 'STALE':
             return 3 * 24 * 3600
         return 24 * 3600
+
+# ---------------------------------------------------------------------------
+# Candidate Evaluation Models
+# ---------------------------------------------------------------------------
+
+class CandidateCategory(str, Enum):
+    """Coarse category for a discovered URL — used as primary scoring tier."""
+    DIRECT_ATS     = "direct_ats"       # hostname matches a known ATS (greenhouse.io etc.)
+    CAREERS_PAGE   = "careers_page"     # path == /careers
+    JOBS_PAGE      = "jobs_page"        # path == /jobs
+    LIKELY_CAREERS = "likely_careers"   # /join-us, /work-with-us, /open-roles
+    HOMEPAGE       = "homepage"         # path is /
+    SOCIAL         = "social"           # linkedin.com, glassdoor.com, indeed.com
+    BLOG_NEWS      = "blog_news"        # /blog, /press, external news sites
+    UNKNOWN        = "unknown"
+
+@dataclass
+class CandidateEvidence:
+    """
+    Rich, explainable evidence object attached to each candidate before scoring.
+    Every scoring signal must be traceable here so Mission Control can surface it.
+    """
+    source: str                                    # which pipeline stage produced this
+    category: CandidateCategory = CandidateCategory.UNKNOWN
+    ats_hostname: Optional[str] = None             # e.g. "greenhouse.io" if direct ATS
+    ats_fingerprint_on_page: bool = False          # found ATS JS/iframe on the careers page
+    robots_mentions_jobs: bool = False             # robots.txt disallows /careers or similar
+    sitemap_has_jobs: bool = False                 # sitemap.xml contains /jobs entries
+    redirect_target: Optional[str] = None         # URL that this candidate 302-ed to
+    redirect_is_ats: bool = False                 # redirect resolved to a known ATS domain
+    historical_verified: bool = False             # was this URL verified in a previous run?
+    score_breakdown: Dict[str, int] = field(default_factory=dict)  # label -> points
+
+@dataclass
+class DiscoveryPolicy:
+    """
+    All scoring weights and thresholds are configurable here — nothing is hardcoded.
+    Future: Mission Control can expose sliders that write back to this config.
+    """
+    # --- Score bonuses ---
+    direct_ats_bonus:    int = 100
+    careers_page_bonus:  int = 40
+    jobs_page_bonus:     int = 30
+    likely_careers_bonus:int = 20
+    homepage_bonus:      int = 5
+    ats_fingerprint_bonus: int = 20
+    robots_bonus:        int = 15
+    sitemap_bonus:       int = 10
+    redirect_ats_bonus:  int = 80
+    historical_bonus:    int = 25
+
+    # --- Score penalties ---
+    social_penalty:      int = -40
+    blog_penalty:        int = -60
+    unknown_penalty:     int = -10
+
+    # --- Verification gate ---
+    # Threshold starts at 0.0 (collection mode) — C1C will calibrate the real value
+    # from production data once we have enough predicted vs actual pairs.
+    min_confidence_threshold: float = 0.0   # effectively disabled until calibrated by C1C
+    max_k:                   int = 5         # C1B.6: histogram shows cliff after top-5; K=3 recall=60%
+    confidence_gap_stop:     float = 0.20    # C1B.6: gap between direct_ats (0.40) and careers (0.16) is 0.24
+
 
 @dataclass
 class VerificationResult:

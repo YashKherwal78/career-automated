@@ -31,12 +31,26 @@ class GreenhouseDiscoveryPlugin(DiscoveryPlugin):
         return 1.0
 
     def canonicalize(self, endpoint: str) -> str:
+        """
+        Normalize a Greenhouse URL to the board-level URL.
+
+        Input examples:
+          https://boards.greenhouse.io/figma/jobs/5691911004
+          https://boards.greenhouse.io/figma/jobs
+          https://boards.greenhouse.io/figma?gh_jid=123
+        Output:
+          https://boards.greenhouse.io/figma
+        """
         import re
-        # e.g., https://boards.greenhouse.io/stripe/jobs -> https://boards.greenhouse.io/stripe
-        canon = endpoint.split('?')[0].strip('/')
-        # Remove trailing /jobs
-        canon = re.sub(r'/jobs$', '', canon, flags=re.IGNORECASE)
-        return canon
+        from urllib.parse import urlparse, urlunparse
+
+        parsed = urlparse(endpoint)
+        path = parsed.path.rstrip('/')
+        # Strip /jobs/{numeric_id} or /jobs/{numeric_id}/... (job-level paths)
+        path = re.sub(r'/jobs/\d+.*$', '', path, flags=re.IGNORECASE)
+        # Strip bare /jobs suffix
+        path = re.sub(r'/jobs$', '', path, flags=re.IGNORECASE)
+        return urlunparse((parsed.scheme, parsed.netloc, path, '', '', ''))
 
     async def health_check(self, endpoint: str) -> bool:
         import aiohttp

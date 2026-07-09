@@ -31,11 +31,31 @@ class LeverDiscoveryPlugin(DiscoveryPlugin):
         return 1.0
 
     def canonicalize(self, endpoint: str) -> str:
+        """
+        Normalize a Lever URL to the board-level URL.
+
+        Input examples:
+          https://jobs.lever.co/linear/820d0d5a-0930-475c-b494-23e18ad2aa68
+          https://jobs.lever.co/linear/820d0d5a-0930-475c-b494-23e18ad2aa68/apply
+          https://jobs.lever.co/linear?lever-source=github
+        Output:
+          https://jobs.lever.co/linear
+        """
         import re
-        canon = endpoint.split('?')[0].strip('/')
-        # Remove trailing /jobs
-        canon = re.sub(r'/jobs$', '', canon, flags=re.IGNORECASE)
-        return canon
+        from urllib.parse import urlparse, urlunparse
+
+        parsed = urlparse(endpoint)
+        path = parsed.path.rstrip('/')
+        # Remove /apply suffix
+        path = re.sub(r'/apply$', '', path, flags=re.IGNORECASE)
+        # Remove UUID path segments (RFC-4122 format)
+        path = re.sub(
+            r'/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.*$',
+            '', path, flags=re.IGNORECASE
+        )
+        # Remove bare /jobs suffix
+        path = re.sub(r'/jobs$', '', path, flags=re.IGNORECASE)
+        return urlunparse((parsed.scheme, parsed.netloc, path, '', '', ''))
 
     async def health_check(self, endpoint: str) -> bool:
         import aiohttp

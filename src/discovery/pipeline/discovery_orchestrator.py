@@ -1,15 +1,18 @@
 import asyncio
 import time
 import logging
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Set
 
 from src.discovery.pipeline.fallback_models import (
-    DiscoveryBudget, Evidence, Candidate, DiscoverySource, DiscoveryPlugin, VerificationPolicy, VerificationResult
+    DiscoveryBudget, Evidence, Candidate, DiscoverySource, DiscoveryPlugin, VerificationPolicy,
+    VerificationResult, DiscoveryPolicy
 )
 from src.discovery.pipeline.http_client import HttpClient
 from src.discovery.pipeline.caches import ReplayCache
 from src.discovery.pipeline.url_canonicalizer import URLCanonicalizer
 from src.discovery.pipeline.ats_registry import ATSRegistry
+from src.discovery.pipeline.candidate_evaluator import rank_candidates
+from src.discovery.pipeline.landing_page_resolver import LandingPageResolver
 import hashlib
 
 logger = logging.getLogger("DiscoveryOrchestrator")
@@ -136,7 +139,20 @@ class DiscoveryOrchestrator:
                     result = await source.discover(context)
                     # Deduplicate and accumulate
                     for c in result.candidates:
+                        # Step 1: Generic URL normalization (tracking params, trailing slashes, etc.)
                         canonical_url = URLCanonicalizer.canonicalize(c.url)
+
+                        # Step 2: Plugin-owned ATS canonicalization.
+                        # Each plugin knows its own URL structure (board vs job-level paths).
+                        # The first plugin that recognizes the URL collapses it to board-level.
+                        # This prevents job-level URLs (e.g. jobs.ashbyhq.com/Co/{uuid}) from
+                        # inflating the candidate pool with duplicates of the same board.
+                        for plugin in self.plugins:
+                            identity, _conf, _reason = plugin.parse_candidate(canonical_url)
+                            if identity:
+                                canonical_url = plugin.canonicalize(canonical_url)
+                                break
+
                         if canonical_url not in candidate_pool:
                             c.url = canonical_url
                             candidate_pool[canonical_url] = c
@@ -159,124 +175,169 @@ class DiscoveryOrchestrator:
                 metadata={"raw_candidates_found": len(candidate_pool)}
             )
 
-            # 2. Additive Scoring & Parser Confidence
             scored_candidates = list(candidate_pool.values())
-            
+
+            # -------------------------------------------------------------------
+            # 2. Homepage fetch for ATS penalty scoring (unchanged)
+            # -------------------------------------------------------------------
             try:
-                # We do a direct fetch since this is orchestrator level
                 h_start = time.time()
                 res = await http.fetch('GET', website)
                 h_latency = int((time.time() - h_start) * 1000)
                 if res and res.payload:
                     self._apply_known_ats_penalties(scored_candidates, res.payload.decode('utf-8', errors='ignore'))
-                    Telemetry.record_event(
-                        stage=Stage.HOMEPAGE_FETCH,
-                        status=Status.SUCCESS,
-                        run_id=run_id,
-                        company_id=company_id,
-                        worker_name="EndpointVerificationWorker",
-                        latency_ms=h_latency,
-                        reason_code=ReasonCode.NONE
-                    )
+                    Telemetry.record_event(stage=Stage.HOMEPAGE_FETCH, status=Status.SUCCESS, run_id=run_id,
+                        company_id=company_id, worker_name="EndpointVerificationWorker",
+                        latency_ms=h_latency, reason_code=ReasonCode.NONE)
                 else:
-                    Telemetry.record_event(
-                        stage=Stage.HOMEPAGE_FETCH,
-                        status=Status.FAILURE,
-                        run_id=run_id,
-                        company_id=company_id,
-                        worker_name="EndpointVerificationWorker",
-                        latency_ms=h_latency,
-                        reason_code=ReasonCode.NO_CAREERS_PAGE
-                    )
+                    Telemetry.record_event(stage=Stage.HOMEPAGE_FETCH, status=Status.FAILURE, run_id=run_id,
+                        company_id=company_id, worker_name="EndpointVerificationWorker",
+                        latency_ms=h_latency, reason_code=ReasonCode.NO_CAREERS_PAGE)
             except Exception as e:
                 h_latency = int((time.time() - h_start) * 1000)
+                Telemetry.record_event(stage=Stage.HOMEPAGE_FETCH, status=Status.FAILURE, run_id=run_id,
+                    company_id=company_id, worker_name="EndpointVerificationWorker",
+                    latency_ms=h_latency, reason_code=ReasonCode.NETWORK_TIMEOUT,
+                    metadata={"error": str(e)})
+
+            # -------------------------------------------------------------------
+            # 3. Evidence Collection → Scoring → Rank → Threshold + Max-K gate
+            # (C1B: CandidateEvaluator replaces the old immediate-drop parser loop)
+            # -------------------------------------------------------------------
+            discovery_policy = self.discovery_policy if hasattr(self, 'discovery_policy') else DiscoveryPolicy()
+
+            # Pull historical verified URLs from the registry for bonus scoring
+            historical_urls: Set[str] = set()
+            try:
+                historical_urls = self.registry.get_all_active_endpoints_for_domain(company_domain)
+            except Exception:
+                pass
+
+            ranked = rank_candidates(
+                candidates=scored_candidates,
+                ats_domains=self.ats_domains,
+                policy=discovery_policy,
+                historical_verified_urls=historical_urls,
+            )
+
+            # Emit per-candidate evaluation telemetry
+            for r in ranked:
                 Telemetry.record_event(
-                    stage=Stage.HOMEPAGE_FETCH,
-                    status=Status.FAILURE,
+                    stage=Stage.CANDIDATE_CREATED,
+                    status=Status.SUCCESS if r.selected_for_inspection else Status.FAILURE,
                     run_id=run_id,
                     company_id=company_id,
+                    candidate_url=r.candidate.url,
                     worker_name="EndpointVerificationWorker",
-                    latency_ms=h_latency,
-                    reason_code=ReasonCode.NETWORK_TIMEOUT,
-                    metadata={"error": str(e)}
+                    metadata={
+                        "category": r.evidence.category.value,
+                        "raw_score": r.raw_score,
+                        "normalized_score": round(r.normalized_score, 3),
+                        "selected": r.selected_for_inspection,
+                        "skip_reason": r.skip_reason,
+                        "score_breakdown": r.evidence.score_breakdown,
+                        "explanation": r.explain(),
+                        # C1B.6: Decision replay fields
+                        "pipeline_stage": "CANDIDATE_RANKING",
+                        "final_reason_code": (
+                            "SELECTED" if r.selected_for_inspection
+                            else ("MAX_K_EXCEEDED" if r.skip_reason and "max_k" in r.skip_reason
+                                  else ("CONFIDENCE_GAP" if r.skip_reason and "gap" in r.skip_reason
+                                        else ("BELOW_THRESHOLD" if r.skip_reason and "threshold" in r.skip_reason
+                                              else "UNKNOWN")))
+                        ),
+                    }
                 )
 
-            # 3. Apply Parser and Funnel Telemetry
-            valid_candidates = []
+            selected_ranked = [r for r in ranked if r.selected_for_inspection]
+
             funnel = {
                 "generated": len(scored_candidates),
-                "parsed": 0,
-                "score_passed": 0,
+                "ranked": len(ranked),
+                "selected_for_inspection": len(selected_ranked),
+                "rejected_threshold": sum(1 for r in ranked if not r.selected_for_inspection and r.skip_reason and "threshold" in r.skip_reason),
+                "rejected_gap": sum(1 for r in ranked if not r.selected_for_inspection and r.skip_reason and "gap" in r.skip_reason),
+                "rejected_max_k": sum(1 for r in ranked if not r.selected_for_inspection and r.skip_reason and "max_k" in r.skip_reason),
+                # legacy keys kept for backward compat with existing monitoring
+                "parsed": len(selected_ranked),
+                "score_passed": len(selected_ranked),
                 "validation_passed": 0,
                 "inspected": 0,
-                "skipped_score": 0,
+                "skipped_score": sum(1 for r in ranked if not r.selected_for_inspection),
                 "skipped_validation": 0,
-                "skipped_budget": 0
+                "skipped_budget": 0,
             }
-            
-            for plugin in self.plugins:
-                for c in scored_candidates:
-                    identity, conf, reason = plugin.parse_candidate(c.url)
-                    if identity:
-                        # Create a copy of Candidate to avoid cross-plugin mutation
-                        c_copy = Candidate(url=c.url, evidence=list(c.evidence))
-                        c_copy.parsed_identity = identity
-                        c_copy.parser_success = True
-                        c_copy.parser_confidence = conf
-                        c_copy.parser_reason = reason
-                        
-                        # Copy search metadata if present
-                        for attr in ('search_provider', 'search_query', 'search_rank', 'search_title'):
-                            if hasattr(c, attr):
-                                setattr(c_copy, attr, getattr(c, attr))
-                                
-                        valid_candidates.append(c_copy)
-                        
-                        # Telemetry event
-                        Telemetry.record_event(
-                            stage=Stage.CANDIDATE_CREATED,
-                            status=Status.SUCCESS,
-                            run_id=run_id,
-                            company_id=company_id,
-                            candidate_url=c.url,
-                            worker_name="EndpointVerificationWorker",
-                            ats_type=identity.ats,
-                            plugin=plugin.provider_name,
-                            metadata={"confidence": conf, "reason": reason}
-                        )
-                    else:
-                        if not getattr(c, 'parser_success', False):
-                            c.parser_success = False
-                            c.parser_reason = reason
-                        
-            funnel["parsed"] = len(valid_candidates)
-                        
-            # Sort by candidate_score * parser_confidence
-            valid_candidates.sort(key=lambda c: c.score * c.parser_confidence, reverse=True)
-            
-            # 4. Identity Pre-filter and Score Filter
+
+            # -------------------------------------------------------------------
+            # 4. LandingPageResolver + ATS Parser
+            # Generic /careers pages go through the resolver first; Direct ATS
+            # URLs skip straight to the plugin parser.
+            # -------------------------------------------------------------------
             policy = self.verification_policy if hasattr(self, 'verification_policy') else VerificationPolicy()
-            scored_valid = []
             from src.discovery.pipeline.identity_validator import CompanyIdentityValidator
-            
+            from src.discovery.pipeline.validators import CandidateValidator
+
+            resolver = LandingPageResolver(http)
+            validator = CandidateValidator(http)
+            valid_candidates = []
+
+            for r in selected_ranked:
+                c = r.candidate
+                from src.discovery.pipeline.fallback_models import CandidateCategory
+
+                # --- Direct ATS: parse immediately, no resolver needed ---
+                if r.evidence.category == CandidateCategory.DIRECT_ATS:
+                    for plugin in self.plugins:
+                        identity, conf, reason = plugin.parse_candidate(c.url)
+                        if identity:
+                            c_copy = Candidate(url=c.url, evidence=list(c.evidence))
+                            c_copy.parsed_identity = identity
+                            c_copy.parser_success = True
+                            c_copy.parser_confidence = conf
+                            c_copy.parser_reason = reason
+                            for attr in ('search_provider', 'search_query', 'search_rank', 'search_title'):
+                                if hasattr(c, attr): setattr(c_copy, attr, getattr(c, attr))
+                            valid_candidates.append(c_copy)
+                            break
+                    continue
+
+                # --- Generic careers page: run LandingPageResolver first ---
+                resolved = await resolver.resolve(c.url)
+                if resolved.success:
+                    c.url = resolved.resolved_url  # swap to the ATS URL
+                    for plugin in self.plugins:
+                        identity, conf, reason = plugin.parse_candidate(c.url)
+                        if identity:
+                            c_copy = Candidate(url=c.url, evidence=list(c.evidence))
+                            c_copy.parsed_identity = identity
+                            c_copy.parser_success = True
+                            c_copy.parser_confidence = conf * resolved.confidence  # compound confidence
+                            c_copy.parser_reason = reason
+                            for attr in ('search_provider', 'search_query', 'search_rank', 'search_title'):
+                                if hasattr(c, attr): setattr(c_copy, attr, getattr(c, attr))
+                            valid_candidates.append(c_copy)
+                            break
+                else:
+                    logger.debug("LandingPageResolver failed for %s: %s", c.url, resolved.error)
+
+            funnel["validation_passed"] = len(valid_candidates)
+
+            # -------------------------------------------------------------------
+            # 5. Identity Pre-filter
+            # -------------------------------------------------------------------
+            scored_valid = []
             for c in valid_candidates:
-                # Run Pre-filter
                 if not CompanyIdentityValidator.pre_filter(company, c.url):
                     funnel["skipped_validation"] += 1
-                    c.inspector_error = "Identity Pre-filter failed (Mismatch)"
+                    c.inspector_error = "Identity Pre-filter failed"
                     continue
-                    
-                if c.score >= policy.min_score or (policy.inspect_even_if_single_candidate and len(valid_candidates) == 1):
-                    scored_valid.append(c)
-                else:
-                    funnel["skipped_score"] += 1
-                    
+                scored_valid.append(c)
+
             funnel["score_passed"] = len(scored_valid)
-            
-            # 5. Cheap Validation
-            from src.discovery.pipeline.validators import CandidateValidator
-            validator = CandidateValidator(http)
-            
+
+            # -------------------------------------------------------------------
+            # 6. Cheap HTTP validation
+            # -------------------------------------------------------------------
             validated_candidates = []
             for c in scored_valid:
                 v_start = time.time()
@@ -287,15 +348,13 @@ class DiscoveryOrchestrator:
                 else:
                     funnel["skipped_validation"] += 1
                     c.inspector_error = "Failed cheap validation"
-                    
-            funnel["validation_passed"] = len(validated_candidates)
-            
-            # 6. Budget enforcement
-            candidates_to_inspect = validated_candidates[:policy.max_candidates]
-            funnel["skipped_budget"] = len(validated_candidates) - len(candidates_to_inspect)
+
+            candidates_to_inspect = validated_candidates  # already gated by Max-K above
             funnel["inspected"] = len(candidates_to_inspect)
-            
-            # 7. Parallel Bounded Inspector
+
+            # -------------------------------------------------------------------
+            # 7. Parallel bounded ATS Inspector (unchanged)
+            # -------------------------------------------------------------------
             verified_results = []
             sem = asyncio.Semaphore(policy.concurrency)
             

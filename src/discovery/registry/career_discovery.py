@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 from typing import List, Dict, Tuple, Optional
 import uuid
 import json
+from src.discovery.utils.url_canonicalizer import canonicalize_url
 
 class SearchProviderManager:
     """Manages optional fallbacks to search engines like Google/LinkedIn if the main crawl fails."""
@@ -181,7 +182,7 @@ class CareerDiscoveryEngine:
                 c.execute('''
                     INSERT INTO career_endpoints (endpoint_id, company_id, ats_provider, endpoint_url, confidence, status, discovery_evidence)
                     VALUES (?, ?, ?, ?, ?, 'VERIFYING', ?)
-                ''', (ep_id, cid, res["ats_provider"], res["endpoint_url"], res["confidence"], res["evidence"]))
+                ''', (ep_id, cid, res["ats_provider"], canonicalize_url(res["endpoint_url"]), res["confidence"], res["evidence"]))
                 endpoints_found += 1
                 
         conn.commit()
