@@ -34,11 +34,7 @@ app.include_router(activities.router, prefix="/api/v1/activities", tags=["Activi
 from fastapi.responses import HTMLResponse
 import os
 
-@app.get("/mission-control", response_class=HTMLResponse)
-def get_mission_control():
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "dashboard", "mission_control.html")
-    with open(path, "r") as f:
-        return f.read()
+# Legacy HTML dashboard removed. /mission-control is now handled by the React frontend.
 
 @app.get("/api/v1/health")
 def get_health_status(db: sqlite3.Connection = Depends(get_db)):

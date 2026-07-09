@@ -290,3 +290,65 @@ class AnalyticsRepository:
             "zero_job_boards": zero_job,
             "avg_latency_ms": round(avg_latency, 1)
         }
+
+    def get_pipeline_topology(self):
+        c = self.db.cursor()
+        
+        def get_count(table, where="1=1"):
+            c.execute(f"SELECT COUNT(*) FROM {table} WHERE {where}")
+            return c.fetchone()[0]
+
+        def get_event_stats(stage_name):
+            c.execute("SELECT COUNT(*), AVG(latency_ms) FROM pipeline_events WHERE stage = ?", (stage_name,))
+            row = c.fetchone()
+            count = row[0] or 0
+            # If no data exists, we MUST return None to indicate 'Telemetry Unavailable'
+            if count == 0:
+                return {"count": None, "latency_ms": None}
+            return {"count": count, "latency_ms": round(row[1] or 0, 1) if row[1] else None}
+
+        universe = get_count("company_identities")
+        homepage = get_event_stats("HOMEPAGE_FETCH")
+        search = get_event_stats("SEARCH_FETCH")
+        merge = get_event_stats("URL_COLLECTED")
+        dedup = get_event_stats("URL_DEDUPLICATED")
+        ats = get_event_stats("ATS_DETECTED")
+        verified = get_event_stats("ENDPOINT_VERIFIED")
+        registry = get_count("ats_registry", "status = 'ACTIVE'")
+        crawled = get_event_stats("CRAWL_EXECUTED")
+        normalized = get_count("normalized_jobs", "status = 'ACTIVE'")
+        
+        unknown_ats = get_count("ats_registry", "status = 'FAILED' OR status = 'UNKNOWN'")
+        
+        nodes = {
+            "universe": {"label": "Company Universe", "input": universe, "output": universe, "latency": None, "available": True},
+            "homepage": {"label": "Homepage Fetch", "input": universe, "output": homepage["count"], "latency": homepage["latency_ms"], "available": homepage["count"] is not None},
+            "search": {"label": "Search APIs", "input": universe, "output": search["count"], "latency": search["latency_ms"], "available": search["count"] is not None},
+            "merge": {"label": "Candidate Merge", "input": homepage["count"] or 0 + (search["count"] or 0), "output": merge["count"], "latency": merge["latency_ms"], "available": merge["count"] is not None},
+            "dedup": {"label": "Deduplication", "input": merge["count"], "output": dedup["count"], "latency": dedup["latency_ms"], "available": dedup["count"] is not None},
+            "ats": {"label": "ATS Detection", "input": dedup["count"], "output": ats["count"], "latency": ats["latency_ms"], "available": ats["count"] is not None},
+            "verify": {"label": "Verification", "input": ats["count"], "output": verified["count"], "latency": verified["latency_ms"], "available": verified["count"] is not None},
+            "registry": {"label": "Registry Promotion", "input": verified["count"], "output": registry, "latency": None, "available": True},
+            "crawler": {"label": "Crawlers", "input": registry, "output": crawled["count"], "latency": crawled["latency_ms"], "available": crawled["count"] is not None},
+            "normalizer": {"label": "Normalization", "input": crawled["count"], "output": normalized, "latency": None, "available": True},
+            "unknown": {"label": "Unknown Pipeline", "input": unknown_ats, "output": unknown_ats, "latency": None, "available": True},
+        }
+        
+        # Add ATS specific branches
+        c.execute("SELECT ats_type, COUNT(*) FROM ats_registry WHERE status = 'ACTIVE' GROUP BY ats_type")
+        ats_branches = {}
+        for row in c.fetchall():
+            atype, count = row
+            if atype:
+                ats_branches[f"ats_{atype.lower()}"] = {
+                    "label": atype.capitalize(),
+                    "input": count,
+                    "output": count,
+                    "latency": None,
+                    "available": True
+                }
+        
+        return {
+            "core_nodes": nodes,
+            "ats_branches": ats_branches
+        }

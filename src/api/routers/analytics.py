@@ -67,3 +67,7 @@ def get_duplicate_companies(repo: AnalyticsRepository = Depends(get_analytics_re
 @router.get("/ats/{ats_type}")
 def get_ats_drilldown(ats_type: str, repo: AnalyticsRepository = Depends(get_analytics_repo)):
     return repo.get_ats_drilldown(ats_type)
+
+@router.get("/topology")
+def get_pipeline_topology(repo: AnalyticsRepository = Depends(get_analytics_repo)):
+    return repo.get_pipeline_topology()
