@@ -120,32 +120,42 @@ class EndpointVerificationWorker(BaseWorker):
                 # Budget parameters
                 budget = DiscoveryBudget(max_http_requests=25, max_latency_seconds=30.0, max_search_queries=5)
                 
+                run_id = f"verification-run-{company_id}-{int(time.time())}"
+                from src.discovery.pipeline.telemetry import Telemetry, Stage, Status, ReasonCode
+                Telemetry.start_run(run_id, "EndpointVerificationWorker", trigger="Cron")
+                
                 logger.info(f"Running verification for: {company_info['canonical_name']} ({website})")
-                res = await self.orchestrator.execute(company_id, website, budget)
-                verified = res.get("verified", [])
+                try:
+                    res = await self.orchestrator.execute(company_id, website, budget, run_id=run_id, company_id=company_id)
+                    verified = res.get("verified", [])
 
-                if verified:
-                    logger.info(f"Successfully verified ATS endpoint for {company_id}!")
-                    # Push to crawl_queue for JobCrawlerWorker
-                    self.queue.push("crawl_queue", {"company_id": company_id})
-                    
-                    # Emit event
-                    self.metrics.record_event("EndpointVerified", {
-                        "company_id": company_id,
-                        "endpoints": [v.get("url") for v in verified],
-                        "worker_id": self.worker_id
-                    })
-                    self.metrics.update_business_metric("total_verified_endpoints", 1)
-                    
-                    self.heartbeat(jobs_processed=1)
-                else:
-                    logger.info(f"Verification failed for {company_id}")
-                    self.metrics.record_event("EndpointFailed", {
-                        "company_id": company_id,
-                        "reason": "No valid ATS endpoints discovered",
-                        "worker_id": self.worker_id
-                    })
-                    self.heartbeat(failure_increment=1)
+                    if verified:
+                        logger.info(f"Successfully verified ATS endpoint for {company_id}!")
+                        # Push to crawl_queue for JobCrawlerWorker
+                        self.queue.push("crawl_queue", {"company_id": company_id})
+                        
+                        # Emit event
+                        self.metrics.record_event("EndpointVerified", {
+                            "company_id": company_id,
+                            "endpoints": [v.get("url") for v in verified],
+                            "worker_id": self.worker_id
+                        })
+                        self.metrics.update_business_metric("total_verified_endpoints", 1)
+                        
+                        self.heartbeat(jobs_processed=1)
+                        Telemetry.finish_run(run_id, Status.SUCCESS)
+                    else:
+                        logger.info(f"Verification failed for {company_id}")
+                        self.metrics.record_event("EndpointFailed", {
+                            "company_id": company_id,
+                            "reason": "No valid ATS endpoints discovered",
+                            "worker_id": self.worker_id
+                        })
+                        self.heartbeat(failure_increment=1)
+                        Telemetry.finish_run(run_id, Status.SUCCESS)
+                except Exception as ex:
+                    Telemetry.finish_run(run_id, Status.FAILURE)
+                    raise ex
 
                 if q_item:
                     self.queue.ack("discovery_queue", item_id)

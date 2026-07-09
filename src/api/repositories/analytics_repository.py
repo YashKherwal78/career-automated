@@ -93,3 +93,72 @@ class AnalyticsRepository:
                 "failures": workers["failures"]
             }
         }
+
+    def get_runs(self):
+        c = self.db.cursor()
+        c.execute("SELECT * FROM pipeline_runs ORDER BY started_at DESC LIMIT 50")
+        columns = [col[0] for col in c.description]
+        return [dict(zip(columns, row)) for row in c.fetchall()]
+
+    def get_plugins(self):
+        c = self.db.cursor()
+        c.execute("SELECT * FROM plugin_metrics")
+        columns = [col[0] for col in c.description]
+        return [dict(zip(columns, row)) for row in c.fetchall()]
+
+    def get_sources(self):
+        c = self.db.cursor()
+        c.execute("SELECT * FROM source_metrics")
+        columns = [col[0] for col in c.description]
+        return [dict(zip(columns, row)) for row in c.fetchall()]
+
+    def get_workers(self):
+        c = self.db.cursor()
+        c.execute("SELECT * FROM worker_metrics")
+        columns = [col[0] for col in c.description]
+        return [dict(zip(columns, row)) for row in c.fetchall()]
+
+    def get_queues(self):
+        c = self.db.cursor()
+        c.execute("SELECT * FROM queue_metrics")
+        columns = [col[0] for col in c.description]
+        return [dict(zip(columns, row)) for row in c.fetchall()]
+
+    def get_data_quality(self):
+        c = self.db.cursor()
+        
+        # Dead verified boards
+        c.execute("SELECT COUNT(*) FROM ats_registry WHERE status = 'FAILED'")
+        dead_boards = c.fetchone()[0]
+        
+        # Zero-job boards
+        c.execute("SELECT COUNT(*) FROM ats_registry WHERE job_count = 0")
+        zero_job_boards = c.fetchone()[0]
+        
+        # Duplicate companies
+        c.execute("SELECT COUNT(*) - COUNT(DISTINCT company_id) FROM company_identities")
+        dup_companies = c.fetchone()[0]
+        
+        # Stale boards (not checked in last 14 days)
+        import time
+        stale_threshold = time.time() - (14 * 24 * 3600)
+        c.execute("SELECT COUNT(*) FROM ats_registry WHERE last_checked < ?", (stale_threshold,))
+        stale_boards = c.fetchone()[0]
+        
+        return {
+            "dead_verified_boards": dead_boards,
+            "zero_job_boards": zero_job_boards,
+            "duplicate_companies": max(0, dup_companies),
+            "stale_boards": stale_boards
+        }
+
+    def get_lineage(self, company_id: str):
+        c = self.db.cursor()
+        c.execute("""
+            SELECT event_id, event_type, payload, timestamp, run_id, stage, status, ats_type, latency_ms, reason_code
+            FROM pipeline_events 
+            WHERE company_id = ? 
+            ORDER BY timestamp ASC
+        """, (company_id,))
+        columns = [col[0] for col in c.description]
+        return [dict(zip(columns, row)) for row in c.fetchall()]

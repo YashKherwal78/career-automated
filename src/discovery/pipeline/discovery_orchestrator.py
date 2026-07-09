@@ -66,15 +66,19 @@ class DiscoveryOrchestrator:
             for c in candidates:
                 c.evidence.append(Evidence(source="Known ATS Penalty", weight=penalty, description="Found competing ATS signature in HTML"))
 
-    async def execute(self, company: str, website: str, budget: DiscoveryBudget) -> Dict[str, Any]:
+    async def execute(self, company: str, website: str, budget: DiscoveryBudget, run_id: Optional[str] = None, company_id: Optional[str] = None) -> Dict[str, Any]:
         start_time = time.time()
         
-        # Determine company_id (we'll use website domain as canonical ID if not passed differently)
-        # Ideally, `company` argument is the company_id, but here we canonicalize it.
+        # Telemetry Setup
+        from src.discovery.pipeline.telemetry import Telemetry, Stage, Status, ReasonCode
+        if not run_id:
+            run_id = f"orchestrator-run-{int(time.time())}"
+        
         from urllib.parse import urlparse
         parsed = urlparse(website if website.startswith('http') else f"https://{website}")
         company_domain = parsed.netloc.replace('www.', '')
-        company_id = company_domain  # Treat domain as company_id for now
+        if not company_id:
+            company_id = company_domain  # Treat domain as company_id for now
         
         active_endpoint = self.registry.get_active_endpoint(company_id)
         if active_endpoint:
@@ -145,16 +149,57 @@ class DiscoveryOrchestrator:
                 except Exception as e:
                     logger.error(f"Source {source.__class__.__name__} failed for {company}: {e}")
 
+            # Emit URL collection telemetry
+            Telemetry.record_event(
+                stage=Stage.URL_COLLECTED,
+                status=Status.SUCCESS,
+                run_id=run_id,
+                company_id=company_id,
+                worker_name="EndpointVerificationWorker",
+                metadata={"raw_candidates_found": len(candidate_pool)}
+            )
+
             # 2. Additive Scoring & Parser Confidence
             scored_candidates = list(candidate_pool.values())
             
             try:
                 # We do a direct fetch since this is orchestrator level
+                h_start = time.time()
                 res = await http.fetch('GET', website)
+                h_latency = int((time.time() - h_start) * 1000)
                 if res and res.payload:
                     self._apply_known_ats_penalties(scored_candidates, res.payload.decode('utf-8', errors='ignore'))
-            except Exception:
-                pass
+                    Telemetry.record_event(
+                        stage=Stage.HOMEPAGE_FETCH,
+                        status=Status.SUCCESS,
+                        run_id=run_id,
+                        company_id=company_id,
+                        worker_name="EndpointVerificationWorker",
+                        latency_ms=h_latency,
+                        reason_code=ReasonCode.NONE
+                    )
+                else:
+                    Telemetry.record_event(
+                        stage=Stage.HOMEPAGE_FETCH,
+                        status=Status.FAILURE,
+                        run_id=run_id,
+                        company_id=company_id,
+                        worker_name="EndpointVerificationWorker",
+                        latency_ms=h_latency,
+                        reason_code=ReasonCode.NO_CAREERS_PAGE
+                    )
+            except Exception as e:
+                h_latency = int((time.time() - h_start) * 1000)
+                Telemetry.record_event(
+                    stage=Stage.HOMEPAGE_FETCH,
+                    status=Status.FAILURE,
+                    run_id=run_id,
+                    company_id=company_id,
+                    worker_name="EndpointVerificationWorker",
+                    latency_ms=h_latency,
+                    reason_code=ReasonCode.NETWORK_TIMEOUT,
+                    metadata={"error": str(e)}
+                )
 
             # 3. Apply Parser and Funnel Telemetry
             valid_candidates = []
@@ -186,6 +231,19 @@ class DiscoveryOrchestrator:
                                 setattr(c_copy, attr, getattr(c, attr))
                                 
                         valid_candidates.append(c_copy)
+                        
+                        # Telemetry event
+                        Telemetry.record_event(
+                            stage=Stage.CANDIDATE_CREATED,
+                            status=Status.SUCCESS,
+                            run_id=run_id,
+                            company_id=company_id,
+                            candidate_url=c.url,
+                            worker_name="EndpointVerificationWorker",
+                            ats_type=identity.ats,
+                            plugin=plugin.provider_name,
+                            metadata={"confidence": conf, "reason": reason}
+                        )
                     else:
                         if not getattr(c, 'parser_success', False):
                             c.parser_success = False
@@ -258,16 +316,67 @@ class DiscoveryOrchestrator:
                                     
                                     if id_res.confidence >= 0.3:
                                         c.inspector_success = True
+                                        Telemetry.record_event(
+                                            stage=Stage.INSPECTOR_EXECUTED,
+                                            status=Status.SUCCESS,
+                                            run_id=run_id,
+                                            company_id=company_id,
+                                            candidate_url=c.url,
+                                            worker_name="EndpointVerificationWorker",
+                                            ats_type=c.parsed_identity.ats,
+                                            plugin=plugin.provider_name,
+                                            latency_ms=c.inspector_time_ms,
+                                            reason_code=ReasonCode.NONE
+                                        )
                                         return c
                                     else:
                                         c.inspector_error = f"Identity Verification Failed: {id_res.reason}"
+                                        Telemetry.record_event(
+                                            stage=Stage.INSPECTOR_EXECUTED,
+                                            status=Status.FAILURE,
+                                            run_id=run_id,
+                                            company_id=company_id,
+                                            candidate_url=c.url,
+                                            worker_name="EndpointVerificationWorker",
+                                            ats_type=c.parsed_identity.ats,
+                                            plugin=plugin.provider_name,
+                                            latency_ms=c.inspector_time_ms,
+                                            reason_code=ReasonCode.INSPECTOR_FAILED,
+                                            metadata={"error": c.inspector_error}
+                                        )
                                         return None
                                 else:
                                     c.inspector_error = "API Verification Failed"
+                                    Telemetry.record_event(
+                                        stage=Stage.INSPECTOR_EXECUTED,
+                                        status=Status.FAILURE,
+                                        run_id=run_id,
+                                        company_id=company_id,
+                                        candidate_url=c.url,
+                                        worker_name="EndpointVerificationWorker",
+                                        ats_type=c.parsed_identity.ats,
+                                        plugin=plugin.provider_name,
+                                        latency_ms=c.inspector_time_ms,
+                                        reason_code=ReasonCode.INSPECTOR_FAILED,
+                                        metadata={"error": c.inspector_error}
+                                    )
                                     return None
                             except Exception as e:
                                 c.inspector_time_ms = int((time.time() - i_start) * 1000)
                                 c.inspector_error = str(e)
+                                Telemetry.record_event(
+                                    stage=Stage.INSPECTOR_EXECUTED,
+                                    status=Status.FAILURE,
+                                    run_id=run_id,
+                                    company_id=company_id,
+                                    candidate_url=c.url,
+                                    worker_name="EndpointVerificationWorker",
+                                    ats_type=c.parsed_identity.ats,
+                                    plugin=plugin.provider_name,
+                                    latency_ms=c.inspector_time_ms,
+                                    reason_code=ReasonCode.INSPECTOR_FAILED,
+                                    metadata={"error": c.inspector_error}
+                                )
                                 return None
                     return None
             
@@ -355,6 +464,18 @@ class DiscoveryOrchestrator:
                         ats_metadata=plugin.extract_metadata(c.url) if hasattr(plugin, 'extract_metadata') else "{}"
                     )
                     self.registry.promote_endpoint(company_id, vr)
+                    
+                    Telemetry.record_event(
+                        stage=Stage.ENDPOINT_PROMOTED,
+                        status=Status.SUCCESS,
+                        run_id=run_id,
+                        company_id=company_id,
+                        candidate_url=c.url,
+                        worker_name="EndpointVerificationWorker",
+                        ats_type=c.parsed_identity.ats,
+                        plugin=plugin.provider_name,
+                        metadata={"canonical_endpoint": canonical_endpoint}
+                    )
                         
         return {
             "verified": verified_results,

@@ -109,35 +109,81 @@ class JobCrawlerWorker(BaseWorker):
                     interval = settings.crawler_interval
 
                 session = BoardSyncSession(board, db_path=self.db_path)
+                run_id = f"crawl-run-{company_id}-{int(time.time())}"
+                from src.discovery.pipeline.telemetry import Telemetry, Stage, Status, ReasonCode
+                Telemetry.start_run(run_id, "JobCrawlerWorker", trigger="Cron")
+                
                 logger.info(f"{self.worker_id} syncing jobs for {company_id} ({board.provider}) using policy interval {interval}s")
                 
                 start_time = time.time()
-                await session.execute()
-                latency = int((time.time() - start_time) * 1000)
+                try:
+                    await session.execute()
+                    latency = int((time.time() - start_time) * 1000)
 
-                success = session.stats.get("success", False)
-                job_count = session.stats.get("jobs_inserted", 0) + session.stats.get("jobs_updated", 0)
+                    success = session.stats.get("success", False)
+                    job_count = session.stats.get("jobs_inserted", 0) + session.stats.get("jobs_updated", 0)
 
-                # 4. Persistence managed exclusively by repository
-                if success:
-                    self.repository.mark_completed(company_id, token, interval)
-                    
-                    # Emit domain event
-                    self.metrics.record_event("JobsSynced", {
-                        "company_id": company_id,
-                        "provider": board.provider,
-                        "jobs_found": job_count,
-                        "latency_ms": latency,
-                        "worker_id": self.worker_id
-                    })
-                    
-                    # Update metrics
-                    self.metrics.update_business_metric("total_jobs_crawled", job_count)
-                    self.metrics.update_operational_metric(f"{self.worker_id}:last_success", time.time())
-                    self.metrics.update_operational_metric(f"{self.worker_id}:avg_latency", latency)
-                else:
-                    self.repository.mark_failed(company_id, token, settings.retry_schedule)
-                    self.metrics.update_operational_metric(f"{self.worker_id}:last_failure", time.time())
+                    # 4. Persistence managed exclusively by repository
+                    if success:
+                        self.repository.mark_completed(company_id, token, interval)
+                        
+                        # Emit domain event
+                        self.metrics.record_event("JobsSynced", {
+                            "company_id": company_id,
+                            "provider": board.provider,
+                            "jobs_found": job_count,
+                            "latency_ms": latency,
+                            "worker_id": self.worker_id
+                        })
+                        
+                        # Update metrics
+                        self.metrics.update_business_metric("total_jobs_crawled", job_count)
+                        self.metrics.update_operational_metric(f"{self.worker_id}:last_success", time.time())
+                        self.metrics.update_operational_metric(f"{self.worker_id}:avg_latency", latency)
+                        
+                        Telemetry.record_event(
+                            stage=Stage.CRAWL_EXECUTED,
+                            status=Status.SUCCESS,
+                            run_id=run_id,
+                            company_id=company_id,
+                            worker_name="JobCrawlerWorker",
+                            ats_type=board.provider,
+                            latency_ms=latency,
+                            reason_code=ReasonCode.NONE,
+                            metadata={"jobs_synced": job_count}
+                        )
+                        
+                        if job_count > 0:
+                            Telemetry.record_event(
+                                stage=Stage.NORMALIZATION_EXECUTED,
+                                status=Status.SUCCESS,
+                                run_id=run_id,
+                                company_id=company_id,
+                                worker_name="JobCrawlerWorker",
+                                ats_type=board.provider,
+                                reason_code=ReasonCode.NONE,
+                                metadata={"jobs_normalized": job_count}
+                            )
+                        
+                        Telemetry.finish_run(run_id, Status.SUCCESS)
+                    else:
+                        self.repository.mark_failed(company_id, token, settings.retry_schedule)
+                        self.metrics.update_operational_metric(f"{self.worker_id}:last_failure", time.time())
+                        
+                        Telemetry.record_event(
+                            stage=Stage.CRAWL_EXECUTED,
+                            status=Status.FAILURE,
+                            run_id=run_id,
+                            company_id=company_id,
+                            worker_name="JobCrawlerWorker",
+                            ats_type=board.provider,
+                            latency_ms=latency,
+                            reason_code=ReasonCode.INSPECTOR_FAILED
+                        )
+                        Telemetry.finish_run(run_id, Status.SUCCESS)
+                except Exception as ex:
+                    Telemetry.finish_run(run_id, Status.FAILURE)
+                    raise ex
 
                 self.heartbeat(jobs_processed=job_count)
                 
