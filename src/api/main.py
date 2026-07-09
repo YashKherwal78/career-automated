@@ -31,6 +31,15 @@ app.include_router(daemons.router, prefix="/api/v1/workers", tags=["Workers"])
 app.include_router(settings.router, prefix="/api/v1/settings", tags=["Settings"])
 app.include_router(activities.router, prefix="/api/v1/activities", tags=["Activities"])
 
+from fastapi.responses import HTMLResponse
+import os
+
+@app.get("/mission-control", response_class=HTMLResponse)
+def get_mission_control():
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "dashboard", "mission_control.html")
+    with open(path, "r") as f:
+        return f.read()
+
 @app.get("/api/v1/health")
 def get_health_status(db: sqlite3.Connection = Depends(get_db)):
     metrics_repo = MetricsRepository(app_settings.db_path)
