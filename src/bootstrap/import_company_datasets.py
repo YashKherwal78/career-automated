@@ -61,10 +61,16 @@ log = logging.getLogger("bootstrap")
 DB_PATH = os.environ.get("DATABASE_PATH", "data/crm.db")
 
 # ── Jobhive CSVs to import ──────────────────────────────────────────────────
-# Only ATS types that Pipeline A has connectors for, or that are worth
-# discovering via EndpointVerificationWorker. Excluded: avature, gem,
-# cornerstone, eightfold, phenom, taleo, oracle (enterprise-only/legacy).
+# All 25 viable CSVs from the Jobhive repo (kalil0321/ats-scrapers).
+# Excluded only: infojobs_es (1 row), jobs_cz (1 row), mercor (1 row).
+# "Enterprise" ATS types are included — every company still flows through
+# EndpointVerificationWorker, which is the source of truth for ATS status.
+#
+# Special schema notes:
+#   eightfold.csv  → has extra 'domain' column; used directly (more accurate)
+#   phenom.csv     → different schema: url/name/company_code; no 'slug' field
 JOBHIVE_CSVS = {
+    # ── Standard schema (name, slug, url) ────────────────────────────────────
     "greenhouse":      "https://raw.githubusercontent.com/kalil0321/ats-scrapers/main/ats-companies/greenhouse.csv",
     "ashby":           "https://raw.githubusercontent.com/kalil0321/ats-scrapers/main/ats-companies/ashby.csv",
     "lever":           "https://raw.githubusercontent.com/kalil0321/ats-scrapers/main/ats-companies/lever.csv",
@@ -80,6 +86,22 @@ JOBHIVE_CSVS = {
     "jazzhr":          "https://raw.githubusercontent.com/kalil0321/ats-scrapers/main/ats-companies/jazzhr.csv",
     "personio":        "https://raw.githubusercontent.com/kalil0321/ats-scrapers/main/ats-companies/personio.csv",
     "pinpoint":        "https://raw.githubusercontent.com/kalil0321/ats-scrapers/main/ats-companies/pinpoint.csv",
+    # ── Previously omitted — now included ────────────────────────────────────
+    "join_com":        "https://raw.githubusercontent.com/kalil0321/ats-scrapers/main/ats-companies/join_com.csv",
+    "successfactors":  "https://raw.githubusercontent.com/kalil0321/ats-scrapers/main/ats-companies/successfactors.csv",
+    "recruiterbox":    "https://raw.githubusercontent.com/kalil0321/ats-scrapers/main/ats-companies/recruiterbox.csv",
+    "oracle":          "https://raw.githubusercontent.com/kalil0321/ats-scrapers/main/ats-companies/oracle.csv",
+    "cornerstone":     "https://raw.githubusercontent.com/kalil0321/ats-scrapers/main/ats-companies/cornerstone.csv",
+    "gem":             "https://raw.githubusercontent.com/kalil0321/ats-scrapers/main/ats-companies/gem.csv",
+    "avature":         "https://raw.githubusercontent.com/kalil0321/ats-scrapers/main/ats-companies/avature.csv",
+    "taleo":           "https://raw.githubusercontent.com/kalil0321/ats-scrapers/main/ats-companies/taleo.csv",
+    # ── Non-standard schemas (handled by dedicated parsers) ──────────────────
+    "eightfold":       "https://raw.githubusercontent.com/kalil0321/ats-scrapers/main/ats-companies/eightfold.csv",
+    "phenom":          "https://raw.githubusercontent.com/kalil0321/ats-scrapers/main/ats-companies/phenom.csv",
+    # ── Skipped (1 data row each — not worth importing) ──────────────────────
+    # "infojobs_es"   1 row  (Spanish job board)
+    # "jobs_cz"       1 row  (Czech job board)
+    # "mercor"        1 row
 }
 
 
@@ -135,20 +157,30 @@ def fetch_url(url: str) -> str:
 
 
 def parse_jobhive_csv(ats_name: str, csv_text: str) -> Iterator[CompanyRecord]:
-    """Parse a single Jobhive CSV (columns: name, slug, url)."""
+    """
+    Parse a standard Jobhive CSV (columns: name, slug, url).
+    Also handles eightfold.csv which has an extra 'domain' column — that
+    column is used directly as the company domain instead of inferring slug.com.
+    """
     reader = csv.DictReader(io.StringIO(csv_text))
     for row in reader:
-        name  = (row.get("name")  or "").strip()
-        slug  = (row.get("slug")  or "").strip()
-        url   = (row.get("url")   or "").strip()  # ATS board URL, not company website
+        name  = (row.get("name")   or "").strip()
+        slug  = (row.get("slug")   or "").strip()
+        url   = (row.get("url")    or "").strip()  # ATS board URL, not company website
+        explicit_domain = (row.get("domain") or "").strip()  # eightfold only
         if not name or not url:
             continue
 
-        # The slug is the ATS board slug (e.g. 'stripe', 'figma').
-        # Infer company domain as slug.com — best effort, Pipeline A will verify.
-        # If slug contains a path separator it's a Workday-style slug; extract first part.
-        clean_slug = slug.split("/")[0].lower().strip() if slug else ""
-        domain = f"{clean_slug}.com" if clean_slug else None
+        if explicit_domain:
+            # eightfold.csv provides the real company domain — use it directly.
+            domain = extract_domain(f"https://{explicit_domain}") or extract_domain(url)
+        else:
+            # Standard CSVs: derive domain from the ATS board slug.
+            # slug.com is a best-effort inference; Pipeline A verifies the real ATS.
+            # Workday slugs look like 'company/external_careers'; take first segment.
+            clean_slug = slug.split("/")[0].lower().strip() if slug else ""
+            domain = f"{clean_slug}.com" if clean_slug else None
+
         if not domain:
             continue
 
@@ -157,6 +189,45 @@ def parse_jobhive_csv(ats_name: str, csv_text: str) -> Iterator[CompanyRecord]:
             "known_ats": ats_name,       # stored only; ATS NOT marked ACTIVE
             "ats_slug":  slug,            # ATS board slug for EndpointVerificationWorker hint
             "board_url": url,
+        })
+
+        yield CompanyRecord(
+            company_id=domain_to_id(domain),
+            domain=domain,
+            canonical_name=name,
+            website=f"https://{domain}",
+            aliases=metadata,
+            source="jobhive",
+        )
+
+
+def parse_phenom_csv(csv_text: str) -> Iterator[CompanyRecord]:
+    """
+    Parse phenom.csv which has a non-standard schema:
+      url, name, company_code, locale, country
+    No 'slug' field. Use company_code as the slug equivalent.
+    """
+    reader = csv.DictReader(io.StringIO(csv_text))
+    for row in reader:
+        name         = (row.get("name")         or "").strip()
+        company_code = (row.get("company_code") or "").strip()
+        url          = (row.get("url")          or "").strip()
+        if not name or not url:
+            continue
+
+        # Prefer domain extracted from the Phenom board URL, fall back to code.com
+        domain = extract_domain(url)
+        if not domain:
+            clean_code = re.sub(r"[^a-z0-9]", "", company_code.lower())
+            domain = f"{clean_code}.com" if clean_code else None
+        if not domain:
+            continue
+
+        metadata = json.dumps({
+            "source":       "jobhive",
+            "known_ats":    "phenom",
+            "company_code": company_code,
+            "board_url":    url,
         })
 
         yield CompanyRecord(
@@ -178,7 +249,11 @@ def load_jobhive(ats_filter: Optional[list] = None, dry_run: bool = False) -> li
         log.info(f"Fetching Jobhive/{ats_name} …")
         try:
             text = fetch_url(url)
-            batch = list(parse_jobhive_csv(ats_name, text))
+            # Dispatch to the correct parser based on schema
+            if ats_name == "phenom":
+                batch = list(parse_phenom_csv(text))
+            else:
+                batch = list(parse_jobhive_csv(ats_name, text))
             log.info(f"  → {len(batch)} companies parsed from {ats_name}.csv")
             records.extend(batch)
         except Exception as e:
