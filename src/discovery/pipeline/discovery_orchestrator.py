@@ -173,14 +173,23 @@ class DiscoveryOrchestrator:
                 for c in scored_candidates:
                     identity, conf, reason = plugin.parse_candidate(c.url)
                     if identity:
-                        c.parsed_identity = identity
-                        c.parser_success = True
-                        c.parser_confidence = conf
-                        c.parser_reason = reason
-                        valid_candidates.append(c)
+                        # Create a copy of Candidate to avoid cross-plugin mutation
+                        c_copy = Candidate(url=c.url, evidence=list(c.evidence))
+                        c_copy.parsed_identity = identity
+                        c_copy.parser_success = True
+                        c_copy.parser_confidence = conf
+                        c_copy.parser_reason = reason
+                        
+                        # Copy search metadata if present
+                        for attr in ('search_provider', 'search_query', 'search_rank', 'search_title'):
+                            if hasattr(c, attr):
+                                setattr(c_copy, attr, getattr(c, attr))
+                                
+                        valid_candidates.append(c_copy)
                     else:
-                        c.parser_success = False
-                        c.parser_reason = reason
+                        if not getattr(c, 'parser_success', False):
+                            c.parser_success = False
+                            c.parser_reason = reason
                         
             funnel["parsed"] = len(valid_candidates)
                         
