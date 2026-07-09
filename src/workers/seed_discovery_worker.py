@@ -5,6 +5,7 @@ import json
 import logging
 import sqlite3
 import asyncio
+from datetime import datetime, timezone
 from urllib.parse import urlparse
 from src.workers.worker_base import BaseWorker
 from src.discovery.seed_sources.yc_source import YCombinatorSource
@@ -54,8 +55,7 @@ class SeedDiscoveryWorker(BaseWorker):
             )
             
             # 2. Insert metadata to company_discovery_sources
-            from datetime import datetime
-            dt_str = datetime.utcfromtimestamp(now).strftime('%Y-%m-%d %H:%M:%S')
+            dt_str = datetime.fromtimestamp(now, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
             
             cursor = conn.execute(
                 "SELECT first_seen FROM company_discovery_sources WHERE company_name = ? AND source = ? AND discovery_type = ?",
