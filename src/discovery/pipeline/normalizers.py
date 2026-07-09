@@ -122,7 +122,7 @@ class AshbyNormalizer(JobNormalizer):
                 company_id=company_id,
                 board_id=company_id,
                 title=title,
-                description="",
+                description=job.get("descriptionPlain") or job.get("descriptionHtml") or "",
                 location=location,
                 remote_type="",
                 department=dept_name,
