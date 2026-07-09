@@ -5,7 +5,7 @@ import re
 import urllib.parse
 from typing import List
 from src.discovery.providers.base_discovery_provider import BaseDiscoveryProvider, OpportunitySeed
-from src.discovery.providers.query_generator import QueryGenerator
+from src.discovery.providers.experimental.query_generator import QueryGenerator
 from src.config.config import Config
 
 class InternetSearchProvider(BaseDiscoveryProvider):

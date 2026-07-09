@@ -35,7 +35,7 @@ class CompanyDiscoveryWorker(BaseWorker):
                 if os.path.exists(csv_path):
                     with open(csv_path, mode='r', encoding='utf-8') as f:
                         reader = csv.DictReader(f)
-                        with sqlite3.connect(self.db_path) as conn:
+                        with sqlite3.connect(self.db_path, timeout=30.0) as conn:
                             conn.row_factory = sqlite3.Row
                             for row in reader:
                                 name = row.get("company", "").strip()
@@ -68,7 +68,7 @@ class CompanyDiscoveryWorker(BaseWorker):
                                     processed_count += 1
 
                 # 2. Feeder - Push new companies into the discovery_queue if they are not yet in the pipeline
-                with sqlite3.connect(self.db_path) as conn:
+                with sqlite3.connect(self.db_path, timeout=30.0) as conn:
                     conn.row_factory = sqlite3.Row
                     cursor = conn.execute('''
                         SELECT i.company_id 

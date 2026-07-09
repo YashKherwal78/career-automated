@@ -1,13 +1,12 @@
 from typing import AsyncIterator
-from src.discovery.registry.source_registry import SourceRegistry
 from src.discovery.models import RawJob, ConnectorCapability, Board
 from src.discovery.registry.connector import Connector
+from src.discovery.registry.connector_registry import ConnectorRegistry
 
-class LeverConnector(Connector):
+class AshbyConnector(Connector):
     @property
     def source_name(self) -> str:
-        return "lever"
-        
+        return "ashby"
 
     def capabilities(self) -> ConnectorCapability:
         return ConnectorCapability(
@@ -24,12 +23,12 @@ class LeverConnector(Connector):
         from src.discovery.registry.connector import CrawlPolicy, CrawlPriority
         return CrawlPolicy(
             version="v1",
-            normal_interval=300,
-            priority=CrawlPriority.HIGH
+            normal_interval=180,
+            priority=CrawlPriority.NORMAL
         )
         
     async def sync(self, board: Board, http_client) -> AsyncIterator[RawJob]:
-        api_url = f"https://api.lever.co/v0/postings/{board.identity.board_token}?mode=json"
+        api_url = f"https://api.ashbyhq.com/posting-api/job-board/{board.identity.board_token}"
         
         etag = board.metadata.get("etag")
         
@@ -47,12 +46,6 @@ class LeverConnector(Connector):
             board.metadata["last_content_hash"] = result.content_hash
             
         if result.status_code == 200:
-            payload = result.payload
-            if isinstance(payload, list):
-                payload = {"jobs": payload}
-            yield RawJob(provider="lever", board_identity=board.identity, payload=payload)
+            yield RawJob(provider="ashby", board_identity=board.identity, payload=result.payload)
 
-SourceRegistry.register(LeverConnector)
-
-from src.discovery.registry.connector_registry import ConnectorRegistry
-ConnectorRegistry.register('lever', LeverConnector)
+ConnectorRegistry.register('ashby', AshbyConnector)

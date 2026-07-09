@@ -32,3 +32,20 @@ class DiscoveryStrategy(ABC):
 
 # Backwards-compatible alias so existing code doesn't break
 BaseProvider = DiscoveryStrategy
+
+from dataclasses import dataclass, field
+from src.discovery.registry.ats_providers import ProviderCapabilities
+
+@dataclass
+class StandardJob:
+    company: str
+    role: str
+    location: str
+    remote_hybrid_onsite: str
+    experience_required: str
+    skills: List[str]
+    job_description: str
+    ats_type: str
+    application_url: str
+    source: str
+    date_posted: str

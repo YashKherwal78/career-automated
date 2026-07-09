@@ -66,8 +66,18 @@ class MigrationRunner:
                         if not statement:
                             continue
                         
+                        # Strip SQL single-line comments starting with '--'
+                        lines = []
+                        for line in statement.split('\n'):
+                            # Remove comments while preserving string literals
+                            # Simple split by '--' is sufficient since no double dashes exist inside strings in our migrations
+                            lines.append(line.split('--')[0])
+                        cleaned_statement = '\n'.join(lines).strip()
+                        if not cleaned_statement:
+                            continue
+                        
                         # Safe ALTER TABLE checks to prevent crashes if column exists
-                        alter_match = re.match(r"(?i)ALTER\s+TABLE\s+(\w+)\s+ADD\s+COLUMN\s+(\w+)", statement)
+                        alter_match = re.match(r"(?i)ALTER\s+TABLE\s+(\w+)\s+ADD\s+COLUMN\s+(\w+)", cleaned_statement)
                         if alter_match:
                             table_name = alter_match.group(1)
                             column_name = alter_match.group(2)

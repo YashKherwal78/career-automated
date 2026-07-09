@@ -15,7 +15,8 @@ from src.config.settings import settings
 import src.discovery.connectors.greenhouse
 import src.discovery.connectors.lever
 import src.discovery.connectors.workday
-import src.discovery.workers.ashby_adapter
+import src.discovery.connectors.ashby
+import src.discovery.connectors.smartrecruiters
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("JobCrawlerWorker")
@@ -77,7 +78,7 @@ class JobCrawlerWorker(BaseWorker):
                 if company_id:
                     # Explicit queue item requested, lock it directly if active
                     import sqlite3
-                    with sqlite3.connect(self.db_path) as conn:
+                    with sqlite3.connect(self.db_path, timeout=30.0) as conn:
                         conn.row_factory = sqlite3.Row
                         cursor = conn.execute("SELECT * FROM ats_registry WHERE company_id = ? AND status = 'ACTIVE'", (company_id,))
                         row = cursor.fetchone()

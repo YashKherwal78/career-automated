@@ -21,7 +21,7 @@ class CleanupWorker(BaseWorker):
                 now = time.time()
                 seven_days_ago = now - 7 * 24 * 3600
 
-                with sqlite3.connect(self.db_path) as conn:
+                with sqlite3.connect(self.db_path, timeout=30.0) as conn:
                     # 1. Clean snapshots older than 7 days
                     cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='board_snapshots'")
                     if cursor.fetchone():

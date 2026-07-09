@@ -37,88 +37,59 @@ class BoardSyncSession:
 
     async def execute(self):
         try:
-            # Import everything
-            from src.discovery.registry.connector_registry import ConnectorRegistry
-            from src.discovery.pipeline.http_client import HttpClient
-            from src.discovery.models import FetchResult
-            import src.discovery.connectors.workday # ensure registration
-            
-            # Import old adapters to trigger registration in SourceRegistry
+            # Import all connectors to ensure registration in ConnectorRegistry
             import src.discovery.connectors.greenhouse
             import src.discovery.connectors.lever
             import src.discovery.connectors.workday
-            import src.discovery.workers.ashby_adapter
-            import src.discovery.workers.smartrecruiters_adapter
+            import src.discovery.connectors.ashby
+            import src.discovery.connectors.smartrecruiters
             
-            # Check if new Connector exists
+            from src.discovery.registry.connector_registry import ConnectorRegistry
+            from src.discovery.pipeline.http_client import HttpClient
+            from src.discovery.models import FetchResult
+            
+            # Check if Connector exists
             connector = ConnectorRegistry.get(self.board.provider)
+            if not connector:
+                raise ValueError(f"Connector not found for provider {self.board.provider}")
 
-            if connector:
-                # NEW CONNECTOR PATH
-                fetch_start = time.time()
-                raw_jobs = []
-                snapshot_ids = []
-                self.stats["bytes_downloaded"] = 0
+            # CONNECTOR PATH
+            fetch_start = time.time()
+            raw_jobs = []
+            snapshot_ids = []
+            self.stats["bytes_downloaded"] = 0
+            
+            async with HttpClient() as client:
+                async for item in connector.sync(self.board, client):
+                    if isinstance(item, FetchResult):
+                        self.stats["bytes_downloaded"] += item.bytes_downloaded
+                        if item.content_hash:
+                            self.board.metadata["content_hash"] = item.content_hash
+                        # Snapshot this page
+                        if item.payload:
+                            sid = self.snapshot_repo.save(self.board.endpoint, item.payload, self.started_at)
+                            snapshot_ids.append(sid)
+                    else:
+                        raw_jobs.append(item)
+            
+            # Use the first snapshot ID or join them
+            if snapshot_ids:
+                self.stats["snapshot_id"] = ",".join(snapshot_ids[:3]) # Limit display string
                 
-                async with HttpClient() as client:
-                    async for item in connector.sync(self.board, client):
-                        if isinstance(item, FetchResult):
-                            self.stats["bytes_downloaded"] += item.bytes_downloaded
-                            if item.content_hash:
-                                self.board.metadata["content_hash"] = item.content_hash
-                            # Snapshot this page
-                            if item.payload:
-                                sid = self.snapshot_repo.save(self.board.endpoint, item.payload, self.started_at)
-                                snapshot_ids.append(sid)
-                        else:
-                            raw_jobs.append(item)
-                
-                # Use the first snapshot ID or join them
-                if snapshot_ids:
-                    self.stats["snapshot_id"] = ",".join(snapshot_ids[:3]) # Limit display string
-                    
-                if raw_jobs:
-                    # Normalize
-                    normalizer = NormalizerFactory.get_normalizer(self.board.provider)
-                    canonical_jobs = []
-                    for rj in raw_jobs:
-                        canonical_jobs.extend(normalizer.normalize(rj))
-                    
-                    self.stats["jobs_extracted"] = len(canonical_jobs)
-                
-                    # 5. Validate
-                    valid_jobs, invalid_records = JobValidator.filter_valid(canonical_jobs)
-                else:
-                    self.stats["jobs_extracted"] = 0
-                    valid_jobs = []
-                
-            else:
-                # OLD ADAPTER PATH
-                adapter = SourceRegistry.get_adapter(self.board.provider)
-                if not adapter:
-                    raise ValueError(f"Adapter not found for provider {self.board.provider}")
-                    
-                # 1. Fetch
-                fetch_start = time.time()
-                raw_data = await adapter.fetch({"url": self.board.endpoint, "company_id": "unknown"})
-                
-                # 2. Snapshot
-                import json
-                payload_size = len(json.dumps(raw_data).encode('utf-8'))
-                self.stats["bytes_downloaded"] = payload_size
-                snapshot_id = self.snapshot_repo.save(self.board.endpoint, raw_data, self.started_at)
-                self.stats["snapshot_id"] = snapshot_id
-                
-                # 3. RawJob
-                raw_job = adapter.discover_jobs(raw_data, board_identity=self.board.identity)
-                
-                # 4. Normalize
+            if raw_jobs:
+                # Normalize
                 normalizer = NormalizerFactory.get_normalizer(self.board.provider)
-                canonical_jobs = normalizer.normalize(raw_job)
-                self.stats["jobs_extracted"] = len(canonical_jobs)
+                canonical_jobs = []
+                for rj in raw_jobs:
+                    canonical_jobs.extend(normalizer.normalize(rj))
                 
+                self.stats["jobs_extracted"] = len(canonical_jobs)
+            
                 # 5. Validate
                 valid_jobs, invalid_records = JobValidator.filter_valid(canonical_jobs)
+            else:
+                self.stats["jobs_extracted"] = 0
+                valid_jobs = []
 
             # 6. Upsert and Diff
             b_id = f"{self.board.identity.tenant}_{self.board.identity.site}" if hasattr(self.board.identity, 'tenant') else getattr(self.board.identity, 'board_token', 'unknown')

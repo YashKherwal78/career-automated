@@ -1,0 +1,16 @@
+from enum import Enum
+
+class WorkflowState(Enum):
+    PENDING = "PENDING"
+    RUNNING = "RUNNING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    REVIEW_REQUIRED = "REVIEW_REQUIRED"
+    OTP_REQUIRED = "OTP_REQUIRED"
+    CAPTCHA_REQUIRED = "CAPTCHA_REQUIRED"
+    NOT_IMPLEMENTED = "NOT_IMPLEMENTED"
+    INTEGRATION_UNAVAILABLE = "INTEGRATION_UNAVAILABLE"
+    SKIPPED = "SKIPPED"
+
+    def __str__(self):
+        return self.value

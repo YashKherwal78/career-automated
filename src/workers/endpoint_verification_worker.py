@@ -72,7 +72,7 @@ class EndpointVerificationWorker(BaseWorker):
                 
                 # 2. Fallback: Select a company without an ACTIVE endpoint
                 if not company_id:
-                    with sqlite3.connect(self.db_path) as conn:
+                    with sqlite3.connect(self.db_path, timeout=30.0) as conn:
                         conn.row_factory = sqlite3.Row
                         cursor = conn.execute('''
                             SELECT i.company_id 
@@ -94,7 +94,7 @@ class EndpointVerificationWorker(BaseWorker):
 
                 # Load company details
                 company_info = None
-                with sqlite3.connect(self.db_path) as conn:
+                with sqlite3.connect(self.db_path, timeout=30.0) as conn:
                     conn.row_factory = sqlite3.Row
                     cursor = conn.execute("SELECT canonical_name, website, domain FROM company_identities WHERE company_id = ?", (company_id,))
                     row = cursor.fetchone()
