@@ -40,6 +40,9 @@ def make_board_from_registry_row(row):
         tenant = metadata.get("tenant") or endpoint.split("/")[-2]
         site = metadata.get("site") or "careers"
         identity = WorkdayBoardIdentity(ats="workday", tenant=tenant, site=site)
+    elif ats_type == "smartrecruiters":
+        token = metadata.get("company_identifier") or metadata.get("board_token") or endpoint.split("/")[-1]
+        identity = StandardBoardIdentity(ats=ats_type, board_token=token)
     else:
         token = metadata.get("board_token") or endpoint.split("/")[-1]
         identity = StandardBoardIdentity(ats=ats_type, board_token=token)

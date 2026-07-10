@@ -4,6 +4,7 @@ import time
 import csv
 import sqlite3
 import logging
+import json
 from urllib.parse import urlparse
 from src.config.settings import settings
 from src.workers.worker_base import BaseWorker
@@ -67,26 +68,62 @@ class CompanyDiscoveryWorker(BaseWorker):
                                     logger.info(f"Discovered new company: {name} ({company_id})")
                                     processed_count += 1
 
-                # 2. Feeder - Push new companies into the discovery_queue if they are not yet in the pipeline
+                # 2. Feeder - Check if we can fast-path, else push to discovery_queue
+                from src.discovery.pipeline.fast_path_registry import FastPathRegistry
+                fast_patcher = FastPathRegistry(self.db_path)
+                
                 with sqlite3.connect(self.db_path, timeout=30.0) as conn:
                     conn.row_factory = sqlite3.Row
                     cursor = conn.execute('''
-                        SELECT i.company_id 
+                        SELECT i.company_id, i.canonical_name, i.domain, i.website, i.aliases
                         FROM company_identities i
                         LEFT JOIN ats_registry r ON i.company_id = r.company_id AND r.status = 'ACTIVE'
                         WHERE r.company_id IS NULL
                     ''')
-                    companies_to_queue = [row["company_id"] for row in cursor.fetchall()]
+                    candidates = [dict(row) for row in cursor.fetchall()]
 
-                    for cid in companies_to_queue:
-                        cursor_q = conn.execute('''
-                            SELECT 1 FROM local_queues 
-                            WHERE queue_name = 'discovery_queue' AND json_extract(payload, '$.company_id') = ?
-                        ''', (cid,))
-                        if not cursor_q.fetchone():
-                            self.queue.push("discovery_queue", {"company_id": cid})
-                            logger.info(f"Enqueued company for discovery: {cid}")
-                            processed_count += 1
+                    for cand in candidates:
+                        cid = cand["company_id"]
+                        
+                        # Try parsing aliases JSON
+                        aliases_str = cand.get("aliases")
+                        metadata = {}
+                        if aliases_str:
+                            try:
+                                metadata = json.loads(aliases_str)
+                            except Exception:
+                                pass
+                        
+                        fast_pathed = False
+                        if metadata.get("source") == "jobhive":
+                            fast_pathed = fast_patcher.fast_path_company(
+                                company_id=cid,
+                                canonical_name=cand["canonical_name"],
+                                domain=cand["domain"],
+                                website=cand["website"],
+                                metadata=metadata
+                            )
+                        
+                        if fast_pathed:
+                            # Direct crawl queue bypass
+                            cursor_q = conn.execute('''
+                                SELECT 1 FROM local_queues 
+                                WHERE queue_name = 'crawl_queue' AND json_extract(payload, '$.company_id') = ?
+                            ''', (cid,))
+                            if not cursor_q.fetchone():
+                                self.queue.push("crawl_queue", {"company_id": cid})
+                                logger.info(f"Fast-pathed & enqueued company for crawl: {cid}")
+                                processed_count += 1
+                        else:
+                            # Standard fallback: push to discovery_queue
+                            cursor_q = conn.execute('''
+                                SELECT 1 FROM local_queues 
+                                WHERE queue_name = 'discovery_queue' AND json_extract(payload, '$.company_id') = ?
+                            ''', (cid,))
+                            if not cursor_q.fetchone():
+                                self.queue.push("discovery_queue", {"company_id": cid})
+                                logger.info(f"Enqueued company for discovery: {cid}")
+                                processed_count += 1
 
                 self.heartbeat(jobs_processed=processed_count)
                 

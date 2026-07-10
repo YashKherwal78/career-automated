@@ -10,6 +10,10 @@ class BoardIdentity:
 class StandardBoardIdentity(BoardIdentity):
     board_token: str
 
+    @property
+    def company_identifier(self) -> str:
+        return self.board_token
+
 @dataclass
 class WorkdayBoardIdentity(BoardIdentity):
     tenant: str
