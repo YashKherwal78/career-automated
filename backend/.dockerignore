@@ -1,0 +1,6 @@
+data/
+graphify-out/
+src/graphify-out/
+__pycache__/
+*.py[cod]
+.env

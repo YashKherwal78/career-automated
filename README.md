@@ -56,11 +56,11 @@ make stop
 
 The `careerautomated` session is divided into the following windows:
 
-1. **Window 1: `pipeline`** — Displays logs from `run_pipeline.py` (which manages `CompanyDiscoveryWorker`, `EndpointVerificationWorker`, `JobCrawlerWorker`, and `CleanupWorker`).
+1. **Window 1: `pipeline`** — Displays logs from `backend/run_pipeline.py` (which manages `CompanyDiscoveryWorker`, `EndpointVerificationWorker`, `JobCrawlerWorker`, and `CleanupWorker`).
 2. **Window 2: `fastapi`** — Runs uvicorn development API server on port `8000`.
 3. **Window 3: `frontend`** — Runs Vite frontend developer server on port `8080`.
 4. **Window 4: `worker-logs`** — Tails live stdout/stderr streams from all active pipeline workers.
-5. **Window 5: `database`** — Opens an active `sqlite3` prompt targeting `data/crm.db`. Handy hints for quick diagnostic queries are pre-written in this pane.
+5. **Window 5: `database`** — Opens an active `sqlite3` prompt targeting `backend/data/crm.db`. Handy hints for quick diagnostic queries are pre-written in this pane.
 6. **Window 6: `monitoring`** — Auto-refreshes every 3 seconds to print current dashboard KPIs and worker health.
 
 ---

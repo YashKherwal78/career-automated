@@ -22,7 +22,7 @@ graph TD
 
 ## 2. Database Schema
 
-All database entities reside in the central SQLite database: `data/crm.db`.
+All database entities reside in the central SQLite database: `backend/data/crm.db`.
 
 ### `company_identities`
 - `company_id` (TEXT, PRIMARY KEY) — URL-friendly slug (e.g. `nvidia`).
@@ -81,18 +81,18 @@ All database entities reside in the central SQLite database: `data/crm.db`.
 
 All workers subclass `BaseWorker` and run as infinite daemons managed by the `PipelineScheduler`:
 
-1. **`CompanyDiscoveryWorker`** (`src/workers/company_discovery_worker.py`)
-   - Reads CSV seeds in `benchmark/companies.csv`.
+1. **`CompanyDiscoveryWorker`** (`backend/src/workers/company_discovery_worker.py`)
+   - Reads CSV seeds in `backend/benchmark/companies.csv`.
    - Populates `company_identities` using `INSERT OR IGNORE`.
    - Feeds new target companies into the `discovery_queue`.
-2. **`EndpointVerificationWorker`** (`src/workers/endpoint_verification_worker.py`)
+2. **`EndpointVerificationWorker`** (`backend/src/workers/endpoint_verification_worker.py`)
    - Pops targets from `discovery_queue`.
    - Leverages `DiscoveryOrchestrator` to detect and verify active ATS board links.
    - Promotes successful endpoints directly into the `ats_registry`.
-3. **`JobCrawlerWorker`** (`src/workers/job_crawler_worker.py`)
+3. **`JobCrawlerWorker`** (`backend/src/workers/job_crawler_worker.py`)
    - Continuously checks for active verified boards needing synchronization.
    - Triggers `BoardSyncSession` to pull, normalize, and upsert records into `normalized_jobs`.
-4. **`CleanupWorker`** (`src/workers/cleanup_worker.py`)
+4. **`CleanupWorker`** (`backend/src/workers/cleanup_worker.py`)
    - Performs periodic DB optimization tasks (e.g. `ANALYZE`, `VACUUM`).
    - Manages retry intervals and unlocks stalled queue payloads.
 
@@ -102,16 +102,16 @@ All workers subclass `BaseWorker` and run as infinite daemons managed by the `Pi
 
 Provider-specific connectors inherit from `Connector` and are decoupled from the synchronization pipeline:
 
-- **`ConnectorRegistry`** (`src/discovery/registry/connector_registry.py`)
+- **`ConnectorRegistry`** (`backend/src/discovery/registry/connector_registry.py`)
   - Exposes the registration map for custom platforms:
     ```python
     ConnectorRegistry.register("greenhouse", GreenhouseConnector)
     ```
 - **Connectors**:
-  - `GreenhouseConnector` (`src/discovery/connectors/greenhouse.py`)
-  - `LeverConnector` (`src/discovery/connectors/lever.py`)
-  - `WorkdayConnector` (`src/discovery/connectors/workday.py`)
-  - `AshbyConnector` (`src/discovery/workers/ashby_adapter.py`)
+  - `GreenhouseConnector` (`backend/src/discovery/connectors/greenhouse.py`)
+  - `LeverConnector` (`backend/src/discovery/connectors/lever.py`)
+  - `WorkdayConnector` (`backend/src/discovery/connectors/workday.py`)
+  - `AshbyConnector` (`backend/src/discovery/workers/ashby_adapter.py`)
 - **`BoardSyncSession`**: Coordinates HTTP connections, ETag handling, raw archiving, normalizer routing, and database writes.
 
 ---

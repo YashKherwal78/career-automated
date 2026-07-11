@@ -17,10 +17,10 @@ fi
 echo "Starting CareerAutomated Tmux Session..."
 
 # Window 1: Pipeline (runs run_pipeline.py with NO_API=1 to let uvicorn run in its own window)
-NO_API=1 tmux new-session -d -s "$SESSION_NAME" -n "pipeline" "python3 run_pipeline.py 2>&1 | tee logs/scheduler.log"
+NO_API=1 tmux new-session -d -s "$SESSION_NAME" -n "pipeline" "cd backend && python3 run_pipeline.py 2>&1 | tee ../logs/scheduler.log"
 
 # Window 2: FastAPI (runs uvicorn)
-tmux new-window -t "$SESSION_NAME" -n "fastapi" "python3 -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000 2>&1 | tee logs/api.log"
+tmux new-window -t "$SESSION_NAME" -n "fastapi" "cd backend && python3 -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000 2>&1 | tee ../logs/api.log"
 
 # Window 3: Frontend (runs Vite server)
 tmux new-window -t "$SESSION_NAME" -n "frontend" "cd frontend && npm run dev 2>&1 | tee ../logs/frontend.log"
@@ -31,7 +31,7 @@ tmux send-keys -t "$SESSION_NAME:worker-logs" "tail -f logs/discovery.log logs/v
 
 # Window 5: Database (sqlite3 client)
 tmux new-window -t "$SESSION_NAME" -n "database"
-tmux send-keys -t "$SESSION_NAME:database" "sqlite3 data/crm.db" Enter
+tmux send-keys -t "$SESSION_NAME:database" "sqlite3 backend/data/crm.db" Enter
 tmux send-keys -t "$SESSION_NAME:database" "# Quick Queries: " Enter
 tmux send-keys -t "$SESSION_NAME:database" "# SELECT COUNT(*) FROM normalized_jobs\;" Enter
 tmux send-keys -t "$SESSION_NAME:database" "# SELECT COUNT(*) FROM ats_registry\;" Enter

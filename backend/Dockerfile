@@ -16,14 +16,15 @@ RUN playwright install --with-deps chromium
 
 # Copy the rest of the application
 COPY . .
+RUN mkdir -p /app/data
 
 # Environment setup
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 
-# By default, we expose Streamlit port
-EXPOSE 8501
+# API port
+EXPOSE 8000
 
-# The default command will be to run the health check, then start the cron loop
-# Alternatively, users can override this to start the dashboard
-CMD ["bash", "-c", "python3 src/system/health_check.py && python3 src/production/main_cron.py"]
+# The frontend is deployed separately. Runtime data is supplied via a mounted
+# /app/data volume rather than included in this image.
+CMD ["python3", "-m", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

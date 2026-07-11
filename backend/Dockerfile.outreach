@@ -1,0 +1,25 @@
+FROM python:3.11-slim
+
+# Prevent interactive prompts during apt installations
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install timezone data
+RUN apt-get update && apt-get install -y \
+    tzdata \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set local timezone so that schedule triggers at the correct time in IST
+ENV TZ="Asia/Kolkata"
+
+WORKDIR /app
+
+# Install Python dependencies (outreach only, no playwright)
+COPY requirements_outreach.txt requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy all source files
+COPY . .
+
+# Run the outreach-only autonomous scheduler
+ENV PYTHONPATH="/app"
+CMD ["python3", "-m", "src.autonomous_outreach"]

@@ -33,8 +33,10 @@ app.include_router(activities.router, prefix="/api/v1/activities", tags=["Activi
 
 from fastapi.responses import HTMLResponse
 import os
+from pathlib import Path
 
-# Legacy HTML dashboard removed. /mission-control is now handled by the React frontend.
+# The React application is deployed independently.  A static build can still be
+# served by setting FRONTEND_STATIC_DIR to a directory that exists at runtime.
 
 @app.get("/api/v1/health")
 def get_health_status(db: sqlite3.Connection = Depends(get_db)):
@@ -142,8 +144,9 @@ def get_dashboard_summary(db: sqlite3.Connection = Depends(get_db)):
         "crawl_queue": q_counts["crawl_queue"]
     }
 
-# Serve the Career Automated Web UI
-app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
+frontend_static_dir = os.environ.get("FRONTEND_STATIC_DIR")
+if frontend_static_dir and Path(frontend_static_dir).is_dir():
+    app.mount("/", StaticFiles(directory=frontend_static_dir, html=True), name="frontend")
 
 if __name__ == "__main__":
     import uvicorn

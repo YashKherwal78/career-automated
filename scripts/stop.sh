@@ -16,6 +16,6 @@ lsof -t -i :8080 | xargs kill -9 2>/dev/null
 tmux kill-session -t "$SESSION_NAME" 2>/dev/null
 
 # Clean up any leftover worker python processes
-pkill -f "src/workers/" 2>/dev/null
+pkill -f "backend/src/workers/" 2>/dev/null
 
 echo "Stopped successfully."
