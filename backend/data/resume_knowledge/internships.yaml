@@ -1,0 +1,39 @@
+- id: exp_1
+  title: AI Product Manager Intern
+  company: OrangeLabs (EdTech)
+  start_date: Feb 2026
+  end_date: Apr 2026
+  bullets:
+  - Owned end-to-end product development of two AI features - defined the problem,
+    designed the solution, and worked directly with engineering to ship; AI Attendance
+    System (CCTV-based auto-detection) eliminated manual roll calls, freeing ~10 minutes
+    of instruction time per class period.
+  - Conducted customer discovery with school administrators and teachers; identified
+    student revision and missed-lecture recovery as the two highest-value use cases;
+    defined and shipped AI Video Lecture Generator - pipeline extracts and structures
+    teacher-recorded sessions into personalised async content.
+  - Contributed to product roadmap in collaboration with co-founders; maintained cross-functional
+    alignment between product, engineering, and operations throughout both build cycles.
+- id: exp_2
+  title: Software Development Intern
+  company: ScoreMe Solutions
+  start_date: May 2025
+  end_date: June 2025
+  bullets:
+  - Scoped and shipped a two-stage PDF classification pipeline for fintech document
+    processing - rule-based fast path for deterministic inputs, Random Forest fallback
+    for ambiguous cases; automated ~80% of document volume, reducing analyst review
+    queue to exception-only cases.
+  - 'Defined confidence threshold as an explicit human-in-the-loop gate: outputs withheld
+    from credit scoring pipelines and flagged for review; extended coverage to scanned
+    PDFs via Tesseract OCR, doubling addressable input types.'
+- id: exp_3
+  title: Engineering Intern
+  company: Bharat Electronics Limited
+  start_date: June 2025
+  end_date: July 2025
+  bullets:
+  - Built a real-time stream processor for ASTERIX CAT048 radar protocol per EUROCONTROL
+    spec; decoded variable-length packet structures into structured aviation records;
+    designed concurrent ingestion with backpressure handling to sustain throughput
+    under high-frequency surveillance loads.

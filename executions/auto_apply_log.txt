@@ -1,0 +1,757 @@
+RAGClient: Initialised with 20 chunks from Master Profile.
+
+--- Attempt 1: Applying to Job 39 at Sony Interactive Entertainment ---
+Executor: Starting job 39 on GREENHOUSE (https://job-boards.greenhouse.io/sonyinteractiveentertainmentglobal/jobs/5859292004?utm_source=Simplify&ref=Simplify)
+Executor [Greenhouse]: Initializing Greenhouse Handler...
+GreenhouseHandler: Verifying standard fields...
+GreenhouseHandler: Uploading resume /Users/yashkherwal/Downloads/hrmailfiles/data/Resume_aiml.pdf...
+  -> Renamed to: Resume_SonyInteractiveEntertainment_SoftwareEngineer1.pdf
+  -> File Exists: True
+  -> File Size: 126396 bytes
+  -> Upload Verified: True
+GreenhouseHandler: Starting submission cycle 1/3...
+GreenhouseHandler: Processing custom fields...
+GreenhouseHandler: Found question -> Preferred First Name
+
+[Essay Debug] Question: Preferred First Name
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 2.35)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 1.00)
+  -> Retrieved Chunk 3: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Final LLM Answer: Yash
+  [Metric Grounding] Numbers in Context: {'0', '2026', '2', '25', '3', '49', '50', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Preferred First Name
+==================================================
+Question: Preferred First Name
+Detected Widget Type: input
+Available Options: None
+Normalized Value: Yash
+Selected Value: Yash
+Selection Verified: True
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> Location (City)
+
+[Essay Debug] Question: Location (City)
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Location (City)
+GreenhouseHandler: React-Select option 'REVIEW_REQUIRED' not found in DOM. Safety Pause.
+==================================================
+Question: Location (City)
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> Have you ever worked for a Sony company previously?
+
+[Essay Debug] Question: Have you ever worked for a Sony company previously?
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 6.16)
+  -> Retrieved Chunk 2: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 5.54)
+  -> Retrieved Chunk 3: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 4.74)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'0', '2026', '10', '25', '2', '3', '5', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: PROFILE -> Have you ever worked for a Sony company previously?
+[Dropdown Debug]
+  -> Question: Have you ever worked for a Sony company previously?
+  -> Detected Type: PROFILE
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Have you ever worked for a Sony company previously?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Have_you_ever_worked_for_a_Son.png
+==================================================
+GreenhouseHandler: Found question -> Are you authorized to work in the United States?
+
+[Classification]: KNOCKOUT -> Are you authorized to work in the United States?
+[Dropdown Debug]
+  -> Question: Are you authorized to work in the United States?
+  -> Detected Type: KNOCKOUT
+  -> Mapped Value (Raw): Yes
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): Yes
+==================================================
+Question: Are you authorized to work in the United States?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: Yes
+Selected Value: Yes
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_authorized_to_work_in_.png
+==================================================
+GreenhouseHandler: Found question -> Will you now, or in the future, require sponsorship to work in the United States?
+
+[Classification]: KNOCKOUT -> Will you now, or in the future, require sponsorship to work in the United States?
+[Dropdown Debug]
+  -> Question: Will you now, or in the future, require sponsorship to work in the United States?
+  -> Detected Type: KNOCKOUT
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Will you now, or in the future, require sponsorship to work in the United States?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Will_you_now__or_in_the_future.png
+==================================================
+GreenhouseHandler: Found question -> Will you need relocation assistance to work at this role's specified location?
+
+[Essay Debug] Question: Will you need relocation assistance to work at this role's specified location?
+  -> Retrieved Chunk 1: **On ScoreMe:** (Score: 6.12)
+  -> Retrieved Chunk 2: ### Working Style (Score: 5.67)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 5.02)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'2', '3', '49', '50', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Will you need relocation assistance to work at this role's specified location?
+[Dropdown Debug]
+  -> Question: Will you need relocation assistance to work at this role's specified location?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Will you need relocation assistance to work at this role's specified location?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Will_you_need_relocation_assis.png
+==================================================
+GreenhouseHandler: Found question -> Are you related to, or in a close personal relationship with, anyone who currently works for SIE or any SIE-affiliated studios? (This includes spouses, domestic partners, and significant others.)
+
+[Essay Debug] Question: Are you related to, or in a close personal relationship with, anyone who currently works for SIE or any SIE-affiliated studios? (This includes spouses, domestic partners, and significant others.)
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 7.72)
+  -> Retrieved Chunk 2: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 7.64)
+  -> Retrieved Chunk 3: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 4.92)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'0', '2026', '10', '2', '3', '5', '49', '50', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Are you related to, or in a close personal relationship with, anyone who currently works for SIE or any SIE-affiliated studios? (This includes spouses, domestic partners, and significant others.)
+[Dropdown Debug]
+  -> Question: Are you related to, or in a close personal relationship with, anyone who currently works for SIE or any SIE-affiliated studios? (This includes spouses, domestic partners, and significant others.)
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Are you related to, or in a close personal relationship with, anyone who currently works for SIE or any SIE-affiliated studios? (This includes spouses, domestic partners, and significant others.)
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_related_to__or_in_a_cl.png
+==================================================
+GreenhouseHandler: Found question -> If yes, please state their name, the department or studio they work for, and their job title (if you know it).
+
+[Essay Debug] Question: If yes, please state their name, the department or studio they work for, and their job title (if you know it).
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 7.51)
+  -> Retrieved Chunk 2: ### Project 1: YAAR — AI Behavioral Companion (Score: 6.13)
+  -> Retrieved Chunk 3: **On YAAR:** (Score: 5.47)
+  -> Final LLM Answer: I am Yash.
+  [Metric Grounding] Numbers in Context: {'25', '2', '3', '49', '50', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> If yes, please state their name, the department or studio they work for, and their job title (if you know it).
+==================================================
+Question: If yes, please state their name, the department or studio they work for, and their job title (if you know it).
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I am Yash.
+Selected Value: I am Yash.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_related_to__or_in_a_cl.png
+==================================================
+GreenhouseHandler: Found question -> By selecting "Yes", I am certifying that, to the best of my knowledge, the information I have provided in this employment application is true and correct.
+
+[Essay Debug] Question: By selecting "Yes", I am certifying that, to the best of my knowledge, the information I have provided in this employment application is true and correct.
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 17.65)
+  -> Retrieved Chunk 2: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 13.42)
+  -> Retrieved Chunk 3: ### Project 4: Semantic Document Search — GDSC IIT Roorkee (Score: 9.67)
+  -> Final LLM Answer: Yes
+  [Metric Grounding] Numbers in Context: {'500', '10', '25', '2', '3', '5', '4'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> By selecting "Yes", I am certifying that, to the best of my knowledge, the information I have provided in this employment application is true and correct.
+[Dropdown Debug]
+  -> Question: By selecting "Yes", I am certifying that, to the best of my knowledge, the information I have provided in this employment application is true and correct.
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): Yes
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): Yes
+==================================================
+Question: By selecting "Yes", I am certifying that, to the best of my knowledge, the information I have provided in this employment application is true and correct.
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: Yes
+Selected Value: Yes
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_By_selecting__Yes___I_am_certi.png
+==================================================
+GreenhouseHandler: Found question -> LinkedIn Profile URL
+
+[Classification]: PROFILE -> LinkedIn Profile URL
+==================================================
+Question: LinkedIn Profile URL
+Detected Widget Type: input
+Available Options: None
+Normalized Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selected Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_By_selecting__Yes___I_am_certi.png
+==================================================
+GreenhouseHandler: Found question -> Portfolio Website
+
+[Essay Debug] Question: Portfolio Website
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: I do not have a dedicated portfolio website.
+  [Metric Grounding] Numbers in Context: {'2025', '0', '2026', '2', '3', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: PROFILE -> Portfolio Website
+==================================================
+Question: Portfolio Website
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I do not have a dedicated portfolio website.
+Selected Value: I do not have a dedicated portfolio website.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_By_selecting__Yes___I_am_certi.png
+==================================================
+GreenhouseHandler: Found question -> Gender
+
+[Classification]: LEGAL -> Gender
+[Dropdown Debug]
+  -> Question: Gender
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): Male
+  -> Available Options: ['Female', 'Male', "I don't wish to answer"]
+  -> Selected Option (Normalized): Male
+GreenhouseHandler: Verification failed! 'Male' not visible in Gender control.
+==================================================
+Question: Gender
+Detected Widget Type: react_select
+Available Options: ['Female', 'Male', "I don't wish to answer"]
+Normalized Value: Male
+Selected Value: Male
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_By_selecting__Yes___I_am_certi.png
+==================================================
+GreenhouseHandler: Found question -> Gender Identity
+
+[Classification]: LEGAL -> Gender Identity
+[Dropdown Debug]
+  -> Question: Gender Identity
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): Male
+  -> Available Options: ['Agender', 'Cisgender/Female', 'Cisgender/Male', 'Female', 'Genderqueer', 'Intersex', 'Male', 'Non-binary/Gender Non-Conforming/Gender Variant', 'Gender Identity Not Listed', 'Transgender', 'Two-Spirit', "I don't wish to answer"]
+  -> Selected Option (Normalized): Male
+GreenhouseHandler: Verification failed! 'Male' not visible in Gender Identity control.
+==================================================
+Question: Gender Identity
+Detected Widget Type: react_select
+Available Options: ['Agender', 'Cisgender/Female', 'Cisgender/Male', 'Female', 'Genderqueer', 'Intersex', 'Male', 'Non-binary/Gender Non-Conforming/Gender Variant', 'Gender Identity Not Listed', 'Transgender', 'Two-Spirit', "I don't wish to answer"]
+Normalized Value: Male
+Selected Value: Male
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_By_selecting__Yes___I_am_certi.png
+==================================================
+GreenhouseHandler: Found question -> What are your personal pronouns?
+
+[Essay Debug] Question: What are your personal pronouns?
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 4.70)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 4.45)
+  -> Retrieved Chunk 3: **On YAAR:** (Score: 4.08)
+  -> Final LLM Answer: I don't wish to answer
+  [Metric Grounding] Numbers in Context: {'2', '25', '3', '49', '50', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> What are your personal pronouns?
+[Dropdown Debug]
+  -> Question: What are your personal pronouns?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): I don't wish to answer
+  -> Available Options: ['He/Him', 'He/They', 'She/Her', 'She/They', 'They/Them', 'Xe/Xem', 'Ze/Zir', 'Pronouns Not Listed', "I don't wish to answer"]
+  -> Selected Option (Normalized): I don't wish to answer
+==================================================
+Question: What are your personal pronouns?
+Detected Widget Type: react_select
+Available Options: ['He/Him', 'He/They', 'She/Her', 'She/They', 'They/Them', 'Xe/Xem', 'Ze/Zir', 'Pronouns Not Listed', "I don't wish to answer"]
+Normalized Value: I don't wish to answer
+Selected Value: I don't wish to answer
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_What_are_your_personal_pronoun.png
+==================================================
+GreenhouseHandler: Found question -> Sexual Orientation
+
+[Classification]: LEGAL -> Sexual Orientation
+[Dropdown Debug]
+  -> Question: Sexual Orientation
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): Male
+  -> Available Options: ['Asexual', 'Bisexual', 'Gay/Lesbian', 'Heterosexual', 'Sexual Orientation Not Listed', 'Pansexual', 'Queer', 'Questioning', "I don't wish to answer"]
+  -> Selected Option (Normalized): REVIEW_REQUIRED
+GreenhouseHandler: React-Select option 'REVIEW_REQUIRED' not found in DOM. Safety Pause.
+==================================================
+Question: Sexual Orientation
+Detected Widget Type: react_select
+Available Options: ['Asexual', 'Bisexual', 'Gay/Lesbian', 'Heterosexual', 'Sexual Orientation Not Listed', 'Pansexual', 'Queer', 'Questioning', "I don't wish to answer"]
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_What_are_your_personal_pronoun.png
+==================================================
+GreenhouseHandler: Found question -> Are you Hispanic/Latinx?
+
+[Classification]: LEGAL -> Are you Hispanic/Latinx?
+GreenhouseHandler: React-Select option 'No' not found in DOM. Safety Pause.
+==================================================
+Question: Are you Hispanic/Latinx?
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: No
+Selected Value: No
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_What_are_your_personal_pronoun.png
+==================================================
+GreenhouseHandler: Found question -> Please identify your race/ethnicity
+
+[Classification]: LEGAL -> Please identify your race/ethnicity
+[Dropdown Debug]
+  -> Question: Please identify your race/ethnicity
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): 
+  -> Available Options: ['American Indian or Alaskan Native', 'Asian', 'Black or African American', 'Native Hawaiian or Other Pacific Islander', 'Two or More Races', 'White', "I don't wish to answer"]
+  -> Selected Option (Normalized): NORMALIZATION_FAILED
+GreenhouseHandler: Normalization failed for 'Please identify your race/ethnicity'. Safety Pause.
+GreenhouseHandler: Found question -> Are you a protected veteran?
+
+[Classification]: LEGAL -> Are you a protected veteran?
+[Dropdown Debug]
+  -> Question: Are you a protected veteran?
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['I identify as one or more of the above categories of “protected veteran”', 'I do not fall into one of the above categories of “protected veteran”', 'I previously served in the military (US), but none of the above apply to me.', "I don't wish to answer"]
+  -> Selected Option (Normalized): I do not fall into one of the above categories of “protected veteran”
+==================================================
+Question: Are you a protected veteran?
+Detected Widget Type: react_select
+Available Options: ['I identify as one or more of the above categories of “protected veteran”', 'I do not fall into one of the above categories of “protected veteran”', 'I previously served in the military (US), but none of the above apply to me.', "I don't wish to answer"]
+Normalized Value: I do not fall into one of the above categories of “protected veteran”
+Selected Value: I do not fall into one of the above categories of “protected veteran”
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_a_protected_veteran_.png
+==================================================
+GreenhouseHandler: Found question -> Do you have a disability?
+
+[Classification]: LEGAL -> Do you have a disability?
+[Dropdown Debug]
+  -> Question: Do you have a disability?
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes, I have a disability, or have a history/record of having a disability', 'No, I don’t have a disability, or a history/record of having a disability', "I don't wish to answer"]
+  -> Selected Option (Normalized): No, I don’t have a disability, or a history/record of having a disability
+==================================================
+Question: Do you have a disability?
+Detected Widget Type: react_select
+Available Options: ['Yes, I have a disability, or have a history/record of having a disability', 'No, I don’t have a disability, or a history/record of having a disability', "I don't wish to answer"]
+Normalized Value: No, I don’t have a disability, or a history/record of having a disability
+Selected Value: No, I don’t have a disability, or a history/record of having a disability
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_have_a_disability_.png
+==================================================
+GreenhouseHandler: Found question -> By checking this box, I agree to allow PlayStation Global to retain my data for future opportunities for employment for up to 1460 days after the conclusion of consideration of my current application for employment.
+
+[Essay Debug] Question: By checking this box, I agree to allow PlayStation Global to retain my data for future opportunities for employment for up to 1460 days after the conclusion of consideration of my current application for employment.
+  -> Retrieved Chunk 1: ### Project 4: Semantic Document Search — GDSC IIT Roorkee (Score: 11.41)
+  -> Retrieved Chunk 2: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 11.03)
+  -> Retrieved Chunk 3: ### Project 5: SC-MFC Power Optimisation (B.Tech Thesis) (Score: 10.89)
+  -> Final LLM Answer: I do not agree to allow PlayStation Global to retain my data for future opportunities for employment.
+  [Metric Grounding] Numbers in Context: {'500', '10', '64', '0.963', '16', '5', '4', '32', '0.547'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> By checking this box, I agree to allow PlayStation Global to retain my data for future opportunities for employment for up to 1460 days after the conclusion of consideration of my current application for employment.
+==================================================
+Question: By checking this box, I agree to allow PlayStation Global to retain my data for future opportunities for employment for up to 1460 days after the conclusion of consideration of my current application for employment.
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: I do not agree to allow PlayStation Global to retain my data for future opportunities for employment.
+Selected Value: I do not agree to allow PlayStation Global to retain my data for future opportunities for employment.
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Do_you_have_a_disability_.png
+==================================================
+GreenhouseHandler: Found question -> By checking this box, I consent to PlayStation Global collecting, storing, and processing my responses to the demographic data surveys above.
+
+[Classification]: LEGAL -> By checking this box, I consent to PlayStation Global collecting, storing, and processing my responses to the demographic data surveys above.
+GreenhouseHandler: Normalization failed for 'By checking this box, I consent to PlayStation Global collecting, storing, and processing my responses to the demographic data surveys above.'. Safety Pause.
+GreenhouseHandler: Safety rules triggered. Moving to REVIEW_REQUIRED.
+Failed to submit: REVIEW_REQUIRED. Moving to next job.
+
+--- Attempt 2: Applying to Job 42 at Quince ---
+Executor: Starting job 42 on GREENHOUSE (https://job-boards.greenhouse.io/quince/jobs/5226786008?utm_source=Simplify&ref=Simplify)
+Executor [Greenhouse]: Initializing Greenhouse Handler...
+GreenhouseHandler: Verifying standard fields...
+GreenhouseHandler: Uploading resume /Users/yashkherwal/Downloads/hrmailfiles/data/Resume_aiml.pdf...
+  -> Renamed to: Resume_Quince_SoftwareDevelopmentEngineerNewGrad.pdf
+  -> File Exists: True
+  -> File Size: 126396 bytes
+GreenhouseHandler Execution Error: Resume upload aborted: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("button:has-text(\"Attach\")").first
+
+Failed to submit: FAILED. Moving to next job.
+
+--- Attempt 3: Applying to Job 44 at Captivation ---
+Executor: Starting job 44 on GREENHOUSE (https://job-boards.greenhouse.io/captivation/jobs/5225182008?utm_source=Simplify&ref=Simplify)
+Executor [Greenhouse]: Initializing Greenhouse Handler...
+GreenhouseHandler: Verifying standard fields...
+GreenhouseHandler: Uploading resume /Users/yashkherwal/Downloads/hrmailfiles/data/Resume_aiml.pdf...
+  -> Renamed to: Resume_Captivation_SoftwareEngineer1AWSDockerKubernetesJavaJavascriptKibanaGit.pdf
+  -> File Exists: True
+  -> File Size: 126396 bytes
+  -> Upload Verified: True
+GreenhouseHandler: Starting submission cycle 1/3...
+GreenhouseHandler: Processing custom fields...
+GreenhouseHandler: Found question -> Are You Authorized to work in the U.S. without restriction?
+
+[Classification]: KNOCKOUT -> Are You Authorized to work in the U.S. without restriction?
+[Dropdown Debug]
+  -> Question: Are You Authorized to work in the U.S. without restriction?
+  -> Detected Type: KNOCKOUT
+  -> Mapped Value (Raw): Yes
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): Yes
+==================================================
+Question: Are You Authorized to work in the U.S. without restriction?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: Yes
+Selected Value: Yes
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_You_Authorized_to_work_in_.png
+==================================================
+GreenhouseHandler: Found question -> Will You Now or in the Future Require Sponsorship to work within the United States?
+
+[Classification]: KNOCKOUT -> Will You Now or in the Future Require Sponsorship to work within the United States?
+[Dropdown Debug]
+  -> Question: Will You Now or in the Future Require Sponsorship to work within the United States?
+  -> Detected Type: KNOCKOUT
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Will You Now or in the Future Require Sponsorship to work within the United States?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Will_You_Now_or_in_the_Future_.png
+==================================================
+GreenhouseHandler: Found question -> Do You Currently Hold an Active Security Clearance?
+
+[Essay Debug] Question: Do You Currently Hold an Active Security Clearance?
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 3.07)
+  -> Retrieved Chunk 2: **On ScoreMe:** (Score: 2.47)
+  -> Retrieved Chunk 3: ### Working Style (Score: 2.29)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'3', '25', '2'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Do You Currently Hold an Active Security Clearance?
+[Dropdown Debug]
+  -> Question: Do You Currently Hold an Active Security Clearance?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Do You Currently Hold an Active Security Clearance?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_You_Currently_Hold_an_Activ.png
+==================================================
+GreenhouseHandler: Found question -> If Yes, Which level of Security Clearance Do You Hold?
+
+[Essay Debug] Question: If Yes, Which level of Security Clearance Do You Hold?
+  -> Retrieved Chunk 1: **On SC-MFC thesis:** (Score: 5.60)
+  -> Retrieved Chunk 2: ### Strongest Ownership Signals (Score: 4.48)
+  -> Retrieved Chunk 3: **On ScoreMe:** (Score: 3.60)
+  -> Final LLM Answer: None.
+  [Metric Grounding] Numbers in Context: {'0.963'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> If Yes, Which level of Security Clearance Do You Hold?
+[Dropdown Debug]
+  -> Question: If Yes, Which level of Security Clearance Do You Hold?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): None.
+  -> Available Options: ['Confidential', 'Public Trust', 'Secret', 'Top Secret', 'Top Secret w/SCI', 'None']
+  -> Selected Option (Normalized): None
+==================================================
+Question: If Yes, Which level of Security Clearance Do You Hold?
+Detected Widget Type: react_select
+Available Options: ['Confidential', 'Public Trust', 'Secret', 'Top Secret', 'Top Secret w/SCI', 'None']
+Normalized Value: None
+Selected Value: None
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_If_Yes__Which_level_of_Securit.png
+==================================================
+GreenhouseHandler: Found question -> Please Confirm Which Polygraph Level You Have:
+
+[Essay Debug] Question: Please Confirm Which Polygraph Level You Have:
+  -> Retrieved Chunk 1: ### Strongest Ownership Signals (Score: 4.48)
+  -> Retrieved Chunk 2: **On SC-MFC thesis:** (Score: 1.58)
+  -> Retrieved Chunk 3: **On BEL:** (Score: 1.55)
+  -> Final LLM Answer: None
+  [Metric Grounding] Numbers in Context: {'0.963'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Please Confirm Which Polygraph Level You Have:
+[Dropdown Debug]
+  -> Question: Please Confirm Which Polygraph Level You Have:
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): None
+  -> Available Options: ['Counterintelligence (CI) Polygraph', 'Full-Scope (CI + Lifestyle) Polygraph', 'None']
+  -> Selected Option (Normalized): None
+==================================================
+Question: Please Confirm Which Polygraph Level You Have:
+Detected Widget Type: react_select
+Available Options: ['Counterintelligence (CI) Polygraph', 'Full-Scope (CI + Lifestyle) Polygraph', 'None']
+Normalized Value: None
+Selected Value: None
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Please_Confirm_Which_Polygraph.png
+==================================================
+GreenhouseHandler: Found question -> Is Your Clearance from the MD Agency?
+
+[Essay Debug] Question: Is Your Clearance from the MD Agency?
+  -> Retrieved Chunk 1: **On YAAR:** (Score: 5.11)
+  -> Retrieved Chunk 2: ### Project 1: YAAR — AI Behavioral Companion (Score: 4.88)
+  -> Retrieved Chunk 3: ### Project 2: Echo Pod — AI Stillness Companion (Score: 3.94)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'2', '25', '3', '49', '50', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Is Your Clearance from the MD Agency?
+[Dropdown Debug]
+  -> Question: Is Your Clearance from the MD Agency?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Is Your Clearance from the MD Agency?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Is_Your_Clearance_from_the_MD_.png
+==================================================
+GreenhouseHandler: Found question -> How would you describe your gender identity?
+
+[Classification]: LEGAL -> How would you describe your gender identity?
+[Dropdown Debug]
+  -> Question: How would you describe your gender identity?
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): Male
+  -> Available Options: ['Man', 'Non-binary', 'Woman', 'I prefer to self-describe', "I don't wish to answer"]
+  -> Selected Option (Normalized): Man
+==================================================
+Question: How would you describe your gender identity?
+Detected Widget Type: react_select
+Available Options: ['Man', 'Non-binary', 'Woman', 'I prefer to self-describe', "I don't wish to answer"]
+Normalized Value: Man
+Selected Value: Man
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_How_would_you_describe_your_ge.png
+==================================================
+GreenhouseHandler: Found question -> How would you describe your racial/ethnic background?
+
+[Classification]: LEGAL -> How would you describe your racial/ethnic background?
+[Dropdown Debug]
+  -> Question: How would you describe your racial/ethnic background?
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): Yes
+  -> Available Options: ['Black or of African descent', 'East Asian', 'Hispanic, Latinx or of Spanish Origin', 'Indigenous, American Indian or Alaska Native', 'Middle Eastern or North African', 'Native Hawaiian or Pacific Islander', 'South Asian', 'Southeast Asian', 'White or European', 'I prefer to self-describe', "I don't wish to answer"]
+  -> Selected Option (Normalized): REVIEW_REQUIRED
+GreenhouseHandler: React-Select option 'REVIEW_REQUIRED' not found in DOM. Safety Pause.
+==================================================
+Question: How would you describe your racial/ethnic background?
+Detected Widget Type: react_select
+Available Options: ['Black or of African descent', 'East Asian', 'Hispanic, Latinx or of Spanish Origin', 'Indigenous, American Indian or Alaska Native', 'Middle Eastern or North African', 'Native Hawaiian or Pacific Islander', 'South Asian', 'Southeast Asian', 'White or European', 'I prefer to self-describe', "I don't wish to answer"]
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_How_would_you_describe_your_ge.png
+==================================================
+GreenhouseHandler: Found question -> How would you describe your sexual orientation?
+
+[Classification]: LEGAL -> How would you describe your sexual orientation?
+GreenhouseHandler: React-Select option 'Male' not found in DOM. Safety Pause.
+==================================================
+Question: How would you describe your sexual orientation?
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: Male
+Selected Value: Male
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_How_would_you_describe_your_ge.png
+==================================================
+GreenhouseHandler: Found question -> Do you identify as transgender?
+
+[Classification]: LEGAL -> Do you identify as transgender?
+[Dropdown Debug]
+  -> Question: Do you identify as transgender?
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): Male
+  -> Available Options: ['Yes', 'No', 'I prefer to self-describe', "I don't wish to answer"]
+  -> Selected Option (Normalized): REVIEW_REQUIRED
+GreenhouseHandler: React-Select option 'REVIEW_REQUIRED' not found in DOM. Safety Pause.
+==================================================
+Question: Do you identify as transgender?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No', 'I prefer to self-describe', "I don't wish to answer"]
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_How_would_you_describe_your_ge.png
+==================================================
+GreenhouseHandler: Found question -> Do you have a disability or chronic condition (physical, visual, auditory, cognitive, mental, emotional, or other) that substantially limits one or more of your major life activities, including mobility, communication (seeing, hearing, speaking), and learning?
+
+[Classification]: LEGAL -> Do you have a disability or chronic condition (physical, visual, auditory, cognitive, mental, emotional, or other) that substantially limits one or more of your major life activities, including mobility, communication (seeing, hearing, speaking), and learning?
+GreenhouseHandler: React-Select option 'No' not found in DOM. Safety Pause.
+==================================================
+Question: Do you have a disability or chronic condition (physical, visual, auditory, cognitive, mental, emotional, or other) that substantially limits one or more of your major life activities, including mobility, communication (seeing, hearing, speaking), and learning?
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: No
+Selected Value: No
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_How_would_you_describe_your_ge.png
+==================================================
+GreenhouseHandler: Found question -> Are you a veteran or active member of the United States Armed Forces?
+
+[Classification]: LEGAL -> Are you a veteran or active member of the United States Armed Forces?
+[Dropdown Debug]
+  -> Question: Are you a veteran or active member of the United States Armed Forces?
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes, I am a veteran or active member', 'No, I am not a veteran or active member', 'I prefer to self-describe', "I don't wish to answer"]
+  -> Selected Option (Normalized): No, I am not a veteran or active member
+==================================================
+Question: Are you a veteran or active member of the United States Armed Forces?
+Detected Widget Type: react_select
+Available Options: ['Yes, I am a veteran or active member', 'No, I am not a veteran or active member', 'I prefer to self-describe', "I don't wish to answer"]
+Normalized Value: No, I am not a veteran or active member
+Selected Value: No, I am not a veteran or active member
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_a_veteran_or_active_me.png
+==================================================
+GreenhouseHandler: Found question -> Gender
+
+[Classification]: LEGAL -> Gender
+[Dropdown Debug]
+  -> Question: Gender
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): Male
+  -> Available Options: ['Male', 'Female', 'Decline To Self Identify']
+  -> Selected Option (Normalized): Male
+==================================================
+Question: Gender
+Detected Widget Type: react_select
+Available Options: ['Male', 'Female', 'Decline To Self Identify']
+Normalized Value: Male
+Selected Value: Male
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Gender.png
+==================================================
+GreenhouseHandler: Found question -> Are you Hispanic/Latino?
+
+[Classification]: LEGAL -> Are you Hispanic/Latino?
+[Dropdown Debug]
+  -> Question: Are you Hispanic/Latino?
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No', 'Decline To Self Identify']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Are you Hispanic/Latino?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No', 'Decline To Self Identify']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_Hispanic_Latino_.png
+==================================================
+GreenhouseHandler: Found question -> Please identify your race
+
+[Classification]: LEGAL -> Please identify your race
+[Dropdown Debug]
+  -> Question: Please identify your race
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): 
+  -> Available Options: ['American Indian or Alaskan Native', 'Asian', 'Black or African American', 'White', 'Native Hawaiian or Other Pacific Islander', 'Two or More Races', 'Decline To Self Identify']
+  -> Selected Option (Normalized): 
+GreenhouseHandler: Found question -> Veteran Status
+
+[Classification]: LEGAL -> Veteran Status
+[Dropdown Debug]
+  -> Question: Veteran Status
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['I am not a protected veteran', 'I identify as one or more of the classifications of a protected veteran', "I don't wish to answer"]
+  -> Selected Option (Normalized): I am not a protected veteran
+==================================================
+Question: Veteran Status
+Detected Widget Type: react_select
+Available Options: ['I am not a protected veteran', 'I identify as one or more of the classifications of a protected veteran', "I don't wish to answer"]
+Normalized Value: I am not a protected veteran
+Selected Value: I am not a protected veteran
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Veteran_Status.png
+==================================================
+GreenhouseHandler: Safety rules triggered. Moving to REVIEW_REQUIRED.
+Failed to submit: REVIEW_REQUIRED. Moving to next job.
+Reached max 3 attempts.

@@ -1,0 +1,8 @@
+company,homepage,expected,reason
+Airbnb,https://airbnb.com,workday,inspector_failed
+Airbnb,https://airbnb.com,workday,inspector_failed
+Airbnb,https://airbnb.com,workday,inspector_failed
+Amazon,https://amazon.com,workday,inspector_failed
+Amazon,https://amazon.com,workday,inspector_failed
+Amazon,https://amazon.com,workday,inspector_failed
+Amd,https://amd.com,workday,inspector_failed

@@ -1,0 +1,43 @@
+- id: proj_1
+  title: CareerAutomated
+  technologies: Python, Groq/LLaMA, LangGraph, SQLite, Pandas, Playwright, IMAP/SMTP
+  date: '2025'
+  bullets:
+  - Building an autonomous AI recruiting platform that orchestrates job discovery,
+    candidate-job matching, resume tailoring, recruiter outreach, ATS application
+    execution, CRM tracking, and inbox intelligence through a unified multi-agent
+    workflow.
+  - 'Designed a Generator-Critic architecture: specialised agents handle company intelligence,
+    project selection, and personalised email generation; a Critic agent validates
+    quality, contextual relevance, formatting constraints, and placeholder safety
+    before any outreach is sent - bad emails are blocked, not just flagged.'
+  - Engineered scalable data pipelines using SQLite, Pandas, IMAP, and SMTP to maintain
+    recruiter state, deduplicate 10,000+ contacts, synchronise Gmail Sent history,
+    and automate personalised outreach at scale; Playwright-based browser automation
+    executes ATS-specific application flows end-to-end.
+- id: proj_2
+  title: YAAR - AI Behavioral Companion
+  technologies: React Native, LLM APIs, FastAPI, EAS Build
+  date: '2025'
+  bullets:
+  - Shipped Android APK (React Native + EAS Build) - chat UI, tap-based reaction probes,
+    adaptive LLM generation, and shareable identity card export; sub-2s streamed response
+    latency via FastAPI; validated end-to-end on device.
+  - Designed a zero-input personalisation loop (Open -> Hook -> React -> Preference
+    Update) for Gen Z in Tier 2/3 India; preference engine tracks 3 personality dimensions
+    from tap reactions, narrowing LLM output to identity-calibrated responses without
+    retraining.
+  - Primary revenue via contextual native brand integration - behavioral state triggers
+    in-character brand moments at peak-receptivity windows; freemium tier (50 reactions/day
+    free vs. Rs.49/mo premium) as secondary.
+- id: proj_3
+  title: Semantic Document Search - GDSC IIT Roorkee
+  technologies: Python, LangChain, BGE-M3, AstraDB, FastAPI, AWS EC2
+  date: '2024'
+  bullets:
+  - Replaced keyword search on a 500+ document corpus with hybrid RAG (dense BGE-M3
+    + sparse BM25) - eliminated zero-result failure mode that caused query abandonment;
+    users receive grounded direct answers instead of document lists.
+  - Offline BGE-M3 embedding pipeline into AstraDB decoupled from FastAPI serving
+    on AWS EC2 - sub-second query response; corpus updates without downtime; prompt
+    constraints enforce response groundedness.

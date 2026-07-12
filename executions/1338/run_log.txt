@@ -1,0 +1,103 @@
+RAGClient: Initialised with 4 chunks.
+==================================================
+🚀 STARTING AUTOAPPLY ENGINE BATCH
+Timestamp: 2026-06-11 18:58:50
+==================================================
+Agent 0: Generating Daily Application Queue...
+Queue is already full for today (20/20).
+Autoapply Engine: Processing 1 jobs...
+
+--- Applying to Job 1338: Business Associate - Growth(Engagement) at Groww ---
+Routing logic: Selected Profile 'AI_PROFILE' with Resume '/Users/yashkherwal/Downloads/hrmailfiles/data/Resume_aiml.pdf'
+Using cached intelligence for Groww
+Executor: Starting job 1338 on GREENHOUSE (https://job-boards.eu.greenhouse.io/groww/jobs/4777615101)
+Executor [Greenhouse]: Initializing Greenhouse Handler...
+GreenhouseHandler: Filling standard fields...
+GreenhouseHandler: Uploading resume /Users/yashkherwal/Downloads/hrmailfiles/data/Resume_aiml.pdf...
+GreenhouseHandler: Processing custom fields...
+GreenhouseHandler: Found question -> LinkedIn Profile Link
+
+[Classification]: PROFILE -> LinkedIn Profile Link
+--- HTML FOR NOTICE PERIOD ---
+<label id="question_8209890101-label" for="question_8209890101" class="label select__label">What is the notice period in your current employment?</label><div class="select-shell remix-css-b62m3t-container"><span id="react-select-question_8209890101-live-region" class="remix-css-7pg0cj-a11yText"></span><span aria-live="polite" aria-atomic="false" aria-relevant="additions text" role="log" class="remix-css-7pg0cj-a11yText"></span><div><div class="select__control remix-css-13cymwt-control"><div class="select__value-container remix-css-hlgwow"><div class="select__placeholder remix-css-1jqq78o-placeholder" id="react-select-question_8209890101-placeholder">Select...</div><div class="select__input-container remix-css-19bb58m" data-value=""><input class="select__input" style="color: inherit; background: 0px center; opacity: 1; width: 100%; grid-area: 1 / 2; font: inherit; min-width: 2px; border: 0px; margin: 0px; outline: 0px; padding: 0px;" autocapitalize="none" autocomplete="off" autocorrect="off" id="question_8209890101" spellcheck="false" tabindex="0" type="text" aria-autocomplete="list" aria-expanded="false" aria-haspopup="true" aria-errormessage="question_8209890101-error" aria-invalid="false" aria-labelledby="question_8209890101-label" aria-required="false" role="combobox" aria-activedescendant="" aria-describedby="react-select-question_8209890101-placeholder question_8209890101-error" enterkeyhint="done" value=""></div></div><div class="select__indicators remix-css-1wy0on6"><button type="button" class="icon-button icon-button--sm" aria-label="Toggle flyout" tabindex="-1"><svg class="svg-icon" fill="none" height="20" width="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path class="icon--primary-color" d="M11.4534 16.0667L5.90983 9.13729C5.54316 8.67895 5.86948 8 6.45644 8H17.5436C18.1305 8 18.4568 8.67895 18.0902 9.13729L12.5466 16.0667C12.2664 16.417 11.7336 16.417 11.4534 16.0667Z"></path></svg></button></div></div></div></div>
+------------------------------
+GreenhouseHandler: Found question -> What is the notice period in your current employment?
+
+[Classification]: PROFILE -> What is the notice period in your current employment?
+GreenhouseHandler: Found question -> Do you have a relative/ family member working currently in Groww?
+
+[Essay Debug] Question: Do you have a relative/ family member working currently in Groww?
+  -> Retrieved Chunk 1: ## Echo Pod — AI Stillness Companion (Score: 1.71)
+  -> Retrieved Chunk 2: ## Semantic Document Search — GDSC IIT Roorkee (Score: 0.27)
+  -> Retrieved Chunk 3: ## AI Data Analyst Agent (Score: 0.26)
+  -> Final LLM Answer: No, I do not have a relative or family member working currently in Groww.
+
+[Classification]: TECHNICAL -> Do you have a relative/ family member working currently in Groww?
+GreenhouseHandler: Found question -> Have you previously been employed by Groww in any capacity (e.g., full-time, intern, contractor)?
+
+[Essay Debug] Question: Have you previously been employed by Groww in any capacity (e.g., full-time, intern, contractor)?
+  -> Retrieved Chunk 1: ## Echo Pod — AI Stillness Companion (Score: 1.44)
+  -> Retrieved Chunk 2: ## Semantic Document Search — GDSC IIT Roorkee (Score: 0.89)
+  -> Retrieved Chunk 3: ## YAAR — AI Behavioral Companion (Score: 0.00)
+  -> Final LLM Answer: No.
+
+[Classification]: TECHNICAL -> Have you previously been employed by Groww in any capacity (e.g., full-time, intern, contractor)?
+GreenhouseHandler: Found question -> Do you provide your consent for us to conduct your background verification (BGV) and reference checks?
+
+[Classification]: LEGAL -> Do you provide your consent for us to conduct your background verification (BGV) and reference checks?
+GreenhouseHandler: Found question -> Please mention your current organisation.
+
+[Essay Debug] Question: Please mention your current organisation.
+  -> Retrieved Chunk 1: ## YAAR — AI Behavioral Companion (Score: 0.00)
+  -> Retrieved Chunk 2: ## Echo Pod — AI Stillness Companion (Score: 0.00)
+  -> Retrieved Chunk 3: ## AI Data Analyst Agent (Score: 0.00)
+  -> Final LLM Answer: I do not have a current organisation.
+
+[Classification]: PROFILE -> Please mention your current organisation.
+GreenhouseHandler: Found question -> How many years of experience do you have working in Growth?
+
+[Classification]: PROFILE -> How many years of experience do you have working in Growth?
+GreenhouseHandler: Found question -> Tell us about a growth initiative you owned end-to-end. Briefly explain the details, metrics, actions and impact.
+
+[Essay Debug] Question: Tell us about a growth initiative you owned end-to-end. Briefly explain the details, metrics, actions and impact.
+  -> Retrieved Chunk 1: ## YAAR — AI Behavioral Companion (Score: 2.27)
+  -> Retrieved Chunk 2: ## Echo Pod — AI Stillness Companion (Score: 1.06)
+  -> Retrieved Chunk 3: ## Semantic Document Search — GDSC IIT Roorkee (Score: 0.94)
+  -> Final LLM Answer: I led the growth initiative for YAAR — AI Behavioral Companion, a zero-input AI companion for Gen Z in Tier 2/3 India. Key details include:
+
+- Primary revenue is contextual native brand integration.
+- I designed a preference engine that tracks 3 personality dimensions from tap reactions, using dynamic prompt construction and LLM APIs.
+- The output variance is deliberately preserved to prevent staleness.
+- I implemented a server-side state persistence across sessions.
+
+Metrics:
+- I do not have explicit metrics on user growth, engagement, or revenue for YAAR.
+
+Actions:
+- I designed a viral acquisition loop through an identity card share mechanic.
+- I framed brand integration as behavioral state-triggered suggestion, not ad placement.
+
+Impact:
+- I successfully shipped a product that understands Gen Z consumer psychology for India's Tier 2/3 market.
+- The product has a unique approach to retention mechanics, growth loops, and monetisation at product design time.
+
+[Classification]: TECHNICAL -> Tell us about a growth initiative you owned end-to-end. Briefly explain the details, metrics, actions and impact.
+GreenhouseHandler: Essay exceeds 300 chars for 'Tell us about a growth initiative you owned end-to-end. Briefly explain the details, metrics, actions and impact.'. Safety Pause.
+GreenhouseHandler: Found question -> Describe a unstructured problem you worked on. How did you break it down and decide what to prioritize first? Briefly explain the details.
+
+[Essay Debug] Question: Describe a unstructured problem you worked on. How did you break it down and decide what to prioritize first? Briefly explain the details.
+  -> Retrieved Chunk 1: ## YAAR — AI Behavioral Companion (Score: 2.27)
+  -> Retrieved Chunk 2: ## Echo Pod — AI Stillness Companion (Score: 2.07)
+  -> Retrieved Chunk 3: ## Semantic Document Search — GDSC IIT Roorkee (Score: 1.10)
+  -> Final LLM Answer: I worked on the problem of designing an AI companion for Gen Z in Tier 2/3 India, YAAR. Initially, it was an unstructured problem as I had to consider various aspects such as user behavior, personality, and engagement. 
+
+To break it down, I started by identifying key technical and product decisions. I prioritized understanding user behavior and personality through tap reactions, which led me to design a preference engine that tracks three personality dimensions. I also focused on preserving output variance to prevent staleness and implemented server-side state persistence across sessions.
+
+[Classification]: TECHNICAL -> Describe a unstructured problem you worked on. How did you break it down and decide what to prioritize first? Briefly explain the details.
+GreenhouseHandler: Essay exceeds 300 chars for 'Describe a unstructured problem you worked on. How did you break it down and decide what to prioritize first? Briefly explain the details.'. Safety Pause.
+GreenhouseHandler: Safety rules triggered. Moving to REVIEW_REQUIRED.
+Result for Job 1338: REVIEW_REQUIRED
+
+==================================================
+🏁 AUTOAPPLY BATCH COMPLETE
+==================================================

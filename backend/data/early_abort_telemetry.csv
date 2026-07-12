@@ -1,0 +1,123 @@
+timestamp,job_id,company,role,scanner_result,reason,estimated_browser_time_saved_sec,estimated_llm_calls_saved
+2026-06-12T10:34:40.209226,9991,Unknown,Unknown,SKIPPED_INELIGIBLE,US Only Location,120,8
+2026-06-12T10:34:40.526687,9992,Unknown,Unknown,SKIPPED_INELIGIBLE,Future Graduation Required,120,8
+2026-06-12T10:34:40.820581,9993,Unknown,Unknown,SKIPPED_INELIGIBLE,Minimum Experience >= 3 Years,120,8
+2026-06-12T10:34:41.101360,9994,Unknown,Unknown,OK,Passed Early Scanner,0,0
+2026-06-12T13:22:12.115138,1375,Phonepe,Software Engineer - iOS,OK,Passed Early Scanner,0,0
+2026-06-12T13:52:58.041834,1351,Phonepe,Analyst/AM risk Operations,OK,Passed Early Scanner,0,0
+2026-06-12T15:25:00.522867,1388,Unknown,Unknown,OK,Passed Early Scanner,0,0
+2026-06-12T15:26:14.173939,1005,Unknown,Unknown,OK,Passed Early Scanner,0,0
+2026-06-12T15:41:58.316050,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-12T15:42:50.842424,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-12T15:53:52.637964,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-12T15:54:29.331472,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-12T16:09:15.166202,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-12T16:17:56.464773,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T10:33:49.614582,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T10:35:07.796296,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T10:48:25.991650,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T10:50:31.701657,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T10:59:14.001620,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T11:04:26.288575,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T11:11:37.750859,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T11:15:31.410728,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T11:16:20.929926,1005,Stripe,Software Engineer,OK,Passed Early Scanner,0,0
+2026-06-13T11:20:44.196154,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T11:22:43.269614,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T11:31:15.771627,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T11:33:10.002028,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T11:37:16.504449,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T11:38:30.011452,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T11:41:06.337184,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T11:42:59.443555,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T11:45:14.840960,1005,Stripe,Software Engineer,OK,Passed Early Scanner,0,0
+2026-06-13T11:47:57.889073,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T11:59:16.881824,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T11:59:45.244183,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T12:01:12.058643,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T12:01:54.692547,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T12:03:56.985289,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T12:05:24.851392,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T12:07:13.389124,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T12:09:00.069332,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T12:10:48.086121,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T12:15:37.585976,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T12:16:54.788987,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T12:20:36.668726,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T12:23:43.166259,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T12:25:14.950781,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T12:27:39.482150,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T12:32:25.678574,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T12:34:20.915589,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T12:40:18.103217,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T12:47:13.247582,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T12:48:07.932792,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T12:53:42.087416,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T13:11:38.119673,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T13:18:17.555185,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T14:29:32.285732,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T14:36:00.347764,1338,Groww,Business Associate - Growth(Engagement),OK,Passed Early Scanner,0,0
+2026-06-13T14:36:55.244982,585,SentinelOne,AI/Machine Learning Engineer Intern,OK,Passed Early Scanner,0,0
+2026-06-13T15:04:48.060743,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T15:08:57.381343,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T15:10:09.999365,1338,Groww,Business Associate - Growth(Engagement),OK,Passed Early Scanner,0,0
+2026-06-13T15:10:53.791760,585,SentinelOne,AI/Machine Learning Engineer Intern,OK,Passed Early Scanner,0,0
+2026-06-13T15:14:11.975412,1338,Groww,Business Associate - Growth(Engagement),OK,Passed Early Scanner,0,0
+2026-06-13T15:15:27.587689,585,SentinelOne,AI/Machine Learning Engineer Intern,OK,Passed Early Scanner,0,0
+2026-06-13T15:16:27.802898,1005,Stripe,"Software Engineer, Internal Systems",OK,Passed Early Scanner,0,0
+2026-06-13T15:22:55.081516,1338,Groww,Business Associate - Growth(Engagement),OK,Passed Early Scanner,0,0
+2026-06-13T15:24:04.122866,585,SentinelOne,AI/Machine Learning Engineer Intern,OK,Passed Early Scanner,0,0
+2026-06-13T16:21:30.220524,99999,Glean,Software Engineer,OK,Passed Early Scanner,0,0
+2026-06-13T16:22:38.921245,1000,Stripe,"Software Engineer, Data & AI",OK,Passed Early Scanner,0,0
+2026-06-13T16:23:44.019126,585,SentinelOne,AI/Machine Learning Engineer Intern,OK,Passed Early Scanner,0,0
+2026-06-13T16:24:12.354167,144,🔥 Figma,"Data Scientist, Core Data 🎓",OK,Passed Early Scanner,0,0
+2026-06-13T16:27:18.319687,657,Anthropic,"Applied AI Claude Evangelist, Startups",OK,Passed Early Scanner,0,0
+2026-06-13T16:28:42.590408,68,🔥 Airbnb,iOS Software Engineer – New Grad,OK,Passed Early Scanner,0,0
+2026-06-13T18:25:48.965884,99999,Glean,Software Engineer,OK,Passed Early Scanner,0,0
+2026-06-13T18:27:32.210514,99999,Glean,Software Engineer,OK,Passed Early Scanner,0,0
+2026-06-13T19:29:03.350802,99999,Glean,Software Engineer,OK,Passed Early Scanner,0,0
+2026-06-13T19:30:52.447520,99999,Glean,Software Engineer,OK,Passed Early Scanner,0,0
+2026-06-13T19:35:10.397742,99999,Glean,Software Engineer,OK,Passed Early Scanner,0,0
+2026-06-13T19:45:14.856409,99999,Glean,Software Engineer,OK,Passed Early Scanner,0,0
+2026-06-13T21:53:22.469423,99999,Glean,Software Engineer,OK,Passed Early Scanner,0,0
+2026-06-13T21:59:54.664111,99999,Glean,Software Engineer,OK,Passed Early Scanner,0,0
+2026-06-13T22:13:48.991278,357,60decibelsinc,Internship Senior Signal Associate 🎓,REVIEW,Work Authorization Preferred,0,0
+2026-06-13T22:13:50.572892,73,Anduril,Early Career Software Engineer,OK,Passed Early Scanner,0,0
+2026-06-13T22:15:09.680382,634,Anthropic,"Account Executive, AI Native ",OK,Passed Early Scanner,0,0
+2026-06-13T22:17:20.739334,87,Aquatic Capital Management,Software Engineer – Early Career,OK,Passed Early Scanner,0,0
+2026-06-13T22:18:35.978185,562,Armada,AI Intern - Data Engineering & Agent Workflows,OK,Passed Early Scanner,0,0
+2026-06-15T07:28:12.926632,357,60decibelsinc,Internship Senior Signal Associate 🎓,REVIEW,Work Authorization Preferred,0,0
+2026-06-15T07:28:18.042300,73,Anduril,Early Career Software Engineer,OK,Passed Early Scanner,0,0
+2026-06-15T07:29:37.693509,634,Anthropic,"Account Executive, AI Native ",OK,Passed Early Scanner,0,0
+2026-06-15T07:41:32.692883,635,Anthropic,AI Compliance Officer,OK,Passed Early Scanner,0,0
+2026-06-15T07:47:36.296933,614,Aquatic Capital Management,Quantitative Researcher - Intern - Summer 2027,OK,Passed Early Scanner,0,0
+2026-06-15T07:49:15.856697,152,Artefact,Junior Data Analyst - Canada-based,OK,Passed Early Scanner,0,0
+2026-06-15T07:50:06.360261,484,Astranis,Reliability Design Associate Intern,OK,Passed Early Scanner,0,0
+2026-06-15T07:55:59.852854,614,Aquatic Capital Management,Quantitative Researcher - Intern - Summer 2027,OK,Passed Early Scanner,0,0
+2026-06-15T07:56:17.394664,152,Artefact,Junior Data Analyst - Canada-based,OK,Passed Early Scanner,0,0
+2026-06-15T07:56:19.611612,484,Astranis,Reliability Design Associate Intern,OK,Passed Early Scanner,0,0
+2026-06-15T07:56:34.996111,614,Aquatic Capital Management,Quantitative Researcher - Intern - Summer 2027,OK,Passed Early Scanner,0,0
+2026-06-15T07:56:47.102739,152,Artefact,Junior Data Analyst - Canada-based,OK,Passed Early Scanner,0,0
+2026-06-15T07:56:48.778988,484,Astranis,Reliability Design Associate Intern,OK,Passed Early Scanner,0,0
+2026-06-15T07:58:28.512343,614,Aquatic Capital Management,Quantitative Researcher - Intern - Summer 2027,OK,Passed Early Scanner,0,0
+2026-06-15T07:59:43.045319,152,Artefact,Junior Data Analyst - Canada-based,OK,Passed Early Scanner,0,0
+2026-06-15T08:00:28.111252,484,Astranis,Reliability Design Associate Intern,OK,Passed Early Scanner,0,0
+2026-06-20T16:23:03.400928,1338,Groww,Business Associate - Growth(Engagement),OK,Passed Early Scanner,0,0
+2026-06-20T16:23:35.603156,1374,Phonepe,"Software Engineer, Android",OK,Passed Early Scanner,0,0
+2026-06-20T16:24:09.657762,1375,Phonepe,Software Engineer - iOS,OK,Passed Early Scanner,0,0
+2026-06-20T16:25:35.145330,1351,Phonepe,Analyst/AM risk Operations,OK,Passed Early Scanner,0,0
+2026-06-20T16:26:09.744305,1353,Phonepe,"Analyst, Credit Risk Management - Consumer",OK,Passed Early Scanner,0,0
+2026-06-20T16:26:50.934665,1368,Phonepe,"Service Delivery Engineer, SRE",OK,Passed Early Scanner,0,0
+2026-06-20T16:27:51.201303,1372,Phonepe,Site Reliability Engineer - Azure (4-8yrs),OK,Passed Early Scanner,0,0
+2026-06-20T16:28:29.015210,1373,Phonepe,Site Reliability Engineer - Big Data (7 to 11 years),OK,Passed Early Scanner,0,0
+2026-06-20T16:28:58.844244,1362,Phonepe,Network Delivery Engineer  1 (Pune),OK,Passed Early Scanner,0,0
+2026-06-20T16:29:34.561085,1346,Phonepe,"ACM-Recovery, Mumbai",OK,Passed Early Scanner,0,0
+2026-06-20T16:30:08.371290,1338,Groww,Business Associate - Growth(Engagement),OK,Passed Early Scanner,0,0
+2026-06-20T16:30:59.993975,1375,Phonepe,Software Engineer - iOS,OK,Passed Early Scanner,0,0
+2026-06-20T16:31:46.554181,1351,Phonepe,Analyst/AM risk Operations,OK,Passed Early Scanner,0,0
+2026-06-20T16:32:29.651198,1353,Phonepe,"Analyst, Credit Risk Management - Consumer",OK,Passed Early Scanner,0,0
+2026-06-20T16:33:51.210923,1368,Phonepe,"Service Delivery Engineer, SRE",OK,Passed Early Scanner,0,0
+2026-06-20T16:34:46.219634,1372,Phonepe,Site Reliability Engineer - Azure (4-8yrs),OK,Passed Early Scanner,0,0
+2026-06-20T16:35:50.131576,1373,Phonepe,Site Reliability Engineer - Big Data (7 to 11 years),OK,Passed Early Scanner,0,0
+2026-06-20T16:36:21.698264,1362,Phonepe,Network Delivery Engineer  1 (Pune),OK,Passed Early Scanner,0,0
+2026-06-20T16:37:03.955216,1346,Phonepe,"ACM-Recovery, Mumbai",OK,Passed Early Scanner,0,0

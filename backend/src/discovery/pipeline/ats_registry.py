@@ -127,46 +127,84 @@ class ATSRegistry:
             ats_metadata = raw_metadata if isinstance(raw_metadata, str) else json.dumps(raw_metadata)
 
             # Retire existing endpoint BEFORE new one is inserted to satisfy the UNIQUE index
+            from src.api.db import is_postgres
             if existing:
-                conn.execute("""
-                    UPDATE ats_registry 
-                    SET status = 'RETIRED', retired_at = ?
-                    WHERE id = ?
-                """, (now, existing['id']))
+                if is_postgres():
+                    conn.execute("""
+                        UPDATE ats_registry 
+                        SET status = 'RETIRED', retired_at = %s
+                        WHERE id = %s
+                    """, (now, existing['id']))
+                else:
+                    conn.execute("""
+                        UPDATE ats_registry 
+                        SET status = 'RETIRED', retired_at = ?
+                        WHERE id = ?
+                    """, (now, existing['id']))
 
             # Insert new ACTIVE endpoint
-            conn.execute("""
-                INSERT INTO ats_registry (
-                    company_id, company_domain, company_name, ats_type, endpoint, canonical_endpoint, endpoint_hash,
-                    status, discovery_source, search_provider, search_query, search_rank,
-                    identity_score, inspector_score, plugin_name, plugin_version, ats_metadata,
-                    created_at, last_checked, last_verified, recheck_after
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                new_result.company_id,
-                company_domain,
-                new_result.company_name,
-                provider,
-                new_result.endpoint,
-                new_result.canonical_endpoint,
-                endpoint_hash,
-                'ACTIVE',
-                getattr(new_result, 'discovery_source', 'ValidationEngine'),
-                getattr(new_result, 'search_provider', None),
-                getattr(new_result, 'search_query', None),
-                getattr(new_result, 'search_rank', None),
-                identity_score,
-                inspector_score,
-                plugin_name,
-                plugin_version,
-                ats_metadata,
-                now, now, now, now + 14 * 24 * 3600
-            ))
+            if is_postgres():
+                conn.execute("""
+                    INSERT INTO ats_registry (
+                        company_id, company_domain, company_name, ats_type, endpoint, canonical_endpoint, endpoint_hash,
+                        status, discovery_source, search_provider, search_query, search_rank,
+                        identity_score, inspector_score, plugin_name, plugin_version, ats_metadata,
+                        created_at, last_checked, last_verified, recheck_after
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """, (
+                    new_result.company_id,
+                    company_domain,
+                    new_result.company_name,
+                    provider,
+                    new_result.endpoint,
+                    new_result.canonical_endpoint,
+                    endpoint_hash,
+                    'ACTIVE',
+                    getattr(new_result, 'discovery_source', 'ValidationEngine'),
+                    getattr(new_result, 'search_provider', None),
+                    getattr(new_result, 'search_query', None),
+                    getattr(new_result, 'search_rank', None),
+                    identity_score,
+                    inspector_score,
+                    plugin_name,
+                    plugin_version,
+                    ats_metadata,
+                    now, now, now, now + 14 * 24 * 3600
+                ))
+            else:
+                conn.execute("""
+                    INSERT INTO ats_registry (
+                        company_id, company_domain, company_name, ats_type, endpoint, canonical_endpoint, endpoint_hash,
+                        status, discovery_source, search_provider, search_query, search_rank,
+                        identity_score, inspector_score, plugin_name, plugin_version, ats_metadata,
+                        created_at, last_checked, last_verified, recheck_after
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    new_result.company_id,
+                    company_domain,
+                    new_result.company_name,
+                    provider,
+                    new_result.endpoint,
+                    new_result.canonical_endpoint,
+                    endpoint_hash,
+                    'ACTIVE',
+                    getattr(new_result, 'discovery_source', 'ValidationEngine'),
+                    getattr(new_result, 'search_provider', None),
+                    getattr(new_result, 'search_query', None),
+                    getattr(new_result, 'search_rank', None),
+                    identity_score,
+                    inspector_score,
+                    plugin_name,
+                    plugin_version,
+                    ats_metadata,
+                    now, now, now, now + 14 * 24 * 3600
+                ))
 
         if connection:
             _execute_promotion(connection)
         else:
-            with sqlite3.connect(self.db_path) as conn:
+            from src.api.db import is_postgres, get_connection
+            with sqlite3.connect(self.db_path) if not is_postgres() else get_connection() as conn:
                 _execute_promotion(conn)
                 conn.commit()
 

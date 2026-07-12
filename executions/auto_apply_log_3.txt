@@ -1,0 +1,1732 @@
+RAGClient: Initialised with 20 chunks from Master Profile.
+
+--- Attempt 1: Applying to Job 70 at Twitch ---
+Executor: Starting job 70 on GREENHOUSE (https://job-boards.greenhouse.io/twitch/jobs/8519628002?utm_source=Simplify&ref=Simplify)
+Executor [Greenhouse]: Initializing Greenhouse Handler...
+GreenhouseHandler: Verifying standard fields...
+GreenhouseHandler: Uploading resume /Users/yashkherwal/Downloads/hrmailfiles/data/Resume_aiml.pdf...
+  -> Renamed to: Resume_Twitch_SoftwareEngineer1.pdf
+  -> File Exists: True
+  -> File Size: 126396 bytes
+  -> Upload Verified: True
+GreenhouseHandler: Starting submission cycle 1/3...
+GreenhouseHandler: Processing custom fields...
+GreenhouseHandler: Found question -> Location (City)
+
+[Essay Debug] Question: Location (City)
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Location (City)
+GreenhouseHandler: React-Select option 'REVIEW_REQUIRED' not found in DOM. Safety Pause.
+==================================================
+Question: Location (City)
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> School
+
+[Essay Debug] Question: School
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: I worked on a project at OrangeLabs, an EdTech ERP platform for schools and colleges, where I developed an AI-generated personalised lecture pipeline using computer vision and voice cloning for student-facing content.
+  [Metric Grounding] Numbers in Context: {'0', '2', '3', '2026', '2025', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> School
+GreenhouseHandler: React-Select option 'I worked on a project at OrangeLabs, an EdTech ERP platform for schools and colleges, where I developed an AI-generated personalised lecture pipeline using computer vision and voice cloning for student-facing content.' not found in DOM. Safety Pause.
+==================================================
+Question: School
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: I worked on a project at OrangeLabs, an EdTech ERP platform for schools and colleges, where I developed an AI-generated personalised lecture pipeline using computer vision and voice cloning for student-facing content.
+Selected Value: I worked on a project at OrangeLabs, an EdTech ERP platform for schools and colleges, where I developed an AI-generated personalised lecture pipeline using computer vision and voice cloning for student-facing content.
+Selection Verified: False
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> Degree
+
+[Essay Debug] Question: Degree
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Degree
+GreenhouseHandler: React-Select option 'REVIEW_REQUIRED' not found in DOM. Safety Pause.
+==================================================
+Question: Degree
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> Discipline
+
+[Essay Debug] Question: Discipline
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Discipline
+GreenhouseHandler: React-Select option 'REVIEW_REQUIRED' not found in DOM. Safety Pause.
+==================================================
+Question: Discipline
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> Start date month
+
+[Essay Debug] Question: Start date month
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 2: ### Project 1: YAAR — AI Behavioral Companion (Score: 1.00)
+  -> Retrieved Chunk 3: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Final LLM Answer: February
+  [Metric Grounding] Numbers in Context: {'0', '2', '3', '50', '49', '2026', '2025', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: PROFILE -> Start date month
+GreenhouseHandler: React-Select option 'February' not found in DOM. Safety Pause.
+==================================================
+Question: Start date month
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: February
+Selected Value: February
+Selection Verified: False
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> Start date year
+
+[Essay Debug] Question: Start date year
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 2: ### Project 1: YAAR — AI Behavioral Companion (Score: 1.00)
+  -> Retrieved Chunk 3: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Final LLM Answer: 2025
+  [Metric Grounding] Numbers in Context: {'0', '2', '3', '50', '49', '2026', '2025', '1'}
+  [Metric Grounding] Numbers Generated: {'2025'}
+  [Metric Grounding] Validation Passed.
+
+[Classification]: PROFILE -> Start date year
+==================================================
+Question: Start date year
+Detected Widget Type: input
+Available Options: None
+Normalized Value: 2025
+Selected Value: 2025
+Selection Verified: True
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> End date month
+
+[Essay Debug] Question: End date month
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: April
+  [Metric Grounding] Numbers in Context: {'0', '2', '3', '2026', '2025', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> End date month
+[Dropdown Debug]
+  -> Question: End date month
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): April
+  -> Available Options: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  -> Selected Option (Normalized): April
+==================================================
+Question: End date month
+Detected Widget Type: react_select
+Available Options: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+Normalized Value: April
+Selected Value: April
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_End_date_month.png
+==================================================
+GreenhouseHandler: Found question -> End date year
+
+[Essay Debug] Question: End date year
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: 2026
+  [Metric Grounding] Numbers in Context: {'0', '2', '3', '2026', '2025', '1'}
+  [Metric Grounding] Numbers Generated: {'2026'}
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> End date year
+==================================================
+Question: End date year
+Detected Widget Type: input
+Available Options: None
+Normalized Value: 2026
+Selected Value: 2026
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_End_date_month.png
+==================================================
+GreenhouseHandler: Found question -> LinkedIn Profile
+
+[Classification]: PROFILE -> LinkedIn Profile
+==================================================
+Question: LinkedIn Profile
+Detected Widget Type: input
+Available Options: None
+Normalized Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selected Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_End_date_month.png
+==================================================
+GreenhouseHandler: Found question -> Website
+
+[Essay Debug] Question: Website
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: I don't have a personal website to share.
+  [Metric Grounding] Numbers in Context: {'0', '2', '3', '2026', '2025', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: PROFILE -> Website
+==================================================
+Question: Website
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I don't have a personal website to share.
+Selected Value: I don't have a personal website to share.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_End_date_month.png
+==================================================
+GreenhouseHandler: Found question -> Are you familiar with Twitch?
+
+[Essay Debug] Question: Are you familiar with Twitch?
+  -> Retrieved Chunk 1: **On BEL:** (Score: 2.84)
+  -> Retrieved Chunk 2: ### Project 3: AI Data Analyst Agent (Score: 2.26)
+  -> Retrieved Chunk 3: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.91)
+  -> Final LLM Answer: No, I'm not on Twitch.
+  [Metric Grounding] Numbers in Context: {'0', '3', '60', '5', '2026', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Are you familiar with Twitch?
+[Dropdown Debug]
+  -> Question: Are you familiar with Twitch?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No, I'm not on Twitch.
+  -> Available Options: ["Yes, I'm a Twitch Partner", "Yes, I'm a Twitch Affiliate", "Yes, I use Twitch (I'm a streamer and a viewer)", "Yes, I use Twitch (I'm a viewer)", "Yes, I'm familiar with Twitch, but I'm not a user", "No, I'm not on Twitch"]
+  -> Selected Option (Normalized): No, I'm not on Twitch
+==================================================
+Question: Are you familiar with Twitch?
+Detected Widget Type: react_select
+Available Options: ["Yes, I'm a Twitch Partner", "Yes, I'm a Twitch Affiliate", "Yes, I use Twitch (I'm a streamer and a viewer)", "Yes, I use Twitch (I'm a viewer)", "Yes, I'm familiar with Twitch, but I'm not a user", "No, I'm not on Twitch"]
+Normalized Value: No, I'm not on Twitch
+Selected Value: No, I'm not on Twitch
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_familiar_with_Twitch_.png
+==================================================
+GreenhouseHandler: Found question -> Are you currently a Twitch employee?
+
+[Essay Debug] Question: Are you currently a Twitch employee?
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.91)
+  -> Retrieved Chunk 2: **On SC-MFC thesis:** (Score: 1.79)
+  -> Retrieved Chunk 3: **On BEL:** (Score: 1.55)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'0', '2026', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Are you currently a Twitch employee?
+[Dropdown Debug]
+  -> Question: Are you currently a Twitch employee?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Are you currently a Twitch employee?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_currently_a_Twitch_emp.png
+==================================================
+GreenhouseHandler: Found question -> Are you open to relocation?
+
+[Essay Debug] Question: Are you open to relocation?
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 2.46)
+  -> Retrieved Chunk 2: **On ScoreMe:** (Score: 2.28)
+  -> Retrieved Chunk 3: ### Project 3: AI Data Analyst Agent (Score: 1.99)
+  -> Final LLM Answer: No, I am not open to relocation.
+  [Metric Grounding] Numbers in Context: {'0', '3', '60', '5', '2026', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Are you open to relocation?
+[Dropdown Debug]
+  -> Question: Are you open to relocation?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No, I am not open to relocation.
+  -> Available Options: ['No', "No, but I'm open to a remote position", 'San Francisco, CA', 'Irvine, CA', 'Los Angeles, CA', 'Seattle, WA', 'New York, NY', 'Salt Lake City, UT', 'Chicago, IL', 'London, UK', 'Seoul, Korea', 'Tokyo, Japan', 'Taipei, Taiwan', 'Berlin, Germany', 'Hamburg, Germany', 'Singapore', 'Sydney, Australia']
+  -> Selected Option (Normalized): No, but I'm open to a remote position
+==================================================
+Question: Are you open to relocation?
+Detected Widget Type: react_select
+Available Options: ['No', "No, but I'm open to a remote position", 'San Francisco, CA', 'Irvine, CA', 'Los Angeles, CA', 'Seattle, WA', 'New York, NY', 'Salt Lake City, UT', 'Chicago, IL', 'London, UK', 'Seoul, Korea', 'Tokyo, Japan', 'Taipei, Taiwan', 'Berlin, Germany', 'Hamburg, Germany', 'Singapore', 'Sydney, Australia']
+Normalized Value: No, but I'm open to a remote position
+Selected Value: No, but I'm open to a remote position
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_open_to_relocation_.png
+==================================================
+GreenhouseHandler: Found question -> Are you a current employee with Amazon or any Amazon subsidiary (outside of Twitch)?
+
+[Essay Debug] Question: Are you a current employee with Amazon or any Amazon subsidiary (outside of Twitch)?
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 4.24)
+  -> Retrieved Chunk 2: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 3.99)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 3.05)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'25', '10', '2', '3', '50', '5', '49', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Are you a current employee with Amazon or any Amazon subsidiary (outside of Twitch)?
+[Dropdown Debug]
+  -> Question: Are you a current employee with Amazon or any Amazon subsidiary (outside of Twitch)?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Are you a current employee with Amazon or any Amazon subsidiary (outside of Twitch)?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_a_current_employee_wit.png
+==================================================
+GreenhouseHandler: Found question -> Have you previously applied to Amazon or any Amazon subsidiary?
+
+[Essay Debug] Question: Have you previously applied to Amazon or any Amazon subsidiary?
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 6.21)
+  -> Retrieved Chunk 2: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 3.69)
+  -> Retrieved Chunk 3: ### Project 3: AI Data Analyst Agent (Score: 3.34)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'25', '10', '2', '3', '60', '5'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Have you previously applied to Amazon or any Amazon subsidiary?
+[Dropdown Debug]
+  -> Question: Have you previously applied to Amazon or any Amazon subsidiary?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Have you previously applied to Amazon or any Amazon subsidiary?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Have_you_previously_applied_to.png
+==================================================
+GreenhouseHandler: Found question -> Have you previously been employed by Amazon or any Amazon subsidiary?
+
+[Classification]: PROFILE -> Have you previously been employed by Amazon or any Amazon subsidiary?
+[Dropdown Debug]
+  -> Question: Have you previously been employed by Amazon or any Amazon subsidiary?
+  -> Detected Type: PROFILE
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Have you previously been employed by Amazon or any Amazon subsidiary?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Have_you_previously_been_emplo.png
+==================================================
+GreenhouseHandler: Found question -> Are you subject to a non-competition agreement or other agreement that would preclude or restrict your employment at Amazon?
+
+[Essay Debug] Question: Are you subject to a non-competition agreement or other agreement that would preclude or restrict your employment at Amazon?
+  -> Retrieved Chunk 1: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 8.42)
+  -> Retrieved Chunk 2: ### Project 1: YAAR — AI Behavioral Companion (Score: 7.37)
+  -> Retrieved Chunk 3: ### Project 2: Echo Pod — AI Stillness Companion (Score: 5.83)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'10', '25', '2', '3', '50', '5', '49', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Are you subject to a non-competition agreement or other agreement that would preclude or restrict your employment at Amazon?
+[Dropdown Debug]
+  -> Question: Are you subject to a non-competition agreement or other agreement that would preclude or restrict your employment at Amazon?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Are you subject to a non-competition agreement or other agreement that would preclude or restrict your employment at Amazon?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_subject_to_a_non_compe.png
+==================================================
+GreenhouseHandler: Found question -> If offered employment by Amazon, would you be legally eligible to begin employment immediately?
+
+[Essay Debug] Question: If offered employment by Amazon, would you be legally eligible to begin employment immediately?
+  -> Retrieved Chunk 1: **On SC-MFC thesis:** (Score: 4.38)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 2.30)
+  -> Retrieved Chunk 3: **On ScoreMe:** (Score: 2.28)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'25', '2', '3'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> If offered employment by Amazon, would you be legally eligible to begin employment immediately?
+[Dropdown Debug]
+  -> Question: If offered employment by Amazon, would you be legally eligible to begin employment immediately?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: If offered employment by Amazon, would you be legally eligible to begin employment immediately?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_If_offered_employment_by_Amazo.png
+==================================================
+GreenhouseHandler: Found question -> Your response is mandatory when applying for a U.S.-based position. Do you need, or will you need in the future, any immigration related support or sponsorship from Amazon in order to begin or continue employment with Amazon?
+
+[Classification]: KNOCKOUT -> Your response is mandatory when applying for a U.S.-based position. Do you need, or will you need in the future, any immigration related support or sponsorship from Amazon in order to begin or continue employment with Amazon?
+[Dropdown Debug]
+  -> Question: Your response is mandatory when applying for a U.S.-based position. Do you need, or will you need in the future, any immigration related support or sponsorship from Amazon in order to begin or continue employment with Amazon?
+  -> Detected Type: KNOCKOUT
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Your response is mandatory when applying for a U.S.-based position. Do you need, or will you need in the future, any immigration related support or sponsorship from Amazon in order to begin or continue employment with Amazon?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Your_response_is_mandatory_whe.png
+==================================================
+GreenhouseHandler: Found question -> Have you held H-1B status, or had an H-1B petition approved on your behalf, within the preceding 6 years for an employer other than a cap exempt institution?
+
+[Essay Debug] Question: Have you held H-1B status, or had an H-1B petition approved on your behalf, within the preceding 6 years for an employer other than a cap exempt institution?
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 14.67)
+  -> Retrieved Chunk 2: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 7.37)
+  -> Retrieved Chunk 3: **On ScoreMe:** (Score: 5.88)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'25', '10', '2', '3', '5'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: PROFILE -> Have you held H-1B status, or had an H-1B petition approved on your behalf, within the preceding 6 years for an employer other than a cap exempt institution?
+[Dropdown Debug]
+  -> Question: Have you held H-1B status, or had an H-1B petition approved on your behalf, within the preceding 6 years for an employer other than a cap exempt institution?
+  -> Detected Type: PROFILE
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Have you held H-1B status, or had an H-1B petition approved on your behalf, within the preceding 6 years for an employer other than a cap exempt institution?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Have_you_held_H_1B_status__or_.png
+==================================================
+GreenhouseHandler: Found question -> In which country/region do you have citizenship?
+
+[Essay Debug] Question: In which country/region do you have citizenship?
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 5.42)
+  -> Retrieved Chunk 2: **On SC-MFC thesis:** (Score: 1.58)
+  -> Retrieved Chunk 3: **On BEL:** (Score: 1.55)
+  -> Final LLM Answer: I do not have explicit information about my citizenship in the provided context.
+  [Metric Grounding] Numbers in Context: {'25', '2', '3'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> In which country/region do you have citizenship?
+[Dropdown Debug]
+  -> Question: In which country/region do you have citizenship?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): I do not have explicit information about my citizenship in the provided context.
+  -> Available Options: ['Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Brunei', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Cabo Verde', 'Cambodia', 'Cameroon', 'Canada', 'Central African Republic', 'Chad', 'Chile', 'China', 'Colombia', 'Comoros', 'Congo, Democratic Republic of the', 'Congo, Republic of the', 'Costa Rica', "Cote d'Ivoire", 'Croatia', 'Cuba', 'Cyprus', 'Czechia', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini', 'Ethiopia', 'Fiji', 'Finland', 'France', 'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana', 'Haiti', 'Honduras', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel', 'Italy', 'Jamaica', 'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kosovo', 'Kuwait', 'Kyrgyzstan', 'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg', 'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands', 'Mauritania', 'Mauritius', 'Mexico', 'Micronesia', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar', 'Namibia', 'Nauru', 'Nepal', 'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'North Macedonia', 'Norway', 'Oman', 'Pakistan', 'Palau', 'Palestine', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal', 'Qatar', 'Romania', 'Russia', 'Rwanda', 'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'San Marino', 'Sao Tome and Principe', 'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 'Slovakia', 'Slovenia', 'Solomon Islands', 'Somalia', 'South Africa', 'South Korea', 'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 'Suriname', 'Sweden', 'Switzerland', 'Syria', 'Taiwan', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey', 'Turkmenistan', 'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates (UAE)', 'United Kingdom (UK)', 'United States of America (USA)', 'Uruguay', 'Uzbekistan', 'Vanuatu', 'Vatican City (Holy See)', 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe']
+  -> Selected Option (Normalized): Zimbabwe
+==================================================
+Question: In which country/region do you have citizenship?
+Detected Widget Type: react_select
+Available Options: ['Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Brunei', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Cabo Verde', 'Cambodia', 'Cameroon', 'Canada', 'Central African Republic', 'Chad', 'Chile', 'China', 'Colombia', 'Comoros', 'Congo, Democratic Republic of the', 'Congo, Republic of the', 'Costa Rica', "Cote d'Ivoire", 'Croatia', 'Cuba', 'Cyprus', 'Czechia', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini', 'Ethiopia', 'Fiji', 'Finland', 'France', 'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana', 'Haiti', 'Honduras', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel', 'Italy', 'Jamaica', 'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kosovo', 'Kuwait', 'Kyrgyzstan', 'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg', 'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands', 'Mauritania', 'Mauritius', 'Mexico', 'Micronesia', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar', 'Namibia', 'Nauru', 'Nepal', 'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'North Macedonia', 'Norway', 'Oman', 'Pakistan', 'Palau', 'Palestine', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal', 'Qatar', 'Romania', 'Russia', 'Rwanda', 'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'San Marino', 'Sao Tome and Principe', 'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 'Slovakia', 'Slovenia', 'Solomon Islands', 'Somalia', 'South Africa', 'South Korea', 'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 'Suriname', 'Sweden', 'Switzerland', 'Syria', 'Taiwan', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey', 'Turkmenistan', 'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates (UAE)', 'United Kingdom (UK)', 'United States of America (USA)', 'Uruguay', 'Uzbekistan', 'Vanuatu', 'Vatican City (Holy See)', 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe']
+Normalized Value: Zimbabwe
+Selected Value: Zimbabwe
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_In_which_country_region_do_you.png
+==================================================
+GreenhouseHandler: Found question -> Since obtaining your most recent citizenship, did you afterwards become a permanent resident in any other country/region? This does not include temporary statuses such as student visas or time-limited work permits.
+
+[Classification]: KNOCKOUT -> Since obtaining your most recent citizenship, did you afterwards become a permanent resident in any other country/region? This does not include temporary statuses such as student visas or time-limited work permits.
+[Dropdown Debug]
+  -> Question: Since obtaining your most recent citizenship, did you afterwards become a permanent resident in any other country/region? This does not include temporary statuses such as student visas or time-limited work permits.
+  -> Detected Type: KNOCKOUT
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Since obtaining your most recent citizenship, did you afterwards become a permanent resident in any other country/region? This does not include temporary statuses such as student visas or time-limited work permits.
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Since_obtaining_your_most_rece.png
+==================================================
+GreenhouseHandler: Found question -> For the sole purpose of determining export licensing requirements, please provide your country of citizenship or legal permanent residence, whichever was obtained last.
+
+[Essay Debug] Question: For the sole purpose of determining export licensing requirements, please provide your country of citizenship or legal permanent residence, whichever was obtained last.
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 6.21)
+  -> Retrieved Chunk 2: **On YAAR:** (Score: 4.87)
+  -> Retrieved Chunk 3: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 3.86)
+  -> Final LLM Answer: I do not have information about my country of citizenship or legal permanent residence.
+  [Metric Grounding] Numbers in Context: {'0', '25', '2', '3', '2026', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> For the sole purpose of determining export licensing requirements, please provide your country of citizenship or legal permanent residence, whichever was obtained last.
+[Dropdown Debug]
+  -> Question: For the sole purpose of determining export licensing requirements, please provide your country of citizenship or legal permanent residence, whichever was obtained last.
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): I do not have information about my country of citizenship or legal permanent residence.
+  -> Available Options: ['Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Brunei', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Cabo Verde', 'Cambodia', 'Cameroon', 'Canada', 'Central African Republic', 'Chad', 'Chile', 'China', 'Colombia', 'Comoros', 'Congo, Democratic Republic of the', 'Congo, Republic of the', 'Costa Rica', "Cote d'Ivoire", 'Croatia', 'Cuba', 'Cyprus', 'Czechia', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini', 'Ethiopia', 'Fiji', 'Finland', 'France', 'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana', 'Haiti', 'Honduras', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel', 'Italy', 'Jamaica', 'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kosovo', 'Kuwait', 'Kyrgyzstan', 'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg', 'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands', 'Mauritania', 'Mauritius', 'Mexico', 'Micronesia', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar', 'Namibia', 'Nauru', 'Nepal', 'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'North Macedonia', 'Norway', 'Oman', 'Pakistan', 'Palau', 'Palestine', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal', 'Qatar', 'Romania', 'Russia', 'Rwanda', 'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'San Marino', 'Sao Tome and Principe', 'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 'Slovakia', 'Slovenia', 'Solomon Islands', 'Somalia', 'South Africa', 'South Korea', 'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 'Suriname', 'Sweden', 'Switzerland', 'Syria', 'Taiwan', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey', 'Turkmenistan', 'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates (UAE)', 'United Kingdom (UK)', 'United States of America (USA)', 'Uruguay', 'Uzbekistan', 'Vanuatu', 'Vatican City (Holy See)', 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe']
+  -> Selected Option (Normalized): Zimbabwe
+==================================================
+Question: For the sole purpose of determining export licensing requirements, please provide your country of citizenship or legal permanent residence, whichever was obtained last.
+Detected Widget Type: react_select
+Available Options: ['Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Brunei', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Cabo Verde', 'Cambodia', 'Cameroon', 'Canada', 'Central African Republic', 'Chad', 'Chile', 'China', 'Colombia', 'Comoros', 'Congo, Democratic Republic of the', 'Congo, Republic of the', 'Costa Rica', "Cote d'Ivoire", 'Croatia', 'Cuba', 'Cyprus', 'Czechia', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini', 'Ethiopia', 'Fiji', 'Finland', 'France', 'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana', 'Haiti', 'Honduras', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel', 'Italy', 'Jamaica', 'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kosovo', 'Kuwait', 'Kyrgyzstan', 'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg', 'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands', 'Mauritania', 'Mauritius', 'Mexico', 'Micronesia', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar', 'Namibia', 'Nauru', 'Nepal', 'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'North Macedonia', 'Norway', 'Oman', 'Pakistan', 'Palau', 'Palestine', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal', 'Qatar', 'Romania', 'Russia', 'Rwanda', 'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'San Marino', 'Sao Tome and Principe', 'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 'Slovakia', 'Slovenia', 'Solomon Islands', 'Somalia', 'South Africa', 'South Korea', 'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 'Suriname', 'Sweden', 'Switzerland', 'Syria', 'Taiwan', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey', 'Turkmenistan', 'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates (UAE)', 'United Kingdom (UK)', 'United States of America (USA)', 'Uruguay', 'Uzbekistan', 'Vanuatu', 'Vatican City (Holy See)', 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe']
+Normalized Value: Zimbabwe
+Selected Value: Zimbabwe
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_For_the_sole_purpose_of_determ.png
+==================================================
+GreenhouseHandler: Found question -> What is your expected total base pay compensation for your next role. Please do not disclose current or past compensation.
+
+[Classification]: COMPENSATION -> What is your expected total base pay compensation for your next role. Please do not disclose current or past compensation.
+GreenhouseHandler: Normalization failed for 'What is your expected total base pay compensation for your next role. Please do not disclose current or past compensation.'. Safety Pause.
+GreenhouseHandler: Found question -> Would you like to be considered for future opportunities at Twitch when you apply?
+
+[Essay Debug] Question: Would you like to be considered for future opportunities at Twitch when you apply?
+  -> Retrieved Chunk 1: **On SC-MFC thesis:** (Score: 7.85)
+  -> Retrieved Chunk 2: ### Project 1: YAAR — AI Behavioral Companion (Score: 6.55)
+  -> Retrieved Chunk 3: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 6.18)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'10', '2', '3', '50', '5', '49', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Would you like to be considered for future opportunities at Twitch when you apply?
+[Dropdown Debug]
+  -> Question: Would you like to be considered for future opportunities at Twitch when you apply?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Would you like to be considered for future opportunities at Twitch when you apply?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Would_you_like_to_be_considere.png
+==================================================
+GreenhouseHandler: Found question -> Gender
+
+[Classification]: LEGAL -> Gender
+[Dropdown Debug]
+  -> Question: Gender
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): Male
+  -> Available Options: ['Male', 'Female', 'Decline To Self Identify']
+  -> Selected Option (Normalized): Male
+==================================================
+Question: Gender
+Detected Widget Type: react_select
+Available Options: ['Male', 'Female', 'Decline To Self Identify']
+Normalized Value: Male
+Selected Value: Male
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Gender.png
+==================================================
+GreenhouseHandler: Found question -> Are you Hispanic/Latino?
+
+[Classification]: LEGAL -> Are you Hispanic/Latino?
+[Dropdown Debug]
+  -> Question: Are you Hispanic/Latino?
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No', 'Decline To Self Identify']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Are you Hispanic/Latino?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No', 'Decline To Self Identify']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_Hispanic_Latino_.png
+==================================================
+GreenhouseHandler: Found question -> Please identify your race
+
+[Classification]: LEGAL -> Please identify your race
+[Dropdown Debug]
+  -> Question: Please identify your race
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): 
+  -> Available Options: ['American Indian or Alaskan Native', 'Asian', 'Black or African American', 'White', 'Native Hawaiian or Other Pacific Islander', 'Two or More Races', 'Decline To Self Identify']
+  -> Selected Option (Normalized): Decline To Self Identify
+GreenhouseHandler: Verification failed! 'Decline To Self Identify' not visible in Please identify your race control.
+==================================================
+Question: Please identify your race
+Detected Widget Type: react_select
+Available Options: ['American Indian or Alaskan Native', 'Asian', 'Black or African American', 'White', 'Native Hawaiian or Other Pacific Islander', 'Two or More Races', 'Decline To Self Identify']
+Normalized Value: Decline To Self Identify
+Selected Value: Decline To Self Identify
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Are_you_Hispanic_Latino_.png
+==================================================
+GreenhouseHandler: Found question -> Disability Status
+
+[Classification]: LEGAL -> Disability Status
+[Dropdown Debug]
+  -> Question: Disability Status
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes, I have a disability, or have had one in the past', 'No, I do not have a disability and have not had one in the past', 'I do not want to answer']
+  -> Selected Option (Normalized): No, I do not have a disability and have not had one in the past
+==================================================
+Question: Disability Status
+Detected Widget Type: react_select
+Available Options: ['Yes, I have a disability, or have had one in the past', 'No, I do not have a disability and have not had one in the past', 'I do not want to answer']
+Normalized Value: No, I do not have a disability and have not had one in the past
+Selected Value: No, I do not have a disability and have not had one in the past
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Disability_Status.png
+==================================================
+GreenhouseHandler: Safety rules triggered. Moving to REVIEW_REQUIRED.
+Failed to submit: REVIEW_REQUIRED. Moving to next job.
+
+--- Attempt 2: Applying to Job 72 at Wonderschool ---
+Executor: Starting job 72 on GREENHOUSE (https://job-boards.greenhouse.io/wonderschool/jobs/6359139003?utm_source=Simplify&ref=Simplify)
+Executor [Greenhouse]: Initializing Greenhouse Handler...
+GreenhouseHandler: Verifying standard fields...
+GreenhouseHandler: Uploading resume /Users/yashkherwal/Downloads/hrmailfiles/data/Resume_aiml.pdf...
+  -> Renamed to: Resume_Wonderschool_EarlyCareerSoftwareEngineerAppliedAI.pdf
+  -> File Exists: True
+  -> File Size: 126396 bytes
+  -> Upload Verified: True
+GreenhouseHandler: Starting submission cycle 1/3...
+GreenhouseHandler: Processing custom fields...
+GreenhouseHandler: Found question -> School
+
+[Essay Debug] Question: School
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: I do not have information about my educational background in the provided context.
+  [Metric Grounding] Numbers in Context: {'0', '2', '3', '2026', '2025', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> School
+[Dropdown Debug]
+  -> Question: School
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): I do not have information about my educational background in the provided context.
+  -> Available Options: ['Aalborg University', 'Aalto University', 'Aarhus University', 'Abertay University', 'Aberystwyth University', 'Abilene Christian University', 'Abo Akademi University', 'Abraham Baldwin Agricultural College', 'Abu Dhabi University', 'Academy of Art University', 'Acadia University', 'Acharya Nagarjuna University', 'Acupuncture and Integrative Medicine College - Berkeley', 'Adams State University', 'Adelphi University', 'Adrian College', 'Adventist University of Health Sciences', 'Agnes Scott College', 'AIB College of Business', 'Ain Shams University', 'Airlangga University', 'Ajou University', 'Alabama A&M University', 'Alabama State University', 'Alaska Pacific University', 'Al Azhar University', 'Albany College of Pharmacy and Health Sciences', 'Albany State University', 'Albertus Magnus College', 'Albion College', 'Albright College', 'Alcorn State University', 'Alderson Broaddus University', 'Alexandria University', 'Alexandru Ioan Cuza University', 'Al-Farabi Kazakh National University', 'Alfred University', 'Alice Lloyd College', 'Al-Imam Mohamed Ibn Saud Islamic University', 'Allegheny College', 'Allen College', 'Allen University', 'Alliant International University', 'Alma College', 'Alpen-Adria-Universität Klagenfurt', 'Alvernia University', 'Alverno College', 'Amberton University', 'American Academy of Art', 'American Indian College of the Assemblies of God', 'American InterContinental University', 'American International College', 'American Jewish University', 'American Public University System', 'American University', 'American University in Bulgaria', 'American University in Cairo', 'American University of Beirut', 'American University of Beirut (AUB)', 'American University of Paris', 'American University of Puerto Rico', 'American University of Sharjah (AUS)', 'Amherst College', 'Amridge University', 'Anderson University', 'Andrews University', 'Angelo State University', 'Anna Maria College', 'Antioch University', 'Aoyama Gakuin University', 'Appalachian Bible College', 'Appalachian State University', 'Aquinas College', 'Arcadia University', 'Argosy University', 'Aristotle University of Thessaloniki', 'Arizona Christian University', 'Arizona State University', 'Arizona State University - West', 'Arkansas Baptist College', 'Arkansas State University', 'Arkansas Tech University', 'Armstrong Atlantic State University', 'Art Academy of Cincinnati', 'Art Center College of Design', 'Art Institute of Atlanta', 'Art Institute of Colorado', 'Art Institute of Houston', 'Art Institute of Pittsburgh', 'Art Institute of Portland', 'Art Institute of Seattle', 'Asbury University', 'Ashford University', 'Ashland University', 'Assumption College', 'Aston University', 'Ateneo de Manila University', 'Athens State University', 'Athens University of Economy And Business', 'Atlanta College of Arts']
+  -> Selected Option (Normalized): Atlanta College of Arts
+==================================================
+Question: School
+Detected Widget Type: react_select
+Available Options: ['Aalborg University', 'Aalto University', 'Aarhus University', 'Abertay University', 'Aberystwyth University', 'Abilene Christian University', 'Abo Akademi University', 'Abraham Baldwin Agricultural College', 'Abu Dhabi University', 'Academy of Art University', 'Acadia University', 'Acharya Nagarjuna University', 'Acupuncture and Integrative Medicine College - Berkeley', 'Adams State University', 'Adelphi University', 'Adrian College', 'Adventist University of Health Sciences', 'Agnes Scott College', 'AIB College of Business', 'Ain Shams University', 'Airlangga University', 'Ajou University', 'Alabama A&M University', 'Alabama State University', 'Alaska Pacific University', 'Al Azhar University', 'Albany College of Pharmacy and Health Sciences', 'Albany State University', 'Albertus Magnus College', 'Albion College', 'Albright College', 'Alcorn State University', 'Alderson Broaddus University', 'Alexandria University', 'Alexandru Ioan Cuza University', 'Al-Farabi Kazakh National University', 'Alfred University', 'Alice Lloyd College', 'Al-Imam Mohamed Ibn Saud Islamic University', 'Allegheny College', 'Allen College', 'Allen University', 'Alliant International University', 'Alma College', 'Alpen-Adria-Universität Klagenfurt', 'Alvernia University', 'Alverno College', 'Amberton University', 'American Academy of Art', 'American Indian College of the Assemblies of God', 'American InterContinental University', 'American International College', 'American Jewish University', 'American Public University System', 'American University', 'American University in Bulgaria', 'American University in Cairo', 'American University of Beirut', 'American University of Beirut (AUB)', 'American University of Paris', 'American University of Puerto Rico', 'American University of Sharjah (AUS)', 'Amherst College', 'Amridge University', 'Anderson University', 'Andrews University', 'Angelo State University', 'Anna Maria College', 'Antioch University', 'Aoyama Gakuin University', 'Appalachian Bible College', 'Appalachian State University', 'Aquinas College', 'Arcadia University', 'Argosy University', 'Aristotle University of Thessaloniki', 'Arizona Christian University', 'Arizona State University', 'Arizona State University - West', 'Arkansas Baptist College', 'Arkansas State University', 'Arkansas Tech University', 'Armstrong Atlantic State University', 'Art Academy of Cincinnati', 'Art Center College of Design', 'Art Institute of Atlanta', 'Art Institute of Colorado', 'Art Institute of Houston', 'Art Institute of Pittsburgh', 'Art Institute of Portland', 'Art Institute of Seattle', 'Asbury University', 'Ashford University', 'Ashland University', 'Assumption College', 'Aston University', 'Ateneo de Manila University', 'Athens State University', 'Athens University of Economy And Business', 'Atlanta College of Arts']
+Normalized Value: Atlanta College of Arts
+Selected Value: Atlanta College of Arts
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_School.png
+==================================================
+GreenhouseHandler: Found question -> Degree
+
+[Essay Debug] Question: Degree
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Degree
+GreenhouseHandler: React-Select option 'REVIEW_REQUIRED' not found in DOM. Safety Pause.
+==================================================
+Question: Degree
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_School.png
+==================================================
+GreenhouseHandler: Found question -> Discipline
+
+[Essay Debug] Question: Discipline
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Discipline
+GreenhouseHandler: React-Select option 'REVIEW_REQUIRED' not found in DOM. Safety Pause.
+==================================================
+Question: Discipline
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_School.png
+==================================================
+GreenhouseHandler: Found question -> Start date month
+
+[Essay Debug] Question: Start date month
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 2: ### Project 1: YAAR — AI Behavioral Companion (Score: 1.00)
+  -> Retrieved Chunk 3: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Final LLM Answer: February
+  [Metric Grounding] Numbers in Context: {'0', '2', '3', '50', '49', '2026', '2025', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: PROFILE -> Start date month
+[Dropdown Debug]
+  -> Question: Start date month
+  -> Detected Type: PROFILE
+  -> Mapped Value (Raw): February
+  -> Available Options: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  -> Selected Option (Normalized): February
+==================================================
+Question: Start date month
+Detected Widget Type: react_select
+Available Options: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+Normalized Value: February
+Selected Value: February
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Start_date_month.png
+==================================================
+GreenhouseHandler: Found question -> Start date year
+
+[Essay Debug] Question: Start date year
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 2: ### Project 1: YAAR — AI Behavioral Companion (Score: 1.00)
+  -> Retrieved Chunk 3: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Final LLM Answer: 2025
+  [Metric Grounding] Numbers in Context: {'0', '2', '3', '50', '49', '2026', '2025', '1'}
+  [Metric Grounding] Numbers Generated: {'2025'}
+  [Metric Grounding] Validation Passed.
+
+[Classification]: PROFILE -> Start date year
+==================================================
+Question: Start date year
+Detected Widget Type: input
+Available Options: None
+Normalized Value: 2025
+Selected Value: 2025
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Start_date_month.png
+==================================================
+GreenhouseHandler: Found question -> End date month
+
+[Essay Debug] Question: End date month
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: April
+  [Metric Grounding] Numbers in Context: {'0', '2', '3', '2026', '2025', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> End date month
+[Dropdown Debug]
+  -> Question: End date month
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): April
+  -> Available Options: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  -> Selected Option (Normalized): April
+==================================================
+Question: End date month
+Detected Widget Type: react_select
+Available Options: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+Normalized Value: April
+Selected Value: April
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_End_date_month.png
+==================================================
+GreenhouseHandler: Found question -> End date year
+
+[Essay Debug] Question: End date year
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: 2026
+  [Metric Grounding] Numbers in Context: {'0', '2', '3', '2026', '2025', '1'}
+  [Metric Grounding] Numbers Generated: {'2026'}
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> End date year
+==================================================
+Question: End date year
+Detected Widget Type: input
+Available Options: None
+Normalized Value: 2026
+Selected Value: 2026
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_End_date_month.png
+==================================================
+GreenhouseHandler: Found question -> LinkedIn Profile
+
+[Classification]: PROFILE -> LinkedIn Profile
+==================================================
+Question: LinkedIn Profile
+Detected Widget Type: input
+Available Options: None
+Normalized Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selected Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_End_date_month.png
+==================================================
+GreenhouseHandler: Found question -> Github or Website
+
+[Essay Debug] Question: Github or Website
+  -> Retrieved Chunk 1: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 1.93)
+  -> Retrieved Chunk 2: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Final LLM Answer: I have built and deployed my projects on GitHub. My CareerAutomated project can be found at https://github.com/Yash/CareerAutomated.
+  [Metric Grounding] Numbers in Context: {'0', '10', '2', '5', '2026', '2025', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: PROFILE -> Github or Website
+==================================================
+Question: Github or Website
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I have built and deployed my projects on GitHub. My CareerAutomated project can be found at https://github.com/Yash/CareerAutomated.
+Selected Value: I have built and deployed my projects on GitHub. My CareerAutomated project can be found at https://github.com/Yash/CareerAutomated.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_End_date_month.png
+==================================================
+GreenhouseHandler: Found question -> What is your current position?
+
+[Essay Debug] Question: What is your current position?
+  -> Retrieved Chunk 1: **On YAAR:** (Score: 5.07)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 4.88)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 4.34)
+  -> Final LLM Answer: I am an AI/ML Engineer.
+  [Metric Grounding] Numbers in Context: {'25', '2', '3', '50', '49', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> What is your current position?
+==================================================
+Question: What is your current position?
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I am an AI/ML Engineer.
+Selected Value: I am an AI/ML Engineer.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_End_date_month.png
+==================================================
+GreenhouseHandler: Found question -> What is your current company?
+
+[Classification]: PROFILE -> What is your current company?
+==================================================
+Question: What is your current company?
+Detected Widget Type: input
+Available Options: None
+Normalized Value: Not Currently Employed
+Selected Value: Not Currently Employed
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_End_date_month.png
+==================================================
+GreenhouseHandler: Found question -> Are you currently authorized to work in the United States?
+
+[Classification]: KNOCKOUT -> Are you currently authorized to work in the United States?
+[Dropdown Debug]
+  -> Question: Are you currently authorized to work in the United States?
+  -> Detected Type: KNOCKOUT
+  -> Mapped Value (Raw): Yes
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): Yes
+==================================================
+Question: Are you currently authorized to work in the United States?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: Yes
+Selected Value: Yes
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_currently_authorized_t.png
+==================================================
+GreenhouseHandler: Found question -> Do you now, or will you in the future, require sponsorship to work in the United States?
+
+[Classification]: KNOCKOUT -> Do you now, or will you in the future, require sponsorship to work in the United States?
+[Dropdown Debug]
+  -> Question: Do you now, or will you in the future, require sponsorship to work in the United States?
+  -> Detected Type: KNOCKOUT
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Do you now, or will you in the future, require sponsorship to work in the United States?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_now__or_will_you_in_the.png
+==================================================
+GreenhouseHandler: Found question -> Are you comfortable coming in 5 days a week to the office?
+
+[Essay Debug] Question: Are you comfortable coming in 5 days a week to the office?
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 4.37)
+  -> Retrieved Chunk 2: **On ScoreMe:** (Score: 3.42)
+  -> Retrieved Chunk 3: ### Project 2: Echo Pod — AI Stillness Companion (Score: 3.37)
+  -> Final LLM Answer: I am comfortable with flexible work arrangements. My previous projects, such as YAAR and Echo Pod, demonstrate my ability to work independently and manage my time effectively. I do not have a strong preference for a traditional 5-day office schedule.
+  [Metric Grounding] Numbers in Context: {'25', '2', '3', '50', '49', '1'}
+  [Metric Grounding] Numbers Generated: {'5'}
+  [Metric Grounding] Validation FAILED! Unsupported Numbers: {'5'}
+  [Metric Grounding] Replacing with fallback.
+
+[Classification]: TECHNICAL -> Are you comfortable coming in 5 days a week to the office?
+==================================================
+Question: Are you comfortable coming in 5 days a week to the office?
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I focused on building the system and validating the workflow. I do not have production metrics available for this project.
+Selected Value: I focused on building the system and validating the workflow. I do not have production metrics available for this project.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_now__or_will_you_in_the.png
+==================================================
+GreenhouseHandler: Found question -> Are you willing to spend a significant portion of your time (up to 50%) working directly with customers through support tickets and calls to inform the AI systems you build, and can you share specific examples where you’ve worked outside traditional engineering responsibilities or why this type of work appeals to you?
+
+[Essay Debug] Question: Are you willing to spend a significant portion of your time (up to 50%) working directly with customers through support tickets and calls to inform the AI systems you build, and can you share specific examples where you’ve worked outside traditional engineering responsibilities or why this type of work appeals to you?
+  -> Retrieved Chunk 1: ### Project 3: AI Data Analyst Agent (Score: 25.95)
+  -> Retrieved Chunk 2: ### Project 1: YAAR — AI Behavioral Companion (Score: 24.61)
+  -> Retrieved Chunk 3: ### Project 2: Echo Pod — AI Stillness Companion (Score: 20.40)
+  -> Final LLM Answer: I'm willing to spend a significant portion of my time working directly with customers through support tickets and calls to inform the AI systems I build. This approach aligns with my systems thinking and failure-mode-first design philosophy.
+
+In Project 3: AI Data Analyst Agent, I worked closely with non-technical users to understand their pain points and iterated on the system to meet their needs. I also designed the Error Fixer agent to handle autonomous exception recovery, which involved understanding user escalation workflows.
+
+In Project 1: YAAR, I worked with Gen Z users in Tier 2/3 India to understand their preferences and designed the preference engine to track 3 personality dimensions from tap reactions. This involved understanding user behavior and designing a system that adapts to their needs.
+
+In Project 2: Echo Pod, I diagnosed the failure mode of screen blockers and designed a 3-layer AI UX that involves ambient triggers, on-device voice AI, and daily stillness scores. This involved understanding user behavior and designing a system that competes for the user's attention in a non-intrusive way.
+
+These experiences have shown me the value of working closely with customers to inform AI system design and development. I believe that this approach leads to more effective and user-centric solutions.
+  [Metric Grounding] Numbers in Context: {'25', '2', '3', '60', '50', '5', '49', '1'}
+  [Metric Grounding] Numbers Generated: {'2', '3', '1'}
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Are you willing to spend a significant portion of your time (up to 50%) working directly with customers through support tickets and calls to inform the AI systems you build, and can you share specific examples where you’ve worked outside traditional engineering responsibilities or why this type of work appeals to you?
+==================================================
+Question: Are you willing to spend a significant portion of your time (up to 50%) working directly with customers through support tickets and calls to inform the AI systems you build, and can you share specific examples where you’ve worked outside traditional engineering responsibilities or why this type of work appeals to you?
+Detected Widget Type: textarea
+Available Options: None
+Normalized Value: I'm willing to spend a significant portion of my time working directly with customers through support tickets and calls to inform the AI systems I build. This approach aligns with my systems thinking and failure-mode-first design philosophy.
+
+In Project 3: AI Data Analyst Agent, I worked closely with non-technical users to understand their pain points and iterated on the system to meet their needs. I also designed the Error Fixer agent to handle autonomous exception recovery, which involved understanding user escalation workflows.
+
+In Project 1: YAAR, I worked with Gen Z users in Tier 2/3 India to understand their preferences and designed the preference engine to track 3 personality dimensions from tap reactions. This involved understanding user behavior and designing a system that adapts to their needs.
+
+In Project 2: Echo Pod, I diagnosed the failure mode of screen blockers and designed a 3-layer AI UX that involves ambient triggers, on-device voice AI, and daily stillness scores. This involved understanding user behavior and designing a system that competes for the user's attention in a non-intrusive way.
+
+These experiences have shown me the value of working closely with customers to inform AI system design and development. I believe that this approach leads to more effective and user-centric solutions.
+Selected Value: I'm willing to spend a significant portion of my time working directly with customers through support tickets and calls to inform the AI systems I build. This approach aligns with my systems thinking and failure-mode-first design philosophy.
+
+In Project 3: AI Data Analyst Agent, I worked closely with non-technical users to understand their pain points and iterated on the system to meet their needs. I also designed the Error Fixer agent to handle autonomous exception recovery, which involved understanding user escalation workflows.
+
+In Project 1: YAAR, I worked with Gen Z users in Tier 2/3 India to understand their preferences and designed the preference engine to track 3 personality dimensions from tap reactions. This involved understanding user behavior and designing a system that adapts to their needs.
+
+In Project 2: Echo Pod, I diagnosed the failure mode of screen blockers and designed a 3-layer AI UX that involves ambient triggers, on-device voice AI, and daily stillness scores. This involved understanding user behavior and designing a system that competes for the user's attention in a non-intrusive way.
+
+These experiences have shown me the value of working closely with customers to inform AI system design and development. I believe that this approach leads to more effective and user-centric solutions.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_now__or_will_you_in_the.png
+==================================================
+GreenhouseHandler: Found question -> What experience do you have using tools like Claude Code, OpenClaw, or similar AI-assisted development environments?
+
+[Essay Debug] Question: What experience do you have using tools like Claude Code, OpenClaw, or similar AI-assisted development environments?
+  -> Retrieved Chunk 1: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 9.82)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 7.65)
+  -> Retrieved Chunk 3: ### Strengths (Score: 7.32)
+  -> Final LLM Answer: I do not have explicit experience with tools like Claude Code, OpenClaw, or similar AI-assisted development environments. However, I have used Anthropic/Gemini APIs in Project 5: CareerAutomated — AI Recruiting Intelligence Platform, which is a form of AI-assisted development.
+  [Metric Grounding] Numbers in Context: {'6', '10', '25', '2', '3', '5', '4', '1'}
+  [Metric Grounding] Numbers Generated: {'5'}
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> What experience do you have using tools like Claude Code, OpenClaw, or similar AI-assisted development environments?
+==================================================
+Question: What experience do you have using tools like Claude Code, OpenClaw, or similar AI-assisted development environments?
+Detected Widget Type: input
+Available Options: None
+Normalized Value: 5
+Selected Value: 5
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_now__or_will_you_in_the.png
+==================================================
+GreenhouseHandler: Found question -> Where did you attend undergad?
+
+[Essay Debug] Question: Where did you attend undergad?
+  -> Retrieved Chunk 1: **On BEL:** (Score: 3.96)
+  -> Retrieved Chunk 2: **On ScoreMe:** (Score: 3.75)
+  -> Retrieved Chunk 3: **On SC-MFC thesis:** (Score: 3.34)
+  -> Final LLM Answer: No information is provided about my undergraduate education.
+  [Metric Grounding] Numbers in Context: set()
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Where did you attend undergad?
+==================================================
+Question: Where did you attend undergad?
+Detected Widget Type: input
+Available Options: None
+Normalized Value: No information is provided about my undergraduate education.
+Selected Value: No information is provided about my undergraduate education.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_now__or_will_you_in_the.png
+==================================================
+GreenhouseHandler: Found question -> What did you get your undergrad degree in?
+
+[Essay Debug] Question: What did you get your undergrad degree in?
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 5.23)
+  -> Retrieved Chunk 2: **On BEL:** (Score: 4.96)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 4.85)
+  -> Final LLM Answer: There is no information provided about my undergrad degree in the given context.
+  [Metric Grounding] Numbers in Context: {'25', '2', '3', '50', '49', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> What did you get your undergrad degree in?
+==================================================
+Question: What did you get your undergrad degree in?
+Detected Widget Type: input
+Available Options: None
+Normalized Value: There is no information provided about my undergrad degree in the given context.
+Selected Value: There is no information provided about my undergrad degree in the given context.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_now__or_will_you_in_the.png
+==================================================
+GreenhouseHandler: Found question -> What startup or founder experience do you have?
+
+[Essay Debug] Question: What startup or founder experience do you have?
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 5.01)
+  -> Retrieved Chunk 2: ### Project 1: YAAR — AI Behavioral Companion (Score: 5.00)
+  -> Retrieved Chunk 3: ### Strongest Ownership Signals (Score: 4.48)
+  -> Final LLM Answer: I have experience as a founder's office AI engineer at OrangeLabs, where I led product definition from zero.
+  [Metric Grounding] Numbers in Context: {'25', '2', '3', '50', '0.963', '49', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> What startup or founder experience do you have?
+GreenhouseHandler: Normalization failed for 'What startup or founder experience do you have?'. Safety Pause.
+GreenhouseHandler: Found question -> Describe a system you've built, either online or offline. Or even a video game.
+
+[Essay Debug] Question: Describe a system you've built, either online or offline. Or even a video game.
+  -> Retrieved Chunk 1: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 6.14)
+  -> Retrieved Chunk 2: ### Strongest Ownership Signals (Score: 4.28)
+  -> Retrieved Chunk 3: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 3.45)
+  -> Final LLM Answer: I built an autonomous 10-Agent AI platform called CareerAutomated, an AI Recruiting Intelligence Platform. It finds jobs, researches companies, tailors LaTeX resumes, and submits applications end-to-end with zero human intervention.
+  [Metric Grounding] Numbers in Context: {'0', '10', '0.963', '5', '2026', '1'}
+  [Metric Grounding] Numbers Generated: {'10'}
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Describe a system you've built, either online or offline. Or even a video game.
+==================================================
+Question: Describe a system you've built, either online or offline. Or even a video game.
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I built an autonomous 10-Agent AI platform called CareerAutomated, an AI Recruiting Intelligence Platform. It finds jobs, researches companies, tailors LaTeX resumes, and submits applications end-to-end with zero human intervention.
+Selected Value: I built an autonomous 10-Agent AI platform called CareerAutomated, an AI Recruiting Intelligence Platform. It finds jobs, researches companies, tailors LaTeX resumes, and submits applications end-to-end with zero human intervention.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_now__or_will_you_in_the.png
+==================================================
+GreenhouseHandler: Found question -> Gender
+
+[Classification]: LEGAL -> Gender
+[Dropdown Debug]
+  -> Question: Gender
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): Male
+  -> Available Options: ['Male', 'Female', 'Decline To Self Identify']
+  -> Selected Option (Normalized): Male
+==================================================
+Question: Gender
+Detected Widget Type: react_select
+Available Options: ['Male', 'Female', 'Decline To Self Identify']
+Normalized Value: Male
+Selected Value: Male
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Gender.png
+==================================================
+GreenhouseHandler: Found question -> Are you Hispanic/Latino?
+
+[Classification]: LEGAL -> Are you Hispanic/Latino?
+[Dropdown Debug]
+  -> Question: Are you Hispanic/Latino?
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No', 'Decline To Self Identify']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Are you Hispanic/Latino?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No', 'Decline To Self Identify']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_Hispanic_Latino_.png
+==================================================
+GreenhouseHandler: Found question -> Please identify your race
+
+[Classification]: LEGAL -> Please identify your race
+[Dropdown Debug]
+  -> Question: Please identify your race
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): 
+  -> Available Options: ['American Indian or Alaskan Native', 'Asian', 'Black or African American', 'White', 'Native Hawaiian or Other Pacific Islander', 'Two or More Races', 'Decline To Self Identify']
+  -> Selected Option (Normalized): Decline To Self Identify
+GreenhouseHandler: Verification failed! 'Decline To Self Identify' not visible in Please identify your race control.
+==================================================
+Question: Please identify your race
+Detected Widget Type: react_select
+Available Options: ['American Indian or Alaskan Native', 'Asian', 'Black or African American', 'White', 'Native Hawaiian or Other Pacific Islander', 'Two or More Races', 'Decline To Self Identify']
+Normalized Value: Decline To Self Identify
+Selected Value: Decline To Self Identify
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Are_you_Hispanic_Latino_.png
+==================================================
+GreenhouseHandler: Found question -> Disability Status
+
+[Classification]: LEGAL -> Disability Status
+[Dropdown Debug]
+  -> Question: Disability Status
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes, I have a disability, or have had one in the past', 'No, I do not have a disability and have not had one in the past', 'I do not want to answer']
+  -> Selected Option (Normalized): No, I do not have a disability and have not had one in the past
+==================================================
+Question: Disability Status
+Detected Widget Type: react_select
+Available Options: ['Yes, I have a disability, or have had one in the past', 'No, I do not have a disability and have not had one in the past', 'I do not want to answer']
+Normalized Value: No, I do not have a disability and have not had one in the past
+Selected Value: No, I do not have a disability and have not had one in the past
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Disability_Status.png
+==================================================
+GreenhouseHandler: Safety rules triggered. Moving to REVIEW_REQUIRED.
+Failed to submit: REVIEW_REQUIRED. Moving to next job.
+
+--- Attempt 3: Applying to Job 73 at Anduril ---
+Executor: Starting job 73 on GREENHOUSE (https://boards.greenhouse.io/andurilindustries/jobs/4802146007?utm_source=Simplify&ref=Simplify)
+Executor [Greenhouse]: Initializing Greenhouse Handler...
+GreenhouseHandler: Verifying standard fields...
+GreenhouseHandler: Uploading resume /Users/yashkherwal/Downloads/hrmailfiles/data/Resume_aiml.pdf...
+  -> Renamed to: Resume_Anduril_EarlyCareerSoftwareEngineer.pdf
+  -> File Exists: True
+  -> File Size: 126396 bytes
+  -> Upload Verified: True
+GreenhouseHandler: Starting submission cycle 1/3...
+GreenhouseHandler: Processing custom fields...
+GreenhouseHandler: Found question -> School
+
+[Essay Debug] Question: School
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: I do not have information about Yash's educational background.
+  [Metric Grounding] Numbers in Context: {'0', '2', '3', '2026', '2025', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> School
+[Dropdown Debug]
+  -> Question: School
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): I do not have information about Yash's educational background.
+  -> Available Options: ['Aalborg University', 'Aalto University', 'Aaniiih Nakoda College', 'Aarhus University', 'Abertay University', 'Aberystwyth University', 'Abilene Christian University', 'Abo Akademi University', 'Abraham Baldwin Agricultural College', 'Abraham Lincoln University', 'Abu Dhabi University', 'Academy College', 'Academy of Art University', 'Acadia University', 'Acharya Nagarjuna University', 'Activate Work Inc.', 'Acupuncture and Integrative Medicine College - Berkeley', 'Acupuncture and Massage College', 'Adams State University', 'Adelphi University', 'Adrian College', 'Adventist University of Health Sciences', 'Agnes Scott College', 'AIB College of Business', 'Aiken Technical College', 'Aims Community College', 'AIMS Education - College of Health Sciences', 'Ain Shams University', 'Airlangga University', 'Ajou University', 'Alabama A&M University', 'Alabama State University', 'Alamance Community College', 'Alamo Colleges District', 'Alaska Bible College', 'Alaska Pacific University', 'Al Azhar University', 'Albany College of Pharmacy and Health Sciences', 'Albany State University', 'Albany Technical College', 'Albertus Magnus College', 'Albion College', 'Albizu University', 'Albright College', 'Alcorn State University', 'Alderson Broaddus University', 'Alexandria Technical & Community College', 'Alexandria University', 'Alexandru Ioan Cuza University', 'Alex Batchelor University', 'Al-Farabi Kazakh National University', 'Alfred University', 'Alice Lloyd College', 'Al-Imam Mohamed Ibn Saud Islamic University', 'Allan Hancock College', 'Allegany College of Maryland', 'Allegheny College', 'Allegheny Wesleyan College', 'Allen College', 'Allen County Community College', 'Allen University', 'Alliant International University', 'Alliant International University-San Diego', 'Alma College', 'Alpena Community College', 'Alpen-Adria-Universität Klagenfurt', 'Alvernia University', 'Alverno College', 'Alvin Community College', 'Amarillo College', 'Amberton University', 'Ambria College of Nursing', 'America Evangelical University', 'American Academy of Art', 'American Baptist College', 'American Business and Technology University', 'American College for Medical Careers', 'American College of Education', 'American College of Financial Services', 'American College of Healthcare Sciences', 'American Indian College of the Assemblies of God', 'American Institute of Alternative Medicine', 'American Institute of Medical Sciences & Education', 'American InterContinental University', 'American International College', 'American Islamic College', 'American Jewish University', 'American Military University', 'American Musical and Dramatic Academy', 'American National University', 'American Public University', 'American Public University System', 'American River College', 'American Samoa Community College', 'American Sentinel University', 'American University', 'American University in Bulgaria', 'American University in Cairo', 'American University of Beirut', 'American University of Beirut (AUB)']
+  -> Selected Option (Normalized): American University of Beirut (AUB)
+==================================================
+Question: School
+Detected Widget Type: react_select
+Available Options: ['Aalborg University', 'Aalto University', 'Aaniiih Nakoda College', 'Aarhus University', 'Abertay University', 'Aberystwyth University', 'Abilene Christian University', 'Abo Akademi University', 'Abraham Baldwin Agricultural College', 'Abraham Lincoln University', 'Abu Dhabi University', 'Academy College', 'Academy of Art University', 'Acadia University', 'Acharya Nagarjuna University', 'Activate Work Inc.', 'Acupuncture and Integrative Medicine College - Berkeley', 'Acupuncture and Massage College', 'Adams State University', 'Adelphi University', 'Adrian College', 'Adventist University of Health Sciences', 'Agnes Scott College', 'AIB College of Business', 'Aiken Technical College', 'Aims Community College', 'AIMS Education - College of Health Sciences', 'Ain Shams University', 'Airlangga University', 'Ajou University', 'Alabama A&M University', 'Alabama State University', 'Alamance Community College', 'Alamo Colleges District', 'Alaska Bible College', 'Alaska Pacific University', 'Al Azhar University', 'Albany College of Pharmacy and Health Sciences', 'Albany State University', 'Albany Technical College', 'Albertus Magnus College', 'Albion College', 'Albizu University', 'Albright College', 'Alcorn State University', 'Alderson Broaddus University', 'Alexandria Technical & Community College', 'Alexandria University', 'Alexandru Ioan Cuza University', 'Alex Batchelor University', 'Al-Farabi Kazakh National University', 'Alfred University', 'Alice Lloyd College', 'Al-Imam Mohamed Ibn Saud Islamic University', 'Allan Hancock College', 'Allegany College of Maryland', 'Allegheny College', 'Allegheny Wesleyan College', 'Allen College', 'Allen County Community College', 'Allen University', 'Alliant International University', 'Alliant International University-San Diego', 'Alma College', 'Alpena Community College', 'Alpen-Adria-Universität Klagenfurt', 'Alvernia University', 'Alverno College', 'Alvin Community College', 'Amarillo College', 'Amberton University', 'Ambria College of Nursing', 'America Evangelical University', 'American Academy of Art', 'American Baptist College', 'American Business and Technology University', 'American College for Medical Careers', 'American College of Education', 'American College of Financial Services', 'American College of Healthcare Sciences', 'American Indian College of the Assemblies of God', 'American Institute of Alternative Medicine', 'American Institute of Medical Sciences & Education', 'American InterContinental University', 'American International College', 'American Islamic College', 'American Jewish University', 'American Military University', 'American Musical and Dramatic Academy', 'American National University', 'American Public University', 'American Public University System', 'American River College', 'American Samoa Community College', 'American Sentinel University', 'American University', 'American University in Bulgaria', 'American University in Cairo', 'American University of Beirut', 'American University of Beirut (AUB)']
+Normalized Value: American University of Beirut (AUB)
+Selected Value: American University of Beirut (AUB)
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_School.png
+==================================================
+GreenhouseHandler: Found question -> Degree
+
+[Essay Debug] Question: Degree
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Degree
+GreenhouseHandler: React-Select option 'REVIEW_REQUIRED' not found in DOM. Safety Pause.
+==================================================
+Question: Degree
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_School.png
+==================================================
+GreenhouseHandler: Found question -> Discipline
+
+[Essay Debug] Question: Discipline
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Discipline
+GreenhouseHandler: React-Select option 'REVIEW_REQUIRED' not found in DOM. Safety Pause.
+==================================================
+Question: Discipline
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_School.png
+==================================================
+GreenhouseHandler: Found question -> End date month
+
+[Essay Debug] Question: End date month
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+[GroqManager] 429 Rate Limit Hit on Key 1. Rotating...
+[GroqManager] Rotated to API Key 2/3
+  -> Final LLM Answer: April
+  [Metric Grounding] Numbers in Context: {'0', '2', '3', '2026', '2025', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> End date month
+[Dropdown Debug]
+  -> Question: End date month
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): April
+  -> Available Options: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  -> Selected Option (Normalized): April
+==================================================
+Question: End date month
+Detected Widget Type: react_select
+Available Options: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+Normalized Value: April
+Selected Value: April
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_End_date_month.png
+==================================================
+GreenhouseHandler: Found question -> End date year
+
+[Essay Debug] Question: End date year
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: 2026
+  [Metric Grounding] Numbers in Context: {'0', '2', '3', '2026', '2025', '1'}
+  [Metric Grounding] Numbers Generated: {'2026'}
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> End date year
+==================================================
+Question: End date year
+Detected Widget Type: input
+Available Options: None
+Normalized Value: 2026
+Selected Value: 2026
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_End_date_month.png
+==================================================
+GreenhouseHandler: Found question -> LinkedIn Profile
+
+[Classification]: PROFILE -> LinkedIn Profile
+==================================================
+Question: LinkedIn Profile
+Detected Widget Type: input
+Available Options: None
+Normalized Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selected Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_End_date_month.png
+==================================================
+GreenhouseHandler: Found question -> Website
+
+[Essay Debug] Question: Website
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: I don't have a personal website to share.
+  [Metric Grounding] Numbers in Context: {'0', '2', '3', '2026', '2025', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: PROFILE -> Website
+==================================================
+Question: Website
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I don't have a personal website to share.
+Selected Value: I don't have a personal website to share.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_End_date_month.png
+==================================================
+GreenhouseHandler: Found question -> CLEARANCE ELIGIBILITY - This position may require eligibility to obtain and maintain a U.S. security clearance.
+
+[Essay Debug] Question: CLEARANCE ELIGIBILITY - This position may require eligibility to obtain and maintain a U.S. security clearance.
+  -> Retrieved Chunk 1: ### Project 4: Semantic Document Search — GDSC IIT Roorkee (Score: 5.66)
+  -> Retrieved Chunk 2: ### Project 3: AI Data Analyst Agent (Score: 5.32)
+  -> Retrieved Chunk 3: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 4.78)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'10', '3', '500', '60', '5', '4'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> CLEARANCE ELIGIBILITY - This position may require eligibility to obtain and maintain a U.S. security clearance.
+[Dropdown Debug]
+  -> Question: CLEARANCE ELIGIBILITY - This position may require eligibility to obtain and maintain a U.S. security clearance.
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes, I hold an active U.S. security clearance', 'Yes, I am eligible for a U.S. security clearance', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: CLEARANCE ELIGIBILITY - This position may require eligibility to obtain and maintain a U.S. security clearance.
+Detected Widget Type: react_select
+Available Options: ['Yes, I hold an active U.S. security clearance', 'Yes, I am eligible for a U.S. security clearance', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_CLEARANCE_ELIGIBILITY___This_p.png
+==================================================
+GreenhouseHandler: Found question -> If you have held a U.S. security clearance in the past, what clearance level have you held?
+
+[Essay Debug] Question: If you have held a U.S. security clearance in the past, what clearance level have you held?
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 14.65)
+  -> Retrieved Chunk 2: **On SC-MFC thesis:** (Score: 6.17)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 5.63)
+  -> Final LLM Answer: N/A - have never held U.S. security clearance
+  [Metric Grounding] Numbers in Context: {'25', '2', '3', '50', '49', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> If you have held a U.S. security clearance in the past, what clearance level have you held?
+[Dropdown Debug]
+  -> Question: If you have held a U.S. security clearance in the past, what clearance level have you held?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): N/A - have never held U.S. security clearance
+  -> Available Options: ['N/A - have never held U.S. security clearance', 'Confidential', 'Secret', 'Top Secret']
+  -> Selected Option (Normalized): N/A - have never held U.S. security clearance
+==================================================
+Question: If you have held a U.S. security clearance in the past, what clearance level have you held?
+Detected Widget Type: react_select
+Available Options: ['N/A - have never held U.S. security clearance', 'Confidential', 'Secret', 'Top Secret']
+Normalized Value: N/A - have never held U.S. security clearance
+Selected Value: N/A - have never held U.S. security clearance
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_If_you_have_held_a_U_S__securi.png
+==================================================
+GreenhouseHandler: Found question -> EXPORT CONTROLS - This position requires access to information and technology that is subject to U.S. export controls. Your responses to the questions below will be used solely to determine your eligibility under U.S. law to receive information and materials subject to U.S. export controls.
+
+[Essay Debug] Question: EXPORT CONTROLS - This position requires access to information and technology that is subject to U.S. export controls. Your responses to the questions below will be used solely to determine your eligibility under U.S. law to receive information and materials subject to U.S. export controls.
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 19.37)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 18.81)
+  -> Retrieved Chunk 3: ### Project 3: AI Data Analyst Agent (Score: 14.56)
+  -> Final LLM Answer: I am a person lawfully admitted for permanent residence of the United States (i.e., “Green Card” holder).
+  [Metric Grounding] Numbers in Context: {'25', '2', '3', '1158', '8', '60', '50', '5', '1157', '49', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> EXPORT CONTROLS - This position requires access to information and technology that is subject to U.S. export controls. Your responses to the questions below will be used solely to determine your eligibility under U.S. law to receive information and materials subject to U.S. export controls.
+[Dropdown Debug]
+  -> Question: EXPORT CONTROLS - This position requires access to information and technology that is subject to U.S. export controls. Your responses to the questions below will be used solely to determine your eligibility under U.S. law to receive information and materials subject to U.S. export controls.
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): I am a person lawfully admitted for permanent residence of the United States (i.e., “Green Card” holder).
+  -> Available Options: ['A United States citizen or national', 'A person lawfully admitted for permanent residence of the United States (i.e., “Green Card” holder)', 'A person admitted as a refugee to the United States under 8 U.S.C. 1157', 'A person admitted as an asylee to the United States under 8 U.S.C. 1158', 'None of the above']
+  -> Selected Option (Normalized): A person lawfully admitted for permanent residence of the United States (i.e., “Green Card” holder)
+==================================================
+Question: EXPORT CONTROLS - This position requires access to information and technology that is subject to U.S. export controls. Your responses to the questions below will be used solely to determine your eligibility under U.S. law to receive information and materials subject to U.S. export controls.
+Detected Widget Type: react_select
+Available Options: ['A United States citizen or national', 'A person lawfully admitted for permanent residence of the United States (i.e., “Green Card” holder)', 'A person admitted as a refugee to the United States under 8 U.S.C. 1157', 'A person admitted as an asylee to the United States under 8 U.S.C. 1158', 'None of the above']
+Normalized Value: A person lawfully admitted for permanent residence of the United States (i.e., “Green Card” holder)
+Selected Value: A person lawfully admitted for permanent residence of the United States (i.e., “Green Card” holder)
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_EXPORT_CONTROLS___This_positio.png
+==================================================
+GreenhouseHandler: Found question -> U.S. WORK AUTHORIZATION
+
+[Essay Debug] Question: U.S. WORK AUTHORIZATION
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 3.45)
+  -> Retrieved Chunk 2: ### Project 1: YAAR — AI Behavioral Companion (Score: 1.00)
+  -> Retrieved Chunk 3: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Final LLM Answer: Yes
+  [Metric Grounding] Numbers in Context: {'0', '2', '3', '50', '49', '2026', '2025', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> U.S. WORK AUTHORIZATION
+[Dropdown Debug]
+  -> Question: U.S. WORK AUTHORIZATION
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): Yes
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): Yes
+==================================================
+Question: U.S. WORK AUTHORIZATION
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: Yes
+Selected Value: Yes
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_U_S__WORK_AUTHORIZATION.png
+==================================================
+GreenhouseHandler: Found question -> Will you require sponsorship from Anduril for employment now or in the future (e.g, H1B visa)?
+
+[Classification]: KNOCKOUT -> Will you require sponsorship from Anduril for employment now or in the future (e.g, H1B visa)?
+[Dropdown Debug]
+  -> Question: Will you require sponsorship from Anduril for employment now or in the future (e.g, H1B visa)?
+  -> Detected Type: KNOCKOUT
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Will you require sponsorship from Anduril for employment now or in the future (e.g, H1B visa)?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Will_you_require_sponsorship_f.png
+==================================================
+GreenhouseHandler: Found question -> U.S. Person status and/or U.S. clearance eligibility is required for this role due to access requirements for U.S. export-controlled information/facilities and/or depending on program, are you eligible to meet this requirement?
+
+[Essay Debug] Question: U.S. Person status and/or U.S. clearance eligibility is required for this role due to access requirements for U.S. export-controlled information/facilities and/or depending on program, are you eligible to meet this requirement?
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 13.23)
+  -> Retrieved Chunk 2: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 11.73)
+  -> Retrieved Chunk 3: ### Project 3: AI Data Analyst Agent (Score: 9.42)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'0', '2', '3', '60', '50', '5', '49', '2026', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> U.S. Person status and/or U.S. clearance eligibility is required for this role due to access requirements for U.S. export-controlled information/facilities and/or depending on program, are you eligible to meet this requirement?
+[Dropdown Debug]
+  -> Question: U.S. Person status and/or U.S. clearance eligibility is required for this role due to access requirements for U.S. export-controlled information/facilities and/or depending on program, are you eligible to meet this requirement?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: U.S. Person status and/or U.S. clearance eligibility is required for this role due to access requirements for U.S. export-controlled information/facilities and/or depending on program, are you eligible to meet this requirement?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_U_S__Person_status_and_or_U_S_.png
+==================================================
+GreenhouseHandler: Found question -> HISTORY WITH ANDURIL
+
+[Essay Debug] Question: HISTORY WITH ANDURIL
+  -> Retrieved Chunk 1: **On BEL:** (Score: 1.29)
+  -> Retrieved Chunk 2: ### Strongest Ownership Signals (Score: 1.26)
+  -> Retrieved Chunk 3: ### Strengths (Score: 1.25)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'6', '2', '3', '0.963', '5', '4', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> HISTORY WITH ANDURIL
+[Dropdown Debug]
+  -> Question: HISTORY WITH ANDURIL
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: HISTORY WITH ANDURIL
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_HISTORY_WITH_ANDURIL.png
+==================================================
+GreenhouseHandler: Found question -> Have you ever been employed by Anduril or any company that Anduril has acquired?
+
+[Essay Debug] Question: Have you ever been employed by Anduril or any company that Anduril has acquired?
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 10.24)
+  -> Retrieved Chunk 2: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 9.46)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 5.43)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'25', '10', '2', '3', '50', '5', '49', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: PROFILE -> Have you ever been employed by Anduril or any company that Anduril has acquired?
+[Dropdown Debug]
+  -> Question: Have you ever been employed by Anduril or any company that Anduril has acquired?
+  -> Detected Type: PROFILE
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Have you ever been employed by Anduril or any company that Anduril has acquired?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Have_you_ever_been_employed_by.png
+==================================================
+GreenhouseHandler: Found question -> CONFLICT OF INTEREST
+
+[Essay Debug] Question: CONFLICT OF INTEREST
+  -> Retrieved Chunk 1: **On SC-MFC thesis:** (Score: 1.22)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 1.14)
+  -> Retrieved Chunk 3: **On ScoreMe:** (Score: 1.14)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'25', '2', '3'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> CONFLICT OF INTEREST
+[Dropdown Debug]
+  -> Question: CONFLICT OF INTEREST
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: CONFLICT OF INTEREST
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_CONFLICT_OF_INTEREST.png
+==================================================
+GreenhouseHandler: Found question -> What is your top location preference?
+
+[Essay Debug] Question: What is your top location preference?
+  -> Retrieved Chunk 1: **On YAAR:** (Score: 6.07)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 5.88)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 5.34)
+  -> Final LLM Answer: I do not have a top location preference listed in the provided context.
+  [Metric Grounding] Numbers in Context: {'25', '2', '3', '50', '49', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> What is your top location preference?
+[Dropdown Debug]
+  -> Question: What is your top location preference?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): I do not have a top location preference listed in the provided context.
+  -> Available Options: ['Costa Mesa, CA (HQ)', 'Broomfield, CO', 'Fort Collins, CO', 'Seattle, WA', 'Boston, MA', 'Atlanta, GA']
+  -> Selected Option (Normalized): Atlanta, GA
+==================================================
+Question: What is your top location preference?
+Detected Widget Type: react_select
+Available Options: ['Costa Mesa, CA (HQ)', 'Broomfield, CO', 'Fort Collins, CO', 'Seattle, WA', 'Boston, MA', 'Atlanta, GA']
+Normalized Value: Atlanta, GA
+Selected Value: Atlanta, GA
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_What_is_your_top_location_pref.png
+==================================================
+GreenhouseHandler: Found question -> Do you have a minimum of 3 months - 2 years of technical work to include technical internship and able to start full time in 2026?
+
+[Essay Debug] Question: Do you have a minimum of 3 months - 2 years of technical work to include technical internship and able to start full time in 2026?
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 13.39)
+  -> Retrieved Chunk 2: ### Project 1: YAAR — AI Behavioral Companion (Score: 12.64)
+  -> Retrieved Chunk 3: ### Project 4: Semantic Document Search — GDSC IIT Roorkee (Score: 9.88)
+  -> Final LLM Answer: Yes
+  [Metric Grounding] Numbers in Context: {'25', '2', '3', '500', '50', '49', '4', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Do you have a minimum of 3 months - 2 years of technical work to include technical internship and able to start full time in 2026?
+[Dropdown Debug]
+  -> Question: Do you have a minimum of 3 months - 2 years of technical work to include technical internship and able to start full time in 2026?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): Yes
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): Yes
+==================================================
+Question: Do you have a minimum of 3 months - 2 years of technical work to include technical internship and able to start full time in 2026?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: Yes
+Selected Value: Yes
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_have_a_minimum_of_3_mon.png
+==================================================
+GreenhouseHandler: Found question -> How did you hear about Anduril?
+
+[Essay Debug] Question: How did you hear about Anduril?
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 4.02)
+  -> Retrieved Chunk 2: **On BEL:** (Score: 3.96)
+  -> Retrieved Chunk 3: **On ScoreMe:** (Score: 3.75)
+  -> Final LLM Answer: I did not hear about Anduril.
+  [Metric Grounding] Numbers in Context: {'2', '3', '50', '49', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> How did you hear about Anduril?
+[Dropdown Debug]
+  -> Question: How did you hear about Anduril?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): I did not hear about Anduril.
+  -> Available Options: ['Google job search', 'News coverage of Anduril', "Don't Work at Anduril campaign", 'Friend/know someone at the company', 'Outreach from an Anduril recruiter', 'JobsOhio', 'BuiltIn', 'Indeed', 'Anduril social media', 'Anduril YouTube videos', 'Podcast featuring an Anduril leader', 'LinkedIn', 'GitHub', 'Handshake', 'Glassdoor', 'Simplify', 'Anduril Website', 'ClearanceJobs', 'University Career Fair', 'Networking Event', 'Hardware FYI', 'Other']
+  -> Selected Option (Normalized): Don't Work at Anduril campaign
+==================================================
+Question: How did you hear about Anduril?
+Detected Widget Type: react_select
+Available Options: ['Google job search', 'News coverage of Anduril', "Don't Work at Anduril campaign", 'Friend/know someone at the company', 'Outreach from an Anduril recruiter', 'JobsOhio', 'BuiltIn', 'Indeed', 'Anduril social media', 'Anduril YouTube videos', 'Podcast featuring an Anduril leader', 'LinkedIn', 'GitHub', 'Handshake', 'Glassdoor', 'Simplify', 'Anduril Website', 'ClearanceJobs', 'University Career Fair', 'Networking Event', 'Hardware FYI', 'Other']
+Normalized Value: Don't Work at Anduril campaign
+Selected Value: Don't Work at Anduril campaign
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_How_did_you_hear_about_Anduril.png
+==================================================
+GreenhouseHandler: Found question -> If other, please specify
+
+[Essay Debug] Question: If other, please specify
+  -> Retrieved Chunk 1: **On SC-MFC thesis:** (Score: 2.81)
+  -> Retrieved Chunk 2: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Final LLM Answer: I am an AI/ML Engineer with expertise in GenAI, LangChain, RAG, and Python. I built autonomous agents.
+  [Metric Grounding] Numbers in Context: {'0', '2', '2026', '2025', '1'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> If other, please specify
+==================================================
+Question: If other, please specify
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I am an AI/ML Engineer with expertise in GenAI, LangChain, RAG, and Python. I built autonomous agents.
+Selected Value: I am an AI/ML Engineer with expertise in GenAI, LangChain, RAG, and Python. I built autonomous agents.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_How_did_you_hear_about_Anduril.png
+==================================================
+GreenhouseHandler: Found question -> Gender
+
+[Classification]: LEGAL -> Gender
+[Dropdown Debug]
+  -> Question: Gender
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): Male
+  -> Available Options: ['Male', 'Female', 'Decline To Self Identify']
+  -> Selected Option (Normalized): Male
+==================================================
+Question: Gender
+Detected Widget Type: react_select
+Available Options: ['Male', 'Female', 'Decline To Self Identify']
+Normalized Value: Male
+Selected Value: Male
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Gender.png
+==================================================
+GreenhouseHandler: Found question -> Are you Hispanic/Latino?
+
+[Classification]: LEGAL -> Are you Hispanic/Latino?
+[Dropdown Debug]
+  -> Question: Are you Hispanic/Latino?
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No', 'Decline To Self Identify']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Are you Hispanic/Latino?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No', 'Decline To Self Identify']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_Hispanic_Latino_.png
+==================================================
+GreenhouseHandler: Found question -> Please identify your race
+
+[Classification]: LEGAL -> Please identify your race
+[Dropdown Debug]
+  -> Question: Please identify your race
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): 
+  -> Available Options: ['American Indian or Alaskan Native', 'Asian', 'Black or African American', 'White', 'Native Hawaiian or Other Pacific Islander', 'Two or More Races', 'Decline To Self Identify']
+  -> Selected Option (Normalized): Decline To Self Identify
+GreenhouseHandler: Verification failed! 'Decline To Self Identify' not visible in Please identify your race control.
+==================================================
+Question: Please identify your race
+Detected Widget Type: react_select
+Available Options: ['American Indian or Alaskan Native', 'Asian', 'Black or African American', 'White', 'Native Hawaiian or Other Pacific Islander', 'Two or More Races', 'Decline To Self Identify']
+Normalized Value: Decline To Self Identify
+Selected Value: Decline To Self Identify
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Are_you_Hispanic_Latino_.png
+==================================================
+GreenhouseHandler: Found question -> Disability Status
+
+[Classification]: LEGAL -> Disability Status
+[Dropdown Debug]
+  -> Question: Disability Status
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes, I have a disability, or have had one in the past', 'No, I do not have a disability and have not had one in the past', 'I do not want to answer']
+  -> Selected Option (Normalized): No, I do not have a disability and have not had one in the past
+==================================================
+Question: Disability Status
+Detected Widget Type: react_select
+Available Options: ['Yes, I have a disability, or have had one in the past', 'No, I do not have a disability and have not had one in the past', 'I do not want to answer']
+Normalized Value: No, I do not have a disability and have not had one in the past
+Selected Value: No, I do not have a disability and have not had one in the past
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Disability_Status.png
+==================================================
+GreenhouseHandler: Safety rules triggered. Moving to REVIEW_REQUIRED.
+Failed to submit: REVIEW_REQUIRED. Moving to next job.
+Reached max 3 attempts.

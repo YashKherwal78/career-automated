@@ -1,0 +1,133 @@
+\documentclass[letterpaper,10.5pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\usepackage{xcolor}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\addtolength{\oddsidemargin}{-0.55in}
+\addtolength{\textwidth}{1.1in}
+\addtolength{\topmargin}{-.65in}
+\addtolength{\textheight}{1.3in}
+
+\urlstyle{same}
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+\pdfgentounicode=1
+
+\newcommand{\kw}[1]{\textbf{\boldmath#1}}
+\newcommand{\resumeItem}[1]{\item\small{{#1 \vspace{-2pt}}}}
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+  \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+    \textbf{#1} & #2 \\
+    \textit{\small#3} & \textit{\small #4} \\
+  \end{tabular*}\vspace{-7pt}
+}
+\newcommand{\resumeProjectHeading}[2]{
+  \item
+  \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+    \small#1 & \small #2 \\
+  \end{tabular*}\vspace{-7pt}
+}
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}[leftmargin=*]}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+%-------------------------------------------
+\begin{document}
+
+\begin{center}
+    \textbf{\Huge \scshape Yash Kherwal} \\ \vspace{1pt}
+    \small +91 9891148156 $|$
+    \href{mailto:yash.kherwal78@gmail.com}{yash.kherwal78@gmail.com} $|$
+    \href{https://www.linkedin.com/in/yash-kherwal-944497254/}{linkedin.com/in/yash-kherwal-944497254}
+\end{center}
+
+\section{Education}
+\resumeSubHeadingListStart
+  \resumeSubheading
+    {Indian Institute of Technology Roorkee}{2022 -- 2026}
+    {B.Tech in Chemical Engineering}{}
+\resumeSubHeadingListEnd
+
+\section{Experience}
+\resumeSubHeadingListStart
+
+  \resumeSubheading
+    {AI Product Manager Intern}{Feb 2026 -- Apr 2026}
+    {OrangeLabs (EdTech)}{}
+  \resumeItemListStart
+    \resumeItem{Owned end-to-end product development of two AI features --- defined the problem, designed the solution, and worked directly with engineering to ship; \kw{AI Attendance System} (CCTV-based auto-detection) eliminated manual roll calls, freeing $\sim$10 minutes of instruction time per class period.}
+    \resumeItem{Conducted \kw{customer discovery} with school administrators and teachers; identified student revision and missed-lecture recovery as the two highest-value use cases; defined and shipped \kw{AI Video Lecture Generator} --- pipeline extracts and structures teacher-recorded sessions into personalised async content.}
+    \resumeItem{Contributed to \kw{product roadmap} in collaboration with co-founders; maintained cross-functional alignment between product, engineering, and operations throughout both build cycles.}
+  \resumeItemListEnd
+
+  \resumeSubheading
+    {Software Development Intern}{May 2025 -- June 2025}
+    {ScoreMe Solutions}{}
+  \resumeItemListStart
+    \resumeItem{Scoped and shipped a \kw{two-stage PDF classification pipeline} for fintech document processing --- rule-based fast path for deterministic inputs, \kw{Random Forest fallback} for ambiguous cases; \kw{automated $\sim$80\% of document volume}, reducing analyst review queue to exception-only cases.}
+    \resumeItem{Defined \kw{confidence threshold} as an explicit \kw{human-in-the-loop gate}: outputs withheld from \kw{credit scoring pipelines} and flagged for review; extended coverage to scanned PDFs via \kw{Tesseract OCR}, doubling addressable input types.}
+  \resumeItemListEnd
+
+  \resumeSubheading
+    {Engineering Intern}{June 2025 -- July 2025}
+    {Bharat Electronics Limited}{}
+  \resumeItemListStart
+    \resumeItem{Built a real-time stream processor for \kw{ASTERIX CAT048} radar protocol per \kw{EUROCONTROL} spec; decoded variable-length packet structures into structured aviation records; designed \kw{concurrent ingestion} with \kw{backpressure handling} to sustain throughput under high-frequency surveillance loads.}
+  \resumeItemListEnd
+
+\resumeSubHeadingListEnd
+
+\section{Projects}
+\resumeSubHeadingListStart
+
+  \resumeProjectHeading
+    {\textbf{CareerAutomated} $|$ \emph{Python, Groq/LLaMA, LangGraph, SQLite, Pandas, Playwright, IMAP/SMTP}}{2025}
+  \resumeItemListStart
+    \resumeItem{Building an \kw{autonomous AI recruiting platform} that orchestrates job discovery, candidate-job matching, resume tailoring, recruiter outreach, \kw{ATS application execution}, CRM tracking, and inbox intelligence through a unified \kw{multi-agent workflow}.}
+    \resumeItem{Designed a \kw{Generator-Critic architecture}: specialised agents handle company intelligence, project selection, and personalised email generation; a \kw{Critic agent} validates quality, contextual relevance, formatting constraints, and placeholder safety before any outreach is sent --- bad emails are blocked, not just flagged.}
+    \resumeItem{Engineered \kw{scalable data pipelines} using \kw{SQLite}, \kw{Pandas}, \kw{IMAP}, and \kw{SMTP} to maintain recruiter state, \kw{deduplicate 10,000+ contacts}, synchronise Gmail Sent history, and automate personalised outreach at scale; \kw{Playwright}-based browser automation executes ATS-specific application flows end-to-end.}
+    \resumeItem{Implemented human-in-the-loop review gates to ensure safety and quality of generated emails.}
+  \resumeItemListEnd
+
+  \resumeProjectHeading
+    {\textbf{YAAR --- AI Behavioral Companion} $|$ \emph{React Native, LLM APIs, FastAPI, EAS Build}}{2025}
+  \resumeItemListStart
+    \resumeItem{\kw{Shipped Android APK} (React Native + EAS Build) --- chat UI, tap-based reaction probes, adaptive LLM generation, and shareable identity card export; \kw{sub-2s streamed response latency} via FastAPI; validated end-to-end on device.}
+    \resumeItem{Designed a \kw{zero-input personalisation loop} (Open $\rightarrow$ Hook $\rightarrow$ React $\rightarrow$ Preference Update) for Gen Z in Tier 2/3 India; preference engine tracks \kw{3 personality dimensions} from tap reactions, narrowing LLM output to identity-calibrated responses without retraining.}
+    \resumeItem{Primary revenue via \kw{contextual native brand integration} --- behavioural state triggers in-character brand moments at peak-receptivity windows; freemium tier (50 reactions/day free vs.\ Rs.49/mo premium) as secondary.}
+  \resumeItemListEnd
+
+\resumeSubHeadingListEnd
+
+\section{Technical Skills}
+\begin{itemize}[leftmargin=0.15in, label={}]
+  \small{\item{
+    \textbf{AI/ML:} LangGraph, LangChain, Groq/LLaMA, MCP, Hybrid RAG, Multi-Agent Systems, Prompt Engineering, Generator-Critic Architecture, Human-in-the-Loop Design \\
+    \textbf{Product:} PRD Writing, MVP Scoping, Customer Discovery, Roadmapping, Prioritisation (RICE, Knapsack), A/B Testing, Funnel Analysis \\
+    \textbf{Backend \& Infra:} Python, FastAPI, Docker, AWS EC2, Playwright, IMAP/SMTP, Stream Processing, REST APIs \\
+    \textbf{Data \& Analytics:} SQL, SQLite, Pandas, Cohort Queries, OOP, DSA (graphs, trees, complexity)
+  }}
+\end{itemize}
+
+\end{document}

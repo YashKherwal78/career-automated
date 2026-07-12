@@ -1,0 +1,762 @@
+RAGClient: Initialised with 20 chunks from Master Profile.
+
+--- Attempt 1: Applying to Job 87 at Aquatic Capital Management ---
+Executor: Starting job 87 on GREENHOUSE (https://job-boards.greenhouse.io/aquaticcapitalmanagement/jobs/8489226002?utm_source=Simplify&ref=Simplify)
+Executor [Greenhouse]: Initializing Greenhouse Handler...
+GreenhouseHandler: Verifying standard fields...
+GreenhouseHandler: Uploading resume /Users/yashkherwal/Downloads/hrmailfiles/data/Resume_aiml.pdf...
+  -> Renamed to: Resume_AquaticCapitalManagement_SoftwareEngineerEarlyCareer.pdf
+  -> File Exists: True
+  -> File Size: 126396 bytes
+  -> Upload Verified: True
+GreenhouseHandler: Starting submission cycle 1/3...
+GreenhouseHandler: Processing custom fields...
+GreenhouseHandler: Found question -> School
+
+[Essay Debug] Question: School
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: I do not have information about Yash's educational background.
+  [Metric Grounding] Numbers in Context: {'1', '0', '2026', '2', '3', '2025'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> School
+[Dropdown Debug]
+  -> Question: School
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): I do not have information about Yash's educational background.
+  -> Available Options: ['Aalborg University', 'Aalto University', 'Aaniiih Nakoda College', 'Aarhus University', 'Abertay University', 'Aberystwyth University', 'Abilene Christian University', 'Abo Akademi University', 'Abraham Baldwin Agricultural College', 'Abraham Lincoln University', 'Abu Dhabi University', 'Academy College', 'Academy of Art University', 'Acadia University', 'Acharya Nagarjuna University', 'Activate Work Inc.', 'Acupuncture and Integrative Medicine College - Berkeley', 'Acupuncture and Massage College', 'Adams State University', 'Adelphi University', 'Adrian College', 'Adventist University of Health Sciences', 'Agnes Scott College', 'AIB College of Business', 'Aiken Technical College', 'Aims Community College', 'AIMS Education - College of Health Sciences', 'Ain Shams University', 'Airlangga University', 'Ajou University', 'Alabama A&M University', 'Alabama State University', 'Alamance Community College', 'Alamo Colleges District', 'Alaska Bible College', 'Alaska Pacific University', 'Al Azhar University', 'Albany College of Pharmacy and Health Sciences', 'Albany State University', 'Albany Technical College', 'Albertus Magnus College', 'Albion College', 'Albizu University', 'Albright College', 'Alcorn State University', 'Alderson Broaddus University', 'Alexandria Technical & Community College', 'Alexandria University', 'Alexandru Ioan Cuza University', 'Alex Batchelor University', 'Al-Farabi Kazakh National University', 'Alfred University', 'Alice Lloyd College', 'Al-Imam Mohamed Ibn Saud Islamic University', 'Allan Hancock College', 'Allegany College of Maryland', 'Allegheny College', 'Allegheny Wesleyan College', 'Allen College', 'Allen County Community College', 'Allen University', 'Alliant International University', 'Alliant International University-San Diego', 'Alma College', 'Alpena Community College', 'Alpen-Adria-Universität Klagenfurt', 'Alvernia University', 'Alverno College', 'Alvin Community College', 'Amarillo College', 'Amberton University', 'Ambria College of Nursing', 'America Evangelical University', 'American Academy of Art', 'American Baptist College', 'American Business and Technology University', 'American College for Medical Careers', 'American College of Education', 'American College of Financial Services', 'American College of Healthcare Sciences', 'American Indian College of the Assemblies of God', 'American Institute of Alternative Medicine', 'American Institute of Medical Sciences & Education', 'American InterContinental University', 'American International College', 'American Islamic College', 'American Jewish University', 'American Military University', 'American Musical and Dramatic Academy', 'American National University', 'American Public University', 'American Public University System', 'American River College', 'American Samoa Community College', 'American Sentinel University', 'American University', 'American University in Bulgaria', 'American University in Cairo', 'American University of Beirut', 'American University of Beirut (AUB)']
+  -> Selected Option (Normalized): American University of Beirut (AUB)
+==================================================
+Question: School
+Detected Widget Type: react_select
+Available Options: ['Aalborg University', 'Aalto University', 'Aaniiih Nakoda College', 'Aarhus University', 'Abertay University', 'Aberystwyth University', 'Abilene Christian University', 'Abo Akademi University', 'Abraham Baldwin Agricultural College', 'Abraham Lincoln University', 'Abu Dhabi University', 'Academy College', 'Academy of Art University', 'Acadia University', 'Acharya Nagarjuna University', 'Activate Work Inc.', 'Acupuncture and Integrative Medicine College - Berkeley', 'Acupuncture and Massage College', 'Adams State University', 'Adelphi University', 'Adrian College', 'Adventist University of Health Sciences', 'Agnes Scott College', 'AIB College of Business', 'Aiken Technical College', 'Aims Community College', 'AIMS Education - College of Health Sciences', 'Ain Shams University', 'Airlangga University', 'Ajou University', 'Alabama A&M University', 'Alabama State University', 'Alamance Community College', 'Alamo Colleges District', 'Alaska Bible College', 'Alaska Pacific University', 'Al Azhar University', 'Albany College of Pharmacy and Health Sciences', 'Albany State University', 'Albany Technical College', 'Albertus Magnus College', 'Albion College', 'Albizu University', 'Albright College', 'Alcorn State University', 'Alderson Broaddus University', 'Alexandria Technical & Community College', 'Alexandria University', 'Alexandru Ioan Cuza University', 'Alex Batchelor University', 'Al-Farabi Kazakh National University', 'Alfred University', 'Alice Lloyd College', 'Al-Imam Mohamed Ibn Saud Islamic University', 'Allan Hancock College', 'Allegany College of Maryland', 'Allegheny College', 'Allegheny Wesleyan College', 'Allen College', 'Allen County Community College', 'Allen University', 'Alliant International University', 'Alliant International University-San Diego', 'Alma College', 'Alpena Community College', 'Alpen-Adria-Universität Klagenfurt', 'Alvernia University', 'Alverno College', 'Alvin Community College', 'Amarillo College', 'Amberton University', 'Ambria College of Nursing', 'America Evangelical University', 'American Academy of Art', 'American Baptist College', 'American Business and Technology University', 'American College for Medical Careers', 'American College of Education', 'American College of Financial Services', 'American College of Healthcare Sciences', 'American Indian College of the Assemblies of God', 'American Institute of Alternative Medicine', 'American Institute of Medical Sciences & Education', 'American InterContinental University', 'American International College', 'American Islamic College', 'American Jewish University', 'American Military University', 'American Musical and Dramatic Academy', 'American National University', 'American Public University', 'American Public University System', 'American River College', 'American Samoa Community College', 'American Sentinel University', 'American University', 'American University in Bulgaria', 'American University in Cairo', 'American University of Beirut', 'American University of Beirut (AUB)']
+Normalized Value: American University of Beirut (AUB)
+Selected Value: American University of Beirut (AUB)
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_School.png
+==================================================
+GreenhouseHandler: Found question -> Degree
+
+[Essay Debug] Question: Degree
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Degree
+GreenhouseHandler: React-Select option 'REVIEW_REQUIRED' not found in DOM. Safety Pause.
+==================================================
+Question: Degree
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_School.png
+==================================================
+GreenhouseHandler: Found question -> Discipline
+
+[Essay Debug] Question: Discipline
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Discipline
+GreenhouseHandler: React-Select option 'REVIEW_REQUIRED' not found in DOM. Safety Pause.
+==================================================
+Question: Discipline
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_School.png
+==================================================
+GreenhouseHandler: Found question -> End date month
+
+[Essay Debug] Question: End date month
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: April
+  [Metric Grounding] Numbers in Context: {'1', '0', '2026', '2', '3', '2025'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> End date month
+[Dropdown Debug]
+  -> Question: End date month
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): April
+  -> Available Options: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  -> Selected Option (Normalized): April
+==================================================
+Question: End date month
+Detected Widget Type: react_select
+Available Options: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+Normalized Value: April
+Selected Value: April
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_End_date_month.png
+==================================================
+GreenhouseHandler: Found question -> End date year
+
+[Essay Debug] Question: End date year
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: 2026
+  [Metric Grounding] Numbers in Context: {'1', '0', '2026', '2', '3', '2025'}
+  [Metric Grounding] Numbers Generated: {'2026'}
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> End date year
+==================================================
+Question: End date year
+Detected Widget Type: input
+Available Options: None
+Normalized Value: 2026
+Selected Value: 2026
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_End_date_month.png
+==================================================
+GreenhouseHandler: Found question -> Do you have any outstanding offers or deadlines?
+
+[Essay Debug] Question: Do you have any outstanding offers or deadlines?
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 6.21)
+  -> Retrieved Chunk 2: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 2.71)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 1.70)
+  -> Final LLM Answer: No, I do not have any outstanding offers or deadlines.
+  [Metric Grounding] Numbers in Context: {'10', '1', '5', '2', '50', '3', '49', '25'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Do you have any outstanding offers or deadlines?
+==================================================
+Question: Do you have any outstanding offers or deadlines?
+Detected Widget Type: input
+Available Options: None
+Normalized Value: No, I do not have any outstanding offers or deadlines.
+Selected Value: No, I do not have any outstanding offers or deadlines.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_End_date_month.png
+==================================================
+GreenhouseHandler: Found question -> Employment eligibility status
+
+[Essay Debug] Question: Employment eligibility status
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: No. already has permanent work authorization
+  [Metric Grounding] Numbers in Context: {'1', '0', '2026', '2', '3', '2025'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Employment eligibility status
+[Dropdown Debug]
+  -> Question: Employment eligibility status
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No. already has permanent work authorization
+  -> Available Options: ['Yes, will require firm sponsorship', 'No. already has permanent work authorization']
+  -> Selected Option (Normalized): No. already has permanent work authorization
+==================================================
+Question: Employment eligibility status
+Detected Widget Type: react_select
+Available Options: ['Yes, will require firm sponsorship', 'No. already has permanent work authorization']
+Normalized Value: No. already has permanent work authorization
+Selected Value: No. already has permanent work authorization
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Employment_eligibility_status.png
+==================================================
+GreenhouseHandler: Found question -> Current Location
+
+[Essay Debug] Question: Current Location
+  -> Retrieved Chunk 1: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 1.00)
+  -> Retrieved Chunk 2: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Final LLM Answer: I do not have information about my current location.
+  [Metric Grounding] Numbers in Context: {'1', '0', '2026', '2', '3', '2025'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Current Location
+==================================================
+Question: Current Location
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I do not have information about my current location.
+Selected Value: I do not have information about my current location.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Employment_eligibility_status.png
+==================================================
+GreenhouseHandler: Found question -> London
+
+[Essay Debug] Question: London
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> London
+==================================================
+Question: London
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Employment_eligibility_status.png
+==================================================
+GreenhouseHandler: Found question -> Chicago
+
+[Essay Debug] Question: Chicago
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Chicago
+==================================================
+Question: Chicago
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Employment_eligibility_status.png
+==================================================
+GreenhouseHandler: Found question -> New York
+
+[Essay Debug] Question: New York
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> New York
+==================================================
+Question: New York
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Employment_eligibility_status.png
+==================================================
+GreenhouseHandler: Found question -> Current Professional Experience
+
+[Essay Debug] Question: Current Professional Experience
+  -> Retrieved Chunk 1: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 3.42)
+  -> Retrieved Chunk 2: **On SC-MFC thesis:** (Score: 2.42)
+  -> Retrieved Chunk 3: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 2.24)
+  -> Final LLM Answer: I have 0 years of full-time professional experience.
+  [Metric Grounding] Numbers in Context: {'4', '10', '1', '0', '2026', '3', '2025'}
+  [Metric Grounding] Numbers Generated: {'0'}
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Current Professional Experience
+[Dropdown Debug]
+  -> Question: Current Professional Experience
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): I have 0 years of full-time professional experience.
+  -> Available Options: ['Graduate (no full time experience)', '1-3', '4-10', '10+']
+  -> Selected Option (Normalized): Graduate (no full time experience)
+==================================================
+Question: Current Professional Experience
+Detected Widget Type: react_select
+Available Options: ['Graduate (no full time experience)', '1-3', '4-10', '10+']
+Normalized Value: Graduate (no full time experience)
+Selected Value: Graduate (no full time experience)
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Current_Professional_Experienc.png
+==================================================
+GreenhouseHandler: Found question -> What degree are you currently pursuing or have recently completed?
+
+[Essay Debug] Question: What degree are you currently pursuing or have recently completed?
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 7.65)
+  -> Retrieved Chunk 2: ### Strengths (Score: 3.74)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 3.00)
+  -> Final LLM Answer: I am not pursuing or have recently completed any degree.
+  [Metric Grounding] Numbers in Context: {'4', '1', '6', '2', '5', '50', '3', '49', '25'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> What degree are you currently pursuing or have recently completed?
+[Dropdown Debug]
+  -> Question: What degree are you currently pursuing or have recently completed?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): I am not pursuing or have recently completed any degree.
+  -> Available Options: ["Bachelor's", "Master's", 'PhD']
+  -> Selected Option (Normalized): PhD
+==================================================
+Question: What degree are you currently pursuing or have recently completed?
+Detected Widget Type: react_select
+Available Options: ["Bachelor's", "Master's", 'PhD']
+Normalized Value: PhD
+Selected Value: PhD
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_What_degree_are_you_currently_.png
+==================================================
+GreenhouseHandler: Found question -> What year are you expected to graduate?
+
+[Essay Debug] Question: What year are you expected to graduate?
+  -> Retrieved Chunk 1: ### Strengths (Score: 4.48)
+  -> Retrieved Chunk 2: ### Project 1: YAAR — AI Behavioral Companion (Score: 3.75)
+  -> Retrieved Chunk 3: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 3.46)
+  -> Final LLM Answer: I do not have information about my graduation year.
+  [Metric Grounding] Numbers in Context: {'2028', '4', '1', '0', '6', '5', '2', '50', '3', '49', '2026', '2027', '2025'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> What year are you expected to graduate?
+[Dropdown Debug]
+  -> Question: What year are you expected to graduate?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): I do not have information about my graduation year.
+  -> Available Options: ['2025 or earlier', '2026', '2027', '2028 or later']
+  -> Selected Option (Normalized): 2028 or later
+==================================================
+Question: What year are you expected to graduate?
+Detected Widget Type: react_select
+Available Options: ['2025 or earlier', '2026', '2027', '2028 or later']
+Normalized Value: 2028 or later
+Selected Value: 2028 or later
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_What_year_are_you_expected_to_.png
+==================================================
+GreenhouseHandler: Found question -> Statistics
+
+[Essay Debug] Question: Statistics
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Statistics
+==================================================
+Question: Statistics
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_What_year_are_you_expected_to_.png
+==================================================
+GreenhouseHandler: Found question -> Machine Learning
+
+[Essay Debug] Question: Machine Learning
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Machine Learning
+==================================================
+Question: Machine Learning
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_What_year_are_you_expected_to_.png
+==================================================
+GreenhouseHandler: Found question -> Mathematics
+
+[Essay Debug] Question: Mathematics
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Mathematics
+==================================================
+Question: Mathematics
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_What_year_are_you_expected_to_.png
+==================================================
+GreenhouseHandler: Found question -> Computer Science
+
+[Essay Debug] Question: Computer Science
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 1.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: I have a strong foundation in computer science, with expertise in AI/ML, particularly in GenAI, LangChain, RAG, and Python. I've also worked on building autonomous agents and have experience with computer vision pipelines, ML classification pipelines, and concurrent queue design.
+  [Metric Grounding] Numbers in Context: {'1', '0', '2026', '2', '3', '2025'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Computer Science
+==================================================
+Question: Computer Science
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: I have a strong foundation in computer science, with expertise in AI/ML, particularly in GenAI, LangChain, RAG, and Python. I've also worked on building autonomous agents and have experience with computer vision pipelines, ML classification pipelines, and concurrent queue design.
+Selected Value: I have a strong foundation in computer science, with expertise in AI/ML, particularly in GenAI, LangChain, RAG, and Python. I've also worked on building autonomous agents and have experience with computer vision pipelines, ML classification pipelines, and concurrent queue design.
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_What_year_are_you_expected_to_.png
+==================================================
+GreenhouseHandler: Found question -> Engineering
+
+[Essay Debug] Question: Engineering
+  -> Retrieved Chunk 1: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 2.97)
+  -> Retrieved Chunk 2: ### Working Style (Score: 2.85)
+  -> Retrieved Chunk 3: ### Project 2: Echo Pod — AI Stillness Companion (Score: 2.51)
+  -> Final LLM Answer: I have experience with low-level systems thinking, protocol parsing, and concurrency from my work on the binary stream parser for ASTERIX CAT048 radar protocol at Bharat Electronics Limited.
+  [Metric Grounding] Numbers in Context: {'25', '2', '2025', '3'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Engineering
+==================================================
+Question: Engineering
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: I have experience with low-level systems thinking, protocol parsing, and concurrency from my work on the binary stream parser for ASTERIX CAT048 radar protocol at Bharat Electronics Limited.
+Selected Value: I have experience with low-level systems thinking, protocol parsing, and concurrency from my work on the binary stream parser for ASTERIX CAT048 radar protocol at Bharat Electronics Limited.
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_What_year_are_you_expected_to_.png
+==================================================
+GreenhouseHandler: Found question -> Physics
+
+[Essay Debug] Question: Physics
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Physics
+==================================================
+Question: Physics
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_What_year_are_you_expected_to_.png
+==================================================
+GreenhouseHandler: Found question -> Other
+
+[Essay Debug] Question: Other
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Other
+==================================================
+Question: Other
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_What_year_are_you_expected_to_.png
+==================================================
+GreenhouseHandler: Found question -> For your most recent degree, what is/was your GPA (normalized to a 4.0 scale)?
+
+[Essay Debug] Question: For your most recent degree, what is/was your GPA (normalized to a 4.0 scale)?
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 9.34)
+  -> Retrieved Chunk 2: **On YAAR:** (Score: 7.92)
+  -> Retrieved Chunk 3: ### Project 2: Echo Pod — AI Stillness Companion (Score: 7.41)
+  -> Final LLM Answer: NA
+  [Metric Grounding] Numbers in Context: {'3.5', '3.0', '3.6', '1', '49', '2', '50', '3', '4.0', '25'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> For your most recent degree, what is/was your GPA (normalized to a 4.0 scale)?
+[Dropdown Debug]
+  -> Question: For your most recent degree, what is/was your GPA (normalized to a 4.0 scale)?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): NA
+  -> Available Options: ['NA', '< 3.0', '3.0 -3.5', '3.6-4.0']
+  -> Selected Option (Normalized): NA
+==================================================
+Question: For your most recent degree, what is/was your GPA (normalized to a 4.0 scale)?
+Detected Widget Type: react_select
+Available Options: ['NA', '< 3.0', '3.0 -3.5', '3.6-4.0']
+Normalized Value: NA
+Selected Value: NA
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_For_your_most_recent_degree__w.png
+==================================================
+GreenhouseHandler: Found question -> Have you completed any internships? If yes, were any of them at a hedge fund or a proprietary trading firm?
+
+[Essay Debug] Question: Have you completed any internships? If yes, were any of them at a hedge fund or a proprietary trading firm?
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 8.74)
+  -> Retrieved Chunk 2: **On SC-MFC thesis:** (Score: 6.90)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 5.79)
+  -> Final LLM Answer: No, I have not completed any internships.
+  [Metric Grounding] Numbers in Context: {'1', '2', '49', '50', '3', '25'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Have you completed any internships? If yes, were any of them at a hedge fund or a proprietary trading firm?
+[Dropdown Debug]
+  -> Question: Have you completed any internships? If yes, were any of them at a hedge fund or a proprietary trading firm?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No, I have not completed any internships.
+  -> Available Options: ['No, I have not completed any internships.', 'Yes, I have internship experience, but not within a hedge fund or proprietary trading firm.', 'Yes, I have internship experience within a hedge fund or proprietary trading firm.']
+  -> Selected Option (Normalized): No, I have not completed any internships.
+==================================================
+Question: Have you completed any internships? If yes, were any of them at a hedge fund or a proprietary trading firm?
+Detected Widget Type: react_select
+Available Options: ['No, I have not completed any internships.', 'Yes, I have internship experience, but not within a hedge fund or proprietary trading firm.', 'Yes, I have internship experience within a hedge fund or proprietary trading firm.']
+Normalized Value: No, I have not completed any internships.
+Selected Value: No, I have not completed any internships.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Have_you_completed_any_interns.png
+==================================================
+GreenhouseHandler: Found question -> IMO or EGMO
+
+[Essay Debug] Question: IMO or EGMO
+  -> Retrieved Chunk 1: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 1.93)
+  -> Retrieved Chunk 2: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Final LLM Answer: I am not a competitive math Olympiad participant.
+  [Metric Grounding] Numbers in Context: {'10', '1', '0', '2026', '5', '2', '2025'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> IMO or EGMO
+==================================================
+Question: IMO or EGMO
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: I am not a competitive math Olympiad participant.
+Selected Value: I am not a competitive math Olympiad participant.
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Have_you_completed_any_interns.png
+==================================================
+GreenhouseHandler: Found question -> USAMO, USAJMO, or foreign National Olympiad
+
+[Essay Debug] Question: USAMO, USAJMO, or foreign National Olympiad
+  -> Retrieved Chunk 1: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 1.93)
+  -> Retrieved Chunk 2: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Final LLM Answer: I do not have any information about participating in USAMO, USAJMO, or foreign National Olympiad.
+  [Metric Grounding] Numbers in Context: {'10', '1', '0', '2026', '5', '2', '2025'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> USAMO, USAJMO, or foreign National Olympiad
+==================================================
+Question: USAMO, USAJMO, or foreign National Olympiad
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: I do not have any information about participating in USAMO, USAJMO, or foreign National Olympiad.
+Selected Value: I do not have any information about participating in USAMO, USAJMO, or foreign National Olympiad.
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Have_you_completed_any_interns.png
+==================================================
+GreenhouseHandler: Found question -> Putnam
+
+[Essay Debug] Question: Putnam
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Putnam
+==================================================
+Question: Putnam
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Have_you_completed_any_interns.png
+==================================================
+GreenhouseHandler: Found question -> USACO, IOI, or ICPC
+
+[Essay Debug] Question: USACO, IOI, or ICPC
+  -> Retrieved Chunk 1: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 1.93)
+  -> Retrieved Chunk 2: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Final LLM Answer: I do not have experience participating in USACO, IOI, or ICPC competitions.
+  [Metric Grounding] Numbers in Context: {'10', '1', '0', '2026', '5', '2', '2025'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> USACO, IOI, or ICPC
+==================================================
+Question: USACO, IOI, or ICPC
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: I do not have experience participating in USACO, IOI, or ICPC competitions.
+Selected Value: I do not have experience participating in USACO, IOI, or ICPC competitions.
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Have_you_completed_any_interns.png
+==================================================
+GreenhouseHandler: Found question -> I have not participated in any of these competitions
+
+[Essay Debug] Question: I have not participated in any of these competitions
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 6.56)
+  -> Retrieved Chunk 2: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 3.89)
+  -> Retrieved Chunk 3: ### Project 4: Semantic Document Search — GDSC IIT Roorkee (Score: 2.59)
+  -> Final LLM Answer: I have not participated in any of these competitions.
+  [Metric Grounding] Numbers in Context: {'4', '10', '500', '5', '2', '3', '25'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> I have not participated in any of these competitions
+==================================================
+Question: I have not participated in any of these competitions
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: I have not participated in any of these competitions.
+Selected Value: I have not participated in any of these competitions.
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Have_you_completed_any_interns.png
+==================================================
+GreenhouseHandler: Found question -> What are your annualized total compensation expectations?
+
+[Classification]: COMPENSATION -> What are your annualized total compensation expectations?
+GreenhouseHandler: Normalization failed for 'What are your annualized total compensation expectations?'. Safety Pause.
+GreenhouseHandler: Found question -> How did you hear about this job?
+
+[Essay Debug] Question: How did you hear about this job?
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 5.44)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 4.08)
+  -> Retrieved Chunk 3: **On BEL:** (Score: 3.96)
+  -> Final LLM Answer: I did not hear about this job through any specific channel.
+  [Metric Grounding] Numbers in Context: {'1', '49', '2', '50', '3', '25'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> How did you hear about this job?
+==================================================
+Question: How did you hear about this job?
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I did not hear about this job through any specific channel.
+Selected Value: I did not hear about this job through any specific channel.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Have_you_completed_any_interns.png
+==================================================
+GreenhouseHandler: Found question -> LinkedIn Profile
+
+[Classification]: PROFILE -> LinkedIn Profile
+==================================================
+Question: LinkedIn Profile
+Detected Widget Type: input
+Available Options: None
+Normalized Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selected Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Have_you_completed_any_interns.png
+==================================================
+GreenhouseHandler: Found question -> What is your Github username?
+
+[Essay Debug] Question: What is your Github username?
+  -> Retrieved Chunk 1: **On YAAR:** (Score: 5.07)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 4.88)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 4.34)
+  -> Final LLM Answer: I do not have a Github username mentioned in the provided context.
+  [Metric Grounding] Numbers in Context: {'1', '2', '49', '50', '3', '25'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: PROFILE -> What is your Github username?
+==================================================
+Question: What is your Github username?
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I do not have a Github username mentioned in the provided context.
+Selected Value: I do not have a Github username mentioned in the provided context.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Have_you_completed_any_interns.png
+==================================================
+GreenhouseHandler: Safety rules triggered. Moving to REVIEW_REQUIRED.
+Failed to submit: REVIEW_REQUIRED. Moving to next job.
+
+--- Attempt 2: Applying to Job 90 at Scout AI ---
+Executor: Starting job 90 on GREENHOUSE (https://job-boards.greenhouse.io/scoutai/jobs/4643333008?utm_source=Simplify&ref=Simplify)
+Executor [Greenhouse]: Initializing Greenhouse Handler...
+GreenhouseHandler: Verifying standard fields...
+GreenhouseHandler: Uploading resume /Users/yashkherwal/Downloads/hrmailfiles/data/Resume_aiml.pdf...
+  -> Renamed to: Resume_ScoutAI_JuniorFirmwareEngineer.pdf
+  -> File Exists: True
+  -> File Size: 126396 bytes
+  -> Upload Verified: True
+GreenhouseHandler: Starting submission cycle 1/3...
+GreenhouseHandler: Processing custom fields...
+GreenhouseHandler: Found question -> Will you now or in the future require sponsorship to work in the U.S.?
+
+[Classification]: KNOCKOUT -> Will you now or in the future require sponsorship to work in the U.S.?
+[Dropdown Debug]
+  -> Question: Will you now or in the future require sponsorship to work in the U.S.?
+  -> Detected Type: KNOCKOUT
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Will you now or in the future require sponsorship to work in the U.S.?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Will_you_now_or_in_the_future_.png
+==================================================
+GreenhouseHandler: Found question -> LinkedIn Profile
+
+[Classification]: PROFILE -> LinkedIn Profile
+==================================================
+Question: LinkedIn Profile
+Detected Widget Type: input
+Available Options: None
+Normalized Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selected Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Will_you_now_or_in_the_future_.png
+==================================================
+GreenhouseHandler: Found question -> Website
+
+[Essay Debug] Question: Website
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: I don't have a personal website to share.
+  [Metric Grounding] Numbers in Context: {'1', '0', '2026', '2', '3', '2025'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: PROFILE -> Website
+==================================================
+Question: Website
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I don't have a personal website to share.
+Selected Value: I don't have a personal website to share.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Will_you_now_or_in_the_future_.png
+==================================================
+GreenhouseHandler: Found question -> EXPORT CONTROLS - This position requires access to information and technology that is subject to U.S. export controls. Your responses to the questions below will be used solely to determine your eligibility under U.S. law to receive information and materials subject to U.S. export controls.
+
+[Essay Debug] Question: EXPORT CONTROLS - This position requires access to information and technology that is subject to U.S. export controls. Your responses to the questions below will be used solely to determine your eligibility under U.S. law to receive information and materials subject to U.S. export controls.
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 19.37)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 18.81)
+  -> Retrieved Chunk 3: ### Project 3: AI Data Analyst Agent (Score: 14.56)
+  -> Final LLM Answer: I am a person lawfully admitted for permanent residence of the United States (i.e, "Green Card" holder).
+  [Metric Grounding] Numbers in Context: {'8', '60', '1', '1157', '49', '2', '50', '3', '5', '1158', '25'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> EXPORT CONTROLS - This position requires access to information and technology that is subject to U.S. export controls. Your responses to the questions below will be used solely to determine your eligibility under U.S. law to receive information and materials subject to U.S. export controls.
+[Dropdown Debug]
+  -> Question: EXPORT CONTROLS - This position requires access to information and technology that is subject to U.S. export controls. Your responses to the questions below will be used solely to determine your eligibility under U.S. law to receive information and materials subject to U.S. export controls.
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): I am a person lawfully admitted for permanent residence of the United States (i.e, "Green Card" holder).
+  -> Available Options: ['A United States Citizen or national', 'A person lawfully admitted for permanent residence of the United States (i.e, "Green Card" holder)', 'A person admitted as a refugee to the United States under 8 U.S.C. 1157', 'A person admitted as a refugee to the United States under 8 U.S.C 1158']
+  -> Selected Option (Normalized): A person lawfully admitted for permanent residence of the United States (i.e, "Green Card" holder)
+GreenhouseHandler Error interacting with field 'EXPORT CONTROLS - This position requires access to information and technology that is subject to U.S. export controls. Your responses to the questions below will be used solely to determine your eligibility under U.S. law to receive information and materials subject to U.S. export controls.': Locator.count: Unexpected token "Green" while parsing css selector "div[class*="-option"]:has-text("A person lawfully admitted for permanent residence of the United States (i.e, "Green Card" holder)")". Did you mean to CSS.escape it?
+GreenhouseHandler: Safety rules triggered. Moving to REVIEW_REQUIRED.
+Failed to submit: REVIEW_REQUIRED. Moving to next job.

@@ -1,0 +1,145 @@
+\documentclass[letterpaper,10.5pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\usepackage{xcolor}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1.0in}
+\addtolength{\topmargin}{-0.5in}
+\addtolength{\textheight}{1.1in}
+
+\urlstyle{same}
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+\pdfgentounicode=1
+
+\newcommand{\kw}[1]{\textbf{\boldmath#1}}
+\newcommand{\resumeItem}[1]{\item\small{{#1 \vspace{0pt}}}}
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-1pt}\item
+  \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+    \textbf{#1} & #2 \\
+    \textit{\small#3} & \textit{\small #4} \\
+  \end{tabular*}\vspace{-5pt}
+}
+\newcommand{\resumeProjectHeading}[2]{
+  \vspace{-5pt}\item
+  \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+    \small#1 & \small #2 \\
+  \end{tabular*}\vspace{-5pt}
+}
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}[leftmargin=*, itemsep=1pt]}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-3pt}}
+
+%-------------------------------------------
+\begin{document}
+
+%----------HEADER----------
+\begin{center}
+    \textbf{\Huge \scshape Yash Kherwal} \\ \vspace{1pt}
+    \small +91 9891148156 $|$ 
+    \href{mailto:yash.kherwal78@gmail.com}{yash.kherwal78@gmail.com} $|$ 
+    \href{https://www.linkedin.com/in/yash-kherwal-944497254/}{linkedin.com/in/yash-kherwal-944497254} $|$ 
+    \href{https://github.com/YOUR\_USERNAME}{github.com/YOUR\_USERNAME}
+\end{center}
+
+%-----------EDUCATION-----------
+\section{Education}
+\resumeSubHeadingListStart
+  \resumeSubheading
+    {Indian Institute of Technology Roorkee}{2022 -- 2026}
+    {B.Tech in Chemical Engineering}{}
+\resumeSubHeadingListEnd
+
+%-----------EXPERIENCE-----------
+\section{Experience}
+\resumeSubHeadingListStart
+
+  \resumeSubheading
+    {AI Engineer Intern}{Feb 2026 -- Apr 2026}
+    {Orange Labs --- EdTech ERP platform for schools and colleges}{}
+  \resumeItemListStart
+    \resumeItem{Built \kw{CCTV-based automated attendance pipeline} --- computer vision model detects and identifies students from live camera feeds, auto-syncing presence records into the school ERP; eliminated manual marking and enabled real-time classroom tracking.}
+    \resumeItem{Engineered \kw{AI-generated personalised lecture pipeline}: ingested real teacher audio/video as training data to synthesise \kw{teacher-cloned video lectures} --- students receive curriculum content delivered in their own school teacher's voice and likeness, improving engagement over generic video content.}
+  \resumeItemListEnd
+
+  \resumeSubheading
+    {Software Development Intern}{May 2025 -- June 2025}
+    {ScoreMe Solutions}{}
+  \resumeItemListStart
+    \resumeItem{Designed a \kw{two-stage ML classification pipeline} for fintech PDF processing --- rule-based heuristics handle deterministic inputs first; \kw{Random Forest classifier} resolves ambiguous cases, avoiding unnecessary model inference on clear-cut documents and reducing classification latency.}
+    \resumeItem{Implemented \kw{confidence calibration layer}: predictions below threshold withheld from downstream \kw{credit scoring pipelines} and flagged for analyst review --- prevents silent misclassification propagation; integrated \kw{Tesseract OCR} via \kw{PDFBox} as a fallback parsing path for scanned inputs, extending pipeline coverage without adding routing complexity.}
+  \resumeItemListEnd
+
+  \resumeSubheading
+    {Engineering Intern}{June 2025 -- July 2025}
+    {Bharat Electronics Limited}{}
+  \resumeItemListStart
+    \resumeItem{Implemented a \kw{binary stream parser} for \kw{ASTERIX CAT048} radar protocol per EUROCONTROL spec --- decoded variable-length optional-field packet structures into normalised aviation records; designed \kw{concurrent ingestion} with \kw{backpressure handling} to maintain throughput and prevent packet loss under sustained high-frequency surveillance loads.}
+  \resumeItemListEnd
+
+\resumeSubHeadingListEnd
+
+%-----------PROJECTS-----------
+\section{Projects}
+\resumeSubHeadingListStart
+
+  \resumeProjectHeading
+    {\textbf{Autonomous Data Analysis Workflow} $|$ \emph{Python, LangGraph, CrewAI, n8n, MCP, FastAPI, Docker, AWS EC2}}{2025}
+  \resumeItemListStart
+    \resumeItem{Designed a \kw{stateful 5-agent LangGraph workflow} (Query Planner $\rightarrow$ Code Writer $\rightarrow$ Executor $\rightarrow$ Error Fixer $\rightarrow$ Insight Generator); Query Planner resolves \kw{intent ambiguity} and enforces \kw{deterministic routing} to SQL or Python execution paths before generation, eliminating downstream type errors.}
+    \resumeItem{\kw{Error Fixer agent} implements \kw{autonomous exception recovery}: intercepts runtime failures, classifies error type, regenerates targeted fix, retries execution --- structured escalation to operator only on unresolvable failures, reducing noise in production workflows.}
+    \resumeItem{\kw{n8n} decouples workflow orchestration from agent logic; \kw{MCP} exposes tools (files, DBs, APIs) as standardised context --- Executor runs in \kw{Docker sandbox} to isolate LLM-generated code from host; deployed \kw{FastAPI} backend on \kw{AWS EC2}.}
+  \resumeItemListEnd
+
+  \resumeProjectHeading
+    {\textbf{Hybrid RAG Retrieval System} $|$ \emph{Python, LangChain, BGE-M3, AstraDB, FastAPI, AWS EC2}}{2024}
+  \resumeItemListStart
+    \resumeItem{Diagnosed keyword retrieval failure on a 500+ document corpus --- BM25 missed semantically relevant results due to vocabulary mismatch; introduced \kw{hybrid retrieval} combining \kw{BGE-M3} dense embeddings with sparse BM25 scores, improving recall on paraphrased and domain-specific queries.}
+    \resumeItem{Designed \kw{decoupled ingestion and serving}: offline embedding pipeline feeds \kw{AstraDB} independently of the \kw{FastAPI serving layer} on \kw{AWS EC2} --- corpus updates without serving downtime; \kw{response groundedness} enforced via prompt constraints to prevent hallucination on out-of-context queries.}
+  \resumeItemListEnd
+
+  \resumeProjectHeading
+    {\textbf{YAAR --- Personality-Adaptive LLM System} $|$ \emph{React Native, LLM APIs, FastAPI, Persistent Memory}}{2025}
+  \resumeItemListStart
+    \resumeItem{Designed a \kw{persistent personality memory system}: each user interaction updates a \kw{personality metric vector} tracking dimensions (humour tolerance, self-awareness index, reaction intensity) --- stored per-session and injected into the \kw{LLM context window} at inference time to steer tone and content without fine-tuning.}
+  \resumeItemListEnd
+
+\resumeSubHeadingListEnd
+
+%-----------SKILLS-----------
+\section{Technical Skills}
+\vspace{-2pt}
+\begin{itemize}[leftmargin=0.15in, label={}, itemsep=0pt, parsep=0pt]
+  \small{\item{
+    \textbf{LLM \& Generative AI:} LangGraph, LangChain, CrewAI, MCP, Agentic Workflows, Structured Outputs, Prompt Engineering, Voice/Video Synthesis \\
+    \textbf{Retrieval:} Hybrid RAG, BGE-M3, Dense + Sparse Retrieval, AstraDB, Vector Databases, ANN Indexing \\
+    \textbf{ML / AI:} TensorFlow, Scikit-learn, Multi-Agent Orchestration, n8n, Inference Optimization \\
+    \textbf{Backend \& Infra:} FastAPI, Docker, AWS EC2, REST APIs, Stream Processing \\
+    \textbf{Languages \& Data:} Python, SQL (window functions, cohort queries), Java, C++, DSA, Pandas, pdfplumber
+  }}
+\end{itemize}
+
+\end{document}

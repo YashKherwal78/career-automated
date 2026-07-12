@@ -1,0 +1,122 @@
+{
+    "expected_full_time_ctc": {
+        "value": "15,00,000 INR",
+        "source": "Human Verified",
+        "confidence": 100,
+        "human_verified": true
+    },
+    "expected_internship_stipend": {
+        "value": "50,000 INR",
+        "source": "Human Verified",
+        "confidence": 100,
+        "human_verified": true
+    },
+    "salary_negotiable": {
+        "value": "salary_negotiable",
+        "source": "LLM Inference",
+        "confidence": 75,
+        "human_verified": false
+    },
+    "preferred_currency": {
+        "value": "INR",
+        "source": "Human Verified",
+        "confidence": 100,
+        "human_verified": true
+    },
+    "graduation_date": {
+        "value": "May 2026",
+        "source": "yash_master_profile.md",
+        "confidence": 95,
+        "human_verified": false
+    },
+    "earliest_start_date": {
+        "value": "Immediate",
+        "source": "Human Verified",
+        "confidence": 100,
+        "human_verified": true
+    },
+    "latest_start_date": {
+        "value": "Flexible",
+        "source": "Human Verified",
+        "confidence": 100,
+        "human_verified": true
+    },
+    "available_for_internship": {
+        "value": "Yes",
+        "source": "Human Verified",
+        "confidence": 100,
+        "human_verified": true
+    },
+    "available_for_full_time": {
+        "value": "Yes",
+        "source": "Human Verified",
+        "confidence": 100,
+        "human_verified": true
+    },
+    "notice_period": {
+        "value": "0 Days",
+        "source": "yash_master_profile.md",
+        "confidence": 95,
+        "human_verified": false
+    },
+    "english_proficiency": {
+        "value": "Professional",
+        "source": "yash_master_profile.md",
+        "confidence": 95,
+        "human_verified": false
+    },
+    "hindi_proficiency": {
+        "value": "Native",
+        "source": "yash_master_profile.md",
+        "confidence": 95,
+        "human_verified": false
+    },
+    "other_languages": {
+        "value": "None",
+        "source": "Human Verified",
+        "confidence": 100,
+        "human_verified": true
+    },
+    "relocation": {
+        "value": "Yes",
+        "source": "yash_master_profile.md",
+        "confidence": 95,
+        "human_verified": false
+    },
+    "travel": {
+        "value": "Yes",
+        "source": "Human Verified",
+        "confidence": 100,
+        "human_verified": true
+    },
+    "remote": {
+        "value": "Yes",
+        "source": "Human Verified",
+        "confidence": 100,
+        "human_verified": true
+    },
+    "hybrid": {
+        "value": null,
+        "source": "None",
+        "confidence": 0,
+        "human_verified": false
+    },
+    "onsite": {
+        "value": null,
+        "source": "None",
+        "confidence": 0,
+        "human_verified": false
+    },
+    "university": {
+        "value": "IIT Roorkee",
+        "source": "yash_master_profile.md",
+        "confidence": 95,
+        "human_verified": false
+    },
+    "degree": {
+        "value": "B.Tech",
+        "source": "yash_master_profile.md",
+        "confidence": 95,
+        "human_verified": false
+    }
+}

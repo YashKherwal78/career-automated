@@ -1,0 +1,31 @@
+==================================================
+STRIPE END-TO-END AUDIT
+==================================================
+RAGClient: Initialised with 20 chunks from Master Profile.
+Executor: Starting job 1005 on GREENHOUSE (https://stripe.com/jobs/search?gh_jid=7543868)
+Executor [Greenhouse]: Initializing Greenhouse Handler...
+GreenhouseHandler: Entering application flow...
+  -> Initial Form Confidence Score: 0
+  -> Form not detected. Searching for Apply button...
+  -> Clicking Apply button: 'Apply for this role'
+  -> Warning: Click on Apply failed: Locator.click: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator("button:has-text(\"Apply for this role\"), a:has-text(\"Apply for this role\")").first
+
+  -> Navigation Type: Redirect
+  -> Post-click Form Confidence Score: 135
+  -> Application flow entered successfully.
+GreenhouseHandler: Scanning for iframes...
+  -> Found 9 frames.
+  -> Frame URL: https://stripe.com/jobs/listing/software-engineer-internal-systems/7543868/apply
+  -> Frame URL: https://job-boards.greenhouse.io/embed/job_app?for=stripe&token=7543868
+GreenhouseHandler: Detected Greenhouse iframe (https://job-boards.greenhouse.io/embed/job_app?for=stripe&token=7543868). Promoting to active_context.
+GreenhouseHandler Execution Error: expected an indented block after 'try' statement on line 98 (verifier.py, line 99)
+
+
+==================================================
+STRIPE RETEST - QUESTION ENGINE V5
+==================================================
+
+Final Status
+FAILED

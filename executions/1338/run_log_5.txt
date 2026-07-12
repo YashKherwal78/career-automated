@@ -1,0 +1,16 @@
+RAGClient: Initialised with 20 chunks from Master Profile.
+==================================================
+🚀 STARTING AUTOAPPLY ENGINE BATCH
+Timestamp: 2026-06-11 19:53:03
+==================================================
+Agent 0: Generating Daily Application Queue...
+Queue is already full for today (20/20).
+Autoapply Engine: Processing 1 jobs...
+
+--- Applying to Job 1338: Business Associate - Growth(Engagement) at Groww ---
+Routing logic: Selected Profile 'BUSINESS_PROFILE' with Resume '/Users/yashkherwal/Downloads/hrmailfiles/data/yash_resume_pm.pdf'
+[PRE-FLIGHT FAILED] Resume file not found at /Users/yashkherwal/Downloads/hrmailfiles/data/yash_resume_pm.pdf
+
+==================================================
+🏁 AUTOAPPLY BATCH COMPLETE
+==================================================

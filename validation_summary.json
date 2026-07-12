@@ -1,0 +1,22 @@
+{
+  "version": "Discovery V1.0",
+  "status": "FAILED",
+  "correctness": {
+    "event_pipeline": true,
+    "known_company_regression": false,
+    "ats_detection": 0.5089141004862237,
+    "duplicate_jobs": 0.0,
+    "duplicate_companies": 0.0,
+    "provider_health": true,
+    "anomalies": true,
+    "scheduler": true,
+    "data_quality": true
+  },
+  "coverage": {
+    "total_companies": 617,
+    "ats_coverage": 314,
+    "indian_companies": 11,
+    "ai_companies": 42
+  },
+  "timestamp": "2026-06-28T00:31:07.944259"
+}

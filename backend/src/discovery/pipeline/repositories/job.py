@@ -25,10 +25,15 @@ class JobRepository(BaseRepository):
         company_id = jobs[0].company_id
 
         # 1. Get all active job hashes for this company
+        from src.api.db import is_postgres
         with self.get_connection() as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.execute("SELECT job_hash FROM normalized_jobs WHERE company_id = ? AND status = 'ACTIVE'", (company_id,))
-            active_hashes = {row['job_hash'] for row in cursor.fetchall()}
+            if not is_postgres():
+                conn.row_factory = sqlite3.Row
+                cursor = conn.execute("SELECT job_hash FROM normalized_jobs WHERE company_id = ? AND status = 'ACTIVE'", (company_id,))
+                active_hashes = {row['job_hash'] for row in cursor.fetchall()}
+            else:
+                cursor = conn.execute("SELECT job_hash FROM normalized_jobs WHERE company_id = %s AND status = 'ACTIVE'", (company_id,))
+                active_hashes = {row['job_hash'] if isinstance(row, dict) else row[0] for row in cursor.fetchall()}
             
         current_hashes = set()
         
@@ -43,38 +48,69 @@ class JobRepository(BaseRepository):
                 else:
                     updated += 1
                     
-                conn.execute("""
-                    INSERT INTO normalized_jobs (
-                        job_id, provider_job_id, company_id, provider, title, location, 
-                        remote_type, employment_type, department, salary_min, salary_max, 
-                        currency, posted_at, apply_url, description, job_hash, status,
-                        raw_payload_json
-                    ) VALUES (
-                        ?, ?, ?, ?, ?, ?,
-                        ?, ?, ?, ?, ?,
-                        ?, ?, ?, ?, ?, 'ACTIVE',
-                        ?
-                    )
-                    ON CONFLICT(job_id) DO UPDATE SET
-                        title=excluded.title,
-                        location=excluded.location,
-                        apply_url=excluded.apply_url,
-                        description=excluded.description,
-                        status='ACTIVE',
-                        raw_payload_json=excluded.raw_payload_json
-                """, (
-                    job_hash, job.identity.external_job_id or job_hash, job.company_id, job.identity.provider, job.title, job.location,
-                    job.remote_type, job.employment_type, job.department, job.salary_min, job.salary_max,
-                    job.salary_currency, job.posted_at, job.apply_url, job.description, job_hash,
-                    json.dumps(job.raw_payload)
-                ))
+                if is_postgres():
+                    conn.execute("""
+                        INSERT INTO normalized_jobs (
+                            job_id, provider_job_id, company_id, provider, title, location, 
+                            remote_type, employment_type, department, salary_min, salary_max, 
+                            currency, posted_at, apply_url, description, job_hash, status,
+                            raw_payload_json
+                        ) VALUES (
+                            %s, %s, %s, %s, %s, %s,
+                            %s, %s, %s, %s, %s,
+                            %s, %s, %s, %s, %s, 'ACTIVE',
+                            %s
+                        )
+                        ON CONFLICT(job_id) DO UPDATE SET
+                            title=excluded.title,
+                            location=excluded.location,
+                            apply_url=excluded.apply_url,
+                            description=excluded.description,
+                            status='ACTIVE',
+                            raw_payload_json=excluded.raw_payload_json
+                    """, (
+                        job_hash, job.identity.external_job_id or job_hash, job.company_id, job.identity.provider, job.title, job.location,
+                        job.remote_type, job.employment_type, job.department, job.salary_min, job.salary_max,
+                        job.salary_currency, job.posted_at, job.apply_url, job.description, job_hash,
+                        json.dumps(job.raw_payload)
+                    ))
+                else:
+                    conn.execute("""
+                        INSERT INTO normalized_jobs (
+                            job_id, provider_job_id, company_id, provider, title, location, 
+                            remote_type, employment_type, department, salary_min, salary_max, 
+                            currency, posted_at, apply_url, description, job_hash, status,
+                            raw_payload_json
+                        ) VALUES (
+                            ?, ?, ?, ?, ?, ?,
+                            ?, ?, ?, ?, ?,
+                            ?, ?, ?, ?, ?, 'ACTIVE',
+                            ?
+                        )
+                        ON CONFLICT(job_id) DO UPDATE SET
+                            title=excluded.title,
+                            location=excluded.location,
+                            apply_url=excluded.apply_url,
+                            description=excluded.description,
+                            status='ACTIVE',
+                            raw_payload_json=excluded.raw_payload_json
+                    """, (
+                        job_hash, job.identity.external_job_id or job_hash, job.company_id, job.identity.provider, job.title, job.location,
+                        job.remote_type, job.employment_type, job.department, job.salary_min, job.salary_max,
+                        job.salary_currency, job.posted_at, job.apply_url, job.description, job_hash,
+                        json.dumps(job.raw_payload)
+                    ))
             
             # Identify archived jobs
             missing_hashes = active_hashes - current_hashes
             if missing_hashes:
                 archived = len(missing_hashes)
+                now = time.time()
                 for h in missing_hashes:
-                    conn.execute("UPDATE normalized_jobs SET status = 'CLOSED', closed_at = datetime('now') WHERE job_hash = ?", (h,))
+                    if is_postgres():
+                        conn.execute("UPDATE normalized_jobs SET status = 'CLOSED', closed_at = NOW() WHERE job_hash = %s", (h,))
+                    else:
+                        conn.execute("UPDATE normalized_jobs SET status = 'CLOSED', closed_at = datetime('now') WHERE job_hash = ?", (h,))
             
             conn.commit()
             

@@ -87,8 +87,7 @@ class CompatConnection:
         return cursor
 
     def commit(self):
-        if self._is_sqlite:
-            self._conn.commit()
+        self._conn.commit()
 
     def close(self):
         self._conn.close()

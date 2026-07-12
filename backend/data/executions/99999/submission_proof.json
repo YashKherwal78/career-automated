@@ -1,0 +1,10 @@
+{
+    "url": "https://job-boards.greenhouse.io/gleanwork/jobs/4629292005/confirmation",
+    "title": "Thank you for applying",
+    "success_text": "thank you for applying",
+    "error_text": "",
+    "context_used": "iframe",
+    "success_signals_found": 2,
+    "failure_signals_found": 0,
+    "screenshot": "data/executions/99999/06_post_submit.png"
+}

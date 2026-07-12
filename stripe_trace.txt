@@ -1,0 +1,1519 @@
+==================================================
+STRIPE END-TO-END AUDIT
+==================================================
+RAGClient: Initialised with 20 chunks from Master Profile.
+Executor: Starting job 1005 on GREENHOUSE (https://stripe.com/jobs/search?gh_jid=7543868)
+Executor [Greenhouse]: Initializing Greenhouse Handler...
+GreenhouseHandler: Entering application flow...
+  -> Initial Form Confidence Score: 0
+  -> Form not detected. Searching for Apply button...
+  -> Clicking Apply button: 'Apply for this role'
+  -> Warning: Click on Apply failed: Locator.click: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator("button:has-text(\"Apply for this role\"), a:has-text(\"Apply for this role\")").first
+
+  -> Navigation Type: Redirect
+  -> Post-click Form Confidence Score: 135
+  -> Application flow entered successfully.
+GreenhouseHandler: Scanning for iframes...
+  -> Found 9 frames.
+  -> Frame URL: https://stripe.com/jobs/listing/software-engineer-internal-systems/7543868/apply
+  -> Frame URL: https://job-boards.greenhouse.io/embed/job_app?for=stripe&token=7543868
+GreenhouseHandler: Detected Greenhouse iframe (https://job-boards.greenhouse.io/embed/job_app?for=stripe&token=7543868). Promoting to active_context.
+GreenhouseHandler: Verifying standard fields...
+GreenhouseHandler: Uploading resume data/Resume_aiml.pdf...
+  -> Renamed to: Resume_Stripe_SoftwareEngineerInternalSystems.pdf
+  -> File Exists: True
+  -> File Size: 126396 bytes
+  -> Trying Strategy A: input[type='file']
+  -> Strategy A executed successfully.
+  -> Upload Verified: True
+GreenhouseHandler: Starting submission cycle 1/3...
+GreenhouseHandler: Processing custom fields...
+GreenhouseHandler: Found question -> Location (City)
+
+[Essay Debug] Question: Location (City)
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Location (City)
+GreenhouseHandler: React-Select option 'REVIEW_REQUIRED' not found in DOM. Safety Pause.
+==================================================
+Question: Location (City)
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> Please select the country where you currently reside.
+
+[Essay Debug] Question: Please select the country where you currently reside.
+  -> Retrieved Chunk 1: **On ScoreMe:** (Score: 2.60)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 2.06)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 2.05)
+  -> Final LLM Answer: I do not have information about my current residence.
+  [Metric Grounding] Numbers in Context: {'50', '3', '49', '25', '1', '2'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Please select the country where you currently reside.
+[Dropdown Debug]
+  -> Question: Please select the country where you currently reside.
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): I do not have information about my current residence.
+  -> Available Options: ['Australia', 'Belgium', 'Brazil', 'Canada', 'Egypt', 'France', 'Germany', 'India', 'Indonesia', 'Ireland', 'Israel', 'Italy', 'Japan', 'Malaysia', 'Mexico', 'New Zealand', 'Poland', 'Romania', 'Singapore', 'South Korea', 'Spain', 'Sweden', 'Switzerland', 'Thailand', 'The Netherlands', 'UAE', 'UK', 'US', 'Other']
+  -> Selected Option (Normalized): Other
+==================================================
+Question: Please select the country where you currently reside.
+Detected Widget Type: react_select
+Available Options: ['Australia', 'Belgium', 'Brazil', 'Canada', 'Egypt', 'France', 'Germany', 'India', 'Indonesia', 'Ireland', 'Israel', 'Italy', 'Japan', 'Malaysia', 'Mexico', 'New Zealand', 'Poland', 'Romania', 'Singapore', 'South Korea', 'Spain', 'Sweden', 'Switzerland', 'Thailand', 'The Netherlands', 'UAE', 'UK', 'US', 'Other']
+Normalized Value: Other
+Selected Value: Other
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> Australia
+
+[Essay Debug] Question: Australia
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Australia
+==================================================
+Question: Australia
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> Belgium
+
+[Essay Debug] Question: Belgium
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Belgium
+==================================================
+Question: Belgium
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> Brazil
+
+[Essay Debug] Question: Brazil
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Brazil
+==================================================
+Question: Brazil
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> Canada
+
+[Essay Debug] Question: Canada
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Canada
+==================================================
+Question: Canada
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> France
+
+[Essay Debug] Question: France
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> France
+==================================================
+Question: France
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> Germany
+
+[Essay Debug] Question: Germany
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Germany
+==================================================
+Question: Germany
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> India
+
+[Essay Debug] Question: India
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 3.23)
+  -> Retrieved Chunk 2: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Final LLM Answer: I have expertise in GenAI, LangChain, RAG, and Python, and I built autonomous agents.
+  [Metric Grounding] Numbers in Context: {'2026', '50', '3', '49', '2025', '0', '1', '2'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> India
+==================================================
+Question: India
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: I have expertise in GenAI, LangChain, RAG, and Python, and I built autonomous agents.
+Selected Value: I have expertise in GenAI, LangChain, RAG, and Python, and I built autonomous agents.
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> Indonesia
+
+[Essay Debug] Question: Indonesia
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Indonesia
+==================================================
+Question: Indonesia
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> Ireland
+
+[Essay Debug] Question: Ireland
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Ireland
+==================================================
+Question: Ireland
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> Israel
+
+[Essay Debug] Question: Israel
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Israel
+==================================================
+Question: Israel
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> Italy
+
+[Essay Debug] Question: Italy
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Italy
+==================================================
+Question: Italy
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> Japan
+
+[Essay Debug] Question: Japan
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Japan
+==================================================
+Question: Japan
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> Luxembourg
+
+[Essay Debug] Question: Luxembourg
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Luxembourg
+==================================================
+Question: Luxembourg
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> Malaysia
+
+[Essay Debug] Question: Malaysia
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Malaysia
+==================================================
+Question: Malaysia
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> Mexico
+
+[Essay Debug] Question: Mexico
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Mexico
+==================================================
+Question: Mexico
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> New Zealand
+
+[Essay Debug] Question: New Zealand
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> New Zealand
+==================================================
+Question: New Zealand
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> Poland
+
+[Essay Debug] Question: Poland
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Poland
+==================================================
+Question: Poland
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> Portugal
+
+[Essay Debug] Question: Portugal
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Portugal
+==================================================
+Question: Portugal
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> Romania
+
+[Essay Debug] Question: Romania
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Romania
+==================================================
+Question: Romania
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> Singapore
+
+[Essay Debug] Question: Singapore
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Singapore
+==================================================
+Question: Singapore
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> South Korea
+
+[Essay Debug] Question: South Korea
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> South Korea
+==================================================
+Question: South Korea
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> Spain
+
+[Essay Debug] Question: Spain
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Spain
+==================================================
+Question: Spain
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> Sweden
+
+[Essay Debug] Question: Sweden
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Sweden
+==================================================
+Question: Sweden
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> Switzerland
+
+[Essay Debug] Question: Switzerland
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Switzerland
+==================================================
+Question: Switzerland
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> Thailand
+
+[Essay Debug] Question: Thailand
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Thailand
+==================================================
+Question: Thailand
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> The Netherlands
+
+[Essay Debug] Question: The Netherlands
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 1.28)
+  -> Retrieved Chunk 2: **On ScoreMe:** (Score: 1.14)
+  -> Retrieved Chunk 3: **On YAAR:** (Score: 1.04)
+  -> Final LLM Answer: There is no information about The Netherlands in the provided context.
+  [Metric Grounding] Numbers in Context: {'3', '25', '2'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> The Netherlands
+==================================================
+Question: The Netherlands
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: There is no information about The Netherlands in the provided context.
+Selected Value: There is no information about The Netherlands in the provided context.
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> UAE
+
+[Essay Debug] Question: UAE
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> UAE
+==================================================
+Question: UAE
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> UK
+
+[Essay Debug] Question: UK
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> UK
+==================================================
+Question: UK
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> US
+
+[Essay Debug] Question: US
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> US
+==================================================
+Question: US
+Detected Widget Type: unknown
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Please_select_the_country_wher.png
+==================================================
+GreenhouseHandler: Found question -> Are you authorized to work in the location(s) you selected in your previous response?
+
+[Classification]: KNOCKOUT -> Are you authorized to work in the location(s) you selected in your previous response?
+[Dropdown Debug]
+  -> Question: Are you authorized to work in the location(s) you selected in your previous response?
+  -> Detected Type: KNOCKOUT
+  -> Mapped Value (Raw): Yes
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): Yes
+==================================================
+Question: Are you authorized to work in the location(s) you selected in your previous response?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: Yes
+Selected Value: Yes
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_authorized_to_work_in_.png
+==================================================
+GreenhouseHandler: Found question -> Will you require Stripe to sponsor you for a work permit now or in the future for the location(s) you selected in in your previous response?
+
+[Essay Debug] Question: Will you require Stripe to sponsor you for a work permit now or in the future for the location(s) you selected in in your previous response?
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 12.58)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 8.31)
+  -> Retrieved Chunk 3: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 8.29)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'2026', '50', '3', '49', '0', '25', '1', '2'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Will you require Stripe to sponsor you for a work permit now or in the future for the location(s) you selected in in your previous response?
+[Dropdown Debug]
+  -> Question: Will you require Stripe to sponsor you for a work permit now or in the future for the location(s) you selected in in your previous response?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Will you require Stripe to sponsor you for a work permit now or in the future for the location(s) you selected in in your previous response?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Will_you_require_Stripe_to_spo.png
+==================================================
+GreenhouseHandler: Found question -> If this role offers the option to work from a remote location, do you plan to work remotely?
+
+[Essay Debug] Question: If this role offers the option to work from a remote location, do you plan to work remotely?
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 10.76)
+  -> Retrieved Chunk 2: ### Project 3: AI Data Analyst Agent (Score: 9.56)
+  -> Retrieved Chunk 3: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 9.01)
+  -> Final LLM Answer: Yes, I intend to work remotely.
+  [Metric Grounding] Numbers in Context: {'2026', '50', '3', '49', '0', '1', '60', '2', '5'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> If this role offers the option to work from a remote location, do you plan to work remotely?
+[Dropdown Debug]
+  -> Question: If this role offers the option to work from a remote location, do you plan to work remotely?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): Yes, I intend to work remotely.
+  -> Available Options: ['Yes, I intend to work remotely.', 'No, I intend to work from an office location.']
+  -> Selected Option (Normalized): Yes, I intend to work remotely.
+==================================================
+Question: If this role offers the option to work from a remote location, do you plan to work remotely?
+Detected Widget Type: react_select
+Available Options: ['Yes, I intend to work remotely.', 'No, I intend to work from an office location.']
+Normalized Value: Yes, I intend to work remotely.
+Selected Value: Yes, I intend to work remotely.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_If_this_role_offers_the_option.png
+==================================================
+GreenhouseHandler: Found question -> Have you ever been employed by Stripe or a Stripe affiliate?
+
+[Essay Debug] Question: Have you ever been employed by Stripe or a Stripe affiliate?
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 7.24)
+  -> Retrieved Chunk 2: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 3.07)
+  -> Retrieved Chunk 3: **On SC-MFC thesis:** (Score: 1.79)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'10', '3', '25', '2', '5'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Have you ever been employed by Stripe or a Stripe affiliate?
+[Dropdown Debug]
+  -> Question: Have you ever been employed by Stripe or a Stripe affiliate?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Have you ever been employed by Stripe or a Stripe affiliate?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Have_you_ever_been_employed_by.png
+==================================================
+GreenhouseHandler: Found question -> Who is your current or previous employer?
+
+[Essay Debug] Question: Who is your current or previous employer?
+  -> Retrieved Chunk 1: **On YAAR:** (Score: 4.07)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 2.66)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 2.49)
+  -> Final LLM Answer: I do not have a current or previous employer listed in the provided context.
+  [Metric Grounding] Numbers in Context: {'50', '3', '49', '25', '1', '2'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: PROFILE -> Who is your current or previous employer?
+==================================================
+Question: Who is your current or previous employer?
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I do not have a current or previous employer listed in the provided context.
+Selected Value: I do not have a current or previous employer listed in the provided context.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Have_you_ever_been_employed_by.png
+==================================================
+GreenhouseHandler: Found question -> What is your current or previous job title?
+
+[Essay Debug] Question: What is your current or previous job title?
+  -> Retrieved Chunk 1: **On YAAR:** (Score: 5.07)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 4.88)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 4.34)
+  -> Final LLM Answer: AI/ML Engineer
+  [Metric Grounding] Numbers in Context: {'50', '3', '49', '25', '1', '2'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> What is your current or previous job title?
+==================================================
+Question: What is your current or previous job title?
+Detected Widget Type: input
+Available Options: None
+Normalized Value: AI/ML Engineer
+Selected Value: AI/ML Engineer
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Have_you_ever_been_employed_by.png
+==================================================
+GreenhouseHandler: Found question -> What is the most recent school you attended?
+
+[Essay Debug] Question: What is the most recent school you attended?
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 6.59)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 4.72)
+  -> Retrieved Chunk 3: ### Strengths (Score: 3.74)
+  -> Final LLM Answer: I do not have information about my educational background.
+  [Metric Grounding] Numbers in Context: {'50', '6', '3', '49', '4', '25', '1', '2', '5'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> What is the most recent school you attended?
+==================================================
+Question: What is the most recent school you attended?
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I do not have information about my educational background.
+Selected Value: I do not have information about my educational background.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Have_you_ever_been_employed_by.png
+==================================================
+GreenhouseHandler: Found question -> What is the most recent degree you obtained?
+
+[Classification]: PROFILE -> What is the most recent degree you obtained?
+==================================================
+Question: What is the most recent degree you obtained?
+Detected Widget Type: input
+Available Options: None
+Normalized Value: B.Tech
+Selected Value: B.Tech
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Have_you_ever_been_employed_by.png
+==================================================
+GreenhouseHandler: Found question -> Do you opt-in to receive WhatsApp messages from Stripe Recruiting?
+
+[Essay Debug] Question: Do you opt-in to receive WhatsApp messages from Stripe Recruiting?
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 3.40)
+  -> Retrieved Chunk 2: ### Project 5: SC-MFC Power Optimisation (B.Tech Thesis) (Score: 2.34)
+  -> Retrieved Chunk 3: **On ScoreMe:** (Score: 2.28)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'50', '32', '16', '3', '49', '1', '0.547', '0.963', '2', '64', '5'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Do you opt-in to receive WhatsApp messages from Stripe Recruiting?
+[Dropdown Debug]
+  -> Question: Do you opt-in to receive WhatsApp messages from Stripe Recruiting?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Do you opt-in to receive WhatsApp messages from Stripe Recruiting?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_opt_in_to_receive_Whats.png
+==================================================
+GreenhouseHandler: Safety rules triggered. Moving to REVIEW_REQUIRED.
+
+
+==================================================
+STRIPE END-TO-END AUDIT TRACE
+==================================================
+
+Question
+Location (City)
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+Please select the country where you currently reside.
+
+Classification
+TECHNICAL
+
+Answer Source
+LLM + RAG
+
+Value Selected
+Other
+
+Verification Result
+Success
+
+⸻
+
+Question
+Australia
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+Belgium
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+Brazil
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+Canada
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+France
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+Germany
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+India
+
+Classification
+TECHNICAL
+
+Answer Source
+LLM + RAG
+
+Value Selected
+I have expertise in GenAI, LangChain, RAG, and Python, and I built autonomous agents.
+
+Verification Result
+Success
+
+⸻
+
+Question
+Indonesia
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+Ireland
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+Israel
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+Italy
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+Japan
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+Luxembourg
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+Malaysia
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+Mexico
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+New Zealand
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+Poland
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+Portugal
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+Romania
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+Singapore
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+South Korea
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+Spain
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+Sweden
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+Switzerland
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+Thailand
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+The Netherlands
+
+Classification
+TECHNICAL
+
+Answer Source
+LLM + RAG
+
+Value Selected
+There is no information about The Netherlands in the provided context.
+
+Verification Result
+Success
+
+⸻
+
+Question
+UAE
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+UK
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+US
+
+Classification
+TECHNICAL
+
+Answer Source
+Low_Confidence_Gate
+
+Value Selected
+REVIEW_REQUIRED
+
+Verification Result
+Failed
+
+⸻
+
+Question
+Are you authorized to work in the location(s) you selected in your previous response?
+
+Classification
+KNOCKOUT
+
+Answer Source
+CandidateProfile
+
+Value Selected
+Yes
+
+Verification Result
+Success
+
+⸻
+
+Question
+Will you require Stripe to sponsor you for a work permit now or in the future for the location(s) you selected in in your previous response?
+
+Classification
+TECHNICAL
+
+Answer Source
+LLM + RAG
+
+Value Selected
+No
+
+Verification Result
+Success
+
+⸻
+
+Question
+If this role offers the option to work from a remote location, do you plan to work remotely?
+
+Classification
+TECHNICAL
+
+Answer Source
+LLM + RAG
+
+Value Selected
+Yes, I intend to work remotely.
+
+Verification Result
+Success
+
+⸻
+
+Question
+Have you ever been employed by Stripe or a Stripe affiliate?
+
+Classification
+TECHNICAL
+
+Answer Source
+LLM + RAG
+
+Value Selected
+No
+
+Verification Result
+Success
+
+⸻
+
+Question
+Who is your current or previous employer?
+
+Classification
+PROFILE
+
+Answer Source
+LLM + RAG
+
+Value Selected
+I do not have a current or previous employer listed in the provided context.
+
+Verification Result
+Success
+
+⸻
+
+Question
+What is your current or previous job title?
+
+Classification
+TECHNICAL
+
+Answer Source
+LLM + RAG
+
+Value Selected
+AI/ML Engineer
+
+Verification Result
+Success
+
+⸻
+
+Question
+What is the most recent school you attended?
+
+Classification
+TECHNICAL
+
+Answer Source
+LLM + RAG
+
+Value Selected
+I do not have information about my educational background.
+
+Verification Result
+Success
+
+⸻
+
+Question
+What is the most recent degree you obtained?
+
+Classification
+PROFILE
+
+Answer Source
+CandidateProfile
+
+Value Selected
+B.Tech
+
+Verification Result
+Success
+
+⸻
+
+Question
+Do you opt-in to receive WhatsApp messages from Stripe Recruiting?
+
+Classification
+TECHNICAL
+
+Answer Source
+LLM + RAG
+
+Value Selected
+No
+
+Verification Result
+Success
+
+⸻
+
+After question processing:
+Submission Attempted
+Submit Button Enabled
+False
+Submit Button Clicked
+False
+
+⸻
+
+If blocked:
+Run Diagnosis Engine
+
+Missing Fields
+None
+
+Validation Errors
+None
+
+Repair Actions
+None
+
+⸻
+
+Final Status
+REVIEW_REQUIRED

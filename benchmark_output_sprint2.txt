@@ -1,0 +1,99 @@
+================================================================================
+Benchmark Version:     1.0
+Dataset:               companies.csv
+Category Filter:       All
+Companies:             36
+Git commit:            a30b78d
+Strategies enabled:    ['career_page_fingerprint', 'sitemap', 'robots_txt', 'career_link_expansion', 'ats_pattern_guessing', 'search_engine']
+================================================================================\n
+  ✗  Figma                smartrecruiters ats_pattern_guessing [18.99s]
+  ✗  Discord              smartrecruiters ats_pattern_guessing [10.70s]
+  ✗  Stripe               smartrecruiters ats_pattern_guessing [13.66s]
+  ✗  Coinbase             smartrecruiters ats_pattern_guessing [6.77s]
+  ✗  Airtable             smartrecruiters ats_pattern_guessing [26.09s]
+  ✗  Notion               smartrecruiters ats_pattern_guessing [15.92s]
+  ✗  Canva                smartrecruiters ats_pattern_guessing [7.67s]
+  ✗  DoorDash             smartrecruiters ats_pattern_guessing [7.22s]
+  ✗  Instacart            smartrecruiters ats_pattern_guessing [15.53s]
+  ✗  HashiCorp            smartrecruiters ats_pattern_guessing [6.99s]
+  ✗  GitLab               smartrecruiters ats_pattern_guessing [12.50s]
+  ✗  Samsara              smartrecruiters ats_pattern_guessing [41.29s]
+  ✗  Flexport             smartrecruiters ats_pattern_guessing [6.24s]
+  ✗  Gusto                smartrecruiters ats_pattern_guessing [6.15s]
+  ✗  Grammarly            smartrecruiters ats_pattern_guessing [12.19s]
+  ✗  Brex                 smartrecruiters ats_pattern_guessing [9.53s]
+  ✗  Benchling            smartrecruiters ats_pattern_guessing [12.84s]
+  ⚠  Scale AI             greenhouse      search_engine        [7.94s]
+  ✗  Miro                 smartrecruiters ats_pattern_guessing [15.75s]
+  ✗  Vercel               smartrecruiters ats_pattern_guessing [13.04s]
+  ✗  Netflix              workday         search_engine        [18.34s]
+  ⚠  Spotify              lever           ats_pattern_guessing [23.48s]
+  ✗  Postman              smartrecruiters ats_pattern_guessing [26.06s]
+  ✗  Lucid Software       greenhouse      career_page_fingerprint [17.25s]
+  ⚠  Nvidia               workday         search_engine        [20.75s]
+  ⚠  Salesforce           workday         search_engine        [64.87s]
+  ⚠  Visa                 workday         search_engine        [10.53s]
+  ⚠  Target               workday         search_engine        [15.98s]
+  ⚠  FedEx                workday         search_engine        [9.92s]
+  ⚠  Cisco                workday         search_engine        [19.16s]
+  ✗  Ramp                 smartrecruiters ats_pattern_guessing [11.31s]
+  ✗  Cohere               smartrecruiters ats_pattern_guessing [13.06s]
+  ✗  Linear               smartrecruiters ats_pattern_guessing [20.84s]
+  ✗  Retool               smartrecruiters ats_pattern_guessing [14.87s]
+  ✗  Anduril              smartrecruiters ats_pattern_guessing [8.04s]
+  ✗  Visa Inc.            —               —                    [9.05s]
+\n================================================================================
+  PER-STRATEGY CONTRIBUTION
+================================================================================
+Strategy               Emitted    Verified   Unique     Wins     Avg Latency
+--------------------------------------------------------------------------------
+career_page_fingerprint 10         3          1          1        3.40s
+sitemap                181        0          0          0        1.65s
+robots_txt             4          0          0          0        0.35s
+career_link_expansion  171        2          0          0        5.08s
+ats_pattern_guessing   93         45         42         26       2.43s
+search_engine          1269       19         16         8        1.98s
+\n================================================================================
+  CORPUS OF FAILURES
+================================================================================
+  - Figma: Exp: greenhouse (https://boards-api.greenhouse.io/v1/boards/figma), Got: smartrecruiters (https://jobs.smartrecruiters.com/figma)
+  - Discord: Exp: greenhouse (https://boards-api.greenhouse.io/v1/boards/discord), Got: smartrecruiters (https://jobs.smartrecruiters.com/discord)
+  - Stripe: Exp: greenhouse (https://boards-api.greenhouse.io/v1/boards/stripe), Got: smartrecruiters (https://jobs.smartrecruiters.com/stripe)
+  - Coinbase: Exp: greenhouse (https://boards-api.greenhouse.io/v1/boards/coinbase), Got: smartrecruiters (https://jobs.smartrecruiters.com/coinbase)
+  - Airtable: Exp: greenhouse (https://boards-api.greenhouse.io/v1/boards/airtable), Got: smartrecruiters (https://jobs.smartrecruiters.com/airtable)
+  - Notion: Exp: ashby (https://api.ashbyhq.com/posting-api/job-board/notion), Got: smartrecruiters (https://jobs.smartrecruiters.com/notion)
+  - Canva: Exp: greenhouse (https://boards-api.greenhouse.io/v1/boards/canva), Got: smartrecruiters (https://jobs.smartrecruiters.com/canva)
+  - DoorDash: Exp: greenhouse (https://boards-api.greenhouse.io/v1/boards/doordash), Got: smartrecruiters (https://jobs.smartrecruiters.com/doordash)
+  - Instacart: Exp: greenhouse (https://boards-api.greenhouse.io/v1/boards/instacart), Got: smartrecruiters (https://jobs.smartrecruiters.com/instacart)
+  - HashiCorp: Exp: greenhouse (https://boards-api.greenhouse.io/v1/boards/hashicorp), Got: smartrecruiters (https://jobs.smartrecruiters.com/hashicorp)
+  - GitLab: Exp: greenhouse (https://boards-api.greenhouse.io/v1/boards/gitlab), Got: smartrecruiters (https://jobs.smartrecruiters.com/gitlab)
+  - Samsara: Exp: greenhouse (https://boards-api.greenhouse.io/v1/boards/samsara), Got: smartrecruiters (https://jobs.smartrecruiters.com/samsara)
+  - Flexport: Exp: greenhouse (https://boards-api.greenhouse.io/v1/boards/flexport), Got: smartrecruiters (https://jobs.smartrecruiters.com/flexport)
+  - Gusto: Exp: greenhouse (https://boards-api.greenhouse.io/v1/boards/gusto), Got: smartrecruiters (https://jobs.smartrecruiters.com/gusto)
+  - Grammarly: Exp: greenhouse (https://boards-api.greenhouse.io/v1/boards/grammarly), Got: smartrecruiters (https://jobs.smartrecruiters.com/grammarly)
+  - Brex: Exp: greenhouse (https://boards-api.greenhouse.io/v1/boards/brex), Got: smartrecruiters (https://jobs.smartrecruiters.com/brex)
+  - Benchling: Exp: greenhouse (https://boards-api.greenhouse.io/v1/boards/benchling), Got: smartrecruiters (https://jobs.smartrecruiters.com/benchling)
+  - Scale AI: Exp: https://boards-api.greenhouse.io/v1/boards/scale, Got: https://job-boards.greenhouse.io/scaleai
+  - Miro: Exp: greenhouse (https://boards-api.greenhouse.io/v1/boards/miro), Got: smartrecruiters (https://jobs.smartrecruiters.com/miro)
+  - Vercel: Exp: greenhouse (https://boards-api.greenhouse.io/v1/boards/vercel), Got: smartrecruiters (https://jobs.smartrecruiters.com/vercel)
+  - Netflix: Exp: lever (https://api.lever.co/v0/postings/netflix), Got: workday (https://netflix.wd108.myworkdayjobs.com/Netflix)
+  - Spotify: Exp: https://api.lever.co/v0/postings/spotify, Got: https://jobs.lever.co/spotify
+  - Postman: Exp: lever (https://api.lever.co/v0/postings/postman), Got: smartrecruiters (https://jobs.smartrecruiters.com/postman)
+  - Lucid Software: Exp: lever (https://api.lever.co/v0/postings/lucidsoftware), Got: greenhouse (https://boards.greenhouse.io/lucidsoftware)
+  - Nvidia: Exp: https://nvidia.wd5.myworkdayjobs.com/wday/cxs/nvidia/NVIDIAExternalCareerSite/jobs, Got: https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/4/refreshFacet/318c8bb6f553100021d223d9780d30be
+  - Salesforce: Exp: https://salesforce.wd1.myworkdayjobs.com/wday/cxs/salesforce/External_Career_Site/jobs, Got: https://salesforce.wd12.myworkdayjobs.com/External_Career_Site
+  - Visa: Exp: https://visa.wd1.myworkdayjobs.com/wday/cxs/visa/Visa_Careers/jobs, Got: https://visa.wd5.myworkdayjobs.com/Visa
+  - Target: Exp: https://target.wd5.myworkdayjobs.com/wday/cxs/target/TargetCareers/jobs, Got: https://target.wd5.myworkdayjobs.com/targetcareers/job
+  - FedEx: Exp: https://fedex.wd1.myworkdayjobs.com/wday/cxs/fedex/FedEx_Careers/jobs, Got: https://fedex.wd1.myworkdayjobs.com/FXE-LAC_External_Career_Site/0/refreshFacet/318c8bb6f553100021d223d9780d30be
+  - Cisco: Exp: https://cisco.wd1.myworkdayjobs.com/wday/cxs/cisco/Cisco_Careers/jobs, Got: https://cisco.wd5.myworkdayjobs.com/Cisco_Careers
+  - Ramp: Exp: ashby (https://api.ashbyhq.com/posting-api/job-board/ramp), Got: smartrecruiters (https://jobs.smartrecruiters.com/ramp)
+  - Cohere: Exp: ashby (https://api.ashbyhq.com/posting-api/job-board/cohere), Got: smartrecruiters (https://jobs.smartrecruiters.com/cohere)
+  - Linear: Exp: ashby (https://api.ashbyhq.com/posting-api/job-board/linear), Got: smartrecruiters (https://jobs.smartrecruiters.com/linear)
+  - Retool: Exp: ashby (https://api.ashbyhq.com/posting-api/job-board/retool), Got: smartrecruiters (https://jobs.smartrecruiters.com/retool)
+  - Anduril: Exp: ashby (https://api.ashbyhq.com/posting-api/job-board/anduril), Got: smartrecruiters (https://jobs.smartrecruiters.com/anduril)
+  - Visa Inc.: No candidates passed verification
+\n================================================================================
+  FINAL PIPELINE RECALL:    0.0%
+  FINAL PIPELINE PRECISION: 0.0%
+  COMPANIES TESTED:         36
+================================================================================

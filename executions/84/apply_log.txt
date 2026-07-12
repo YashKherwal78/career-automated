@@ -1,0 +1,474 @@
+RAGClient: Initialised with 20 chunks from Master Profile.
+Executor: Starting job 84 on GREENHOUSE (https://job-boards.greenhouse.io/sigmacomputing/jobs/7690411003)
+Executor [Greenhouse]: Initializing Greenhouse Handler...
+GreenhouseHandler: Verifying standard fields...
+GreenhouseHandler: Uploading resume /Users/yashkherwal/Downloads/hrmailfiles/data/Resume_aiml.pdf...
+  -> Renamed to: Resume_SigmaComputing_SoftwareEngineerNewGrad.pdf
+  -> File Exists: True
+  -> File Size: 126396 bytes
+  -> Upload Verified: True
+GreenhouseHandler: Starting submission cycle 1/3...
+GreenhouseHandler: Processing custom fields...
+GreenhouseHandler: Found question -> Location (City)
+
+[Essay Debug] Question: Location (City)
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Location (City)
+GreenhouseHandler: React-Select option 'REVIEW_REQUIRED' not found in DOM. Safety Pause.
+==================================================
+Question: Location (City)
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> School
+
+[Essay Debug] Question: School
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: I worked on a project at OrangeLabs, an EdTech ERP platform for schools and colleges, where I developed an AI-generated personalised lecture pipeline using computer vision and voice cloning for student-facing content.
+  [Metric Grounding] Numbers in Context: {'1', '2026', '2', '3', '2025', '0'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> School
+GreenhouseHandler: React-Select option 'I worked on a project at OrangeLabs, an EdTech ERP platform for schools and colleges, where I developed an AI-generated personalised lecture pipeline using computer vision and voice cloning for student-facing content.' not found in DOM. Safety Pause.
+==================================================
+Question: School
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: I worked on a project at OrangeLabs, an EdTech ERP platform for schools and colleges, where I developed an AI-generated personalised lecture pipeline using computer vision and voice cloning for student-facing content.
+Selected Value: I worked on a project at OrangeLabs, an EdTech ERP platform for schools and colleges, where I developed an AI-generated personalised lecture pipeline using computer vision and voice cloning for student-facing content.
+Selection Verified: False
+Screenshot After Selection: None
+==================================================
+Failed to extract react-select options: Locator.click: Timeout 1000ms exceeded.
+Call log:
+  - waiting for locator("label").nth(7).locator("..").locator("div[class*=\"select__control\"], div[class*=\"-control\"]").first
+    - locator resolved to <div class="select__control remix-css-13cymwt-control">…</div>
+  - attempting click action
+    - waiting for element to be visible, enabled and stable
+    - element is not stable
+  - retrying click action
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - <div tabindex="-1" role="option" aria-disabled="false" id="react-select-school--0-option-1" class="select__option remix-css-18355b6-option">Aalto University</div> from <div class="select">…</div> subtree intercepts pointer events
+  - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is not stable
+    - retrying click action
+      - waiting 100ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div tabindex="-1" role="option" aria-disabled="false" id="react-select-school--0-option-1" class="select__option remix-css-18355b6-option">Aalto University</div> from <div class="select">…</div> subtree intercepts pointer events
+    - retrying click action
+      - waiting 500ms
+
+GreenhouseHandler: Found question -> Degree
+
+[Essay Debug] Question: Degree
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Degree
+GreenhouseHandler Error interacting with field 'Degree': Locator.click: Timeout 1000ms exceeded.
+Call log:
+  - waiting for locator("label").nth(7).locator("..").locator("div[class*=\"select__control\"], div[class*=\"-control\"]").first
+    - locator resolved to <div class="select__control remix-css-13cymwt-control">…</div>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div tabindex="-1" role="option" aria-disabled="false" id="react-select-school--0-option-1" class="select__option remix-css-18355b6-option">Aalto University</div> from <div class="select">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - <div tabindex="-1" role="option" aria-disabled="false" id="react-select-school--0-option-1" class="select__option remix-css-18355b6-option">Aalto University</div> from <div class="select">…</div> subtree intercepts pointer events
+  2 × retrying click action
+      - waiting 100ms
+      - waiting for element to be visible, enabled and stable
+      - element is not stable
+  - retrying click action
+    - waiting 500ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - <div tabindex="-1" role="option" aria-disabled="false" id="react-select-school--0-option-1" class="select__option remix-css-18355b6-option">Aalto University</div> from <div class="select">…</div> subtree intercepts pointer events
+  - retrying click action
+    - waiting 500ms
+
+Failed to extract react-select options: Locator.click: Timeout 1000ms exceeded.
+Call log:
+  - waiting for locator("label").nth(8).locator("..").locator("div[class*=\"select__control\"], div[class*=\"-control\"]").first
+    - locator resolved to <div class="select__control remix-css-13cymwt-control">…</div>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not stable
+    - retrying click action
+    - waiting 20ms
+    - waiting for element to be visible, enabled and stable
+    - element is not stable
+  - retrying click action
+    - waiting 100ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - element is outside of the viewport
+  - retrying click action
+    - waiting 100ms
+    - waiting for element to be visible, enabled and stable
+    - element is not stable
+  - retrying click action
+    - waiting 500ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - <div tabindex="-1" role="option" aria-disabled="false" id="react-select-school--0-option-6" class="select__option select__option--is-focused remix-css-2ov8vj-option">Abo Akademi University</div> from <div class="education--container">…</div> subtree intercepts pointer events
+  - retrying click action
+    - waiting 500ms
+
+GreenhouseHandler: Found question -> Personal Pronouns
+
+[Essay Debug] Question: Personal Pronouns
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 2: ### Project 1: YAAR — AI Behavioral Companion (Score: 1.00)
+  -> Retrieved Chunk 3: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Final LLM Answer: I.
+  [Metric Grounding] Numbers in Context: {'1', '2026', '50', '3', '2', '2025', '49', '0'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Personal Pronouns
+GreenhouseHandler Error interacting with field 'Personal Pronouns': Locator.click: Timeout 1000ms exceeded.
+Call log:
+  - waiting for locator("label").nth(8).locator("..").locator("div[class*=\"select__control\"], div[class*=\"-control\"]").first
+    - locator resolved to <div class="select__control remix-css-13cymwt-control">…</div>
+  - attempting click action
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - <div tabindex="-1" role="option" aria-disabled="false" id="react-select-school--0-option-6" class="select__option select__option--is-focused remix-css-2ov8vj-option">Abo Akademi University</div> from <div class="education--container">…</div> subtree intercepts pointer events
+  - retrying click action
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - <div tabindex="-1" role="option" aria-disabled="false" id="react-select-school--0-option-6" class="select__option remix-css-18355b6-option">Abo Akademi University</div> from <div class="education--container">…</div> subtree intercepts pointer events
+  - retrying click action
+    - waiting 20ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - <div tabindex="-1" role="option" aria-disabled="false" id="react-select-school--0-option-6" class="select__option remix-css-18355b6-option">Abo Akademi University</div> from <div class="education--container">…</div> subtree intercepts pointer events
+  2 × retrying click action
+      - waiting 100ms
+      - waiting for element to be visible, enabled and stable
+      - element is not stable
+  - retrying click action
+    - waiting 500ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - <div tabindex="-1" role="option" aria-disabled="false" id="react-select-school--0-option-6" class="select__option remix-css-18355b6-option">Abo Akademi University</div> from <div class="education--container">…</div> subtree intercepts pointer events
+  - retrying click action
+    - waiting 500ms
+
+GreenhouseHandler: Found question -> LinkedIn Profile
+
+[Classification]: PROFILE -> LinkedIn Profile
+==================================================
+Question: LinkedIn Profile
+Detected Widget Type: input
+Available Options: None
+Normalized Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selected Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selection Verified: True
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> Website
+
+[Essay Debug] Question: Website
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: I don't have a personal website to share.
+  [Metric Grounding] Numbers in Context: {'1', '2026', '2', '3', '2025', '0'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: PROFILE -> Website
+==================================================
+Question: Website
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I don't have a personal website to share.
+Selected Value: I don't have a personal website to share.
+Selection Verified: True
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> While we don't require any cover letter as a part of our application, we understand you might want to share more than just your resume. Is there anything else you'd like to share with our team at Sigma?
+
+[Essay Debug] Question: While we don't require any cover letter as a part of our application, we understand you might want to share more than just your resume. Is there anything else you'd like to share with our team at Sigma?
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 17.79)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 16.78)
+  -> Retrieved Chunk 3: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 12.77)
+  -> Final LLM Answer: I'd like to share my passion for building consumer AI products that drive meaningful engagement and retention. My projects, YAAR and Echo Pod, demonstrate my ability to design and ship products that cater to the unique needs of Gen Z in India. I'm excited about the opportunity to bring my expertise in AI/ML to Sigma and contribute to the development of innovative solutions.
+  [Metric Grounding] Numbers in Context: {'1', '50', '3', '2', '25', '49', '10', '5'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> While we don't require any cover letter as a part of our application, we understand you might want to share more than just your resume. Is there anything else you'd like to share with our team at Sigma?
+==================================================
+Question: While we don't require any cover letter as a part of our application, we understand you might want to share more than just your resume. Is there anything else you'd like to share with our team at Sigma?
+Detected Widget Type: textarea
+Available Options: None
+Normalized Value: I'd like to share my passion for building consumer AI products that drive meaningful engagement and retention. My projects, YAAR and Echo Pod, demonstrate my ability to design and ship products that cater to the unique needs of Gen Z in India. I'm excited about the opportunity to bring my expertise in AI/ML to Sigma and contribute to the development of innovative solutions.
+Selected Value: I'd like to share my passion for building consumer AI products that drive meaningful engagement and retention. My projects, YAAR and Echo Pod, demonstrate my ability to design and ship products that cater to the unique needs of Gen Z in India. I'm excited about the opportunity to bring my expertise in AI/ML to Sigma and contribute to the development of innovative solutions.
+Selection Verified: True
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> Are you open to working 4 days onsite in one of our central offices?
+
+[Essay Debug] Question: Are you open to working 4 days onsite in one of our central offices?
+  -> Retrieved Chunk 1: **On ScoreMe:** (Score: 6.25)
+  -> Retrieved Chunk 2: ### Working Style (Score: 5.22)
+  -> Retrieved Chunk 3: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 3.50)
+  -> Final LLM Answer: I prefer direct feedback over polite hedging and treat job search as an engineering project. I work well in ambiguous, resource-constrained environments and do not need external structure to ship. I am open to working 4 days onsite in one of your central offices, but I would need to discuss the specifics of the arrangement, including the remote workdays and any expectations for productivity during onsite days.
+  [Metric Grounding] Numbers in Context: {'2025', '2'}
+  [Metric Grounding] Numbers Generated: {'4'}
+  [Metric Grounding] Validation FAILED! Unsupported Numbers: {'4'}
+  [Metric Grounding] Replacing with fallback.
+
+[Classification]: TECHNICAL -> Are you open to working 4 days onsite in one of our central offices?
+[Dropdown Debug]
+  -> Question: Are you open to working 4 days onsite in one of our central offices?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): I focused on building the system and validating the workflow. I do not have production metrics available for this project.
+  -> Available Options: ['NYC', 'SF', 'London', 'Remote only']
+  -> Selected Option (Normalized): REVIEW_REQUIRED
+GreenhouseHandler: React-Select option 'REVIEW_REQUIRED' not found in DOM. Safety Pause.
+==================================================
+Question: Are you open to working 4 days onsite in one of our central offices?
+Detected Widget Type: react_select
+Available Options: ['NYC', 'SF', 'London', 'Remote only']
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: None
+==================================================
+Failed to extract react-select options: Locator.click: Timeout 1000ms exceeded.
+Call log:
+  - waiting for locator("label").nth(13).locator("..").locator("div[class*=\"select__control\"], div[class*=\"-control\"]").first
+    - locator resolved to <div class="select__control remix-css-13cymwt-control">…</div>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div tabindex="-1" role="option" aria-disabled="false" class="select__option remix-css-18355b6-option" id="react-select-question_30323462003-option-1">SF</div> from <div class="field-wrapper">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is not stable
+    - retrying click action
+      - waiting 100ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div tabindex="-1" role="option" aria-disabled="false" class="select__option remix-css-18355b6-option" id="react-select-question_30323462003-option-1">SF</div> from <div class="field-wrapper">…</div> subtree intercepts pointer events
+    - retrying click action
+      - waiting 500ms
+
+GreenhouseHandler: Found question -> If you are currently not local to one of our central offices, are you willing to relocate?
+
+[Classification]: KNOCKOUT -> If you are currently not local to one of our central offices, are you willing to relocate?
+GreenhouseHandler Error interacting with field 'If you are currently not local to one of our central offices, are you willing to relocate?': Locator.click: Timeout 1000ms exceeded.
+Call log:
+  - waiting for locator("label").nth(13).locator("..").locator("div[class*=\"select__control\"], div[class*=\"-control\"]").first
+    - locator resolved to <div class="select__control remix-css-13cymwt-control">…</div>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div tabindex="-1" role="option" aria-disabled="false" class="select__option remix-css-18355b6-option" id="react-select-question_30323462003-option-1">SF</div> from <div class="field-wrapper">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - <div tabindex="-1" role="option" aria-disabled="false" class="select__option remix-css-18355b6-option" id="react-select-question_30323462003-option-1">SF</div> from <div class="field-wrapper">…</div> subtree intercepts pointer events
+  2 × retrying click action
+      - waiting 100ms
+      - waiting for element to be visible, enabled and stable
+      - element is not stable
+  - retrying click action
+    - waiting 500ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - <div tabindex="-1" role="option" aria-disabled="false" id="react-select-question_30323462003-option-1" class="select__option select__option--is-focused remix-css-2ov8vj-option">SF</div> from <div class="field-wrapper">…</div> subtree intercepts pointer events
+  - retrying click action
+    - waiting 500ms
+
+GreenhouseHandler: Found question -> Current company
+
+[Classification]: PROFILE -> Current company
+==================================================
+Question: Current company
+Detected Widget Type: input
+Available Options: None
+Normalized Value: Not Currently Employed
+Selected Value: Not Currently Employed
+Selection Verified: True
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> Acknowledge, confirm, and agree to the following statements.
+
+[Essay Debug] Question: Acknowledge, confirm, and agree to the following statements.
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 2.28)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 2.09)
+  -> Retrieved Chunk 3: **On ScoreMe:** (Score: 1.95)
+  -> Final LLM Answer: Yes, I acknowledge, agree, and confirm.
+  [Metric Grounding] Numbers in Context: {'1', '50', '3', '2', '25', '49'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Acknowledge, confirm, and agree to the following statements.
+[Dropdown Debug]
+  -> Question: Acknowledge, confirm, and agree to the following statements.
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): Yes, I acknowledge, agree, and confirm.
+  -> Available Options: ['Yes, I acknowledge, agree, and confirm.', 'No, I do not acknowledge, agree, or confirm.']
+  -> Selected Option (Normalized): Yes, I acknowledge, agree, and confirm.
+==================================================
+Question: Acknowledge, confirm, and agree to the following statements.
+Detected Widget Type: react_select
+Available Options: ['Yes, I acknowledge, agree, and confirm.', 'No, I do not acknowledge, agree, or confirm.']
+Normalized Value: Yes, I acknowledge, agree, and confirm.
+Selected Value: Yes, I acknowledge, agree, and confirm.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Acknowledge__confirm__and_agre.png
+==================================================
+GreenhouseHandler: Found question -> Would you require a new H-1B sponsorship to work with us?
+
+[Classification]: KNOCKOUT -> Would you require a new H-1B sponsorship to work with us?
+[Dropdown Debug]
+  -> Question: Would you require a new H-1B sponsorship to work with us?
+  -> Detected Type: KNOCKOUT
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Would you require a new H-1B sponsorship to work with us?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Would_you_require_a_new_H_1B_s.png
+==================================================
+GreenhouseHandler: Found question -> What is your current visa status?
+
+[Classification]: KNOCKOUT -> What is your current visa status?
+==================================================
+Question: What is your current visa status?
+Detected Widget Type: input
+Available Options: None
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Would_you_require_a_new_H_1B_s.png
+==================================================
+GreenhouseHandler: Found question -> Gender
+
+[Classification]: LEGAL -> Gender
+[Dropdown Debug]
+  -> Question: Gender
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): Male
+  -> Available Options: ['Male', 'Female', 'Decline To Self Identify']
+  -> Selected Option (Normalized): Male
+==================================================
+Question: Gender
+Detected Widget Type: react_select
+Available Options: ['Male', 'Female', 'Decline To Self Identify']
+Normalized Value: Male
+Selected Value: Male
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Gender.png
+==================================================
+GreenhouseHandler: Found question -> Are you Hispanic/Latino?
+
+[Classification]: LEGAL -> Are you Hispanic/Latino?
+[Dropdown Debug]
+  -> Question: Are you Hispanic/Latino?
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No', 'Decline To Self Identify']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Are you Hispanic/Latino?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No', 'Decline To Self Identify']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_Hispanic_Latino_.png
+==================================================
+GreenhouseHandler: Found question -> Please identify your race
+
+[Classification]: LEGAL -> Please identify your race
+[Dropdown Debug]
+  -> Question: Please identify your race
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): 
+  -> Available Options: ['American Indian or Alaskan Native', 'Asian', 'Black or African American', 'White', 'Native Hawaiian or Other Pacific Islander', 'Two or More Races', 'Decline To Self Identify']
+  -> Selected Option (Normalized): 
+GreenhouseHandler: Found question -> Veteran Status
+
+[Classification]: LEGAL -> Veteran Status
+[Dropdown Debug]
+  -> Question: Veteran Status
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['I am not a protected veteran', 'I identify as one or more of the classifications of a protected veteran', "I don't wish to answer"]
+  -> Selected Option (Normalized): I am not a protected veteran
+==================================================
+Question: Veteran Status
+Detected Widget Type: react_select
+Available Options: ['I am not a protected veteran', 'I identify as one or more of the classifications of a protected veteran', "I don't wish to answer"]
+Normalized Value: I am not a protected veteran
+Selected Value: I am not a protected veteran
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Veteran_Status.png
+==================================================
+GreenhouseHandler: Safety rules triggered. Moving to REVIEW_REQUIRED.

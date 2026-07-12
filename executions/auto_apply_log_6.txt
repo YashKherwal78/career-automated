@@ -1,0 +1,735 @@
+RAGClient: Initialised with 20 chunks from Master Profile.
+
+--- Attempt 1: Applying to Job 807 at Anthropic ---
+Executor: Starting job 807 on GREENHOUSE (https://job-boards.greenhouse.io/anthropic/jobs/5117581008)
+Executor [Greenhouse]: Initializing Greenhouse Handler...
+GreenhouseHandler: Verifying standard fields...
+GreenhouseHandler: Uploading resume /Users/yashkherwal/Downloads/hrmailfiles/data/Resume_aiml.pdf...
+  -> Renamed to: Resume_Anthropic_SolutionsArchitectAppliedAI.pdf
+  -> File Exists: True
+  -> File Size: 126396 bytes
+  -> Upload Verified: True
+GreenhouseHandler: Starting submission cycle 1/3...
+GreenhouseHandler: Processing custom fields...
+GreenhouseHandler: Found question -> (Optional) Personal Preferences
+
+[Essay Debug] Question: (Optional) Personal Preferences
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 2.00)
+  -> Retrieved Chunk 2: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 3: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Final LLM Answer: I prefer working in a collaborative environment with a focus on innovation and experimentation. My ideal work setup would be a hybrid model, allowing for flexibility in remote work while also providing opportunities for in-person collaboration and knowledge-sharing.
+  [Metric Grounding] Numbers in Context: {'2', '1', '49', '50', '2026', '2025', '3', '0'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> (Optional) Personal Preferences
+==================================================
+Question: (Optional) Personal Preferences
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I prefer working in a collaborative environment with a focus on innovation and experimentation. My ideal work setup would be a hybrid model, allowing for flexibility in remote work while also providing opportunities for in-person collaboration and knowledge-sharing.
+Selected Value: I prefer working in a collaborative environment with a focus on innovation and experimentation. My ideal work setup would be a hybrid model, allowing for flexibility in remote work while also providing opportunities for in-person collaboration and knowledge-sharing.
+Selection Verified: True
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> Website
+
+[Essay Debug] Question: Website
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: I don't have a personal website to share.
+  [Metric Grounding] Numbers in Context: {'2', '1', '3', '2025', '2026', '0'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: PROFILE -> Website
+==================================================
+Question: Website
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I don't have a personal website to share.
+Selected Value: I don't have a personal website to share.
+Selection Verified: True
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> LinkedIn Profile
+
+[Classification]: PROFILE -> LinkedIn Profile
+==================================================
+Question: LinkedIn Profile
+Detected Widget Type: input
+Available Options: None
+Normalized Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selected Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selection Verified: True
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> Are you open to working in-person in one of our offices 25% of the time?
+
+[Essay Debug] Question: Are you open to working in-person in one of our offices 25% of the time?
+  -> Retrieved Chunk 1: **On ScoreMe:** (Score: 8.53)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 8.33)
+  -> Retrieved Chunk 3: ### Working Style (Score: 5.22)
+  -> Final LLM Answer: Yes.
+  [Metric Grounding] Numbers in Context: {'2', '25', '3'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Are you open to working in-person in one of our offices 25% of the time?
+[Dropdown Debug]
+  -> Question: Are you open to working in-person in one of our offices 25% of the time?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): Yes.
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): Yes
+==================================================
+Question: Are you open to working in-person in one of our offices 25% of the time?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: Yes
+Selected Value: Yes
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_open_to_working_in_per.png
+==================================================
+GreenhouseHandler: Found question -> Are you open to relocation for this role?
+
+[Essay Debug] Question: Are you open to relocation for this role?
+  -> Retrieved Chunk 1: ### Project 3: AI Data Analyst Agent (Score: 5.16)
+  -> Retrieved Chunk 2: ### Project 1: YAAR — AI Behavioral Companion (Score: 5.06)
+  -> Retrieved Chunk 3: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 4.55)
+  -> Final LLM Answer: Yes.
+  [Metric Grounding] Numbers in Context: {'2', '1', '49', '60', '5', '50', '2026', '3', '0'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Are you open to relocation for this role?
+[Dropdown Debug]
+  -> Question: Are you open to relocation for this role?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): Yes.
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): Yes
+==================================================
+Question: Are you open to relocation for this role?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: Yes
+Selected Value: Yes
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_open_to_relocation_for.png
+==================================================
+GreenhouseHandler: Found question -> When is the earliest you would want to start working with us?
+
+[Essay Debug] Question: When is the earliest you would want to start working with us?
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 7.59)
+  -> Retrieved Chunk 2: ### Strongest Ownership Signals (Score: 5.97)
+  -> Retrieved Chunk 3: **On SC-MFC thesis:** (Score: 4.77)
+  -> Final LLM Answer: I am available to start immediately.
+  [Metric Grounding] Numbers in Context: {'2', '1', '49', '0.963', '50', '3'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> When is the earliest you would want to start working with us?
+==================================================
+Question: When is the earliest you would want to start working with us?
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I am available to start immediately.
+Selected Value: I am available to start immediately.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_open_to_relocation_for.png
+==================================================
+GreenhouseHandler: Found question -> Do you have any deadlines or timeline considerations we should be aware of?
+
+[Essay Debug] Question: Do you have any deadlines or timeline considerations we should be aware of?
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 9.16)
+  -> Retrieved Chunk 2: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 2.71)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 2.70)
+  -> Final LLM Answer: I do not have any explicit deadlines mentioned in the provided context.
+  [Metric Grounding] Numbers in Context: {'2', '1', '49', '10', '25', '5', '50', '3'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Do you have any deadlines or timeline considerations we should be aware of?
+==================================================
+Question: Do you have any deadlines or timeline considerations we should be aware of?
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I do not have any explicit deadlines mentioned in the provided context.
+Selected Value: I do not have any explicit deadlines mentioned in the provided context.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_open_to_relocation_for.png
+==================================================
+GreenhouseHandler: Found question -> Will you now or will you in the future require employment visa sponsorship to work in the country in which the job you're applying for is located?
+
+[Classification]: KNOCKOUT -> Will you now or will you in the future require employment visa sponsorship to work in the country in which the job you're applying for is located?
+[Dropdown Debug]
+  -> Question: Will you now or will you in the future require employment visa sponsorship to work in the country in which the job you're applying for is located?
+  -> Detected Type: KNOCKOUT
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Will you now or will you in the future require employment visa sponsorship to work in the country in which the job you're applying for is located?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Will_you_now_or_will_you_in_th.png
+==================================================
+GreenhouseHandler: Found question -> Do you require visa sponsorship?
+
+[Classification]: KNOCKOUT -> Do you require visa sponsorship?
+[Dropdown Debug]
+  -> Question: Do you require visa sponsorship?
+  -> Detected Type: KNOCKOUT
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Do you require visa sponsorship?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_require_visa_sponsorshi.png
+==================================================
+GreenhouseHandler: Found question -> Why Anthropic?
+
+[Essay Debug] Question: Why Anthropic?
+  -> Retrieved Chunk 1: ### Project 3: AI Data Analyst Agent (Score: 1.87)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 1.76)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 1.45)
+  -> Final LLM Answer: I do not see any information about Anthropic in the provided context chunks.
+  [Metric Grounding] Numbers in Context: {'2', '1', '49', '60', '5', '50', '2025', '3'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Why Anthropic?
+==================================================
+Question: Why Anthropic?
+Detected Widget Type: textarea
+Available Options: None
+Normalized Value: I do not see any information about Anthropic in the provided context chunks.
+Selected Value: I do not see any information about Anthropic in the provided context chunks.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_require_visa_sponsorshi.png
+==================================================
+GreenhouseHandler: Found question -> AI Policy for Application
+
+[Essay Debug] Question: AI Policy for Application
+  -> Retrieved Chunk 1: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 2.49)
+  -> Retrieved Chunk 2: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.90)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 1.58)
+  -> Final LLM Answer: I have read and agree to the AI Policy for Application.
+  [Metric Grounding] Numbers in Context: {'2', '1', '49', '10', '5', '50', '3', '2026', '0'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> AI Policy for Application
+[Dropdown Debug]
+  -> Question: AI Policy for Application
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): I have read and agree to the AI Policy for Application.
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: AI Policy for Application
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_AI_Policy_for_Application.png
+==================================================
+GreenhouseHandler: Found question -> Please review and acknowledge Anthropic's Candidate Privacy Policy.
+
+[Essay Debug] Question: Please review and acknowledge Anthropic's Candidate Privacy Policy.
+  -> Retrieved Chunk 1: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 3.84)
+  -> Retrieved Chunk 2: ### Strongest Product Skills (Score: 1.04)
+  -> Retrieved Chunk 3: ### Strongest Ownership Signals (Score: 1.01)
+  -> Final LLM Answer: Acknowledge/Confirm
+  [Metric Grounding] Numbers in Context: {'1', '10', '0.963', '5', '0'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Please review and acknowledge Anthropic's Candidate Privacy Policy.
+[Dropdown Debug]
+  -> Question: Please review and acknowledge Anthropic's Candidate Privacy Policy.
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): Acknowledge/Confirm
+  -> Available Options: ['Acknowledge/Confirm']
+  -> Selected Option (Normalized): Acknowledge/Confirm
+==================================================
+Question: Please review and acknowledge Anthropic's Candidate Privacy Policy.
+Detected Widget Type: react_select
+Available Options: ['Acknowledge/Confirm']
+Normalized Value: Acknowledge/Confirm
+Selected Value: Acknowledge/Confirm
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Please_review_and_acknowledge_.png
+==================================================
+GreenhouseHandler: Running Pre-Submit Audit...
+GreenhouseHandler: All checks passed. AUTO-SUBMITTING (Attempt 1).
+GreenhouseHandler: Verification Result -> FAILED_RECOVERABLE (Confidence: 0%)
+GreenhouseHandler: Recoverable failure detected: No success signals detected after clicking submit.. Retrying...
+GreenhouseHandler: Starting submission cycle 2/3...
+GreenhouseHandler: Processing custom fields...
+GreenhouseHandler: Found question -> (Optional) Personal Preferences
+
+[Essay Debug] Question: (Optional) Personal Preferences
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 2.00)
+  -> Retrieved Chunk 2: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 3: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Final LLM Answer: I prefer working in a collaborative environment with a focus on innovation and experimentation. My ideal work setup would be a hybrid model, allowing for flexibility in remote work while also providing opportunities for in-person collaboration and knowledge-sharing.
+  [Metric Grounding] Numbers in Context: {'2', '1', '49', '50', '2026', '2025', '3', '0'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> (Optional) Personal Preferences
+==================================================
+Question: (Optional) Personal Preferences
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I prefer working in a collaborative environment with a focus on innovation and experimentation. My ideal work setup would be a hybrid model, allowing for flexibility in remote work while also providing opportunities for in-person collaboration and knowledge-sharing.
+Selected Value: I prefer working in a collaborative environment with a focus on innovation and experimentation. My ideal work setup would be a hybrid model, allowing for flexibility in remote work while also providing opportunities for in-person collaboration and knowledge-sharing.
+Selection Verified: True
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> Website
+
+[Essay Debug] Question: Website
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: I don't have a personal website to share.
+  [Metric Grounding] Numbers in Context: {'2', '1', '3', '2025', '2026', '0'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: PROFILE -> Website
+==================================================
+Question: Website
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I don't have a personal website to share.
+Selected Value: I don't have a personal website to share.
+Selection Verified: True
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> LinkedIn Profile
+
+[Classification]: PROFILE -> LinkedIn Profile
+==================================================
+Question: LinkedIn Profile
+Detected Widget Type: input
+Available Options: None
+Normalized Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selected Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selection Verified: True
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> Are you open to working in-person in one of our offices 25% of the time?
+
+[Essay Debug] Question: Are you open to working in-person in one of our offices 25% of the time?
+  -> Retrieved Chunk 1: **On ScoreMe:** (Score: 8.53)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 8.33)
+  -> Retrieved Chunk 3: ### Working Style (Score: 5.22)
+  -> Final LLM Answer: Yes.
+  [Metric Grounding] Numbers in Context: {'2', '25', '3'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Are you open to working in-person in one of our offices 25% of the time?
+[Dropdown Debug]
+  -> Question: Are you open to working in-person in one of our offices 25% of the time?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): Yes.
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): Yes
+==================================================
+Question: Are you open to working in-person in one of our offices 25% of the time?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: Yes
+Selected Value: Yes
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_open_to_working_in_per.png
+==================================================
+GreenhouseHandler: Found question -> Are you open to relocation for this role?
+
+[Essay Debug] Question: Are you open to relocation for this role?
+  -> Retrieved Chunk 1: ### Project 3: AI Data Analyst Agent (Score: 5.16)
+  -> Retrieved Chunk 2: ### Project 1: YAAR — AI Behavioral Companion (Score: 5.06)
+  -> Retrieved Chunk 3: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 4.55)
+  -> Final LLM Answer: Yes.
+  [Metric Grounding] Numbers in Context: {'2', '1', '49', '60', '5', '50', '2026', '3', '0'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Are you open to relocation for this role?
+[Dropdown Debug]
+  -> Question: Are you open to relocation for this role?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): Yes.
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): Yes
+==================================================
+Question: Are you open to relocation for this role?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: Yes
+Selected Value: Yes
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_open_to_relocation_for.png
+==================================================
+GreenhouseHandler: Found question -> When is the earliest you would want to start working with us?
+
+[Essay Debug] Question: When is the earliest you would want to start working with us?
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 7.59)
+  -> Retrieved Chunk 2: ### Strongest Ownership Signals (Score: 5.97)
+  -> Retrieved Chunk 3: **On SC-MFC thesis:** (Score: 4.77)
+  -> Final LLM Answer: I am available to start immediately.
+  [Metric Grounding] Numbers in Context: {'2', '1', '49', '0.963', '50', '3'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> When is the earliest you would want to start working with us?
+==================================================
+Question: When is the earliest you would want to start working with us?
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I am available to start immediately.
+Selected Value: I am available to start immediately.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_open_to_relocation_for.png
+==================================================
+GreenhouseHandler: Found question -> Do you have any deadlines or timeline considerations we should be aware of?
+
+[Essay Debug] Question: Do you have any deadlines or timeline considerations we should be aware of?
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 9.16)
+  -> Retrieved Chunk 2: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 2.71)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 2.70)
+  -> Final LLM Answer: I do not have any explicit deadlines mentioned in the provided context.
+  [Metric Grounding] Numbers in Context: {'2', '1', '49', '10', '25', '5', '50', '3'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Do you have any deadlines or timeline considerations we should be aware of?
+==================================================
+Question: Do you have any deadlines or timeline considerations we should be aware of?
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I do not have any explicit deadlines mentioned in the provided context.
+Selected Value: I do not have any explicit deadlines mentioned in the provided context.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_open_to_relocation_for.png
+==================================================
+GreenhouseHandler: Found question -> Will you now or will you in the future require employment visa sponsorship to work in the country in which the job you're applying for is located?
+
+[Classification]: KNOCKOUT -> Will you now or will you in the future require employment visa sponsorship to work in the country in which the job you're applying for is located?
+[Dropdown Debug]
+  -> Question: Will you now or will you in the future require employment visa sponsorship to work in the country in which the job you're applying for is located?
+  -> Detected Type: KNOCKOUT
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Will you now or will you in the future require employment visa sponsorship to work in the country in which the job you're applying for is located?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Will_you_now_or_will_you_in_th.png
+==================================================
+GreenhouseHandler: Found question -> Do you require visa sponsorship?
+
+[Classification]: KNOCKOUT -> Do you require visa sponsorship?
+[Dropdown Debug]
+  -> Question: Do you require visa sponsorship?
+  -> Detected Type: KNOCKOUT
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Do you require visa sponsorship?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_require_visa_sponsorshi.png
+==================================================
+GreenhouseHandler: Found question -> Why Anthropic?
+
+[Essay Debug] Question: Why Anthropic?
+  -> Retrieved Chunk 1: ### Project 3: AI Data Analyst Agent (Score: 1.87)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 1.76)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 1.45)
+  -> Final LLM Answer: I do not see any information about Anthropic in the provided context chunks.
+  [Metric Grounding] Numbers in Context: {'2', '1', '49', '60', '5', '50', '2025', '3'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Why Anthropic?
+==================================================
+Question: Why Anthropic?
+Detected Widget Type: textarea
+Available Options: None
+Normalized Value: I do not see any information about Anthropic in the provided context chunks.
+Selected Value: I do not see any information about Anthropic in the provided context chunks.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_require_visa_sponsorshi.png
+==================================================
+GreenhouseHandler: Found question -> AI Policy for Application
+
+[Essay Debug] Question: AI Policy for Application
+  -> Retrieved Chunk 1: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 2.49)
+  -> Retrieved Chunk 2: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.90)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 1.58)
+  -> Final LLM Answer: I have read and agree to the AI Policy for Application.
+  [Metric Grounding] Numbers in Context: {'2', '1', '49', '10', '5', '50', '3', '2026', '0'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> AI Policy for Application
+[Dropdown Debug]
+  -> Question: AI Policy for Application
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): I have read and agree to the AI Policy for Application.
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: AI Policy for Application
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_AI_Policy_for_Application.png
+==================================================
+GreenhouseHandler: Found question -> Please review and acknowledge Anthropic's Candidate Privacy Policy.
+
+[Essay Debug] Question: Please review and acknowledge Anthropic's Candidate Privacy Policy.
+  -> Retrieved Chunk 1: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 3.84)
+  -> Retrieved Chunk 2: ### Strongest Product Skills (Score: 1.04)
+  -> Retrieved Chunk 3: ### Strongest Ownership Signals (Score: 1.01)
+  -> Final LLM Answer: Acknowledge/Confirm
+  [Metric Grounding] Numbers in Context: {'1', '10', '0.963', '5', '0'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Please review and acknowledge Anthropic's Candidate Privacy Policy.
+[Dropdown Debug]
+  -> Question: Please review and acknowledge Anthropic's Candidate Privacy Policy.
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): Acknowledge/Confirm
+  -> Available Options: ['Acknowledge/Confirm']
+  -> Selected Option (Normalized): Acknowledge/Confirm
+==================================================
+Question: Please review and acknowledge Anthropic's Candidate Privacy Policy.
+Detected Widget Type: react_select
+Available Options: ['Acknowledge/Confirm']
+Normalized Value: Acknowledge/Confirm
+Selected Value: Acknowledge/Confirm
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Please_review_and_acknowledge_.png
+==================================================
+GreenhouseHandler: Running Pre-Submit Audit...
+GreenhouseHandler: All checks passed. AUTO-SUBMITTING (Attempt 2).
+GreenhouseHandler Execution Error: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("button[type=\"submit\"], #submit_app").first
+    - locator resolved to <button disabled type="submit" aria-disabled="true" class="btn btn--rounded btn__disabled">Submit application</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not enabled
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is not enabled
+    - retrying click action
+      - waiting 100ms
+    58 × waiting for element to be visible, enabled and stable
+       - element is not enabled
+     - retrying click action
+       - waiting 500ms
+
+Failed to submit: FAILED. Moving to next job.
+
+--- Attempt 2: Applying to Job 1136 at Scaleai ---
+Executor: Starting job 1136 on GREENHOUSE (https://job-boards.greenhouse.io/scaleai/jobs/4695266005)
+Executor [Greenhouse]: Initializing Greenhouse Handler...
+GreenhouseHandler: Verifying standard fields...
+GreenhouseHandler: Field first_name empty after fill. Retrying...
+GreenhouseHandler: Uploading resume /Users/yashkherwal/Downloads/hrmailfiles/data/Resume_aiml.pdf...
+  -> Renamed to: Resume_Scaleai_StrategicProjectsLeadGenerativeAI.pdf
+  -> File Exists: True
+  -> File Size: 126396 bytes
+GreenhouseHandler Execution Error: Resume upload aborted: Could not verify upload of Resume_Scaleai_StrategicProjectsLeadGenerativeAI in the DOM after 15 seconds.
+Failed to submit: FAILED. Moving to next job.
+
+--- Attempt 3: Applying to Job 1340 at Groww ---
+Executor: Starting job 1340 on GREENHOUSE (https://job-boards.eu.greenhouse.io/groww/jobs/4875248101)
+Executor [Greenhouse]: Initializing Greenhouse Handler...
+GreenhouseHandler: Verifying standard fields...
+GreenhouseHandler: Field first_name empty after fill. Retrying...
+GreenhouseHandler: Uploading resume /Users/yashkherwal/Downloads/hrmailfiles/data/Resume_aiml.pdf...
+  -> Renamed to: Resume_Groww_InternAIVideoEditor.pdf
+  -> File Exists: True
+  -> File Size: 126396 bytes
+  -> Upload Verified: True
+GreenhouseHandler: Starting submission cycle 1/3...
+GreenhouseHandler: Processing custom fields...
+GreenhouseHandler: Found question -> LinkedIn Profile Link
+
+[Classification]: PROFILE -> LinkedIn Profile Link
+==================================================
+Question: LinkedIn Profile Link
+Detected Widget Type: input
+Available Options: None
+Normalized Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selected Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selection Verified: True
+Screenshot After Selection: None
+==================================================
+--- HTML FOR NOTICE PERIOD ---
+<label id="question_8927138101-label" for="question_8927138101" class="label select__label">What is the notice period in your current employment?</label><div class="select-shell remix-css-b62m3t-container"><span id="react-select-question_8927138101-live-region" class="remix-css-7pg0cj-a11yText"></span><span aria-live="polite" aria-atomic="false" aria-relevant="additions text" role="log" class="remix-css-7pg0cj-a11yText"><span id="aria-selection"></span><span id="aria-focused"></span><span id="aria-results"></span><span id="aria-guidance"></span></span><div><div class="select__control select__control--is-focused remix-css-yt0d77-control"><div class="select__value-container remix-css-hlgwow"><div class="select__placeholder remix-css-1jqq78o-placeholder" id="react-select-question_8927138101-placeholder">Select...</div><div class="select__input-container remix-css-19bb58m" data-value=""><input class="select__input" style="color: inherit; background: 0px center; opacity: 1; width: 100%; grid-area: 1 / 2; font: inherit; min-width: 2px; border: 0px; margin: 0px; outline: 0px; padding: 0px;" autocapitalize="none" autocomplete="off" autocorrect="off" id="question_8927138101" spellcheck="false" tabindex="0" type="text" aria-autocomplete="list" aria-expanded="false" aria-haspopup="true" aria-errormessage="question_8927138101-error" aria-invalid="false" aria-labelledby="question_8927138101-label" aria-required="false" role="combobox" aria-activedescendant="" aria-describedby="react-select-question_8927138101-placeholder question_8927138101-error" enterkeyhint="done" value=""></div></div><div class="select__indicators remix-css-1wy0on6"><button type="button" class="icon-button icon-button--sm" aria-label="Toggle flyout" tabindex="-1"><svg class="svg-icon" fill="none" height="20" width="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path class="icon--primary-color" d="M11.4534 16.0667L5.90983 9.13729C5.54316 8.67895 5.86948 8 6.45644 8H17.5436C18.1305 8 18.4568 8.67895 18.0902 9.13729L12.5466 16.0667C12.2664 16.417 11.7336 16.417 11.4534 16.0667Z"></path></svg></button></div></div></div></div>
+------------------------------
+GreenhouseHandler: Found question -> What is the notice period in your current employment?
+
+[Classification]: PROFILE -> What is the notice period in your current employment?
+[Dropdown Debug]
+  -> Question: What is the notice period in your current employment?
+  -> Detected Type: PROFILE
+  -> Mapped Value (Raw): 15
+  -> Available Options: ['Available to join immediate', 'Less than 30 days', '30 days', 'Between 30-60 days', '60 days', '90 days', 'More than 90 days']
+  -> Selected Option (Normalized): Less than 30 days
+==================================================
+Question: What is the notice period in your current employment?
+Detected Widget Type: react_select
+Available Options: ['Available to join immediate', 'Less than 30 days', '30 days', 'Between 30-60 days', '60 days', '90 days', 'More than 90 days']
+Normalized Value: Less than 30 days
+Selected Value: Less than 30 days
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_What_is_the_notice_period_in_y.png
+==================================================
+GreenhouseHandler: Found question -> Do you have a relative/ family member working currently in Groww?
+
+[Classification]: PROFILE -> Do you have a relative/ family member working currently in Groww?
+[Dropdown Debug]
+  -> Question: Do you have a relative/ family member working currently in Groww?
+  -> Detected Type: PROFILE
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Do you have a relative/ family member working currently in Groww?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_have_a_relative__family.png
+==================================================
+GreenhouseHandler: Found question -> Have you previously been employed by Groww in any capacity (e.g., full-time, intern, contractor)?
+
+[Classification]: PROFILE -> Have you previously been employed by Groww in any capacity (e.g., full-time, intern, contractor)?
+[Dropdown Debug]
+  -> Question: Have you previously been employed by Groww in any capacity (e.g., full-time, intern, contractor)?
+  -> Detected Type: PROFILE
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Have you previously been employed by Groww in any capacity (e.g., full-time, intern, contractor)?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Have_you_previously_been_emplo.png
+==================================================
+GreenhouseHandler: Found question -> Do you provide your consent for us to conduct your background verification (BGV) and reference checks?
+
+[Classification]: LEGAL -> Do you provide your consent for us to conduct your background verification (BGV) and reference checks?
+[Dropdown Debug]
+  -> Question: Do you provide your consent for us to conduct your background verification (BGV) and reference checks?
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): Yes
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): Yes
+==================================================
+Question: Do you provide your consent for us to conduct your background verification (BGV) and reference checks?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: Yes
+Selected Value: Yes
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_provide_your_consent_fo.png
+==================================================
+GreenhouseHandler: Found question -> Share 2–3 AI-generated video projects you are most proud of.
+
+[Classification]: COMPENSATION -> Share 2–3 AI-generated video projects you are most proud of.
+GreenhouseHandler: Normalization failed for 'Share 2–3 AI-generated video projects you are most proud of.'. Safety Pause.
+GreenhouseHandler: Found question -> What editing software are you most comfortable with?
+
+[Essay Debug] Question: What editing software are you most comfortable with?
+  -> Retrieved Chunk 1: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 7.24)
+  -> Retrieved Chunk 2: ### Project 1: YAAR — AI Behavioral Companion (Score: 6.06)
+  -> Retrieved Chunk 3: ### Strengths (Score: 4.74)
+  -> Final LLM Answer: I am not listed as having experience with video editing software. However, I have experience with building AI systems, including those that can process and manipulate video content.
+  [Metric Grounding] Numbers in Context: {'2', '1', '49', '50', '5', '6', '2025', '3', '4'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> What editing software are you most comfortable with?
+==================================================
+Question: What editing software are you most comfortable with?
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I am not listed as having experience with video editing software. However, I have experience with building AI systems, including those that can process and manipulate video content.
+Selected Value: I am not listed as having experience with video editing software. However, I have experience with building AI systems, including those that can process and manipulate video content.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_provide_your_consent_fo.png
+==================================================
+GreenhouseHandler: Found question -> Which AI video generation platforms have you used extensively?
+
+[Essay Debug] Question: Which AI video generation platforms have you used extensively?
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 7.28)
+  -> Retrieved Chunk 2: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 6.80)
+  -> Retrieved Chunk 3: ### Project 2: Echo Pod — AI Stillness Companion (Score: 6.43)
+  -> Final LLM Answer: I have not explicitly mentioned using any AI video generation platforms extensively in the provided context.
+  [Metric Grounding] Numbers in Context: {'2', '1', '49', '50', '25', '2026', '3', '0'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Which AI video generation platforms have you used extensively?
+==================================================
+Question: Which AI video generation platforms have you used extensively?
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I have not explicitly mentioned using any AI video generation platforms extensively in the provided context.
+Selected Value: I have not explicitly mentioned using any AI video generation platforms extensively in the provided context.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_provide_your_consent_fo.png
+==================================================
+GreenhouseHandler: Found question -> This is an onsite opportunity located in Bangalore. Are you willing to relocate or commute regularly?
+
+[Classification]: KNOCKOUT -> This is an onsite opportunity located in Bangalore. Are you willing to relocate or commute regularly?
+==================================================
+Question: This is an onsite opportunity located in Bangalore. Are you willing to relocate or commute regularly?
+Detected Widget Type: input
+Available Options: None
+Normalized Value: Yes
+Selected Value: Yes
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_provide_your_consent_fo.png
+==================================================
+GreenhouseHandler: Safety rules triggered. Moving to REVIEW_REQUIRED.
+Failed to submit: REVIEW_REQUIRED. Moving to next job.
+Reached max 3 attempts.

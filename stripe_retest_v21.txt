@@ -1,0 +1,382 @@
+==================================================
+STRIPE END-TO-END AUDIT
+==================================================
+RAGClient: Initialised with 20 chunks from Master Profile.
+Executor: Starting job 1005 on GREENHOUSE (https://stripe.com/jobs/search?gh_jid=7543868)
+Executor [Greenhouse]: Initializing Greenhouse Handler...
+GreenhouseHandler: Entering application flow...
+  -> Initial Form Confidence Score: 0
+  -> Form not detected. Searching for Apply button...
+  -> Clicking Apply button: 'Apply for this role'
+  -> Warning: Click on Apply failed: Locator.click: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator("button:has-text(\"Apply for this role\"), a:has-text(\"Apply for this role\")").first
+
+  -> Navigation Type: Redirect
+  -> Post-click Form Confidence Score: 135
+  -> Application flow entered successfully.
+GreenhouseHandler: Scanning for iframes...
+  -> Found 9 frames.
+  -> Frame URL: https://stripe.com/jobs/listing/software-engineer-internal-systems/7543868/apply
+  -> Frame URL: https://job-boards.greenhouse.io/embed/job_app?for=stripe&token=7543868
+GreenhouseHandler: Detected Greenhouse iframe (https://job-boards.greenhouse.io/embed/job_app?for=stripe&token=7543868). Promoting to active_context.
+GreenhouseHandler: Verifying standard fields...
+GreenhouseHandler: Uploading resume data/Resume_aiml.pdf...
+  -> Renamed to: Resume_Stripe_SoftwareEngineerInternalSystems.pdf
+  -> File Exists: True
+  -> File Size: 126396 bytes
+  -> Trying Strategy A: input[type='file']
+  -> Strategy A executed successfully.
+  -> Upload Verified: True
+GreenhouseHandler: Starting submission cycle 1/3...
+GreenhouseHandler: Processing custom fields...
+GreenhouseHandler: DOM PARSER V3 - Extracting questions...
+
+==================================================
+Detected Questions
+Question Count: 13
+Option Count: 58
+Ignored Option Labels: 58
+==================================================
+
+
+[Classification]: PROFILE -> Location (City)
+
+[Classification]: PROFILE -> Please select the country where you currently reside.
+
+[Classification]: PROFILE -> Please select the country or countries you anticipate working in for the role in which you are applying.
+[Dropdown Debug]
+  -> Question: Please select the country or countries you anticipate working in for the role in which you are applying.
+  -> Detected Type: PROFILE
+  -> Mapped Value (Raw): India
+  -> Available Options: ['Belgium', 'Brazil', 'Canada', 'France', 'Germany', 'India', 'Indonesia', 'Ireland', 'Israel', 'Italy', 'Japan', 'Luxembourg', 'Malaysia', 'Mexico', 'New Zealand', 'Poland', 'Portugal', 'Romania', 'Singapore', 'South Korea', 'Spain', 'Sweden', 'Switzerland', 'Thailand', 'The Netherlands', 'UAE', 'UK', 'US']
+  -> Selected Option (Normalized): India
+
+[Classification]: PROFILE -> Please select the country or countries you anticipate working in for the role in which you are applying.
+[Dropdown Debug]
+  -> Question: Please select the country or countries you anticipate working in for the role in which you are applying.
+  -> Detected Type: PROFILE
+  -> Mapped Value (Raw): India
+  -> Available Options: ['Belgium', 'Brazil', 'Canada', 'France', 'Germany', 'India', 'Indonesia', 'Ireland', 'Israel', 'Italy', 'Japan', 'Luxembourg', 'Malaysia', 'Mexico', 'New Zealand', 'Poland', 'Portugal', 'Romania', 'Singapore', 'South Korea', 'Spain', 'Sweden', 'Switzerland', 'Thailand', 'The Netherlands', 'UAE', 'UK', 'US']
+  -> Selected Option (Normalized): India
+
+[Classification]: PROFILE -> Are you authorized to work in the location(s) you selected in your previous response?
+
+[Classification]: PROFILE -> Will you require Stripe to sponsor you for a work permit now or in the future for the location(s) you selected in in your previous response?
+
+[Classification]: PROFILE -> If this role offers the option to work from a remote location, do you plan to work remotely?
+
+[Classification]: TECHNICAL -> Have you ever been employed by Stripe or a Stripe affiliate?
+
+[Essay Debug] Question: Who is your current or previous employer?
+  -> Retrieved Chunk 1: **On YAAR:** (Score: 4.07)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 2.66)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 2.49)
+  -> Final LLM Answer: I do not have a current or previous employer listed in the provided context.
+  [Metric Grounding] Numbers in Context: {'49', '25', '2', '50', '1', '3'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: PROFILE -> Who is your current or previous employer?
+
+[Essay Debug] Question: What is your current or previous job title?
+  -> Retrieved Chunk 1: **On YAAR:** (Score: 5.07)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 4.88)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 4.34)
+  -> Final LLM Answer: AI/ML Engineer
+  [Metric Grounding] Numbers in Context: {'49', '25', '2', '50', '1', '3'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> What is your current or previous job title?
+
+[Essay Debug] Question: What is the most recent school you attended?
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 6.59)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 4.72)
+  -> Retrieved Chunk 3: ### Strengths (Score: 3.74)
+  -> Final LLM Answer: I do not have information about my educational background.
+  [Metric Grounding] Numbers in Context: {'49', '5', '4', '25', '2', '50', '1', '3', '6'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> What is the most recent school you attended?
+
+[Classification]: PROFILE -> What is the most recent degree you obtained?
+
+[Classification]: TECHNICAL -> Do you opt-in to receive WhatsApp messages from Stripe Recruiting?
+GreenhouseHandler: Running Pre-Submit Audit...
+GreenhouseHandler: DOM PARSER V3 - Extracting questions...
+
+==================================================
+Detected Questions
+Question Count: 13
+Option Count: 58
+Ignored Option Labels: 58
+==================================================
+
+GreenhouseHandler: All checks passed. AUTO-SUBMITTING (Attempt 1).
+GreenhouseHandler: Verification Result -> FAILED_RECOVERABLE (Confidence: 0%)
+GreenhouseHandler: Recoverable failure detected: No success signals detected after clicking submit.. Retrying...
+GreenhouseHandler: Starting submission cycle 2/3...
+GreenhouseHandler: Processing custom fields...
+GreenhouseHandler: DOM PARSER V3 - Extracting questions...
+
+==================================================
+Detected Questions
+Question Count: 13
+Option Count: 58
+Ignored Option Labels: 58
+==================================================
+
+
+[Classification]: PROFILE -> Location (City)
+
+[Classification]: PROFILE -> Please select the country where you currently reside.
+
+[Classification]: PROFILE -> Please select the country or countries you anticipate working in for the role in which you are applying.
+[Dropdown Debug]
+  -> Question: Please select the country or countries you anticipate working in for the role in which you are applying.
+  -> Detected Type: PROFILE
+  -> Mapped Value (Raw): India
+  -> Available Options: ['Belgium', 'Brazil', 'Canada', 'France', 'Germany', 'India', 'Indonesia', 'Ireland', 'Israel', 'Italy', 'Japan', 'Luxembourg', 'Malaysia', 'Mexico', 'New Zealand', 'Poland', 'Portugal', 'Romania', 'Singapore', 'South Korea', 'Spain', 'Sweden', 'Switzerland', 'Thailand', 'The Netherlands', 'UAE', 'UK', 'US']
+  -> Selected Option (Normalized): India
+
+[Classification]: PROFILE -> Please select the country or countries you anticipate working in for the role in which you are applying.
+[Dropdown Debug]
+  -> Question: Please select the country or countries you anticipate working in for the role in which you are applying.
+  -> Detected Type: PROFILE
+  -> Mapped Value (Raw): India
+  -> Available Options: ['Belgium', 'Brazil', 'Canada', 'France', 'Germany', 'India', 'Indonesia', 'Ireland', 'Israel', 'Italy', 'Japan', 'Luxembourg', 'Malaysia', 'Mexico', 'New Zealand', 'Poland', 'Portugal', 'Romania', 'Singapore', 'South Korea', 'Spain', 'Sweden', 'Switzerland', 'Thailand', 'The Netherlands', 'UAE', 'UK', 'US']
+  -> Selected Option (Normalized): India
+
+[Classification]: PROFILE -> Are you authorized to work in the location(s) you selected in your previous response?
+
+[Classification]: PROFILE -> Will you require Stripe to sponsor you for a work permit now or in the future for the location(s) you selected in in your previous response?
+
+[Classification]: PROFILE -> If this role offers the option to work from a remote location, do you plan to work remotely?
+
+[Classification]: TECHNICAL -> Have you ever been employed by Stripe or a Stripe affiliate?
+
+[Essay Debug] Question: Who is your current or previous employer?
+  -> Retrieved Chunk 1: **On YAAR:** (Score: 4.07)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 2.66)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 2.49)
+  -> Final LLM Answer: I do not have a current or previous employer listed in the provided context.
+  [Metric Grounding] Numbers in Context: {'49', '25', '2', '50', '1', '3'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: PROFILE -> Who is your current or previous employer?
+
+[Essay Debug] Question: What is your current or previous job title?
+  -> Retrieved Chunk 1: **On YAAR:** (Score: 5.07)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 4.88)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 4.34)
+  -> Final LLM Answer: AI/ML Engineer
+  [Metric Grounding] Numbers in Context: {'49', '25', '2', '50', '1', '3'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> What is your current or previous job title?
+
+[Essay Debug] Question: What is the most recent school you attended?
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 6.59)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 4.72)
+  -> Retrieved Chunk 3: ### Strengths (Score: 3.74)
+  -> Final LLM Answer: I do not have information about my educational background.
+  [Metric Grounding] Numbers in Context: {'49', '5', '4', '25', '2', '50', '1', '3', '6'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> What is the most recent school you attended?
+
+[Classification]: PROFILE -> What is the most recent degree you obtained?
+
+[Classification]: TECHNICAL -> Do you opt-in to receive WhatsApp messages from Stripe Recruiting?
+GreenhouseHandler: Running Pre-Submit Audit...
+GreenhouseHandler: DOM PARSER V3 - Extracting questions...
+
+==================================================
+Detected Questions
+Question Count: 13
+Option Count: 58
+Ignored Option Labels: 58
+==================================================
+
+GreenhouseHandler: All checks passed. AUTO-SUBMITTING (Attempt 2).
+GreenhouseHandler: 🚫 Submit button is DISABLED. Initiating Diagnosis...
+GreenhouseHandler: DOM PARSER V3 - Extracting questions...
+
+==================================================
+Detected Questions
+Question Count: 13
+Option Count: 58
+Ignored Option Labels: 58
+==================================================
+
+GreenhouseHandler Diagnosis: {"resume_issue": ["Resume missing or upload failed"], "missing_fields": [], "validation_errors": [], "otp_detected": false}
+GreenhouseHandler: Auto-Repair failed or no deterministic fix available.
+
+
+==================================================
+STRIPE RETEST - QUESTION ENGINE V5
+==================================================
+
+Question: Location (City)
+Answer Source: CandidateProfile
+Selected Value: Ghaziabad, Uttar Pradesh, India
+Verification: True
+⸻
+
+Question: Please select the country where you currently reside.
+Answer Source: CandidateProfile
+Selected Value: India
+Verification: True
+⸻
+
+Question: Please select the country or countries you anticipate working in for the role in which you are applying.
+Answer Source: CandidateProfile
+Selected Value: India
+Verification: True
+⸻
+
+Question: Please select the country or countries you anticipate working in for the role in which you are applying.
+Answer Source: CandidateProfile
+Selected Value: India
+Verification: True
+⸻
+
+Question: Are you authorized to work in the location(s) you selected in your previous response?
+Answer Source: Deterministic Logic
+Selected Value: Yes
+Verification: True
+⸻
+
+Question: Will you require Stripe to sponsor you for a work permit now or in the future for the location(s) you selected in in your previous response?
+Answer Source: Deterministic Logic
+Selected Value: No
+Verification: True
+⸻
+
+Question: If this role offers the option to work from a remote location, do you plan to work remotely?
+Answer Source: Deterministic Logic
+Selected Value: Yes
+Verification: True
+⸻
+
+Question: Have you ever been employed by Stripe or a Stripe affiliate?
+Answer Source: Deterministic Logic
+Selected Value: No
+Verification: True
+⸻
+
+Question: Who is your current or previous employer?
+Answer Source: LLM + RAG
+Selected Value: I do not have a current or previous employer listed in the provided context.
+Verification: True
+⸻
+
+Question: What is your current or previous job title?
+Answer Source: LLM + RAG
+Selected Value: AI/ML Engineer
+Verification: True
+⸻
+
+Question: What is the most recent school you attended?
+Answer Source: LLM + RAG
+Selected Value: I do not have information about my educational background.
+Verification: True
+⸻
+
+Question: What is the most recent degree you obtained?
+Answer Source: CandidateProfile
+Selected Value: B.Tech
+Verification: True
+⸻
+
+Question: Do you opt-in to receive WhatsApp messages from Stripe Recruiting?
+Answer Source: Deterministic Logic
+Selected Value: Yes
+Verification: True
+⸻
+
+Question: Location (City)
+Answer Source: CandidateProfile
+Selected Value: Ghaziabad, Uttar Pradesh, India
+Verification: True
+⸻
+
+Question: Please select the country where you currently reside.
+Answer Source: CandidateProfile
+Selected Value: India
+Verification: True
+⸻
+
+Question: Please select the country or countries you anticipate working in for the role in which you are applying.
+Answer Source: CandidateProfile
+Selected Value: India
+Verification: True
+⸻
+
+Question: Please select the country or countries you anticipate working in for the role in which you are applying.
+Answer Source: CandidateProfile
+Selected Value: India
+Verification: True
+⸻
+
+Question: Are you authorized to work in the location(s) you selected in your previous response?
+Answer Source: Deterministic Logic
+Selected Value: Yes
+Verification: True
+⸻
+
+Question: Will you require Stripe to sponsor you for a work permit now or in the future for the location(s) you selected in in your previous response?
+Answer Source: Deterministic Logic
+Selected Value: No
+Verification: True
+⸻
+
+Question: If this role offers the option to work from a remote location, do you plan to work remotely?
+Answer Source: Deterministic Logic
+Selected Value: Yes
+Verification: True
+⸻
+
+Question: Have you ever been employed by Stripe or a Stripe affiliate?
+Answer Source: Deterministic Logic
+Selected Value: No
+Verification: True
+⸻
+
+Question: Who is your current or previous employer?
+Answer Source: LLM + RAG
+Selected Value: I do not have a current or previous employer listed in the provided context.
+Verification: True
+⸻
+
+Question: What is your current or previous job title?
+Answer Source: LLM + RAG
+Selected Value: AI/ML Engineer
+Verification: True
+⸻
+
+Question: What is the most recent school you attended?
+Answer Source: LLM + RAG
+Selected Value: I do not have information about my educational background.
+Verification: True
+⸻
+
+Question: What is the most recent degree you obtained?
+Answer Source: CandidateProfile
+Selected Value: B.Tech
+Verification: True
+⸻
+
+Question: Do you opt-in to receive WhatsApp messages from Stripe Recruiting?
+Answer Source: Deterministic Logic
+Selected Value: Yes
+Verification: True
+⸻
+
+Final Status
+REVIEW_REQUIRED

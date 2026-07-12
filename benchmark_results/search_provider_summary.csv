@@ -1,0 +1,3 @@
+Provider,Recall,AvgRank,AvgLatency,Cost,TotalWorkdayURLs
+google,0.0%,0.0,168.3ms,80,0
+exa,63.7%,3.4,576.3ms,80,77

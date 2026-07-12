@@ -48,23 +48,44 @@ class CompanyDiscoveryWorker(BaseWorker):
                                 domain = extract_domain(website)
                                 company_id = name.lower().replace(" ", "-")
 
+                                expected_ats = row.get("expected_ats", "").strip()
+                                expected_endpoint = row.get("expected_endpoint", "").strip()
+                                
+                                aliases_json = None
+                                if expected_ats and expected_endpoint:
+                                    slug = expected_endpoint.rstrip('/').split('/')[-1]
+                                    aliases_json = json.dumps({
+                                        "source": "jobhive",
+                                        "known_ats": expected_ats,
+                                        "board_url": expected_endpoint,
+                                        "ats_slug": slug
+                                    })
+                                
                                 # Check if company_id already exists
                                 if is_postgres():
-                                    cursor = conn.execute("SELECT 1 FROM company_identities WHERE company_id = %s", (company_id,))
+                                    cursor = conn.execute("SELECT aliases FROM company_identities WHERE company_id = %s", (company_id,))
                                 else:
-                                    cursor = conn.execute("SELECT 1 FROM company_identities WHERE company_id = ?", (company_id,))
-                                if not cursor.fetchone():
+                                    cursor = conn.execute("SELECT aliases FROM company_identities WHERE company_id = ?", (company_id,))
+                                
+                                existing = cursor.fetchone()
+                                existing_aliases = existing.get("aliases") if isinstance(existing, dict) else existing[0]
+                                if not existing:
                                     if is_postgres():
                                         conn.execute('''
-                                            INSERT INTO company_identities (company_id, domain, canonical_name, website)
-                                            VALUES (%s, %s, %s, %s)
+                                            INSERT INTO company_identities (company_id, domain, canonical_name, website, aliases)
+                                            VALUES (%s, %s, %s, %s, %s)
                                             ON CONFLICT (company_id) DO NOTHING
-                                        ''', (company_id, domain, name, website))
+                                        ''', (company_id, domain, name, website, aliases_json))
                                     else:
                                         conn.execute('''
-                                            INSERT OR IGNORE INTO company_identities (company_id, domain, canonical_name, website)
-                                            VALUES (?, ?, ?, ?)
-                                        ''', (company_id, domain, name, website))
+                                            INSERT OR IGNORE INTO company_identities (company_id, domain, canonical_name, website, aliases)
+                                            VALUES (?, ?, ?, ?, ?)
+                                        ''', (company_id, domain, name, website, aliases_json))
+                                elif existing and not existing_aliases and aliases_json:
+                                    if is_postgres():
+                                        conn.execute('UPDATE company_identities SET aliases = %s WHERE company_id = %s', (aliases_json, company_id))
+                                    else:
+                                        conn.execute('UPDATE company_identities SET aliases = ? WHERE company_id = ?', (aliases_json, company_id))
                                     conn.commit()
                                     
                                     # Emit event

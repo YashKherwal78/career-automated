@@ -11,4 +11,7 @@ class BaseRepository:
         pass
         
     def get_connection(self):
+        from src.api.db import get_connection, is_postgres
+        if is_postgres():
+            return get_connection()
         return sqlite3.connect(self.db_path)

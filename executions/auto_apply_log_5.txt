@@ -1,0 +1,739 @@
+RAGClient: Initialised with 20 chunks from Master Profile.
+
+--- Attempt 1: Applying to Job 96 at Remodel Health ---
+Executor: Starting job 96 on GREENHOUSE (https://job-boards.greenhouse.io/remodelhealth/jobs/5163796008?utm_source=Simplify&ref=Simplify)
+Executor [Greenhouse]: Initializing Greenhouse Handler...
+GreenhouseHandler: Verifying standard fields...
+GreenhouseHandler: Uploading resume /Users/yashkherwal/Downloads/hrmailfiles/data/Resume_aiml.pdf...
+  -> Renamed to: Resume_RemodelHealth_JuniorSoftwareEngineer.pdf
+  -> File Exists: True
+  -> File Size: 126396 bytes
+  -> Upload Verified: True
+GreenhouseHandler: Starting submission cycle 1/3...
+GreenhouseHandler: Processing custom fields...
+GreenhouseHandler: Found question -> Location (City)
+
+[Essay Debug] Question: Location (City)
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Location (City)
+GreenhouseHandler: React-Select option 'REVIEW_REQUIRED' not found in DOM. Safety Pause.
+==================================================
+Question: Location (City)
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> LinkedIn Profile
+
+[Classification]: PROFILE -> LinkedIn Profile
+==================================================
+Question: LinkedIn Profile
+Detected Widget Type: input
+Available Options: None
+Normalized Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selected Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selection Verified: True
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> Website
+
+[Essay Debug] Question: Website
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: I don't have a personal website to share.
+  [Metric Grounding] Numbers in Context: {'1', '3', '2026', '2', '2025', '0'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: PROFILE -> Website
+==================================================
+Question: Website
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I don't have a personal website to share.
+Selected Value: I don't have a personal website to share.
+Selection Verified: True
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> Are you willing to work in-person at our office downtown Indianapolis?
+
+[Essay Debug] Question: Are you willing to work in-person at our office downtown Indianapolis?
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 5.92)
+  -> Retrieved Chunk 2: ### Project 1: YAAR — AI Behavioral Companion (Score: 5.65)
+  -> Retrieved Chunk 3: ### Project 3: AI Data Analyst Agent (Score: 3.80)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'60', '1', '3', '2026', '50', '49', '2', '5', '0'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Are you willing to work in-person at our office downtown Indianapolis?
+[Dropdown Debug]
+  -> Question: Are you willing to work in-person at our office downtown Indianapolis?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Are you willing to work in-person at our office downtown Indianapolis?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_willing_to_work_in_per.png
+==================================================
+GreenhouseHandler: Found question -> Do you live in Indiana?
+
+[Essay Debug] Question: Do you live in Indiana?
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 2.49)
+  -> Retrieved Chunk 2: **On SC-MFC thesis:** (Score: 1.58)
+  -> Retrieved Chunk 3: **On BEL:** (Score: 1.55)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'1', '3', '50', '49', '2'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Do you live in Indiana?
+[Dropdown Debug]
+  -> Question: Do you live in Indiana?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Do you live in Indiana?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_live_in_Indiana_.png
+==================================================
+GreenhouseHandler: Found question -> Are you legally allowed to work in the United States?
+
+[Essay Debug] Question: Are you legally allowed to work in the United States?
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 6.29)
+  -> Retrieved Chunk 2: ### Project 1: YAAR — AI Behavioral Companion (Score: 4.13)
+  -> Retrieved Chunk 3: ### Project 3: AI Data Analyst Agent (Score: 3.88)
+  -> Final LLM Answer: Yes
+  [Metric Grounding] Numbers in Context: {'60', '1', '3', '2026', '50', '49', '2', '5', '0'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Are you legally allowed to work in the United States?
+[Dropdown Debug]
+  -> Question: Are you legally allowed to work in the United States?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): Yes
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): Yes
+==================================================
+Question: Are you legally allowed to work in the United States?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: Yes
+Selected Value: Yes
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_legally_allowed_to_wor.png
+==================================================
+GreenhouseHandler: Found question -> Do you now, or will you in the future, require Visa sponsorship?
+
+[Classification]: KNOCKOUT -> Do you now, or will you in the future, require Visa sponsorship?
+[Dropdown Debug]
+  -> Question: Do you now, or will you in the future, require Visa sponsorship?
+  -> Detected Type: KNOCKOUT
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Do you now, or will you in the future, require Visa sponsorship?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_now__or_will_you_in_the.png
+==================================================
+GreenhouseHandler: Found question -> Gender
+
+[Classification]: LEGAL -> Gender
+[Dropdown Debug]
+  -> Question: Gender
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): Male
+  -> Available Options: ['Male', 'Female', 'Decline To Self Identify']
+  -> Selected Option (Normalized): Male
+==================================================
+Question: Gender
+Detected Widget Type: react_select
+Available Options: ['Male', 'Female', 'Decline To Self Identify']
+Normalized Value: Male
+Selected Value: Male
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Gender.png
+==================================================
+GreenhouseHandler: Found question -> Are you Hispanic/Latino?
+
+[Classification]: LEGAL -> Are you Hispanic/Latino?
+[Dropdown Debug]
+  -> Question: Are you Hispanic/Latino?
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No', 'Decline To Self Identify']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Are you Hispanic/Latino?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No', 'Decline To Self Identify']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_Hispanic_Latino_.png
+==================================================
+GreenhouseHandler: Found question -> Please identify your race
+
+[Classification]: LEGAL -> Please identify your race
+[Dropdown Debug]
+  -> Question: Please identify your race
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): 
+  -> Available Options: ['American Indian or Alaskan Native', 'Asian', 'Black or African American', 'White', 'Native Hawaiian or Other Pacific Islander', 'Two or More Races', 'Decline To Self Identify']
+  -> Selected Option (Normalized): Decline To Self Identify
+GreenhouseHandler: Verification failed! 'Decline To Self Identify' not visible in Please identify your race control.
+==================================================
+Question: Please identify your race
+Detected Widget Type: react_select
+Available Options: ['American Indian or Alaskan Native', 'Asian', 'Black or African American', 'White', 'Native Hawaiian or Other Pacific Islander', 'Two or More Races', 'Decline To Self Identify']
+Normalized Value: Decline To Self Identify
+Selected Value: Decline To Self Identify
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Are_you_Hispanic_Latino_.png
+==================================================
+GreenhouseHandler: Found question -> Disability Status
+
+[Classification]: LEGAL -> Disability Status
+[Dropdown Debug]
+  -> Question: Disability Status
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes, I have a disability, or have had one in the past', 'No, I do not have a disability and have not had one in the past', 'I do not want to answer']
+  -> Selected Option (Normalized): No, I do not have a disability and have not had one in the past
+==================================================
+Question: Disability Status
+Detected Widget Type: react_select
+Available Options: ['Yes, I have a disability, or have had one in the past', 'No, I do not have a disability and have not had one in the past', 'I do not want to answer']
+Normalized Value: No, I do not have a disability and have not had one in the past
+Selected Value: No, I do not have a disability and have not had one in the past
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Disability_Status.png
+==================================================
+GreenhouseHandler: Safety rules triggered. Moving to REVIEW_REQUIRED.
+Failed to submit: REVIEW_REQUIRED. Moving to next job.
+
+--- Attempt 2: Applying to Job 555 at NPR ---
+Executor: Starting job 555 on GREENHOUSE (https://job-boards.greenhouse.io/nationalpublicradioinc/jobs/4701925005)
+Executor [Greenhouse]: Initializing Greenhouse Handler...
+GreenhouseHandler: Verifying standard fields...
+GreenhouseHandler: Uploading resume /Users/yashkherwal/Downloads/hrmailfiles/data/Resume_aiml.pdf...
+  -> Renamed to: Resume_NPR_AIResearchEthicsandReadinessInternshipFall2026.pdf
+  -> File Exists: True
+  -> File Size: 126396 bytes
+  -> Upload Verified: True
+GreenhouseHandler: Starting submission cycle 1/3...
+GreenhouseHandler: Processing custom fields...
+GreenhouseHandler: Found question -> Preferred First Name
+
+[Essay Debug] Question: Preferred First Name
+  -> Retrieved Chunk 1: ### Project 1: YAAR — AI Behavioral Companion (Score: 2.35)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 1.00)
+  -> Retrieved Chunk 3: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Final LLM Answer: Yash
+  [Metric Grounding] Numbers in Context: {'1', '3', '2026', '50', '49', '25', '2', '0'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Preferred First Name
+==================================================
+Question: Preferred First Name
+Detected Widget Type: input
+Available Options: None
+Normalized Value: Yash
+Selected Value: Yash
+Selection Verified: True
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> Location (City)
+
+[Essay Debug] Question: Location (City)
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Location (City)
+GreenhouseHandler: React-Select option 'REVIEW_REQUIRED' not found in DOM. Safety Pause.
+==================================================
+Question: Location (City)
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> School
+
+[Essay Debug] Question: School
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 1.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> Final LLM Answer: I attended school, but I do not have specific details about my school experience available.
+  [Metric Grounding] Numbers in Context: {'1', '3', '2026', '2', '2025', '0'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> School
+GreenhouseHandler: React-Select option 'I attended school, but I do not have specific details about my school experience available.' not found in DOM. Safety Pause.
+==================================================
+Question: School
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: I attended school, but I do not have specific details about my school experience available.
+Selected Value: I attended school, but I do not have specific details about my school experience available.
+Selection Verified: False
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> Degree
+
+[Essay Debug] Question: Degree
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Degree
+GreenhouseHandler: React-Select option 'REVIEW_REQUIRED' not found in DOM. Safety Pause.
+==================================================
+Question: Degree
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> Discipline
+
+[Essay Debug] Question: Discipline
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 2: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025) (Score: 0.00)
+  -> [Warning] Low retrieval confidence (0.00). Triggering REVIEW_REQUIRED.
+
+[Classification]: TECHNICAL -> Discipline
+GreenhouseHandler: React-Select option 'REVIEW_REQUIRED' not found in DOM. Safety Pause.
+==================================================
+Question: Discipline
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: REVIEW_REQUIRED
+Selected Value: REVIEW_REQUIRED
+Selection Verified: False
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> Are you currently eligible to work for any employer in the United States from October 5th, 2026 through April 16th, 2027?
+
+[Essay Debug] Question: Are you currently eligible to work for any employer in the United States from October 5th, 2026 through April 16th, 2027?
+  -> Retrieved Chunk 1: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 10.83)
+  -> Retrieved Chunk 2: ### Project 1: YAAR — AI Behavioral Companion (Score: 8.97)
+  -> Retrieved Chunk 3: ### Working Style (Score: 6.22)
+  -> Final LLM Answer: Yes.
+  [Metric Grounding] Numbers in Context: {'1', '3', '2026', '50', '49', '2', '0'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: PROFILE -> Are you currently eligible to work for any employer in the United States from October 5th, 2026 through April 16th, 2027?
+GreenhouseHandler: React-Select option 'Yes.' not found in DOM. Safety Pause.
+==================================================
+Question: Are you currently eligible to work for any employer in the United States from October 5th, 2026 through April 16th, 2027?
+Detected Widget Type: react_select
+Available Options: None
+Normalized Value: Yes.
+Selected Value: Yes.
+Selection Verified: False
+Screenshot After Selection: None
+==================================================
+GreenhouseHandler: Found question -> Can you confirm your academic standing?
+
+[Essay Debug] Question: Can you confirm your academic standing?
+  -> Retrieved Chunk 1: **On YAAR:** (Score: 3.08)
+  -> Retrieved Chunk 2: ### Project 2: Echo Pod — AI Stillness Companion (Score: 3.01)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 3.00)
+  -> Final LLM Answer: I am a recent graduate of an accredited program with my most recent graduation date after October 5th, 2025.
+  [Metric Grounding] Numbers in Context: {'1', '3', '50', '25', '49', '2', '2025'}
+  [Metric Grounding] Numbers Generated: {'2025'}
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Can you confirm your academic standing?
+[Dropdown Debug]
+  -> Question: Can you confirm your academic standing?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): I am a recent graduate of an accredited program with my most recent graduation date after October 5th, 2025.
+  -> Available Options: ['I am current student in a degree accredited program', 'I am a recent graduate of an accredited program with my most recent graduation date after October 5th, 2025', 'I am a recent graduate of an accredited program with my most recent graduation date before October 5th, 2025', 'Other']
+  -> Selected Option (Normalized): I am a recent graduate of an accredited program with my most recent graduation date after October 5th, 2025
+==================================================
+Question: Can you confirm your academic standing?
+Detected Widget Type: react_select
+Available Options: ['I am current student in a degree accredited program', 'I am a recent graduate of an accredited program with my most recent graduation date after October 5th, 2025', 'I am a recent graduate of an accredited program with my most recent graduation date before October 5th, 2025', 'Other']
+Normalized Value: I am a recent graduate of an accredited program with my most recent graduation date after October 5th, 2025
+Selected Value: I am a recent graduate of an accredited program with my most recent graduation date after October 5th, 2025
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Can_you_confirm_your_academic_.png
+==================================================
+GreenhouseHandler: Found question -> Can you confirm your location relative to the internship position?
+
+[Classification]: PROFILE -> Can you confirm your location relative to the internship position?
+[Dropdown Debug]
+  -> Question: Can you confirm your location relative to the internship position?
+  -> Detected Type: PROFILE
+  -> Mapped Value (Raw): No
+  -> Available Options: ['I am based in the desired location and willing to come on-site on the requested days per week/month/year', 'I am not currently based in the desired location, but I am willing to relocate to come on-site on the requested days per week/month/year', 'I am only interested in remote positions']
+  -> Selected Option (Normalized): I am not currently based in the desired location, but I am willing to relocate to come on-site on the requested days per week/month/year
+==================================================
+Question: Can you confirm your location relative to the internship position?
+Detected Widget Type: react_select
+Available Options: ['I am based in the desired location and willing to come on-site on the requested days per week/month/year', 'I am not currently based in the desired location, but I am willing to relocate to come on-site on the requested days per week/month/year', 'I am only interested in remote positions']
+Normalized Value: I am not currently based in the desired location, but I am willing to relocate to come on-site on the requested days per week/month/year
+Selected Value: I am not currently based in the desired location, but I am willing to relocate to come on-site on the requested days per week/month/year
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Can_you_confirm_your_location_.png
+==================================================
+GreenhouseHandler: Found question -> The schedule for this position is full-time (40 hours / week). Can you confirm you can work this schedule?
+
+[Essay Debug] Question: The schedule for this position is full-time (40 hours / week). Can you confirm you can work this schedule?
+  -> Retrieved Chunk 1: ### Project 3: AI Data Analyst Agent (Score: 10.50)
+  -> Retrieved Chunk 2: ### Project 1: YAAR — AI Behavioral Companion (Score: 8.43)
+  -> Retrieved Chunk 3: ### Project 2: Echo Pod — AI Stillness Companion (Score: 6.94)
+  -> Final LLM Answer: Yes
+  [Metric Grounding] Numbers in Context: {'60', '1', '3', '50', '49', '25', '2', '5'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> The schedule for this position is full-time (40 hours / week). Can you confirm you can work this schedule?
+[Dropdown Debug]
+  -> Question: The schedule for this position is full-time (40 hours / week). Can you confirm you can work this schedule?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): Yes
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): Yes
+==================================================
+Question: The schedule for this position is full-time (40 hours / week). Can you confirm you can work this schedule?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: Yes
+Selected Value: Yes
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_The_schedule_for_this_position.png
+==================================================
+GreenhouseHandler: Found question -> Do you now or in the future require visa sponsorship?
+
+[Classification]: KNOCKOUT -> Do you now or in the future require visa sponsorship?
+[Dropdown Debug]
+  -> Question: Do you now or in the future require visa sponsorship?
+  -> Detected Type: KNOCKOUT
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Do you now or in the future require visa sponsorship?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_now_or_in_the_future_re.png
+==================================================
+GreenhouseHandler: Found question -> Have you ever been employed at NPR?
+
+[Essay Debug] Question: Have you ever been employed at NPR?
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 5.42)
+  -> Retrieved Chunk 2: **On SC-MFC thesis:** (Score: 2.45)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 1.85)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'1', '3', '50', '25', '49', '2'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Have you ever been employed at NPR?
+[Dropdown Debug]
+  -> Question: Have you ever been employed at NPR?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Have you ever been employed at NPR?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Have_you_ever_been_employed_at.png
+==================================================
+GreenhouseHandler: Found question -> Do you have any relatives that work for NPR?
+
+[Classification]: PROFILE -> Do you have any relatives that work for NPR?
+[Dropdown Debug]
+  -> Question: Do you have any relatives that work for NPR?
+  -> Detected Type: PROFILE
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Do you have any relatives that work for NPR?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_have_any_relatives_that.png
+==================================================
+GreenhouseHandler: Found question -> Do you need any reasonable accommodations for the application process?
+
+[Essay Debug] Question: Do you need any reasonable accommodations for the application process?
+  -> Retrieved Chunk 1: **On ScoreMe:** (Score: 6.44)
+  -> Retrieved Chunk 2: ### Working Style (Score: 3.85)
+  -> Retrieved Chunk 3: ### Project 1: YAAR — AI Behavioral Companion (Score: 3.34)
+  -> Final LLM Answer: No
+  [Metric Grounding] Numbers in Context: {'1', '3', '50', '49', '2'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> Do you need any reasonable accommodations for the application process?
+[Dropdown Debug]
+  -> Question: Do you need any reasonable accommodations for the application process?
+  -> Detected Type: TECHNICAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Do you need any reasonable accommodations for the application process?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_need_any_reasonable_acc.png
+==================================================
+GreenhouseHandler: Found question -> If so, what type(s) of accommodations would you need?
+
+[Essay Debug] Question: If so, what type(s) of accommodations would you need?
+  -> Retrieved Chunk 1: **On SC-MFC thesis:** (Score: 6.60)
+  -> Retrieved Chunk 2: ### Strengths (Score: 4.74)
+  -> Retrieved Chunk 3: ### Project 2: Echo Pod — AI Stillness Companion (Score: 4.15)
+  -> Final LLM Answer: I do not have any specific accommodations to request at this time.
+  [Metric Grounding] Numbers in Context: {'1', '3', '6', '4', '25', '2', '5'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> If so, what type(s) of accommodations would you need?
+==================================================
+Question: If so, what type(s) of accommodations would you need?
+Detected Widget Type: textarea
+Available Options: None
+Normalized Value: I do not have any specific accommodations to request at this time.
+Selected Value: I do not have any specific accommodations to request at this time.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Do_you_need_any_reasonable_acc.png
+==================================================
+GreenhouseHandler: Found question -> Is the posted salary range or hourly range for this position in alignment with your expectations?
+
+[Classification]: COMPENSATION -> Is the posted salary range or hourly range for this position in alignment with your expectations?
+[Dropdown Debug]
+  -> Question: Is the posted salary range or hourly range for this position in alignment with your expectations?
+  -> Detected Type: COMPENSATION
+  -> Mapped Value (Raw): Market rate
+  -> Available Options: ['Yes', 'No']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Is the posted salary range or hourly range for this position in alignment with your expectations?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Is_the_posted_salary_range_or_.png
+==================================================
+GreenhouseHandler: Found question -> If you were referred by an employee, please provide their name, position and whether they are currently employed at NPR.
+
+[Essay Debug] Question: If you were referred by an employee, please provide their name, position and whether they are currently employed at NPR.
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 10.03)
+  -> Retrieved Chunk 2: **On SC-MFC thesis:** (Score: 5.26)
+  -> Retrieved Chunk 3: ### Project 3: AI Data Analyst Agent (Score: 3.47)
+  -> Final LLM Answer: I was not referred by an employee.
+  [Metric Grounding] Numbers in Context: {'60', '3', '25', '2', '5'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> If you were referred by an employee, please provide their name, position and whether they are currently employed at NPR.
+==================================================
+Question: If you were referred by an employee, please provide their name, position and whether they are currently employed at NPR.
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I was not referred by an employee.
+Selected Value: I was not referred by an employee.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Is_the_posted_salary_range_or_.png
+==================================================
+GreenhouseHandler: Found question -> LinkedIn Profile
+
+[Classification]: PROFILE -> LinkedIn Profile
+==================================================
+Question: LinkedIn Profile
+Detected Widget Type: input
+Available Options: None
+Normalized Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selected Value: https://www.linkedin.com/in/yash-kherwal-944497254/
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Is_the_posted_salary_range_or_.png
+==================================================
+GreenhouseHandler: Found question -> Portfolio, Website, Github, or Other Professional Site
+
+[Essay Debug] Question: Portfolio, Website, Github, or Other Professional Site
+  -> Retrieved Chunk 1: ### Project 5: CareerAutomated — AI Recruiting Intelligence Platform (Score: 1.93)
+  -> Retrieved Chunk 2: ### Experience 1: OrangeLabs (Feb 2026 – Apr 2026) (Score: 0.00)
+  -> Retrieved Chunk 3: ### Experience 2: ScoreMe Solutions (May 2025 – Jun 2025) (Score: 0.00)
+  -> Final LLM Answer: I have a GitHub profile where I have shared my projects, including CareerAutomated — AI Recruiting Intelligence Platform.
+  [Metric Grounding] Numbers in Context: {'2025', '1', '2026', '10', '2', '5', '0'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: PROFILE -> Portfolio, Website, Github, or Other Professional Site
+==================================================
+Question: Portfolio, Website, Github, or Other Professional Site
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I have a GitHub profile where I have shared my projects, including CareerAutomated — AI Recruiting Intelligence Platform.
+Selected Value: I have a GitHub profile where I have shared my projects, including CareerAutomated — AI Recruiting Intelligence Platform.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Is_the_posted_salary_range_or_.png
+==================================================
+GreenhouseHandler: Found question -> What are your pronouns?
+
+[Essay Debug] Question: What are your pronouns?
+  -> Retrieved Chunk 1: ### Project 2: Echo Pod — AI Stillness Companion (Score: 4.45)
+  -> Retrieved Chunk 2: **On YAAR:** (Score: 4.08)
+  -> Retrieved Chunk 3: ### Strengths (Score: 3.74)
+  -> Final LLM Answer: I do not have personal pronouns.
+  [Metric Grounding] Numbers in Context: {'1', '3', '6', '4', '25', '2', '5'}
+  [Metric Grounding] Numbers Generated: set()
+  [Metric Grounding] Validation Passed.
+
+[Classification]: TECHNICAL -> What are your pronouns?
+==================================================
+Question: What are your pronouns?
+Detected Widget Type: input
+Available Options: None
+Normalized Value: I do not have personal pronouns.
+Selected Value: I do not have personal pronouns.
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Is_the_posted_salary_range_or_.png
+==================================================
+GreenhouseHandler: Found question -> Gender
+
+[Classification]: LEGAL -> Gender
+[Dropdown Debug]
+  -> Question: Gender
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): Male
+  -> Available Options: ['Male', 'Female', 'Decline To Self Identify']
+  -> Selected Option (Normalized): Male
+==================================================
+Question: Gender
+Detected Widget Type: react_select
+Available Options: ['Male', 'Female', 'Decline To Self Identify']
+Normalized Value: Male
+Selected Value: Male
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Gender.png
+==================================================
+GreenhouseHandler: Found question -> Are you Hispanic/Latino?
+
+[Classification]: LEGAL -> Are you Hispanic/Latino?
+[Dropdown Debug]
+  -> Question: Are you Hispanic/Latino?
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes', 'No', 'Decline To Self Identify']
+  -> Selected Option (Normalized): No
+==================================================
+Question: Are you Hispanic/Latino?
+Detected Widget Type: react_select
+Available Options: ['Yes', 'No', 'Decline To Self Identify']
+Normalized Value: No
+Selected Value: No
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Are_you_Hispanic_Latino_.png
+==================================================
+GreenhouseHandler: Found question -> Please identify your race
+
+[Classification]: LEGAL -> Please identify your race
+[Dropdown Debug]
+  -> Question: Please identify your race
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): 
+  -> Available Options: ['American Indian or Alaskan Native', 'Asian', 'Black or African American', 'White', 'Native Hawaiian or Other Pacific Islander', 'Two or More Races', 'Decline To Self Identify']
+  -> Selected Option (Normalized): Decline To Self Identify
+GreenhouseHandler: Verification failed! 'Decline To Self Identify' not visible in Please identify your race control.
+==================================================
+Question: Please identify your race
+Detected Widget Type: react_select
+Available Options: ['American Indian or Alaskan Native', 'Asian', 'Black or African American', 'White', 'Native Hawaiian or Other Pacific Islander', 'Two or More Races', 'Decline To Self Identify']
+Normalized Value: Decline To Self Identify
+Selected Value: Decline To Self Identify
+Selection Verified: False
+Screenshot After Selection: executions/dropdown_Are_you_Hispanic_Latino_.png
+==================================================
+GreenhouseHandler: Found question -> Disability Status
+
+[Classification]: LEGAL -> Disability Status
+[Dropdown Debug]
+  -> Question: Disability Status
+  -> Detected Type: LEGAL
+  -> Mapped Value (Raw): No
+  -> Available Options: ['Yes, I have a disability, or have had one in the past', 'No, I do not have a disability and have not had one in the past', 'I do not want to answer']
+  -> Selected Option (Normalized): No, I do not have a disability and have not had one in the past
+==================================================
+Question: Disability Status
+Detected Widget Type: react_select
+Available Options: ['Yes, I have a disability, or have had one in the past', 'No, I do not have a disability and have not had one in the past', 'I do not want to answer']
+Normalized Value: No, I do not have a disability and have not had one in the past
+Selected Value: No, I do not have a disability and have not had one in the past
+Selection Verified: True
+Screenshot After Selection: executions/dropdown_Disability_Status.png
+==================================================
+GreenhouseHandler: Safety rules triggered. Moving to REVIEW_REQUIRED.
+Failed to submit: REVIEW_REQUIRED. Moving to next job.
+
+--- Attempt 3: Applying to Job 562 at Armada ---
+Executor: Starting job 562 on GREENHOUSE (https://job-boards.greenhouse.io/armada/jobs/5232966008)
+Executor [Greenhouse]: Initializing Greenhouse Handler...
+GreenhouseHandler: Verifying standard fields...
+GreenhouseHandler: Uploading resume /Users/yashkherwal/Downloads/hrmailfiles/data/Resume_aiml.pdf...
+  -> Renamed to: Resume_Armada_AIInternDataEngineeringAgentWorkflows.pdf
+  -> File Exists: True
+  -> File Size: 126396 bytes
+GreenhouseHandler Execution Error: Resume upload aborted: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("button:has-text(\"Attach\")").first
+
+Failed to submit: FAILED. Moving to next job.
+Reached max 3 attempts.

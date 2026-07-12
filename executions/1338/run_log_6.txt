@@ -1,0 +1,22 @@
+RAGClient: Initialised with 20 chunks from Master Profile.
+==================================================
+🚀 STARTING AUTOAPPLY ENGINE BATCH
+Timestamp: 2026-06-11 19:54:17
+==================================================
+Agent 0: Generating Daily Application Queue...
+Queue is already full for today (20/20).
+Autoapply Engine: Processing 1 jobs...
+
+--- Applying to Job 1338: Business Associate - Growth(Engagement) at Groww ---
+Routing logic: Selected Profile 'BUSINESS_PROFILE' with Resume '/Users/yashkherwal/Downloads/hrmailfiles/data/Yash_product.pdf'
+Using cached intelligence for Groww
+Executor: Starting job 1338 on GREENHOUSE (https://job-boards.eu.greenhouse.io/groww/jobs/4777615101)
+Executor [Greenhouse]: Initializing Greenhouse Handler...
+GreenhouseHandler: Filling standard fields...
+GreenhouseHandler: Uploading resume /Users/yashkherwal/Downloads/hrmailfiles/data/Yash_product.pdf...
+GreenhouseHandler Execution Error: name 'os' is not defined
+Result for Job 1338: FAILED
+
+==================================================
+🏁 AUTOAPPLY BATCH COMPLETE
+==================================================

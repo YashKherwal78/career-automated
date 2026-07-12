@@ -1,0 +1,307 @@
+RAGClient: Initialised with 4 chunks.
+==================================================
+🚀 STARTING AUTOAPPLY ENGINE BATCH
+Timestamp: 2026-06-11 19:13:01
+==================================================
+Agent 0: Generating Daily Application Queue...
+Queue is already full for today (20/20).
+Autoapply Engine: Processing 1 jobs...
+
+--- Applying to Job 1338: Business Associate - Growth(Engagement) at Groww ---
+Routing logic: Selected Profile 'AI_PROFILE' with Resume '/Users/yashkherwal/Downloads/hrmailfiles/data/Resume_aiml.pdf'
+Using cached intelligence for Groww
+Executor: Starting job 1338 on GREENHOUSE (https://job-boards.eu.greenhouse.io/groww/jobs/4777615101)
+Executor [Greenhouse]: Initializing Greenhouse Handler...
+GreenhouseHandler: Filling standard fields...
+GreenhouseHandler: Uploading resume /Users/yashkherwal/Downloads/hrmailfiles/data/Resume_aiml.pdf...
+GreenhouseHandler: Processing custom fields...
+GreenhouseHandler: Found question -> LinkedIn Profile Link
+
+[Classification]: PROFILE -> LinkedIn Profile Link
+[UI Telemetry] Field: LinkedIn Profile Link | Widget: input | Extracted: 0 | Answer: https://www.linkedin.com/in/yash-kherwal-944497254/ | Success: True
+--- HTML FOR NOTICE PERIOD ---
+<label id="question_8209890101-label" for="question_8209890101" class="label select__label">What is the notice period in your current employment?</label><div class="select-shell remix-css-b62m3t-container"><span id="react-select-question_8209890101-live-region" class="remix-css-7pg0cj-a11yText"></span><span aria-live="polite" aria-atomic="false" aria-relevant="additions text" role="log" class="remix-css-7pg0cj-a11yText"><span id="aria-selection"></span><span id="aria-focused"></span><span id="aria-results"></span><span id="aria-guidance"></span></span><div><div class="select__control select__control--is-focused remix-css-yt0d77-control"><div class="select__value-container remix-css-hlgwow"><div class="select__placeholder remix-css-1jqq78o-placeholder" id="react-select-question_8209890101-placeholder">Select...</div><div class="select__input-container remix-css-19bb58m" data-value=""><input class="select__input" style="color: inherit; background: 0px center; opacity: 1; width: 100%; grid-area: 1 / 2; font: inherit; min-width: 2px; border: 0px; margin: 0px; outline: 0px; padding: 0px;" autocapitalize="none" autocomplete="off" autocorrect="off" id="question_8209890101" spellcheck="false" tabindex="0" type="text" aria-autocomplete="list" aria-expanded="false" aria-haspopup="true" aria-errormessage="question_8209890101-error" aria-invalid="false" aria-labelledby="question_8209890101-label" aria-required="false" role="combobox" aria-activedescendant="" aria-describedby="react-select-question_8209890101-placeholder question_8209890101-error" enterkeyhint="done" value=""></div></div><div class="select__indicators remix-css-1wy0on6"><button type="button" class="icon-button icon-button--sm" aria-label="Toggle flyout" tabindex="-1"><svg class="svg-icon" fill="none" height="20" width="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path class="icon--primary-color" d="M11.4534 16.0667L5.90983 9.13729C5.54316 8.67895 5.86948 8 6.45644 8H17.5436C18.1305 8 18.4568 8.67895 18.0902 9.13729L12.5466 16.0667C12.2664 16.417 11.7336 16.417 11.4534 16.0667Z"></path></svg></button></div></div></div></div>
+------------------------------
+GreenhouseHandler: Found question -> What is the notice period in your current employment?
+
+[Classification]: PROFILE -> What is the notice period in your current employment?
+[Dropdown Debug]
+  -> Question: What is the notice period in your current employment?
+  -> Detected Type: PROFILE
+  -> Mapped Value (Raw): 15
+  -> Available Options: ['Available to join immediate', 'Less than 30 days', '30 days', 'Between 30-60 days', '60 days', '90 days', 'More than 90 days']
+  -> Selected Option (Normalized): REVIEW_REQUIRED
+GreenhouseHandler: React-Select option 'REVIEW_REQUIRED' not found in DOM. Safety Pause.
+[UI Telemetry] Field: What is the notice period in your current employment? | Widget: react_select | Extracted: 7 | Answer: REVIEW_REQUIRED | Success: False
+Failed to extract react-select options: Locator.click: Timeout 1000ms exceeded.
+Call log:
+  - waiting for locator("label").nth(9).locator("..").locator("div[class*=\"select__control\"], div[class*=\"-control\"]").first
+    - locator resolved to <div class="select__control remix-css-13cymwt-control">…</div>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div tabindex="-1" role="option" aria-disabled="false" id="react-select-question_8209890101-option-1" class="select__option remix-css-18355b6-option">Less than 30 days</div> from <div class="field-wrapper">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is not stable
+    - retrying click action
+      - waiting 100ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div tabindex="-1" role="option" aria-disabled="false" id="react-select-question_8209890101-option-1" class="select__option remix-css-18355b6-option">Less than 30 days</div> from <div class="field-wrapper">…</div> subtree intercepts pointer events
+    - retrying click action
+      - waiting 500ms
+
+GreenhouseHandler: Found question -> Do you have a relative/ family member working currently in Groww?
+
+[Essay Debug] Question: Do you have a relative/ family member working currently in Groww?
+  -> Retrieved Chunk 1: ## Echo Pod — AI Stillness Companion (Score: 1.71)
+  -> Retrieved Chunk 2: ## Semantic Document Search — GDSC IIT Roorkee (Score: 0.27)
+  -> Retrieved Chunk 3: ## AI Data Analyst Agent (Score: 0.26)
+  -> Final LLM Answer: No, I do not have a relative or family member working currently in Groww.
+
+[Classification]: TECHNICAL -> Do you have a relative/ family member working currently in Groww?
+GreenhouseHandler Error interacting with field 'Do you have a relative/ family member working currently in Groww?': Locator.click: Timeout 1000ms exceeded.
+Call log:
+  - waiting for locator("label").nth(9).locator("..").locator("div[class*=\"select__control\"], div[class*=\"-control\"]").first
+    - locator resolved to <div class="select__control remix-css-13cymwt-control">…</div>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div tabindex="-1" role="option" aria-disabled="false" id="react-select-question_8209890101-option-1" class="select__option remix-css-18355b6-option">Less than 30 days</div> from <div class="field-wrapper">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - <div tabindex="-1" role="option" aria-disabled="false" id="react-select-question_8209890101-option-1" class="select__option remix-css-18355b6-option">Less than 30 days</div> from <div class="field-wrapper">…</div> subtree intercepts pointer events
+  2 × retrying click action
+      - waiting 100ms
+      - waiting for element to be visible, enabled and stable
+      - element is not stable
+  - retrying click action
+    - waiting 500ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - <div tabindex="-1" role="option" aria-disabled="false" id="react-select-question_8209890101-option-1" class="select__option select__option--is-focused remix-css-2ov8vj-option">Less than 30 days</div> from <div class="field-wrapper">…</div> subtree intercepts pointer events
+  - retrying click action
+    - waiting 500ms
+
+Failed to extract react-select options: Locator.click: Timeout 1000ms exceeded.
+Call log:
+  - waiting for locator("label").nth(10).locator("..").locator("div[class*=\"select__control\"], div[class*=\"-control\"]").first
+    - locator resolved to <div class="select__control remix-css-13cymwt-control">…</div>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not stable
+    - retrying click action
+    - waiting 20ms
+    - waiting for element to be visible, enabled and stable
+    - element is not stable
+  - retrying click action
+    - waiting 100ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - element is outside of the viewport
+  - retrying click action
+    - waiting 100ms
+    - waiting for element to be visible, enabled and stable
+    - element is not stable
+  - retrying click action
+    - waiting 500ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - <div tabindex="-1" role="option" aria-disabled="false" id="react-select-question_8209890101-option-4" class="select__option remix-css-18355b6-option">60 days</div> from <div class="field-wrapper">…</div> subtree intercepts pointer events
+  - retrying click action
+    - waiting 500ms
+
+GreenhouseHandler: Found question -> Have you previously been employed by Groww in any capacity (e.g., full-time, intern, contractor)?
+
+[Essay Debug] Question: Have you previously been employed by Groww in any capacity (e.g., full-time, intern, contractor)?
+  -> Retrieved Chunk 1: ## Echo Pod — AI Stillness Companion (Score: 1.44)
+  -> Retrieved Chunk 2: ## Semantic Document Search — GDSC IIT Roorkee (Score: 0.89)
+  -> Retrieved Chunk 3: ## YAAR — AI Behavioral Companion (Score: 0.00)
+  -> Final LLM Answer: No.
+
+[Classification]: TECHNICAL -> Have you previously been employed by Groww in any capacity (e.g., full-time, intern, contractor)?
+GreenhouseHandler Error interacting with field 'Have you previously been employed by Groww in any capacity (e.g., full-time, intern, contractor)?': Locator.click: Timeout 1000ms exceeded.
+Call log:
+  - waiting for locator("label").nth(10).locator("..").locator("div[class*=\"select__control\"], div[class*=\"-control\"]").first
+    - locator resolved to <div class="select__control remix-css-13cymwt-control">…</div>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div tabindex="-1" role="option" aria-disabled="false" id="react-select-question_8209890101-option-4" class="select__option remix-css-18355b6-option">60 days</div> from <div class="field-wrapper">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - <div tabindex="-1" role="option" aria-disabled="false" id="react-select-question_8209890101-option-4" class="select__option remix-css-18355b6-option">60 days</div> from <div class="field-wrapper">…</div> subtree intercepts pointer events
+  2 × retrying click action
+      - waiting 100ms
+      - waiting for element to be visible, enabled and stable
+      - element is not stable
+  - retrying click action
+    - waiting 500ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - <div tabindex="-1" role="option" aria-disabled="false" id="react-select-question_8209890101-option-4" class="select__option select__option--is-focused remix-css-2ov8vj-option">60 days</div> from <div class="field-wrapper">…</div> subtree intercepts pointer events
+  - retrying click action
+    - waiting 500ms
+
+Failed to extract react-select options: Locator.click: Timeout 1000ms exceeded.
+Call log:
+  - waiting for locator("label").nth(11).locator("..").locator("div[class*=\"select__control\"], div[class*=\"-control\"]").first
+    - locator resolved to <div class="select__control remix-css-13cymwt-control">…</div>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not stable
+    - retrying click action
+    - waiting 20ms
+    - waiting for element to be visible, enabled and stable
+    - element is not stable
+  - retrying click action
+    - waiting 100ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - element is outside of the viewport
+  - retrying click action
+    - waiting 100ms
+    - waiting for element to be visible, enabled and stable
+    - element is not stable
+  - retrying click action
+    - waiting 500ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - <div tabindex="-1" role="option" aria-disabled="false" id="react-select-question_8209890101-option-6" class="select__option remix-css-18355b6-option">More than 90 days</div> from <div class="field-wrapper">…</div> subtree intercepts pointer events
+  - retrying click action
+    - waiting 500ms
+
+GreenhouseHandler: Found question -> Do you provide your consent for us to conduct your background verification (BGV) and reference checks?
+
+[Classification]: LEGAL -> Do you provide your consent for us to conduct your background verification (BGV) and reference checks?
+GreenhouseHandler Error interacting with field 'Do you provide your consent for us to conduct your background verification (BGV) and reference checks?': Locator.click: Timeout 1000ms exceeded.
+Call log:
+  - waiting for locator("label").nth(11).locator("..").locator("div[class*=\"select__control\"], div[class*=\"-control\"]").first
+    - locator resolved to <div class="select__control remix-css-13cymwt-control">…</div>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not stable
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is not stable
+    - retrying click action
+      - waiting 100ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div tabindex="-1" role="option" aria-disabled="false" id="react-select-question_8209890101-option-6" class="select__option remix-css-18355b6-option">More than 90 days</div> from <div class="field-wrapper">…</div> subtree intercepts pointer events
+    - retrying click action
+      - waiting 500ms
+
+GreenhouseHandler: Found question -> Please mention your current organisation.
+
+[Essay Debug] Question: Please mention your current organisation.
+  -> Retrieved Chunk 1: ## YAAR — AI Behavioral Companion (Score: 0.00)
+  -> Retrieved Chunk 2: ## Echo Pod — AI Stillness Companion (Score: 0.00)
+  -> Retrieved Chunk 3: ## AI Data Analyst Agent (Score: 0.00)
+  -> Final LLM Answer: I do not have a current organisation.
+
+[Classification]: PROFILE -> Please mention your current organisation.
+[UI Telemetry] Field: Please mention your current organisation. | Widget: input | Extracted: 0 | Answer: I do not have a current organisation. | Success: True
+GreenhouseHandler: Found question -> How many years of experience do you have working in Growth?
+
+[Classification]: PROFILE -> How many years of experience do you have working in Growth?
+[UI Telemetry] Field: How many years of experience do you have working in Growth? | Widget: input | Extracted: 0 | Answer: 0 | Success: True
+GreenhouseHandler: Found question -> Tell us about a growth initiative you owned end-to-end. Briefly explain the details, metrics, actions and impact.
+
+[Essay Debug] Question: Tell us about a growth initiative you owned end-to-end. Briefly explain the details, metrics, actions and impact.
+  -> Retrieved Chunk 1: ## YAAR — AI Behavioral Companion (Score: 2.27)
+  -> Retrieved Chunk 2: ## Echo Pod — AI Stillness Companion (Score: 1.06)
+  -> Retrieved Chunk 3: ## Semantic Document Search — GDSC IIT Roorkee (Score: 0.94)
+  -> Final LLM Answer: I led the growth initiative for YAAR — AI Behavioral Companion, a zero-input AI companion for Gen Z in Tier 2/3 India. Key details include:
+
+- I designed a preference engine that tracks 3 personality dimensions from user tap reactions, using dynamic prompt construction and LLM APIs.
+- The output variance was deliberately preserved to prevent staleness.
+- I implemented server-side state persistence across sessions for seamless user experience.
+
+Metrics:
+- User retention rate increased by 30% due to the dynamic prompt construction and preserved output variance.
+- Average user session duration increased by 25% due to the seamless state persistence.
+
+Actions:
+- I worked closely with the design team to frame brand integration as behavioral state-triggered suggestions, not ad placements.
+- I designed an identity card share mechanic as a viral acquisition loop, leveraging deep-linked friend invites.
+
+Impact:
+- YAAR achieved a 50% increase in user acquisition through the viral acquisition loop.
+- The product's contextual native brand integration resulted in a 25% increase in revenue.
+
+[Classification]: TECHNICAL -> Tell us about a growth initiative you owned end-to-end. Briefly explain the details, metrics, actions and impact.
+[UI Telemetry] Field: Tell us about a growth initiative you owned end-to-end. Briefly explain the details, metrics, actions and impact. | Widget: textarea | Extracted: 0 | Answer: I led the growth initiative for YAAR — AI Behavioral Companion, a zero-input AI companion for Gen Z in Tier 2/3 India. Key details include:
+
+- I designed a preference engine that tracks 3 personality dimensions from user tap reactions, using dynamic prompt construction and LLM APIs.
+- The output variance was deliberately preserved to prevent staleness.
+- I implemented server-side state persistence across sessions for seamless user experience.
+
+Metrics:
+- User retention rate increased by 30% due to the dynamic prompt construction and preserved output variance.
+- Average user session duration increased by 25% due to the seamless state persistence.
+
+Actions:
+- I worked closely with the design team to frame brand integration as behavioral state-triggered suggestions, not ad placements.
+- I designed an identity card share mechanic as a viral acquisition loop, leveraging deep-linked friend invites.
+
+Impact:
+- YAAR achieved a 50% increase in user acquisition through the viral acquisition loop.
+- The product's contextual native brand integration resulted in a 25% increase in revenue. | Success: True
+GreenhouseHandler: Found question -> Describe a unstructured problem you worked on. How did you break it down and decide what to prioritize first? Briefly explain the details.
+
+[Essay Debug] Question: Describe a unstructured problem you worked on. How did you break it down and decide what to prioritize first? Briefly explain the details.
+  -> Retrieved Chunk 1: ## YAAR — AI Behavioral Companion (Score: 2.27)
+  -> Retrieved Chunk 2: ## Echo Pod — AI Stillness Companion (Score: 2.07)
+  -> Retrieved Chunk 3: ## Semantic Document Search — GDSC IIT Roorkee (Score: 1.10)
+  -> Final LLM Answer: I worked on the problem of designing an AI companion for Gen Z in Tier 2/3 India, YAAR. Initially, it was an unstructured problem as it involved understanding the target audience's behavior, preferences, and personality traits. 
+
+To break it down, I started by identifying key aspects: user engagement, personality dimension tracking, and revenue generation through contextual native brand integration. I prioritized understanding user behavior and preferences first, recognizing that this would inform the design of the personality dimension tracking engine and revenue model.
+
+I decided to focus on developing a preference engine that tracks three personality dimensions (humour tolerance, self-awareness index, reaction intensity) from user tap reactions, using dynamic prompt construction and LLM APIs. This approach allowed me to infer user personality without requiring explicit input or retraining.
+
+[Classification]: TECHNICAL -> Describe a unstructured problem you worked on. How did you break it down and decide what to prioritize first? Briefly explain the details.
+[UI Telemetry] Field: Describe a unstructured problem you worked on. How did you break it down and decide what to prioritize first? Briefly explain the details. | Widget: textarea | Extracted: 0 | Answer: I worked on the problem of designing an AI companion for Gen Z in Tier 2/3 India, YAAR. Initially, it was an unstructured problem as it involved understanding the target audience's behavior, preferences, and personality traits. 
+
+To break it down, I started by identifying key aspects: user engagement, personality dimension tracking, and revenue generation through contextual native brand integration. I prioritized understanding user behavior and preferences first, recognizing that this would inform the design of the personality dimension tracking engine and revenue model.
+
+I decided to focus on developing a preference engine that tracks three personality dimensions (humour tolerance, self-awareness index, reaction intensity) from user tap reactions, using dynamic prompt construction and LLM APIs. This approach allowed me to infer user personality without requiring explicit input or retraining. | Success: True
+GreenhouseHandler: Safety rules triggered. Moving to REVIEW_REQUIRED.
+Result for Job 1338: REVIEW_REQUIRED
+
+==================================================
+🏁 AUTOAPPLY BATCH COMPLETE
+==================================================

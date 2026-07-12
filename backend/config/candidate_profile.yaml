@@ -1,0 +1,38 @@
+target_roles:
+  - "Associate Product Manager"
+  - "Product Manager"
+  - "Product Analyst"
+  - "Founder's Office"
+  - "Chief of Staff"
+  - "AI Engineer"
+  - "Machine Learning Engineer"
+  - "Software Engineer"
+  - "Data Scientist"
+
+years_experience: 2
+graduation_year: 2024
+degree: "Bachelor's"
+skills:
+  - "Python"
+  - "FastAPI"
+  - "React"
+  - "SQL"
+  - "Docker"
+preferred_locations:
+  - "India"
+  - "Remote"
+remote_allowed: true
+employment_types:
+  - "Full-time"
+minimum_salary: 0.0
+willing_to_relocate: true
+citizenship: "India"
+visa_status: "No visa required for India"
+clearance: "None"
+preferred_domains:
+  - "AI"
+  - "SaaS"
+preferred_company_size:
+  - "1-10"
+  - "11-50"
+  - "51-200"

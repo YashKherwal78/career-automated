@@ -1,0 +1,31 @@
+\documentclass{article}
+\begin{document}
+
+\resumeProjectHeading{\textbf{CareerAutomated}}{}
+\resumeItem{Built an autonomous 10-Agent AI platform that finds jobs, researches companies, tailors LaTeX resumes, and submits applications end-to-end with zero human intervention.}
+\resumeItem{Implemented component-based architecture separating discovery, intelligence, routing, and execution.}
+\resumeItem{Designed human-in-the-loop review gate for safety before final submission.}
+\resumeItem{Developed waterfall UI normalization strategy (Exact -> Rules -> Fuzzy) to handle modern custom ATS widgets like React-Select.}
+\resumeItem{Built embedding-free RAG using BM25 for zero-cost, high-speed knowledge retrieval.}
+\resumeItem{Implemented strict prompt grounding rules and low-confidence gating to prevent LLM hallucinations on business metrics.}
+
+\resumeProjectHeading{\textbf{AI Data Analyst Agent}}{}
+\resumeItem{Designed a 5-agent LangGraph system where non-technical users type a question in plain English and get a data analysis result in under 60 seconds — no SQL, no engineer required.}
+\resumeItem{Implemented LangGraph for stateful agent workflow (not vanilla LangChain) — explicit state management per agent.}
+\resumeItem{Query Planner does intent classification BEFORE generation — eliminates downstream type errors.}
+\resumeItem{Used n8n as orchestration layer separate from agent logic — non-technical operators can modify routing without redeployment.}
+\resumeItem{Implemented MCP to expose tools (files, DBs, APIs) as standardised context — extensible by design.}
+\resumeItem{Designed Error Fixer agent: classify exception → regenerate targeted fix → retry 3x before user escalation (ReAct-style).}
+\resumeItem{Used Docker sandbox to isolate LLM-generated code from host.}
+
+\resumeProjectHeading{\textbf{Backend Systems}}{}
+\resumeItem{Deployed FastAPI + Docker + AWS EC2 for scalable backend infrastructure.}
+\resumeItem{Implemented SQL for analytical queries (funnel, cohort, window functions).}
+\resumeItem{Used Python for data and backend development.}
+
+\resumeProjectHeading{\textbf{OrangeLabs Internship}}{}
+\resumeItem{Contributed to CCTV-based automated attendance (computer vision pipeline → ERP sync).}
+\resumeItem{Developed AI-generated personalised lecture pipeline (teacher voice/likeness cloning for student-facing content).}
+\resumeItem{Implemented n8n ERP workflow automation (weaker signal, de-emphasised).}
+
+\end{document}

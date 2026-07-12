@@ -1,0 +1,5274 @@
+[
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://adobe.wd5.myworkdayjobs.com/external_experienced",
+    "rank": 1,
+    "is_workday": true
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://adobe.okta.com/app/workday/kznv24p0LOBOKWOBTZGT/sso/saml",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://www.adobe.com/acrobat/business/integrations/workday.html",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://business.adobe.com/blog/workday-building-ai-ready-marketing-engine-with-adobe",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://marketplace.workday.com/en-US/apps/414852/adobe-sign",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://adobe.wd5.myworkdayjobs.com/external_experienced/1/refreshFacet/318c8bb6f553100021d223d9780d30be",
+    "rank": 7,
+    "is_workday": true
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://www.adobe.com/careers.html",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Adobe-Workday",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/search-results",
+    "rank": 10,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://adobe.wd5.myworkdayjobs.com/external_experienced",
+    "rank": 1,
+    "is_workday": true
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://www.adobe.com/careers.html",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/search-results",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/adobe/jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://adobe.design/careers/",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://adobe.okta.com/app/workday/kznv24p0LOBOKWOBTZGT/sso/saml",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/jointalentcommunity",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/teams",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe myworkdayjobs",
+    "provider": "exa",
+    "url": "https://adobe.wd5.myworkdayjobs.com/external_experienced",
+    "rank": 1,
+    "is_workday": true
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe myworkdayjobs",
+    "provider": "exa",
+    "url": "https://adobe.okta.com/app/workday/kznv24p0LOBOKWOBTZGT/sso/saml",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.adobe.com/careers.html",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/search-results",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe myworkdayjobs",
+    "provider": "exa",
+    "url": "https://adobe.design/careers/",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe myworkdayjobs",
+    "provider": "exa",
+    "url": "https://workday.wd5.myworkdayjobs.com/Workday",
+    "rank": 7,
+    "is_workday": true
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers",
+    "provider": "exa",
+    "url": "https://www.adobe.com/careers.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers",
+    "provider": "exa",
+    "url": "https://adobe.design/careers/",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers",
+    "provider": "exa",
+    "url": "https://adobe.wd5.myworkdayjobs.com/external_experienced",
+    "rank": 4,
+    "is_workday": true
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Adobe",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Overview/Working-at-Adobe-EI_IE1090.11,16.htm",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers",
+    "provider": "exa",
+    "url": "https://www.instahyre.com/jobs-at-adobe/",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://adobe.wd5.myworkdayjobs.com/external_experienced",
+    "rank": 1,
+    "is_workday": true
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://adobe.okta.com/app/workday/kznv24p0LOBOKWOBTZGT/sso/saml",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://www.adobe.com/acrobat/business/integrations/workday.html",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://business.adobe.com/blog/workday-building-ai-ready-marketing-engine-with-adobe",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://marketplace.workday.com/en-US/apps/414852/adobe-sign",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://adobe.wd5.myworkdayjobs.com/external_experienced/1/refreshFacet/318c8bb6f553100021d223d9780d30be",
+    "rank": 7,
+    "is_workday": true
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://www.adobe.com/careers.html",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Adobe-Workday",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/search-results",
+    "rank": 10,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://adobe.wd5.myworkdayjobs.com/external_experienced",
+    "rank": 1,
+    "is_workday": true
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://www.adobe.com/careers.html",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/search-results",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/adobe/jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://adobe.design/careers/",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://adobe.okta.com/app/workday/kznv24p0LOBOKWOBTZGT/sso/saml",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/jointalentcommunity",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/teams",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe myworkdayjobs",
+    "provider": "exa",
+    "url": "https://adobe.wd5.myworkdayjobs.com/external_experienced",
+    "rank": 1,
+    "is_workday": true
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe myworkdayjobs",
+    "provider": "exa",
+    "url": "https://adobe.okta.com/app/workday/kznv24p0LOBOKWOBTZGT/sso/saml",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.adobe.com/careers.html",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/search-results",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe myworkdayjobs",
+    "provider": "exa",
+    "url": "https://adobe.design/careers/",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe myworkdayjobs",
+    "provider": "exa",
+    "url": "https://workday.wd5.myworkdayjobs.com/Workday",
+    "rank": 7,
+    "is_workday": true
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers",
+    "provider": "exa",
+    "url": "https://www.adobe.com/careers.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers",
+    "provider": "exa",
+    "url": "https://adobe.design/careers/",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers",
+    "provider": "exa",
+    "url": "https://adobe.wd5.myworkdayjobs.com/external_experienced",
+    "rank": 4,
+    "is_workday": true
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Adobe",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Overview/Working-at-Adobe-EI_IE1090.11,16.htm",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers",
+    "provider": "exa",
+    "url": "https://www.instahyre.com/jobs-at-adobe/",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://adobe.wd5.myworkdayjobs.com/external_experienced",
+    "rank": 1,
+    "is_workday": true
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://adobe.okta.com/app/workday/kznv24p0LOBOKWOBTZGT/sso/saml",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://www.adobe.com/acrobat/business/integrations/workday.html",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://business.adobe.com/blog/workday-building-ai-ready-marketing-engine-with-adobe",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://marketplace.workday.com/en-US/apps/414852/adobe-sign",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://adobe.wd5.myworkdayjobs.com/external_experienced/1/refreshFacet/318c8bb6f553100021d223d9780d30be",
+    "rank": 7,
+    "is_workday": true
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://www.adobe.com/careers.html",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Adobe-Workday",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe Workday",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/search-results",
+    "rank": 10,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://adobe.wd5.myworkdayjobs.com/external_experienced",
+    "rank": 1,
+    "is_workday": true
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://www.adobe.com/careers.html",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/search-results",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/adobe/jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://adobe.design/careers/",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://adobe.okta.com/app/workday/kznv24p0LOBOKWOBTZGT/sso/saml",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/jointalentcommunity",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers Workday",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/teams",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe myworkdayjobs",
+    "provider": "exa",
+    "url": "https://adobe.wd5.myworkdayjobs.com/external_experienced",
+    "rank": 1,
+    "is_workday": true
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe myworkdayjobs",
+    "provider": "exa",
+    "url": "https://adobe.okta.com/app/workday/kznv24p0LOBOKWOBTZGT/sso/saml",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.adobe.com/careers.html",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/search-results",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe myworkdayjobs",
+    "provider": "exa",
+    "url": "https://adobe.design/careers/",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe myworkdayjobs",
+    "provider": "exa",
+    "url": "https://workday.wd5.myworkdayjobs.com/Workday",
+    "rank": 7,
+    "is_workday": true
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers",
+    "provider": "exa",
+    "url": "https://careers.adobe.com/us/en/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers",
+    "provider": "exa",
+    "url": "https://www.adobe.com/careers.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers",
+    "provider": "exa",
+    "url": "https://adobe.design/careers/",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers",
+    "provider": "exa",
+    "url": "https://adobe.wd5.myworkdayjobs.com/external_experienced",
+    "rank": 4,
+    "is_workday": true
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Adobe",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Overview/Working-at-Adobe-EI_IE1090.11,16.htm",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Adobe",
+    "query": "Adobe careers",
+    "provider": "exa",
+    "url": "https://www.instahyre.com/jobs-at-adobe/",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb Workday",
+    "provider": "exa",
+    "url": "https://careers.airbnb.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb Workday",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/services/overview.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb Workday",
+    "provider": "exa",
+    "url": "https://news.airbnb.com/airbnbs-design-to-live-and-work-anywhere/",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/airbnb/jobs",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb Workday",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-remotely-airbnb-jobs.html",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb Workday",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Overview/Working-at-Airbnb-EI_IE391850.11,17.htm",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb Workday",
+    "provider": "exa",
+    "url": "https://www.workingnomads.com/remote-company/airbnb",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers Workday",
+    "provider": "exa",
+    "url": "https://careers.airbnb.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/airbnb/jobs",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers Workday",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/Airbnb-Jobs-E391850.htm",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers Workday",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-remotely-airbnb-jobs.html",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers Workday",
+    "provider": "exa",
+    "url": "https://www.builtinchicago.org/company/airbnb/jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers Workday",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Work-From-Home-Airbnb-Host",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers Workday",
+    "provider": "exa",
+    "url": "https://www.builtinseattle.com/company/airbnb/jobs",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.airbnb.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.airbnb.com/positions/page/2/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.airbnb.com/positions/",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/airbnb/jobs",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://news.airbnb.com/airbnbs-design-to-live-and-work-anywhere/",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/e/airbnb-workday-what-is-an-airbnb-workday",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-airbnb-jobs.html",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://wasatchproperty.wd1.myworkdayjobs.com/en-US/MarketStarCareersEMEA/job/Inside-Sales-Representative---Airbnb--French-Bilingual-_R21396/apply/autofillWithResume",
+    "rank": 8,
+    "is_workday": true
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.builtinnyc.com/company/airbnb/jobs",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers",
+    "provider": "exa",
+    "url": "https://careers.airbnb.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-remotely-airbnb-jobs.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/Airbnb-Jobs-E391850.htm",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers",
+    "provider": "exa",
+    "url": "https://www.builtinnyc.com/company/airbnb/jobs",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/airbnb/jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers",
+    "provider": "exa",
+    "url": "https://www.builtinseattle.com/company/airbnb/jobs",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-airbnb-jobs.html",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb Workday",
+    "provider": "exa",
+    "url": "https://careers.airbnb.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb Workday",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/services/overview.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb Workday",
+    "provider": "exa",
+    "url": "https://news.airbnb.com/airbnbs-design-to-live-and-work-anywhere/",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/airbnb/jobs",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb Workday",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-remotely-airbnb-jobs.html",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb Workday",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Overview/Working-at-Airbnb-EI_IE391850.11,17.htm",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb Workday",
+    "provider": "exa",
+    "url": "https://www.workingnomads.com/remote-company/airbnb",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers Workday",
+    "provider": "exa",
+    "url": "https://careers.airbnb.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/airbnb/jobs",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers Workday",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/Airbnb-Jobs-E391850.htm",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers Workday",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-remotely-airbnb-jobs.html",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers Workday",
+    "provider": "exa",
+    "url": "https://www.builtinchicago.org/company/airbnb/jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers Workday",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Work-From-Home-Airbnb-Host",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers Workday",
+    "provider": "exa",
+    "url": "https://www.builtinseattle.com/company/airbnb/jobs",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.airbnb.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.airbnb.com/positions/page/2/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.airbnb.com/positions/",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/airbnb/jobs",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://news.airbnb.com/airbnbs-design-to-live-and-work-anywhere/",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/e/airbnb-workday-what-is-an-airbnb-workday",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-airbnb-jobs.html",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://wasatchproperty.wd1.myworkdayjobs.com/en-US/MarketStarCareersEMEA/job/Inside-Sales-Representative---Airbnb--French-Bilingual-_R21396/apply/autofillWithResume",
+    "rank": 8,
+    "is_workday": true
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.builtinnyc.com/company/airbnb/jobs",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers",
+    "provider": "exa",
+    "url": "https://careers.airbnb.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-remotely-airbnb-jobs.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/Airbnb-Jobs-E391850.htm",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers",
+    "provider": "exa",
+    "url": "https://www.builtinnyc.com/company/airbnb/jobs",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/airbnb/jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers",
+    "provider": "exa",
+    "url": "https://www.builtinseattle.com/company/airbnb/jobs",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-airbnb-jobs.html",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb Workday",
+    "provider": "exa",
+    "url": "https://careers.airbnb.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb Workday",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/services/overview.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb Workday",
+    "provider": "exa",
+    "url": "https://news.airbnb.com/airbnbs-design-to-live-and-work-anywhere/",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/airbnb/jobs",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb Workday",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-remotely-airbnb-jobs.html",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb Workday",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Overview/Working-at-Airbnb-EI_IE391850.11,17.htm",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb Workday",
+    "provider": "exa",
+    "url": "https://www.workingnomads.com/remote-company/airbnb",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers Workday",
+    "provider": "exa",
+    "url": "https://careers.airbnb.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/airbnb/jobs",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers Workday",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/Airbnb-Jobs-E391850.htm",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers Workday",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-remotely-airbnb-jobs.html",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers Workday",
+    "provider": "exa",
+    "url": "https://www.builtinchicago.org/company/airbnb/jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers Workday",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Work-From-Home-Airbnb-Host",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers Workday",
+    "provider": "exa",
+    "url": "https://www.builtinseattle.com/company/airbnb/jobs",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.airbnb.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.airbnb.com/positions/page/2/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.airbnb.com/positions/",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/airbnb/jobs",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://news.airbnb.com/airbnbs-design-to-live-and-work-anywhere/",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/e/airbnb-workday-what-is-an-airbnb-workday",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-airbnb-jobs.html",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://wasatchproperty.wd1.myworkdayjobs.com/en-US/MarketStarCareersEMEA/job/Inside-Sales-Representative---Airbnb--French-Bilingual-_R21396/apply/autofillWithResume",
+    "rank": 8,
+    "is_workday": true
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.builtinnyc.com/company/airbnb/jobs",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers",
+    "provider": "exa",
+    "url": "https://careers.airbnb.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-remotely-airbnb-jobs.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/Airbnb-Jobs-E391850.htm",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers",
+    "provider": "exa",
+    "url": "https://www.builtinnyc.com/company/airbnb/jobs",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/airbnb/jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers",
+    "provider": "exa",
+    "url": "https://www.builtinseattle.com/company/airbnb/jobs",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Airbnb",
+    "query": "Airbnb careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-airbnb-jobs.html",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://www.amazon.jobs/en-US/applicant/login",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/company/partners/amazon-web-services.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/login",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/jobs/amazon-workday-jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://workday.wd5.myworkdayjobs.com/Workday",
+    "rank": 6,
+    "is_workday": true
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://blog.workday.com/en-us/clarifying-amazon-workday-deployment.html",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/why-amazon/shifts-and-schedules",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Amazon-Workday",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://press.aboutamazon.com/2024/7/aws-and-workday-expand-partnership-to-help-organizations-drive-productivity-improve-decision-making-and-develop-generative-ai-solutions",
+    "rank": 10,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://www.amazon.jobs/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/philadelphia-jobs",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/login",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/charlotte-nc-jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/company/careers/overview.html",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/tampa-jobs",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Amazon-Workday",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/why-amazon/shifts-and-schedules",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.amazon.jobs/applicant/dashboard/applications",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/login",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://workday.wd5.myworkdayjobs.com/Workday",
+    "rank": 3,
+    "is_workday": true
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/indianapolis-in-jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.amazon.jobs/",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/company/careers/overview.html",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/job-opportunities/work-from-home-jobs",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/job-opportunities/warehouse-jobs",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-amazon-l-indiana-jobs.html",
+    "rank": 10,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://www.amazon.jobs/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/job-opportunities/fulfillment-center-jobs",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/houston-jobs",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/job-opportunities/work-from-home-jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-amazon-careers-l-florida-jobs.html",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/detroit-jobs",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/miami-jobs",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/raleigh-nc-jobs",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://www.amazon.jobs/en-US/applicant/login",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/company/partners/amazon-web-services.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/login",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/jobs/amazon-workday-jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://workday.wd5.myworkdayjobs.com/Workday",
+    "rank": 6,
+    "is_workday": true
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://blog.workday.com/en-us/clarifying-amazon-workday-deployment.html",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/why-amazon/shifts-and-schedules",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Amazon-Workday",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://press.aboutamazon.com/2024/7/aws-and-workday-expand-partnership-to-help-organizations-drive-productivity-improve-decision-making-and-develop-generative-ai-solutions",
+    "rank": 10,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://www.amazon.jobs/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/philadelphia-jobs",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/login",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/charlotte-nc-jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/company/careers/overview.html",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/tampa-jobs",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Amazon-Workday",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/why-amazon/shifts-and-schedules",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.amazon.jobs/applicant/dashboard/applications",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/login",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://workday.wd5.myworkdayjobs.com/Workday",
+    "rank": 3,
+    "is_workday": true
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/indianapolis-in-jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.amazon.jobs/",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/company/careers/overview.html",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/job-opportunities/work-from-home-jobs",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/job-opportunities/warehouse-jobs",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-amazon-l-indiana-jobs.html",
+    "rank": 10,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://www.amazon.jobs/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/job-opportunities/fulfillment-center-jobs",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/houston-jobs",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/job-opportunities/work-from-home-jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-amazon-careers-l-florida-jobs.html",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/detroit-jobs",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/miami-jobs",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/raleigh-nc-jobs",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://www.amazon.jobs/en-US/applicant/login",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/company/partners/amazon-web-services.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/login",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/jobs/amazon-workday-jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://workday.wd5.myworkdayjobs.com/Workday",
+    "rank": 6,
+    "is_workday": true
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://blog.workday.com/en-us/clarifying-amazon-workday-deployment.html",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/why-amazon/shifts-and-schedules",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Amazon-Workday",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon Workday",
+    "provider": "exa",
+    "url": "https://press.aboutamazon.com/2024/7/aws-and-workday-expand-partnership-to-help-organizations-drive-productivity-improve-decision-making-and-develop-generative-ai-solutions",
+    "rank": 10,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://www.amazon.jobs/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/philadelphia-jobs",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/login",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/charlotte-nc-jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/company/careers/overview.html",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/tampa-jobs",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Amazon-Workday",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers Workday",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/why-amazon/shifts-and-schedules",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.amazon.jobs/applicant/dashboard/applications",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/login",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://workday.wd5.myworkdayjobs.com/Workday",
+    "rank": 3,
+    "is_workday": true
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/indianapolis-in-jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.amazon.jobs/",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/company/careers/overview.html",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/job-opportunities/work-from-home-jobs",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/job-opportunities/warehouse-jobs",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-amazon-l-indiana-jobs.html",
+    "rank": 10,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://www.amazon.jobs/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/job-opportunities/fulfillment-center-jobs",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/houston-jobs",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/job-opportunities/work-from-home-jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-amazon-careers-l-florida-jobs.html",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/detroit-jobs",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/miami-jobs",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Amazon",
+    "query": "Amazon careers",
+    "provider": "exa",
+    "url": "https://hiring.amazon.com/locations/raleigh-nc-jobs",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd Workday",
+    "provider": "exa",
+    "url": "https://careers.amd.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd Workday",
+    "provider": "exa",
+    "url": "https://workday.wd5.myworkdayjobs.com/Workday",
+    "rank": 2,
+    "is_workday": true
+  },
+  {
+    "company": "Amd",
+    "query": "Amd Workday",
+    "provider": "exa",
+    "url": "https://www.amd.com/en/corporate/careers.html",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/amd/jobs",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd Workday",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/homepage.html",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd Workday",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Amd",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd Workday",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/AMD-Jobs-E15.htm",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers Workday",
+    "provider": "exa",
+    "url": "https://careers.amd.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers Workday",
+    "provider": "exa",
+    "url": "https://www.amd.com/en/corporate/careers.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/amd/jobs",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers Workday",
+    "provider": "exa",
+    "url": "https://workday.wd5.myworkdayjobs.com/Workday",
+    "rank": 4,
+    "is_workday": true
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers Workday",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Amd",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers Workday",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/AMD-Jobs-E15.htm",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers Workday",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/co/Amd/Jobs/-in-Folsom,CA",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.amd.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.amd.com/en/corporate/careers.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/amd/jobs",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd myworkdayjobs",
+    "provider": "exa",
+    "url": "https://workday.wd5.myworkdayjobs.com/Workday",
+    "rank": 4,
+    "is_workday": true
+  },
+  {
+    "company": "Amd",
+    "query": "Amd myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers-amd.icims.com/jobs/login?hashed=-625942636&in_iframe=1&loginOnly=1&redirect=",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-amd-l-texas-jobs.html",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Amd/-in-Austin,TX",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers",
+    "provider": "exa",
+    "url": "https://careers.amd.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers",
+    "provider": "exa",
+    "url": "https://www.amd.com/en/corporate/careers.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Amd",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/AMD-Jobs-E15.htm",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Amd",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/amd/jobs",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-amd-jobs.html",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd Workday",
+    "provider": "exa",
+    "url": "https://careers.amd.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd Workday",
+    "provider": "exa",
+    "url": "https://workday.wd5.myworkdayjobs.com/Workday",
+    "rank": 2,
+    "is_workday": true
+  },
+  {
+    "company": "Amd",
+    "query": "Amd Workday",
+    "provider": "exa",
+    "url": "https://www.amd.com/en/corporate/careers.html",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/amd/jobs",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd Workday",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/homepage.html",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd Workday",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Amd",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd Workday",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/AMD-Jobs-E15.htm",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers Workday",
+    "provider": "exa",
+    "url": "https://careers.amd.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers Workday",
+    "provider": "exa",
+    "url": "https://www.amd.com/en/corporate/careers.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/amd/jobs",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers Workday",
+    "provider": "exa",
+    "url": "https://workday.wd5.myworkdayjobs.com/Workday",
+    "rank": 4,
+    "is_workday": true
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers Workday",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Amd",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers Workday",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/AMD-Jobs-E15.htm",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers Workday",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/co/Amd/Jobs/-in-Folsom,CA",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.amd.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.amd.com/en/corporate/careers.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/amd/jobs",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd myworkdayjobs",
+    "provider": "exa",
+    "url": "https://workday.wd5.myworkdayjobs.com/Workday",
+    "rank": 4,
+    "is_workday": true
+  },
+  {
+    "company": "Amd",
+    "query": "Amd myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers-amd.icims.com/jobs/login?hashed=-625942636&in_iframe=1&loginOnly=1&redirect=",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-amd-l-texas-jobs.html",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Amd/-in-Austin,TX",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers",
+    "provider": "exa",
+    "url": "https://careers.amd.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers",
+    "provider": "exa",
+    "url": "https://www.amd.com/en/corporate/careers.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Amd",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/AMD-Jobs-E15.htm",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Amd",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/amd/jobs",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-amd-jobs.html",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd Workday",
+    "provider": "exa",
+    "url": "https://careers.amd.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd Workday",
+    "provider": "exa",
+    "url": "https://workday.wd5.myworkdayjobs.com/Workday",
+    "rank": 2,
+    "is_workday": true
+  },
+  {
+    "company": "Amd",
+    "query": "Amd Workday",
+    "provider": "exa",
+    "url": "https://www.amd.com/en/corporate/careers.html",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/amd/jobs",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd Workday",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/homepage.html",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd Workday",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Amd",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd Workday",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/AMD-Jobs-E15.htm",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers Workday",
+    "provider": "exa",
+    "url": "https://careers.amd.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers Workday",
+    "provider": "exa",
+    "url": "https://www.amd.com/en/corporate/careers.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/amd/jobs",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers Workday",
+    "provider": "exa",
+    "url": "https://workday.wd5.myworkdayjobs.com/Workday",
+    "rank": 4,
+    "is_workday": true
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers Workday",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Amd",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers Workday",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/AMD-Jobs-E15.htm",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers Workday",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/co/Amd/Jobs/-in-Folsom,CA",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.amd.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.amd.com/en/corporate/careers.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/amd/jobs",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd myworkdayjobs",
+    "provider": "exa",
+    "url": "https://workday.wd5.myworkdayjobs.com/Workday",
+    "rank": 4,
+    "is_workday": true
+  },
+  {
+    "company": "Amd",
+    "query": "Amd myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers-amd.icims.com/jobs/login?hashed=-625942636&in_iframe=1&loginOnly=1&redirect=",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-amd-l-texas-jobs.html",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Amd/-in-Austin,TX",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers",
+    "provider": "exa",
+    "url": "https://careers.amd.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers",
+    "provider": "exa",
+    "url": "https://www.amd.com/en/corporate/careers.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Amd",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/AMD-Jobs-E15.htm",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Amd",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/amd/jobs",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Amd",
+    "query": "Amd careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-amd-jobs.html",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple Workday",
+    "provider": "exa",
+    "url": "https://apps.apple.com/us/app/workday/id316800034",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple Workday",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/signin.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple Workday",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple Workday",
+    "provider": "exa",
+    "url": "https://myworkday.com/",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple Workday",
+    "provider": "exa",
+    "url": "https://careers.apple.com/en-us/session-timeout-page",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?location=united-states-USA",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/work-at-apple.html",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/work-at-apple/retail.html",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/work-at-apple/locations.html",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?homeOffice=true",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?location=united-states-USA&page=2",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/Apple-Jobs-E1138.htm",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/work-at-apple/locations/los-angeles.html",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Apple",
+    "rank": 10,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?location=united-states-USA",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://applebank.wd5.myworkdayjobs.com/applebankcareers",
+    "rank": 3,
+    "is_workday": true
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?location=atlanta-ATL",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://onedigital.wd5.myworkdayjobs.com/en-US/OneDigital/job/Atlanta-GA/IT-Portfolio-Analyst---Hybrid--Atlanta--GA-_R8647/apply/applyManually",
+    "rank": 5,
+    "is_workday": true
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/work-at-apple/retail.html",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://brown.wd5.myworkdayjobs.com/en-US/staff-careers-brown/job/Data-Management-Associate_REQ207970/apply/autofillWithResume",
+    "rank": 7,
+    "is_workday": true
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-apple-careers-l-atlanta,-ga-jobs.html",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?homeOffice=true",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/jobs/apple-jobs-atlanta-ga",
+    "rank": 10,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?location=united-states-USA",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?homeOffice=true",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?location=gilbert-GIL",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/jobs/apple-jobs-gilbert-az",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?location=arizona-state952&page=2",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-apple-careers-l-phoenix,-az-jobs.html",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple Workday",
+    "provider": "exa",
+    "url": "https://apps.apple.com/us/app/workday/id316800034",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple Workday",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/signin.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple Workday",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple Workday",
+    "provider": "exa",
+    "url": "https://myworkday.com/",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple Workday",
+    "provider": "exa",
+    "url": "https://careers.apple.com/en-us/session-timeout-page",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?location=united-states-USA",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/work-at-apple.html",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/work-at-apple/retail.html",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/work-at-apple/locations.html",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?homeOffice=true",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?location=united-states-USA&page=2",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/Apple-Jobs-E1138.htm",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/work-at-apple/locations/los-angeles.html",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Apple",
+    "rank": 10,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?location=united-states-USA",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://applebank.wd5.myworkdayjobs.com/applebankcareers",
+    "rank": 3,
+    "is_workday": true
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?location=atlanta-ATL",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://onedigital.wd5.myworkdayjobs.com/en-US/OneDigital/job/Atlanta-GA/IT-Portfolio-Analyst---Hybrid--Atlanta--GA-_R8647/apply/applyManually",
+    "rank": 5,
+    "is_workday": true
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/work-at-apple/retail.html",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://brown.wd5.myworkdayjobs.com/en-US/staff-careers-brown/job/Data-Management-Associate_REQ207970/apply/autofillWithResume",
+    "rank": 7,
+    "is_workday": true
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-apple-careers-l-atlanta,-ga-jobs.html",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?homeOffice=true",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/jobs/apple-jobs-atlanta-ga",
+    "rank": 10,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?location=united-states-USA",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?homeOffice=true",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?location=gilbert-GIL",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/jobs/apple-jobs-gilbert-az",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?location=arizona-state952&page=2",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-apple-careers-l-phoenix,-az-jobs.html",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple Workday",
+    "provider": "exa",
+    "url": "https://apps.apple.com/us/app/workday/id316800034",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple Workday",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/signin.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple Workday",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple Workday",
+    "provider": "exa",
+    "url": "https://myworkday.com/",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple Workday",
+    "provider": "exa",
+    "url": "https://careers.apple.com/en-us/session-timeout-page",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?location=united-states-USA",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/work-at-apple.html",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/work-at-apple/retail.html",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/work-at-apple/locations.html",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?homeOffice=true",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?location=united-states-USA&page=2",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/Apple-Jobs-E1138.htm",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/work-at-apple/locations/los-angeles.html",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers Workday",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Apple",
+    "rank": 10,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?location=united-states-USA",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://applebank.wd5.myworkdayjobs.com/applebankcareers",
+    "rank": 3,
+    "is_workday": true
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?location=atlanta-ATL",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://onedigital.wd5.myworkdayjobs.com/en-US/OneDigital/job/Atlanta-GA/IT-Portfolio-Analyst---Hybrid--Atlanta--GA-_R8647/apply/applyManually",
+    "rank": 5,
+    "is_workday": true
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/work-at-apple/retail.html",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://brown.wd5.myworkdayjobs.com/en-US/staff-careers-brown/job/Data-Management-Associate_REQ207970/apply/autofillWithResume",
+    "rank": 7,
+    "is_workday": true
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-apple-careers-l-atlanta,-ga-jobs.html",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?homeOffice=true",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/jobs/apple-jobs-atlanta-ga",
+    "rank": 10,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers",
+    "provider": "exa",
+    "url": "https://www.apple.com/careers/us/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?location=united-states-USA",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?homeOffice=true",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?location=gilbert-GIL",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/jobs/apple-jobs-gilbert-az",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers",
+    "provider": "exa",
+    "url": "https://jobs.apple.com/en-us/search?location=arizona-state952&page=2",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Apple",
+    "query": "Apple careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-apple-careers-l-phoenix,-az-jobs.html",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://cisco.wd5.myworkdayjobs.com/Cisco_Careers",
+    "rank": 1,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://www.cisco.com/site/us/en/index.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/signin.html",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://www.cisco.com/site/us/en/about/case-studies-customer-stories/workday.html",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://blog.workday.com/en-us/workday-podcast-building-internal-talent-support-teams-cisco-systems.html",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://ecosystem.duo.com/en-US/apps/529247/workday",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/global/en/search-results",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://www.accenture.com/us-en/case-studies/technology/workday-empowers-cisco-people-communities",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://cisco.wd5.myworkdayjobs.com/Cisco_Careers",
+    "rank": 1,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/global/en/search-results",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://www.cisco.com/site/us/en/about/case-studies-customer-stories/workday.html",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/cisco/jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/global/en/entry-level-careers",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://cisco2.avature.net/jobs/Login",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/global/en/how-we-hire",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Cisco",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco myworkdayjobs",
+    "provider": "exa",
+    "url": "https://cisco.wd5.myworkdayjobs.com/Cisco_Careers",
+    "rank": 1,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco myworkdayjobs",
+    "provider": "exa",
+    "url": "https://synnex.wd5.myworkdayjobs.com/en-US/tdsynnexcareers/job/Cisco-Field-Technical-Consultant_R51248/apply",
+    "rank": 3,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco myworkdayjobs",
+    "provider": "exa",
+    "url": "https://ingrammicro.wd5.myworkdayjobs.com/en-US/IngramMicro/job/Buffalo-NY-United-States-of-America/Platform-Specialist---Cisco_R-115905",
+    "rank": 4,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/global/en/search-results",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco myworkdayjobs",
+    "provider": "exa",
+    "url": "https://bah.wd1.myworkdayjobs.com/bah_jobs/job/washington-dc/network-engineer-and-cisco-specialist--senior_r0243543/apply",
+    "rank": 6,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco myworkdayjobs",
+    "provider": "exa",
+    "url": "https://shi.wd12.myworkdayjobs.com/en-US/shicareers/job/Customer-Success-Manager---Cisco_JR3188/apply/autofillWithResume",
+    "rank": 7,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/cisco/jobs",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Cisco",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers",
+    "provider": "exa",
+    "url": "https://cisco.wd5.myworkdayjobs.com/Cisco_Careers",
+    "rank": 4,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Cisco-Careers/-in-Santa-Clara,CA",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/Cisco-Jobs-E1425.htm",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/jobs/cisco-jobs",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://cisco.wd5.myworkdayjobs.com/Cisco_Careers",
+    "rank": 1,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://www.cisco.com/site/us/en/index.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/signin.html",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://www.cisco.com/site/us/en/about/case-studies-customer-stories/workday.html",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://blog.workday.com/en-us/workday-podcast-building-internal-talent-support-teams-cisco-systems.html",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://ecosystem.duo.com/en-US/apps/529247/workday",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/global/en/search-results",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://www.accenture.com/us-en/case-studies/technology/workday-empowers-cisco-people-communities",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://cisco.wd5.myworkdayjobs.com/Cisco_Careers",
+    "rank": 1,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/global/en/search-results",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://www.cisco.com/site/us/en/about/case-studies-customer-stories/workday.html",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/cisco/jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/global/en/entry-level-careers",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://cisco2.avature.net/jobs/Login",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/global/en/how-we-hire",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Cisco",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco myworkdayjobs",
+    "provider": "exa",
+    "url": "https://cisco.wd5.myworkdayjobs.com/Cisco_Careers",
+    "rank": 1,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco myworkdayjobs",
+    "provider": "exa",
+    "url": "https://synnex.wd5.myworkdayjobs.com/en-US/tdsynnexcareers/job/Cisco-Field-Technical-Consultant_R51248/apply",
+    "rank": 3,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco myworkdayjobs",
+    "provider": "exa",
+    "url": "https://ingrammicro.wd5.myworkdayjobs.com/en-US/IngramMicro/job/Buffalo-NY-United-States-of-America/Platform-Specialist---Cisco_R-115905",
+    "rank": 4,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/global/en/search-results",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco myworkdayjobs",
+    "provider": "exa",
+    "url": "https://bah.wd1.myworkdayjobs.com/bah_jobs/job/washington-dc/network-engineer-and-cisco-specialist--senior_r0243543/apply",
+    "rank": 6,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco myworkdayjobs",
+    "provider": "exa",
+    "url": "https://shi.wd12.myworkdayjobs.com/en-US/shicareers/job/Customer-Success-Manager---Cisco_JR3188/apply/autofillWithResume",
+    "rank": 7,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/cisco/jobs",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Cisco",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers",
+    "provider": "exa",
+    "url": "https://cisco.wd5.myworkdayjobs.com/Cisco_Careers",
+    "rank": 4,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Cisco-Careers/-in-Santa-Clara,CA",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/Cisco-Jobs-E1425.htm",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/jobs/cisco-jobs",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://cisco.wd5.myworkdayjobs.com/Cisco_Careers",
+    "rank": 1,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://www.cisco.com/site/us/en/index.html",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/signin.html",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://www.cisco.com/site/us/en/about/case-studies-customer-stories/workday.html",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://blog.workday.com/en-us/workday-podcast-building-internal-talent-support-teams-cisco-systems.html",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://ecosystem.duo.com/en-US/apps/529247/workday",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/global/en/search-results",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco Workday",
+    "provider": "exa",
+    "url": "https://www.accenture.com/us-en/case-studies/technology/workday-empowers-cisco-people-communities",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://cisco.wd5.myworkdayjobs.com/Cisco_Careers",
+    "rank": 1,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/global/en/search-results",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://www.cisco.com/site/us/en/about/case-studies-customer-stories/workday.html",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/cisco/jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/global/en/entry-level-careers",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://cisco2.avature.net/jobs/Login",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/global/en/how-we-hire",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers Workday",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Cisco",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco myworkdayjobs",
+    "provider": "exa",
+    "url": "https://cisco.wd5.myworkdayjobs.com/Cisco_Careers",
+    "rank": 1,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco myworkdayjobs",
+    "provider": "exa",
+    "url": "https://synnex.wd5.myworkdayjobs.com/en-US/tdsynnexcareers/job/Cisco-Field-Technical-Consultant_R51248/apply",
+    "rank": 3,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco myworkdayjobs",
+    "provider": "exa",
+    "url": "https://ingrammicro.wd5.myworkdayjobs.com/en-US/IngramMicro/job/Buffalo-NY-United-States-of-America/Platform-Specialist---Cisco_R-115905",
+    "rank": 4,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco myworkdayjobs",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/global/en/search-results",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco myworkdayjobs",
+    "provider": "exa",
+    "url": "https://bah.wd1.myworkdayjobs.com/bah_jobs/job/washington-dc/network-engineer-and-cisco-specialist--senior_r0243543/apply",
+    "rank": 6,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco myworkdayjobs",
+    "provider": "exa",
+    "url": "https://shi.wd12.myworkdayjobs.com/en-US/shicareers/job/Customer-Success-Manager---Cisco_JR3188/apply/autofillWithResume",
+    "rank": 7,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers",
+    "provider": "exa",
+    "url": "https://careers.cisco.com/",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/cisco/jobs",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Cisco",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers",
+    "provider": "exa",
+    "url": "https://cisco.wd5.myworkdayjobs.com/Cisco_Careers",
+    "rank": 4,
+    "is_workday": true
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Cisco-Careers/-in-Santa-Clara,CA",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/Cisco-Jobs-E1425.htm",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Cisco",
+    "query": "Cisco careers",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/jobs/cisco-jobs",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell Workday",
+    "provider": "exa",
+    "url": "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/es/sites/careers/pages/locations/?mode=location",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell Workday",
+    "provider": "exa",
+    "url": "https://jobs.dell.com/en/sites/careers/jobs",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell Workday",
+    "provider": "exa",
+    "url": "https://www.workday.com/es-mx/homepage.html",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell Workday",
+    "provider": "exa",
+    "url": "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/women-at-dell/sites/careers",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell Workday",
+    "provider": "exa",
+    "url": "https://jobs.dell.com/en/employment/mexico-city-dell-emc-jobs/5787/60140/3996063-3527646-8379372-3530597/4",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/delltechnologies/jobs",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell Workday",
+    "provider": "exa",
+    "url": "https://dell.wd1.myworkdayjobs.com/en-US/External/details/Associate-Inside-Sales-Representative_R277845?locations=74f2ae1895fc019cf446931ed43a5b13",
+    "rank": 7,
+    "is_workday": true
+  },
+  {
+    "company": "Dell",
+    "query": "Dell Workday",
+    "provider": "exa",
+    "url": "https://dell.service-now.com/hrportal",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell Workday",
+    "provider": "exa",
+    "url": "https://mx.indeed.com/q-dell-mexico-empleos.html",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell Workday",
+    "provider": "exa",
+    "url": "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/es/sites/careers",
+    "rank": 10,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers Workday",
+    "provider": "exa",
+    "url": "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers Workday",
+    "provider": "exa",
+    "url": "https://jobs.dell.com/en/sites/careers/jobs",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers Workday",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/company/careers/overview.html",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/delltechnologies/jobs",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers Workday",
+    "provider": "exa",
+    "url": "https://www.dell.com/en-us/lp/dt/workforce",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers Workday",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Dell-Technologies/-in-Atlanta,GA",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers Workday",
+    "provider": "exa",
+    "url": "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/careers/jobs",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers Workday",
+    "provider": "exa",
+    "url": "https://jobs.dell.com/en/location/austin-texas-united-states-jobs/375-5787/6252001-4736286-4737316-4671654/4",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers Workday",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Dell-Technologies/locations/GA/Atlanta",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers Workday",
+    "provider": "exa",
+    "url": "https://dell.wd1.myworkdayjobs.com/en-US/External/job/Remote---North-Carolina-United-States/Account-Executive-4--K12---North-Carolina_R285891-1",
+    "rank": 10,
+    "is_workday": true
+  },
+  {
+    "company": "Dell",
+    "query": "Dell myworkdayjobs",
+    "provider": "exa",
+    "url": "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell myworkdayjobs",
+    "provider": "exa",
+    "url": "https://jobs.dell.com/en/sites/careers/jobs",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/delltechnologies/jobs",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell myworkdayjobs",
+    "provider": "exa",
+    "url": "https://dell.wd1.myworkdayjobs.com/en-US/External/job/Remote---North-Carolina-United-States/Account-Executive-4--K12---North-Carolina_R285891-1",
+    "rank": 4,
+    "is_workday": true
+  },
+  {
+    "company": "Dell",
+    "query": "Dell myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/company/careers/overview.html",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.dell.com/en-us/lp/dt/workforce",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell myworkdayjobs",
+    "provider": "exa",
+    "url": "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/careers/jobs",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell myworkdayjobs",
+    "provider": "exa",
+    "url": "https://dell.wd1.myworkdayjobs.com/ja-JP/External",
+    "rank": 8,
+    "is_workday": true
+  },
+  {
+    "company": "Dell",
+    "query": "Dell myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-dell-jobs.html",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/Dell-Technologies-Jobs-E1327.htm",
+    "rank": 10,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers",
+    "provider": "exa",
+    "url": "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/women-at-dell/sites/careers",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers",
+    "provider": "exa",
+    "url": "https://jobs.dell.com/en/sites/careers/jobs",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers",
+    "provider": "exa",
+    "url": "https://www.dell.com/fr-fr/lp/dt/workforce",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/delltechnologies/jobs",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers",
+    "provider": "exa",
+    "url": "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/careers/jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers",
+    "provider": "exa",
+    "url": "https://jobs.dell.com/en/search-jobs?fc=24213",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers",
+    "provider": "exa",
+    "url": "https://fr.indeed.com/q-dell-france-emplois.html",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers",
+    "provider": "exa",
+    "url": "https://fr.linkedin.com/jobs/dell-emplois",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/Dell-Technologies-Jobs-E1327.htm",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers",
+    "provider": "exa",
+    "url": "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/careers/pages/locations",
+    "rank": 10,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell Workday",
+    "provider": "exa",
+    "url": "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/es/sites/careers/pages/locations/?mode=location",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell Workday",
+    "provider": "exa",
+    "url": "https://jobs.dell.com/en/sites/careers/jobs",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell Workday",
+    "provider": "exa",
+    "url": "https://www.workday.com/es-mx/homepage.html",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell Workday",
+    "provider": "exa",
+    "url": "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/women-at-dell/sites/careers",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell Workday",
+    "provider": "exa",
+    "url": "https://jobs.dell.com/en/employment/mexico-city-dell-emc-jobs/5787/60140/3996063-3527646-8379372-3530597/4",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/delltechnologies/jobs",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell Workday",
+    "provider": "exa",
+    "url": "https://dell.wd1.myworkdayjobs.com/en-US/External/details/Associate-Inside-Sales-Representative_R277845?locations=74f2ae1895fc019cf446931ed43a5b13",
+    "rank": 7,
+    "is_workday": true
+  },
+  {
+    "company": "Dell",
+    "query": "Dell Workday",
+    "provider": "exa",
+    "url": "https://dell.service-now.com/hrportal",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell Workday",
+    "provider": "exa",
+    "url": "https://mx.indeed.com/q-dell-mexico-empleos.html",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell Workday",
+    "provider": "exa",
+    "url": "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/es/sites/careers",
+    "rank": 10,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers Workday",
+    "provider": "exa",
+    "url": "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers Workday",
+    "provider": "exa",
+    "url": "https://jobs.dell.com/en/sites/careers/jobs",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers Workday",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/company/careers/overview.html",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers Workday",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/delltechnologies/jobs",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers Workday",
+    "provider": "exa",
+    "url": "https://www.dell.com/en-us/lp/dt/workforce",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers Workday",
+    "provider": "exa",
+    "url": "https://www.ziprecruiter.com/Jobs/Dell-Technologies/-in-Atlanta,GA",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers Workday",
+    "provider": "exa",
+    "url": "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/careers/jobs",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers Workday",
+    "provider": "exa",
+    "url": "https://jobs.dell.com/en/location/austin-texas-united-states-jobs/375-5787/6252001-4736286-4737316-4671654/4",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers Workday",
+    "provider": "exa",
+    "url": "https://www.indeed.com/cmp/Dell-Technologies/locations/GA/Atlanta",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers Workday",
+    "provider": "exa",
+    "url": "https://dell.wd1.myworkdayjobs.com/en-US/External/job/Remote---North-Carolina-United-States/Account-Executive-4--K12---North-Carolina_R285891-1",
+    "rank": 10,
+    "is_workday": true
+  },
+  {
+    "company": "Dell",
+    "query": "Dell myworkdayjobs",
+    "provider": "exa",
+    "url": "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell myworkdayjobs",
+    "provider": "exa",
+    "url": "https://jobs.dell.com/en/sites/careers/jobs",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/delltechnologies/jobs",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell myworkdayjobs",
+    "provider": "exa",
+    "url": "https://dell.wd1.myworkdayjobs.com/en-US/External/job/Remote---North-Carolina-United-States/Account-Executive-4--K12---North-Carolina_R285891-1",
+    "rank": 4,
+    "is_workday": true
+  },
+  {
+    "company": "Dell",
+    "query": "Dell myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.workday.com/en-us/company/careers/overview.html",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.dell.com/en-us/lp/dt/workforce",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell myworkdayjobs",
+    "provider": "exa",
+    "url": "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/careers/jobs",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell myworkdayjobs",
+    "provider": "exa",
+    "url": "https://dell.wd1.myworkdayjobs.com/ja-JP/External",
+    "rank": 8,
+    "is_workday": true
+  },
+  {
+    "company": "Dell",
+    "query": "Dell myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.indeed.com/q-dell-jobs.html",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell myworkdayjobs",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/Dell-Technologies-Jobs-E1327.htm",
+    "rank": 10,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers",
+    "provider": "exa",
+    "url": "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/women-at-dell/sites/careers",
+    "rank": 1,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers",
+    "provider": "exa",
+    "url": "https://jobs.dell.com/en/sites/careers/jobs",
+    "rank": 2,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers",
+    "provider": "exa",
+    "url": "https://www.dell.com/fr-fr/lp/dt/workforce",
+    "rank": 3,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers",
+    "provider": "exa",
+    "url": "https://www.linkedin.com/company/delltechnologies/jobs",
+    "rank": 4,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers",
+    "provider": "exa",
+    "url": "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/careers/jobs",
+    "rank": 5,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers",
+    "provider": "exa",
+    "url": "https://jobs.dell.com/en/search-jobs?fc=24213",
+    "rank": 6,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers",
+    "provider": "exa",
+    "url": "https://fr.indeed.com/q-dell-france-emplois.html",
+    "rank": 7,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers",
+    "provider": "exa",
+    "url": "https://fr.linkedin.com/jobs/dell-emplois",
+    "rank": 8,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers",
+    "provider": "exa",
+    "url": "https://www.glassdoor.com/Jobs/Dell-Technologies-Jobs-E1327.htm",
+    "rank": 9,
+    "is_workday": false
+  },
+  {
+    "company": "Dell",
+    "query": "Dell careers",
+    "provider": "exa",
+    "url": "https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/careers/pages/locations",
+    "rank": 10,
+    "is_workday": false
+  }
+]
