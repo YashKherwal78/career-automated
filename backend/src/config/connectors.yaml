@@ -6,7 +6,7 @@ linkedin:
   retries: 2
 google_jobs:
   enabled: true
-  actor: "hynekcasia/google-jobs-scraper"
+  actor: "jupri/google-jobs-scraper"
   priority: 11
   timeout: 60
   retries: 2

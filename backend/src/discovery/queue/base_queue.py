@@ -22,6 +22,6 @@ class BaseQueue(ABC):
         pass
         
     @abstractmethod
-    def nack(self, queue_name: str, item_id: str, reason: str = "") -> bool:
+    def nack(self, queue_name: str, item_id: str, reason: str = "", backoff_seconds: int = 3600) -> bool:
         """Negative acknowledgment. Returns the item to the queue or pushes to a DLQ/Retry Queue."""
         pass

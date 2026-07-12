@@ -45,6 +45,22 @@ class CleanupWorker(BaseWorker):
                                 self.queue.push("discovery_queue", {"company_id": cid})
                                 logger.info(f"Re-enqueued failed endpoint for discovery: {cid}")
                                 processed_count += 1
+
+                    # 3. Recover stuck queue items that expired while PROCESSING
+                    cursor = conn.execute('''
+                        SELECT item_id, queue_name FROM local_queues
+                        WHERE status = 'PROCESSING' AND locked_until <= ?
+                    ''', (now,))
+                    stuck_items = cursor.fetchall()
+                    for row in stuck_items:
+                        item_id, queue_name = row
+                        conn.execute('''
+                            UPDATE local_queues
+                            SET status = 'QUEUED', locked_until = 0.0
+                            WHERE item_id = ?
+                        ''', (item_id,))
+                        logger.info(f"Recovered stuck queue item {item_id} in {queue_name}")
+                        processed_count += 1
                                 
                     # 3. Optimize database index stats
                     conn.execute("ANALYZE")

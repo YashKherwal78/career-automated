@@ -3,21 +3,14 @@ logger = setup_logger('google_jobs_provider')
 import yaml
 from typing import List, Optional
 from datetime import datetime
-from src.discovery.providers.base_provider import BaseProvider, StandardJob, ProviderCapabilities
+from src.discovery.providers.base_provider import StandardJob
 from src.integrations.apify_manager import ApifyManager
 
-class GoogleJobsProvider(BaseProvider):
+class GoogleJobsProvider:
     def __init__(self):
         self._pipeline_type = 'PIPELINE_B'
-        super().__init__()
         self.manager = ApifyManager()
-        self.actor_id = "hynekcasia/google-jobs-scraper"
-        
-    def _get_capabilities(self) -> ProviderCapabilities:
-        return ProviderCapabilities(
-            requires_api_key=True,
-            supports_search_filters=True
-        )
+        self.actor_id = "jupri/google-jobs-scraper"
         
     def _load_preferences(self) -> dict:
         try:
@@ -29,32 +22,68 @@ class GoogleJobsProvider(BaseProvider):
                 "locations": ["India"]
             }
 
+    ROLE_LABELS = {
+        "associate_product_manager": "Associate Product Manager",
+        "product_manager": "Product Manager",
+        "product_analyst": "Product Analyst",
+        "founders_office": "Founder's Office",
+        "chief_of_staff": "Chief of Staff",
+        "ai_engineer": "AI Engineer",
+        "machine_learning_engineer": "Machine Learning Engineer",
+        "software_engineer": "Software Engineer",
+        "data_scientist": "Data Scientist",
+    }
+
     def _discover_jobs_internal(self, last_sync_timestamp: Optional[str]) -> List[StandardJob]:
         prefs = self._load_preferences()
         roles = prefs.get("target_roles", ["Software Engineer"])
         locations = prefs.get("locations", ["India"])
-        
+
+        # Build targeted queries: "entry level Associate Product Manager jobs in India past week"
         queries = []
         for role in roles:
+            label = self.ROLE_LABELS.get(role, role.replace("_", " ").title())
             for loc in locations:
-                queries.append(f"{role} jobs in {loc}")
-                
+                queries.append(f"entry level {label} jobs in {loc} posted this week")
+
+        # Rotate through queries 3 at a time to conserve credits
+        MAX_QUERIES_PER_RUN = 3
+        start_idx = 0
+        if last_sync_timestamp and last_sync_timestamp.isdigit():
+            start_idx = int(last_sync_timestamp) % len(queries)
+        queries_this_run = (queries[start_idx:] + queries[:start_idx])[:MAX_QUERIES_PER_RUN]
+        next_cursor = str((start_idx + MAX_QUERIES_PER_RUN) % len(queries))
+
         client, key_id = self.manager.get_client(tier=4, category="google_jobs_pipeline_b")
         if not client:
             raise Exception("No Apify client available for Google jobs")
-            
-        logger.info(f"GoogleJobsProvider (Pipeline B): Searching {len(queries)} queries...")
-        
+
+        logger.info(f"GoogleJobsProvider: Searching {len(queries_this_run)} targeted queries: {queries_this_run}")
+
         run_input = {
-            "queries": "\n".join(queries),
-            "maxConcurrency": 5,
+            "queries": "\n".join(queries_this_run),
+            "maxConcurrency": 3,
             "maxPagesPerQuery": 1
         }
         
-        run = client.actor(self.actor_id).call(run_input=run_input)
-        dataset_id = getattr(run, "default_dataset_id", getattr(run, "defaultDatasetId", None))
-        if not dataset_id and isinstance(run, dict):
-            dataset_id = run.get("defaultDatasetId") or run.get("default_dataset_id")
+        try:
+            run = client.actor(self.actor_id).call(run_input=run_input)
+        except Exception as e:
+            err_str = str(e)
+            if "Monthly usage hard limit exceeded" in err_str or "monthly" in err_str.lower():
+                logger.warning(f"GoogleJobsProvider: Key {key_id} hit monthly limit — marking as RATE_LIMITED")
+                import sqlite3
+                from src.config.config import Config
+                try:
+                    conn = sqlite3.connect(Config.DATABASE_PATH)
+                    conn.execute("UPDATE apify_keys SET status = 'RATE_LIMITED' WHERE id = ?", (key_id,))
+                    conn.commit()
+                    conn.close()
+                except Exception:
+                    pass
+            raise
+
+        dataset_id = getattr(run, "default_dataset_id", None) or getattr(run, "defaultDatasetId", None)
             
         if not dataset_id:
             self.manager.record_usage(key_id, "google_jobs_pipeline_b", credits=0, useful_results=0, success=False)
@@ -84,5 +113,5 @@ class GoogleJobsProvider(BaseProvider):
                 date_posted=item.get("postedAt", datetime.now().isoformat())
             ))
             
-        self.manager.record_usage(key_id, "google_jobs_pipeline_b", credits=0.05, useful_results=len(jobs), success=True)
-        return jobs
+        self.manager.record_usage(key_id, "google_jobs_pipeline_b", credits=0.025, useful_results=len(jobs), success=True)
+        return jobs, next_cursor

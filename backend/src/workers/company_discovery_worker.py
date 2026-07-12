@@ -8,6 +8,7 @@ import json
 from urllib.parse import urlparse
 from src.config.settings import settings
 from src.workers.worker_base import BaseWorker
+from src.discovery.pipeline.telemetry import Telemetry, Stage, Status, ReasonCode
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("CompanyDiscoveryWorker")
@@ -115,14 +116,22 @@ class CompanyDiscoveryWorker(BaseWorker):
                                 logger.info(f"Fast-pathed & enqueued company for crawl: {cid}")
                                 processed_count += 1
                         else:
-                            # Standard fallback: push to discovery_queue
+                            # Standard fallback: push to verification_queue
                             cursor_q = conn.execute('''
                                 SELECT 1 FROM local_queues 
-                                WHERE queue_name = 'discovery_queue' AND json_extract(payload, '$.company_id') = ?
+                                WHERE queue_name = 'verification_queue' AND json_extract(payload, '$.company_id') = ?
                             ''', (cid,))
                             if not cursor_q.fetchone():
-                                self.queue.push("discovery_queue", {"company_id": cid})
-                                logger.info(f"Enqueued company for discovery: {cid}")
+                                self.queue.push("verification_queue", {"company_id": cid})
+                                Telemetry.record_event(
+                                    stage=Stage.VERIFICATION_QUEUED,
+                                    status=Status.SUCCESS,
+                                    run_id=f"enqueue-verification-{cid}-{int(time.time())}",
+                                    company_id=cid,
+                                    worker_name=self.worker_id,
+                                    metadata={"source": "CompanyDiscoveryWorker"}
+                                )
+                                logger.info(f"Enqueued company for verification: {cid}")
                                 processed_count += 1
 
                 self.heartbeat(jobs_processed=processed_count)

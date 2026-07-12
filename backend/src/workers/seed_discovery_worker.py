@@ -8,6 +8,7 @@ import asyncio
 from datetime import datetime, timezone
 from urllib.parse import urlparse
 from src.workers.worker_base import BaseWorker
+from src.discovery.pipeline.telemetry import Telemetry, Stage, Status
 from src.discovery.seed_sources.yc_source import YCombinatorSource
 from src.discovery.seed_sources.search_source import SearchSource
 
@@ -111,11 +112,20 @@ class SeedDiscoveryWorker(BaseWorker):
                                 self._persist_seed_metadata(seed, now)
                                 
                                 # Enqueue directly to discovery_queue to verify it immediately!
-                                self.queue.push("discovery_queue", {
-                                    "company_id": seed.get("company_id") or domain.split(".")[0],
+                                payload_company_id = seed.get("company_id") or domain.split(".")[0]
+                                self.queue.push("verification_queue", {
+                                    "company_id": payload_company_id,
                                     "canonical_name": seed["name"],
                                     "website": seed["website"]
                                 })
+                                Telemetry.record_event(
+                                    stage=Stage.VERIFICATION_QUEUED,
+                                    status=Status.SUCCESS,
+                                    run_id=f"seed-verification-{payload_company_id}-{int(time.time())}",
+                                    company_id=payload_company_id,
+                                    worker_name=self.worker_id,
+                                    metadata={"source": "SeedDiscoveryWorker"}
+                                )
                                 logger.info(f"Discovered new unique company seed: {seed['name']} ({seed['website']}) enqueued.")
                     except Exception as e:
                         logger.error(f"Error in seed source {source.name}: {e}")

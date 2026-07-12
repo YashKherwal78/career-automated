@@ -11,6 +11,9 @@ from src.config.settings import settings
 logger = logging.getLogger("Telemetry")
 
 class Stage(str, Enum):
+    DISCOVERY_QUEUED = "DISCOVERY_QUEUED"
+    VERIFICATION_QUEUED = "VERIFICATION_QUEUED"
+    VERIFICATION_EXECUTED = "VERIFICATION_EXECUTED"
     HOMEPAGE_FETCH = "HOMEPAGE_FETCH"
     SEARCH_EXECUTED = "SEARCH_EXECUTED"
     URL_COLLECTED = "URL_COLLECTED"

@@ -25,9 +25,10 @@ class LinkedInBoardProvider(JobBoardProvider):
 
     def is_available(self) -> bool:
         try:
-            from src.common.credential_provider import CredentialFactory
-            creds = CredentialFactory.get("APIFY")
-            return creds is not None
+            from src.integrations.apify_manager import ApifyManager
+            manager = ApifyManager()
+            key_id, _ = manager.get_active_credential_id()
+            return key_id is not None
         except Exception:
             return False
 
@@ -47,12 +48,12 @@ class LinkedInBoardProvider(JobBoardProvider):
         try:
             from src.discovery.providers.linkedin_jobs_provider import LinkedInJobsProvider
             provider = LinkedInJobsProvider()
-            raw: list = provider._discover_jobs_internal(last_sync_timestamp=cursor)
+            raw, next_cursor = provider._discover_jobs_internal(last_sync_timestamp=cursor)
             duration = int((time.time() - start) * 1000)
             return JobBoardResult(
                 provider=self.name,
                 jobs=raw if isinstance(raw, list) else [],
-                next_cursor=None,   # LinkedIn provider returns full page; no cursor yet
+                next_cursor=next_cursor,
                 error=None,
                 duration_ms=duration,
             )

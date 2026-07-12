@@ -4,6 +4,7 @@ import time
 import sqlite3
 import logging
 import asyncio
+from urllib.parse import urlparse
 from src.config.settings import settings
 from src.workers.worker_base import BaseWorker
 from src.discovery.pipeline.discovery_orchestrator import DiscoveryOrchestrator
@@ -23,6 +24,23 @@ from src.discovery.pipeline.fallback_models import DiscoveryBudget
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("EndpointVerificationWorker")
+
+def _extract_domain(url: str) -> str:
+    try:
+        parsed = urlparse(url if url.startswith('http') else f"https://{url}")
+        host = parsed.netloc or parsed.path
+        if host.startswith('www.'):
+            host = host[4:]
+        return host.lower().strip().split(':')[0]
+    except Exception:
+        return ""
+
+
+def _normalize_company_id(domain: str, company_name: str = "") -> str:
+    if domain:
+        return domain
+    return company_name.lower().replace(' ', '-').strip() or f"unknown-{int(time.time())}"
+
 
 class EndpointVerificationWorker(BaseWorker):
     def __init__(self):
@@ -57,18 +75,62 @@ class EndpointVerificationWorker(BaseWorker):
             replay_cache=replay_cache
         )
 
+    def _ensure_company_identity(self, domain: str, website: str, canonical_name: str) -> str:
+        """Ensure a minimal company identity exists for verification payloads."""
+        company_id = _normalize_company_id(domain, canonical_name)
+        with sqlite3.connect(self.db_path, timeout=30.0) as conn:
+            conn.row_factory = sqlite3.Row
+            row = conn.execute(
+                "SELECT company_id FROM company_identities WHERE company_id = ? OR domain = ? OR canonical_name = ?",
+                (company_id, domain, canonical_name)
+            ).fetchone()
+            if row:
+                return row["company_id"]
+            conn.execute(
+                "INSERT OR IGNORE INTO company_identities (company_id, domain, canonical_name, website) VALUES (?, ?, ?, ?)",
+                (company_id, domain, canonical_name or company_id, website or domain)
+            )
+            conn.commit()
+        return company_id
+
     async def run_async(self):
         logger.info(f"EndpointVerificationWorker starting as {self.worker_id}")
         while self.running:
             try:
                 company_id = None
                 
-                # 1. Try popping from discovery_queue
-                q_item = self.queue.pop("discovery_queue")
+# 1. Try popping from verification_queue first
+                current_queue = None
+                q_item = self.queue.pop("verification_queue")
                 if q_item:
-                    company_id = q_item["payload"].get("company_id")
+                    payload = q_item["payload"]
+                    company_id = payload.get("company_id")
                     item_id = q_item["_item_id"]
-                    logger.info(f"Popped company from queue: {company_id}")
+                    current_queue = q_item.get("queue_name", "verification_queue")
+                    logger.info(f"Popped company from verification queue: {company_id or payload.get('domain') or payload.get('website')} - queue={current_queue}")
+
+                    if not company_id:
+                        # Resolve by payload domain/website/name and optionally create a company identity.
+                        domain = payload.get("domain") or _extract_domain(payload.get("website", ""))
+                        website = payload.get("website")
+                        canonical_name = payload.get("company_name")
+                        company_id = self._ensure_company_identity(domain, website, canonical_name)
+
+                # 1b. Fallback: Try discovery_queue if verification queue is empty or payload was not resolvable
+                if not company_id:
+                    q_item = self.queue.pop("discovery_queue")
+                    if q_item:
+                        payload = q_item["payload"]
+                        company_id = payload.get("company_id")
+                        item_id = q_item["_item_id"]
+                        current_queue = q_item.get("queue_name", "discovery_queue")
+                        logger.info(f"Popped company from discovery queue: {company_id or payload.get('domain') or payload.get('website')} - queue={current_queue}")
+
+                        if not company_id:
+                            domain = payload.get("domain") or _extract_domain(payload.get("website", ""))
+                            website = payload.get("website")
+                            canonical_name = payload.get("company_name")
+                            company_id = self._ensure_company_identity(domain, website, canonical_name)
                 
                 # 2. Fallback: Select a company without an ACTIVE endpoint
                 if not company_id:
@@ -104,7 +166,7 @@ class EndpointVerificationWorker(BaseWorker):
                 if not company_info:
                     logger.warning(f"Company ID {company_id} not found in identities.")
                     if q_item:
-                        self.queue.ack("discovery_queue", item_id)
+                        self.queue.ack(current_queue, item_id)
                     continue
 
                 website = company_info.get("website") or company_info.get("domain")
@@ -126,22 +188,40 @@ class EndpointVerificationWorker(BaseWorker):
                 
                 logger.info(f"Running verification for: {company_info['canonical_name']} ({website})")
                 try:
+                    def endpoint_url(endpoint):
+                        if isinstance(endpoint, dict):
+                            return endpoint.get("url")
+                        return getattr(endpoint, "url", None)
+
                     res = await self.orchestrator.execute(company_id, website, budget, run_id=run_id, company_id=company_id)
                     verified = res.get("verified", [])
 
                     if verified:
                         logger.info(f"Successfully verified ATS endpoint for {company_id}!")
+
+                        endpoint_urls = [endpoint_url(v) for v in verified]
+                        endpoint_urls = [u for u in endpoint_urls if u]
+
                         # Push to crawl_queue for JobCrawlerWorker
                         self.queue.push("crawl_queue", {"company_id": company_id})
                         
                         # Emit event
                         self.metrics.record_event("EndpointVerified", {
                             "company_id": company_id,
-                            "endpoints": [v.url for v in verified],  # Candidate objects, not dicts
-                            "worker_id": self.worker_id
+                            "endpoints": endpoint_urls,
+                            "worker_id": self.worker_id,
+                            "source_queue": current_queue
                         })
                         self.metrics.update_business_metric("total_verified_endpoints", 1)
                         
+                        Telemetry.record_event(
+                            stage=Stage.VERIFICATION_EXECUTED,
+                            status=Status.SUCCESS,
+                            run_id=run_id,
+                            company_id=company_id,
+                            worker_name=self.worker_id,
+                            metadata={"queue": current_queue, "endpoints": endpoint_urls}
+                        )
                         self.heartbeat(jobs_processed=1)
                         Telemetry.finish_run(run_id, Status.SUCCESS)
                     else:
@@ -149,16 +229,35 @@ class EndpointVerificationWorker(BaseWorker):
                         self.metrics.record_event("EndpointFailed", {
                             "company_id": company_id,
                             "reason": "No valid ATS endpoints discovered",
-                            "worker_id": self.worker_id
+                            "worker_id": self.worker_id,
+                            "source_queue": current_queue
                         })
+                        Telemetry.record_event(
+                            stage=Stage.VERIFICATION_EXECUTED,
+                            status=Status.FAILURE,
+                            run_id=run_id,
+                            company_id=company_id,
+                            worker_name=self.worker_id,
+                            reason_code=ReasonCode.UNKNOWN_ATS,
+                            metadata={"queue": current_queue, "reason": "No valid ATS endpoints discovered"}
+                        )
                         self.heartbeat(failure_increment=1)
                         Telemetry.finish_run(run_id, Status.SUCCESS)
                 except Exception as ex:
+                    Telemetry.record_event(
+                        stage=Stage.VERIFICATION_EXECUTED,
+                        status=Status.FAILURE,
+                        run_id=run_id,
+                        company_id=company_id,
+                        worker_name=self.worker_id,
+                        reason_code=ReasonCode.NETWORK_TIMEOUT,
+                        metadata={"queue": current_queue, "error": str(ex)}
+                    )
                     Telemetry.finish_run(run_id, Status.FAILURE)
                     raise ex
 
                 if q_item:
-                    self.queue.ack("discovery_queue", item_id)
+                    self.queue.ack(current_queue, item_id)
 
                 await asyncio.sleep(5)
 
@@ -167,8 +266,8 @@ class EndpointVerificationWorker(BaseWorker):
             except Exception as e:
                 logger.error(f"Error in EndpointVerificationWorker loop: {e}")
                 self.heartbeat(failure_increment=1, last_error=str(e))
-                if q_item:
-                    self.queue.nack("discovery_queue", item_id, reason=str(e))
+                if q_item and item_id:
+                    self.queue.nack(current_queue or "verification_queue", item_id, reason=str(e), backoff_seconds=300)
                 await asyncio.sleep(30)
 
         self.stop()

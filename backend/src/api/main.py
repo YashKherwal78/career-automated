@@ -14,8 +14,8 @@ app.add_middleware(
 
 from fastapi.staticfiles import StaticFiles
 from src.api.dependencies import get_db
-import sqlite3
 import time
+from src.api.db import table_exists
 from src.config.settings import settings as app_settings
 from src.discovery.pipeline.repositories.metrics_repository import MetricsRepository
 
@@ -39,7 +39,7 @@ from pathlib import Path
 # served by setting FRONTEND_STATIC_DIR to a directory that exists at runtime.
 
 @app.get("/api/v1/health")
-def get_health_status(db: sqlite3.Connection = Depends(get_db)):
+def get_health_status(db = Depends(get_db)):
     metrics_repo = MetricsRepository(app_settings.db_path)
     metrics = metrics_repo.get_all_metrics()
     
@@ -84,11 +84,10 @@ def get_health_status(db: sqlite3.Connection = Depends(get_db)):
     }
 
 @app.get("/api/v1/discovery")
-def get_discovery_queues(db: sqlite3.Connection = Depends(get_db)):
+def get_discovery_queues(db = Depends(get_db)):
     c = db.cursor()
     # Check if local_queues exists
-    c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='local_queues'")
-    if not c.fetchone():
+    if not table_exists(db, "local_queues"):
         return {"discovery_queue": 0, "verification_queue": 0, "crawl_queue": 0}
         
     c.execute("SELECT count(*) FROM local_queues WHERE queue_name = 'discovery_queue' AND status = 'QUEUED'")
@@ -107,7 +106,7 @@ def get_discovery_queues(db: sqlite3.Connection = Depends(get_db)):
     }
 
 @app.get("/api/v1/dashboard")
-def get_dashboard_summary(db: sqlite3.Connection = Depends(get_db)):
+def get_dashboard_summary(db = Depends(get_db)):
     c = db.cursor()
     
     c.execute("SELECT count(*) FROM company_identities")
@@ -120,8 +119,7 @@ def get_dashboard_summary(db: sqlite3.Connection = Depends(get_db)):
     jobs = c.fetchone()[0]
     
     # Active/failed workers
-    c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='worker_states'")
-    if c.fetchone():
+    if table_exists(db, "worker_states"):
         c.execute("SELECT count(*) FROM worker_states WHERE status = 'RUNNING'")
         active_w = c.fetchone()[0]
         c.execute("SELECT count(*) FROM worker_states WHERE failures > 0")

@@ -8,7 +8,7 @@ router = APIRouter()
 def get_companies(
     page: int = 1,
     page_size: int = 50,
-    db: sqlite3.Connection = Depends(get_db)
+    db = Depends(get_db)
 ):
     c = db.cursor()
     c.row_factory = sqlite3.Row

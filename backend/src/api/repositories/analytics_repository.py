@@ -1,7 +1,5 @@
-import sqlite3
-
 class AnalyticsRepository:
-    def __init__(self, db: sqlite3.Connection):
+    def __init__(self, db):
         self.db = db
 
     def get_funnel_kpis(self):
@@ -120,9 +118,23 @@ class AnalyticsRepository:
 
     def get_queues(self):
         c = self.db.cursor()
-        c.execute("SELECT * FROM queue_metrics")
-        columns = [col[0] for col in c.description]
-        return [dict(zip(columns, row)) for row in c.fetchall()]
+        c.execute('''
+            SELECT queue_name, status, COUNT(*) as count,
+                   SUM(failures) as failures,
+                   SUM(retry_count) as retry_count
+            FROM local_queues
+            GROUP BY queue_name, status
+        ''')
+        result = []
+        for row in c.fetchall():
+            result.append({
+                "queue_name": row[0],
+                "status": row[1],
+                "count": row[2],
+                "failures": row[3] or 0,
+                "retry_count": row[4] or 0,
+            })
+        return result
 
     def get_data_quality(self):
         c = self.db.cursor()

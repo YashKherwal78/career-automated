@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Depends, Query
-import sqlite3
 from typing import Optional
 from src.api.dependencies import get_db
 from src.api.repositories.jobs_repository import JobRepository
 
 router = APIRouter()
 
-def get_job_repo(db: sqlite3.Connection = Depends(get_db)):
+def get_job_repo(db = Depends(get_db)):
     return JobRepository(db)
 
 @router.get("")
@@ -22,7 +21,7 @@ def get_jobs(
     employment_type: Optional[str] = None,
     seniority: Optional[str] = None,
     min_salary: Optional[float] = None,
-    sort_by: str = "newest",
+    sort_by: str = "score",
     repo: JobRepository = Depends(get_job_repo)
 ):
     return repo.get_jobs(

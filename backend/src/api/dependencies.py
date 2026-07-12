@@ -1,8 +1,8 @@
-import sqlite3
+from src.api.db import get_connection
+
 
 def get_db():
-    conn = sqlite3.connect("data/crm.db", check_same_thread=False, timeout=30.0)
-    conn.row_factory = sqlite3.Row
+    conn = get_connection()
     try:
         yield conn
     finally:

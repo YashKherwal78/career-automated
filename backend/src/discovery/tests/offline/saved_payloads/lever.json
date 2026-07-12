@@ -1,0 +1,16 @@
+{
+  "jobs": [
+    {
+      "id": "e6a2b8e0-1c3f-4e6a-9f5b-9d4f0c9b1e2a",
+      "text": "Senior Software Engineer",
+      "hostedUrl": "https://jobs.lever.co/example/e6a2b8e0-1c3f-4e6a-9f5b-9d4f0c9b1e2a",
+      "createdAt": 1678886400000,
+      "categories": {
+        "location": "San Francisco, CA",
+        "commitment": "Full-time",
+        "team": "Engineering"
+      },
+      "descriptionPlain": "Example description"
+    }
+  ]
+}

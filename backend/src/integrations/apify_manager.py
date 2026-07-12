@@ -53,6 +53,26 @@ class ApifyManager:
             
         return key_record["id"], key_record["env_var_name"]
 
+    def get_client(self, tier: int = 1, category: str = "default"):
+        """
+        Returns (ApifyClient, key_id) for the least-used active credential.
+        tier and category are accepted for compatibility with caller code but
+        currently used only for logging.
+        Returns (None, None) if no keys are available or budget exceeded.
+        """
+        import os
+        key_id, env_var_name = self.get_active_credential_id()
+        if not key_id:
+            logger.warning(f"ApifyManager.get_client: no active key available (tier={tier}, category={category})")
+            return None, None
+        api_key = os.environ.get(env_var_name)
+        if not api_key:
+            logger.warning(f"ApifyManager.get_client: env var {env_var_name} is empty")
+            return None, None
+        client = ApifyClient(api_key)
+        logger.debug(f"ApifyManager.get_client: using key {env_var_name} (id={key_id}) for category={category}")
+        return client, key_id
+
     def disable_credential(self, key_id: int):
         cursor = self.conn.cursor()
         cursor.execute("UPDATE apify_keys SET status = 'AUTH_FAILURE' WHERE id = ?", (key_id,))

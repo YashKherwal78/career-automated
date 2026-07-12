@@ -15,6 +15,7 @@ import logging
 import sqlite3
 from typing import Optional
 from urllib.parse import urlparse
+from src.discovery.pipeline.telemetry import Telemetry, Stage, Status
 
 logger = logging.getLogger("CompanyResolver")
 
@@ -146,6 +147,14 @@ class CompanyResolver:
                 "source": "pipeline_b",
                 "apply_url": apply_url,
             })
+            Telemetry.record_event(
+                stage=Stage.DISCOVERY_QUEUED,
+                status=Status.SUCCESS,
+                run_id=f"resolver-discovery-{domain}-{int(time.time())}",
+                company_id=_domain_slug(domain),
+                worker_name="CompanyResolver",
+                metadata={"source": "PipelineB", "queue": "discovery_queue"}
+            )
             logger.info(
                 f"CompanyResolver: unknown company '{company_name}' ({domain}) "
                 f"enqueued into discovery_queue for Pipeline A."
