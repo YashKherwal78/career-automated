@@ -109,8 +109,8 @@ def is_postgres() -> bool:
 def json_extract(column: str, path: str) -> str:
     if USE_POSTGRES:
         if path.startswith("$."):
-            return f"{column} ->> '{path[2:]}'"
-        return f"{column} ->> '{path}'"
+            return f"({column})::jsonb ->> '{path[2:]}'"
+        return f"({column})::jsonb ->> '{path}'"
     return f"json_extract({column}, '{path}')"
 
 
