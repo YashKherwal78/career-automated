@@ -129,12 +129,20 @@ def table_exists(conn: Any, table_name: str) -> bool:
 
 
 def get_connection() -> CompatConnection:
+    print(f"DEBUG: get_connection called. USE_POSTGRES={USE_POSTGRES}, DATABASE_URL={DATABASE_URL}", flush=True)
     if USE_POSTGRES:
         if psycopg is None:
             raise RuntimeError("DATABASE_URL is set but psycopg is not installed. Install psycopg[binary].")
-        raw_conn = psycopg.connect(DATABASE_URL, autocommit=True)
+        print("DEBUG: Calling psycopg.connect...", flush=True)
+        try:
+            raw_conn = psycopg.connect(DATABASE_URL, autocommit=True)
+            print("DEBUG: psycopg.connect succeeded.", flush=True)
+        except Exception as e:
+            print(f"DEBUG: psycopg.connect failed: {e}", flush=True)
+            raise
         return CompatConnection(raw_conn, is_sqlite=False)
 
+    print("DEBUG: Falling back to sqlite3", flush=True)
     raw_conn = sqlite3.connect(DATABASE_PATH, check_same_thread=False, timeout=30.0)
     raw_conn.row_factory = sqlite3.Row
     return CompatConnection(raw_conn, is_sqlite=True)
