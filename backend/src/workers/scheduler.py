@@ -80,23 +80,9 @@ class PipelineScheduler:
         env = os.environ.copy()
         env["PYTHONPATH"] = os.getcwd()
 
-        # Redirect worker logs to logs/ directory
-        os.makedirs("logs", exist_ok=True)
-        log_map = {
-            "CompanyDiscoveryWorker": "logs/discovery.log",
-            "SeedDiscoveryWorker": "logs/seed_discovery.log",
-            "EndpointVerificationWorker": "logs/verification.log",
-            "JobCrawlerWorker": "logs/crawler.log",
-            "CleanupWorker": "logs/cleanup.log",
-        }
-        
-        if name == "FastApiServer":
-            proc = subprocess.Popen(cmd, env=env)
-        else:
-            log_file_path = log_map.get(name, f"logs/{name.lower()}.log")
-            log_file = open(log_file_path, "a")
-            proc = subprocess.Popen(cmd, env=env, stdout=log_file, stderr=log_file)
-            
+        # Redirect worker logs to stdout for Railway logging
+        # Log state
+        proc = subprocess.Popen(cmd, env=env)
         self.processes[name] = (proc, args)
 
         # Log state
