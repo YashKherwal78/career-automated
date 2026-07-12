@@ -27,4 +27,4 @@ EXPOSE 8000
 
 # The frontend is deployed separately. Runtime data is supplied via a mounted
 # /app/data volume rather than included in this image.
-CMD ["python3", "-m", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python3", "src/workers/scheduler.py"]
