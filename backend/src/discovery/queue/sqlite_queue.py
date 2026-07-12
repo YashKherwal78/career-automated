@@ -22,33 +22,55 @@ class SQLiteQueue(BaseQueue):
                 conn.execute('PRAGMA journal_mode=WAL')
                 conn.execute('PRAGMA synchronous=NORMAL')
                 conn.execute('PRAGMA busy_timeout=10000')
-            conn.execute('''
-                CREATE TABLE IF NOT EXISTS local_queues (
-                    item_id TEXT PRIMARY KEY,
-                    queue_name TEXT NOT NULL,
-                    payload JSON NOT NULL,
-                    status TEXT DEFAULT 'QUEUED', -- QUEUED, PROCESSING, DEAD
-                    failures INTEGER DEFAULT 0,
-                    retry_count INTEGER DEFAULT 0,
-                    error TEXT,
-                    locked_until REAL DEFAULT 0.0,
-                    next_retry_at REAL DEFAULT 0.0,
-                    last_attempt_at REAL DEFAULT 0.0,
-                    created_at REAL NOT NULL
-                )
-            ''')
-            existing_cols = [row[1] for row in conn.execute("PRAGMA table_info(local_queues)")]
-            if 'failures' not in existing_cols:
-                conn.execute('ALTER TABLE local_queues ADD COLUMN failures INTEGER DEFAULT 0')
-            if 'retry_count' not in existing_cols:
-                conn.execute('ALTER TABLE local_queues ADD COLUMN retry_count INTEGER DEFAULT 0')
-            if 'error' not in existing_cols:
-                conn.execute('ALTER TABLE local_queues ADD COLUMN error TEXT')
-            if 'next_retry_at' not in existing_cols:
-                conn.execute('ALTER TABLE local_queues ADD COLUMN next_retry_at REAL DEFAULT 0.0')
-            if 'last_attempt_at' not in existing_cols:
-                conn.execute('ALTER TABLE local_queues ADD COLUMN last_attempt_at REAL DEFAULT 0.0')
-            conn.execute('CREATE INDEX IF NOT EXISTS idx_local_queues ON local_queues(queue_name, status, locked_until, next_retry_at)')
+                conn.execute('''
+                    CREATE TABLE IF NOT EXISTS local_queues (
+                        item_id TEXT PRIMARY KEY,
+                        queue_name TEXT NOT NULL,
+                        payload JSON NOT NULL,
+                        status TEXT DEFAULT 'QUEUED',
+                        failures INTEGER DEFAULT 0,
+                        retry_count INTEGER DEFAULT 0,
+                        error TEXT,
+                        locked_until REAL DEFAULT 0.0,
+                        next_retry_at REAL DEFAULT 0.0,
+                        last_attempt_at REAL DEFAULT 0.0,
+                        created_at REAL NOT NULL
+                    )
+                ''')
+                existing_cols = [row[1] for row in conn.execute("PRAGMA table_info(local_queues)")]
+                if 'failures' not in existing_cols:
+                    conn.execute('ALTER TABLE local_queues ADD COLUMN failures INTEGER DEFAULT 0')
+                if 'retry_count' not in existing_cols:
+                    conn.execute('ALTER TABLE local_queues ADD COLUMN retry_count INTEGER DEFAULT 0')
+                if 'error' not in existing_cols:
+                    conn.execute('ALTER TABLE local_queues ADD COLUMN error TEXT')
+                if 'next_retry_at' not in existing_cols:
+                    conn.execute('ALTER TABLE local_queues ADD COLUMN next_retry_at REAL DEFAULT 0.0')
+                if 'last_attempt_at' not in existing_cols:
+                    conn.execute('ALTER TABLE local_queues ADD COLUMN last_attempt_at REAL DEFAULT 0.0')
+                conn.execute('CREATE INDEX IF NOT EXISTS idx_local_queues ON local_queues(queue_name, status, locked_until, next_retry_at)')
+            else:
+                conn.execute('''
+                    CREATE TABLE IF NOT EXISTS local_queues (
+                        item_id TEXT PRIMARY KEY,
+                        queue_name TEXT NOT NULL,
+                        payload JSONB NOT NULL,
+                        status TEXT DEFAULT 'QUEUED',
+                        failures INTEGER DEFAULT 0,
+                        retry_count INTEGER DEFAULT 0,
+                        error TEXT,
+                        locked_until DOUBLE PRECISION DEFAULT 0.0,
+                        next_retry_at DOUBLE PRECISION DEFAULT 0.0,
+                        last_attempt_at DOUBLE PRECISION DEFAULT 0.0,
+                        created_at DOUBLE PRECISION NOT NULL
+                    )
+                ''')
+                conn.execute('ALTER TABLE local_queues ADD COLUMN IF NOT EXISTS failures INTEGER DEFAULT 0')
+                conn.execute('ALTER TABLE local_queues ADD COLUMN IF NOT EXISTS retry_count INTEGER DEFAULT 0')
+                conn.execute('ALTER TABLE local_queues ADD COLUMN IF NOT EXISTS error TEXT')
+                conn.execute('ALTER TABLE local_queues ADD COLUMN IF NOT EXISTS next_retry_at DOUBLE PRECISION DEFAULT 0.0')
+                conn.execute('ALTER TABLE local_queues ADD COLUMN IF NOT EXISTS last_attempt_at DOUBLE PRECISION DEFAULT 0.0')
+                conn.execute('CREATE INDEX IF NOT EXISTS idx_local_queues ON local_queues(queue_name, status, locked_until, next_retry_at)')
         finally:
             conn.close()
             
