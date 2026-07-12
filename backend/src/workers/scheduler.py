@@ -3,7 +3,6 @@ import sys
 import time
 import subprocess
 import signal
-import sqlite3
 import logging
 from src.config.settings import settings
 
@@ -38,7 +37,8 @@ if settings.enable_pipeline_b:
     WorkerRegistry.register("JobBoardWorker", ["src/workers/job_board_worker.py"])
 
 if not os.environ.get("NO_API"):
-    WorkerRegistry.register("FastApiServer", ["-m", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"])
+    port = os.environ.get("PORT", "8000")
+    WorkerRegistry.register("FastApiServer", ["-m", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", port])
 
 class PipelineScheduler:
     def __init__(self, db_path: str = settings.db_path):
@@ -48,7 +48,9 @@ class PipelineScheduler:
         self._init_db()
 
     def _init_db(self):
-        with sqlite3.connect(self.db_path, timeout=30.0) as conn:
+        from src.api.db import get_connection
+        conn = get_connection()
+        try:
             conn.execute('''
                 CREATE TABLE IF NOT EXISTS worker_states (
                     worker_name TEXT PRIMARY KEY,
@@ -62,6 +64,8 @@ class PipelineScheduler:
                 )
             ''')
             conn.commit()
+        finally:
+            conn.close()
 
     def start_worker(self, name: str, args: list):
         logger.info(f"Starting worker: {name} (args={args})")
@@ -94,12 +98,30 @@ class PipelineScheduler:
         self.processes[name] = (proc, args)
 
         # Log state
-        with sqlite3.connect(self.db_path, timeout=30.0) as conn:
-            conn.execute('''
-                INSERT OR REPLACE INTO worker_states (worker_name, pid, status, started_at, heartbeat, jobs_processed, failures, last_error)
-                VALUES (?, ?, 'RUNNING', datetime('now'), datetime('now'), 0, 0, NULL)
-            ''', (name, proc.pid))
+        from src.api.db import get_connection, is_postgres
+        conn = get_connection()
+        try:
+            if is_postgres():
+                conn.execute('''
+                    INSERT INTO worker_states (worker_name, pid, status, started_at, heartbeat, jobs_processed, failures, last_error)
+                    VALUES (%s, %s, 'RUNNING', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0, 0, NULL)
+                    ON CONFLICT (worker_name) DO UPDATE SET
+                        pid = EXCLUDED.pid,
+                        status = EXCLUDED.status,
+                        started_at = EXCLUDED.started_at,
+                        heartbeat = EXCLUDED.heartbeat,
+                        jobs_processed = EXCLUDED.jobs_processed,
+                        failures = EXCLUDED.failures,
+                        last_error = EXCLUDED.last_error
+                ''', (name, proc.pid))
+            else:
+                conn.execute('''
+                    INSERT OR REPLACE INTO worker_states (worker_name, pid, status, started_at, heartbeat, jobs_processed, failures, last_error)
+                    VALUES (?, ?, 'RUNNING', datetime('now'), datetime('now'), 0, 0, NULL)
+                ''', (name, proc.pid))
             conn.commit()
+        finally:
+            conn.close()
 
     def monitor(self):
         logger.info("Scheduler monitoring loop active.")
@@ -117,26 +139,49 @@ class PipelineScheduler:
                         logger.warning(f"Worker {name} exited with code {exit_code}. Restarting...")
                         
                         # Increment failures in states table
-                        with sqlite3.connect(self.db_path, timeout=30.0) as conn:
-                            conn.execute('''
-                                UPDATE worker_states 
-                                SET failures = failures + 1,
-                                    last_error = ?
-                                WHERE worker_name = ?
-                            ''', (f"Process exited with code {exit_code}", name))
+                        from src.api.db import get_connection, is_postgres
+                        conn = get_connection()
+                        try:
+                            if is_postgres():
+                                conn.execute('''
+                                    UPDATE worker_states 
+                                    SET failures = failures + 1,
+                                        last_error = %s
+                                    WHERE worker_name = %s
+                                ''', (f"Process exited with code {exit_code}", name))
+                            else:
+                                conn.execute('''
+                                    UPDATE worker_states 
+                                    SET failures = failures + 1,
+                                        last_error = ?
+                                    WHERE worker_name = ?
+                                ''', (f"Process exited with code {exit_code}", name))
                             conn.commit()
+                        finally:
+                            conn.close()
 
                         self.start_worker(name, args)
                     else:
                         # Update heartbeat pulse in states table for uvicorn (others update their own)
                         if name == "FastApiServer":
-                            with sqlite3.connect(self.db_path, timeout=30.0) as conn:
-                                conn.execute('''
-                                    UPDATE worker_states 
-                                    SET heartbeat = datetime('now')
-                                    WHERE worker_name = ?
-                                ''', (name,))
+                            from src.api.db import get_connection, is_postgres
+                            conn = get_connection()
+                            try:
+                                if is_postgres():
+                                    conn.execute('''
+                                        UPDATE worker_states 
+                                        SET heartbeat = CURRENT_TIMESTAMP
+                                        WHERE worker_name = %s
+                                    ''', (name,))
+                                else:
+                                    conn.execute('''
+                                        UPDATE worker_states 
+                                        SET heartbeat = datetime('now')
+                                        WHERE worker_name = ?
+                                    ''', (name,))
                                 conn.commit()
+                            finally:
+                                conn.close()
 
             except KeyboardInterrupt:
                 break
@@ -158,9 +203,16 @@ class PipelineScheduler:
                 proc.kill()
             
             # Update database status
-            with sqlite3.connect(self.db_path, timeout=30.0) as conn:
-                conn.execute('UPDATE worker_states SET status = "STOPPED" WHERE worker_name = ?', (name,))
+            from src.api.db import get_connection, is_postgres
+            conn = get_connection()
+            try:
+                if is_postgres():
+                    conn.execute('UPDATE worker_states SET status = \'STOPPED\' WHERE worker_name = %s', (name,))
+                else:
+                    conn.execute('UPDATE worker_states SET status = "STOPPED" WHERE worker_name = ?', (name,))
                 conn.commit()
+            finally:
+                conn.close()
 
         logger.info("All managed processes terminated.")
 
