@@ -76,7 +76,7 @@ class CompatConnection:
     def __init__(self, conn: Any, is_sqlite: bool):
         self._conn = conn
         self._is_sqlite = is_sqlite
-        self.row_factory = None
+        self.row_factory = sqlite3.Row
 
     def cursor(self):
         return CompatCursor(self._conn, self._is_sqlite, row_factory=self.row_factory)
