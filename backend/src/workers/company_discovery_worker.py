@@ -2,7 +2,6 @@ import os
 import sys
 import time
 import csv
-import sqlite3
 import logging
 import json
 from urllib.parse import urlparse
@@ -37,8 +36,9 @@ class CompanyDiscoveryWorker(BaseWorker):
                 if os.path.exists(csv_path):
                     with open(csv_path, mode='r', encoding='utf-8') as f:
                         reader = csv.DictReader(f)
-                        with sqlite3.connect(self.db_path, timeout=30.0) as conn:
-                            conn.row_factory = sqlite3.Row
+                        from src.api.db import get_connection, is_postgres
+                        conn = get_connection()
+                        try:
                             for row in reader:
                                 name = row.get("company", "").strip()
                                 website = row.get("website", "").strip()
@@ -49,12 +49,22 @@ class CompanyDiscoveryWorker(BaseWorker):
                                 company_id = name.lower().replace(" ", "-")
 
                                 # Check if company_id already exists
-                                cursor = conn.execute("SELECT 1 FROM company_identities WHERE company_id = ?", (company_id,))
+                                if is_postgres():
+                                    cursor = conn.execute("SELECT 1 FROM company_identities WHERE company_id = %s", (company_id,))
+                                else:
+                                    cursor = conn.execute("SELECT 1 FROM company_identities WHERE company_id = ?", (company_id,))
                                 if not cursor.fetchone():
-                                    conn.execute('''
-                                        INSERT OR IGNORE INTO company_identities (company_id, domain, canonical_name, website)
-                                        VALUES (?, ?, ?, ?)
-                                    ''', (company_id, domain, name, website))
+                                    if is_postgres():
+                                        conn.execute('''
+                                            INSERT INTO company_identities (company_id, domain, canonical_name, website)
+                                            VALUES (%s, %s, %s, %s)
+                                            ON CONFLICT (company_id) DO NOTHING
+                                        ''', (company_id, domain, name, website))
+                                    else:
+                                        conn.execute('''
+                                            INSERT OR IGNORE INTO company_identities (company_id, domain, canonical_name, website)
+                                            VALUES (?, ?, ?, ?)
+                                        ''', (company_id, domain, name, website))
                                     conn.commit()
                                     
                                     # Emit event
@@ -69,12 +79,16 @@ class CompanyDiscoveryWorker(BaseWorker):
                                     logger.info(f"Discovered new company: {name} ({company_id})")
                                     processed_count += 1
 
+                        finally:
+                            conn.close()
+
                 # 2. Feeder - Check if we can fast-path, else push to discovery_queue
                 from src.discovery.pipeline.fast_path_registry import FastPathRegistry
                 fast_patcher = FastPathRegistry(self.db_path)
                 
-                with sqlite3.connect(self.db_path, timeout=30.0) as conn:
-                    conn.row_factory = sqlite3.Row
+                from src.api.db import get_connection, is_postgres
+                conn = get_connection()
+                try:
                     cursor = conn.execute('''
                         SELECT i.company_id, i.canonical_name, i.domain, i.website, i.aliases
                         FROM company_identities i
@@ -107,20 +121,32 @@ class CompanyDiscoveryWorker(BaseWorker):
                         
                         if fast_pathed:
                             # Direct crawl queue bypass
-                            cursor_q = conn.execute('''
-                                SELECT 1 FROM local_queues 
-                                WHERE queue_name = 'crawl_queue' AND json_extract(payload, '$.company_id') = ?
-                            ''', (cid,))
+                            if is_postgres():
+                                cursor_q = conn.execute('''
+                                    SELECT 1 FROM local_queues 
+                                    WHERE queue_name = 'crawl_queue' AND payload->>'company_id' = %s
+                                ''', (cid,))
+                            else:
+                                cursor_q = conn.execute('''
+                                    SELECT 1 FROM local_queues 
+                                    WHERE queue_name = 'crawl_queue' AND json_extract(payload, '$.company_id') = ?
+                                ''', (cid,))
                             if not cursor_q.fetchone():
                                 self.queue.push("crawl_queue", {"company_id": cid})
                                 logger.info(f"Fast-pathed & enqueued company for crawl: {cid}")
                                 processed_count += 1
                         else:
                             # Standard fallback: push to verification_queue
-                            cursor_q = conn.execute('''
-                                SELECT 1 FROM local_queues 
-                                WHERE queue_name = 'verification_queue' AND json_extract(payload, '$.company_id') = ?
-                            ''', (cid,))
+                            if is_postgres():
+                                cursor_q = conn.execute('''
+                                    SELECT 1 FROM local_queues 
+                                    WHERE queue_name = 'verification_queue' AND payload->>'company_id' = %s
+                                ''', (cid,))
+                            else:
+                                cursor_q = conn.execute('''
+                                    SELECT 1 FROM local_queues 
+                                    WHERE queue_name = 'verification_queue' AND json_extract(payload, '$.company_id') = ?
+                                ''', (cid,))
                             if not cursor_q.fetchone():
                                 self.queue.push("verification_queue", {"company_id": cid})
                                 Telemetry.record_event(
@@ -133,6 +159,8 @@ class CompanyDiscoveryWorker(BaseWorker):
                                 )
                                 logger.info(f"Enqueued company for verification: {cid}")
                                 processed_count += 1
+                finally:
+                    conn.close()
 
                 self.heartbeat(jobs_processed=processed_count)
                 

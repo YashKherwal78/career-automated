@@ -80,14 +80,19 @@ class JobCrawlerWorker(BaseWorker):
                 row_data = None
                 if company_id:
                     # Explicit queue item requested, lock it directly if active
-                    import sqlite3
-                    with sqlite3.connect(self.db_path, timeout=30.0) as conn:
-                        conn.row_factory = sqlite3.Row
-                        cursor = conn.execute("SELECT * FROM ats_registry WHERE company_id = ? AND status = 'ACTIVE'", (company_id,))
+                    from src.api.db import get_connection, is_postgres
+                    conn = get_connection()
+                    try:
+                        if is_postgres():
+                            cursor = conn.execute("SELECT * FROM ats_registry WHERE company_id = %s AND status = 'ACTIVE'", (company_id,))
+                        else:
+                            cursor = conn.execute("SELECT * FROM ats_registry WHERE company_id = ? AND status = 'ACTIVE'", (company_id,))
                         row = cursor.fetchone()
                         if row:
                             row_data = dict(row)
                             row_data["reservation_token"] = "QUEUE-EXPLICIT"
+                    finally:
+                        conn.close()
                 else:
                     # Scan for due board
                     row_data = self.repository.reserve_due_board(self.worker_id, lock_duration=300)

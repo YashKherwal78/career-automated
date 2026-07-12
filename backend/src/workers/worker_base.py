@@ -1,7 +1,6 @@
 import os
 import sys
 import time
-import sqlite3
 import signal
 from src.config.settings import settings
 from src.discovery.queue.sqlite_queue import SQLiteQueue
@@ -27,7 +26,9 @@ class BaseWorker:
         signal.signal(signal.SIGINT, handle_shutdown)
 
     def _init_state(self):
-        with sqlite3.connect(self.db_path, timeout=30.0) as conn:
+        from src.api.db import get_connection, is_postgres
+        conn = get_connection()
+        try:
             conn.execute('''
                 CREATE TABLE IF NOT EXISTS worker_states (
                     worker_name TEXT PRIMARY KEY,
@@ -40,41 +41,88 @@ class BaseWorker:
                     last_error TEXT
                 )
             ''')
-            conn.execute('''
-                INSERT OR REPLACE INTO worker_states (worker_name, pid, status, started_at, heartbeat, jobs_processed, failures, last_error)
-                VALUES (?, ?, 'STARTING', datetime('now'), datetime('now'), 0, 0, NULL)
-            ''', (self.name, os.getpid()))
+            if is_postgres():
+                conn.execute('''
+                    INSERT INTO worker_states (worker_name, pid, status, started_at, heartbeat, jobs_processed, failures, last_error)
+                    VALUES (%s, %s, 'STARTING', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0, 0, NULL)
+                    ON CONFLICT (worker_name) DO UPDATE SET
+                        pid = EXCLUDED.pid,
+                        status = EXCLUDED.status,
+                        started_at = EXCLUDED.started_at,
+                        heartbeat = EXCLUDED.heartbeat,
+                        jobs_processed = EXCLUDED.jobs_processed,
+                        failures = EXCLUDED.failures,
+                        last_error = EXCLUDED.last_error
+                ''', (self.name, os.getpid()))
+            else:
+                conn.execute('''
+                    INSERT OR REPLACE INTO worker_states (worker_name, pid, status, started_at, heartbeat, jobs_processed, failures, last_error)
+                    VALUES (?, ?, 'STARTING', datetime('now'), datetime('now'), 0, 0, NULL)
+                ''', (self.name, os.getpid()))
             conn.commit()
+        finally:
+            conn.close()
 
     def heartbeat(self, jobs_processed=0, failure_increment=0, last_error=None):
         # Update operational metrics
         self.metrics.update_operational_metric(f"{self.name}:heartbeat", time.time())
         self.metrics.update_operational_metric(f"{self.name}:status", "RUNNING")
         
-        with sqlite3.connect(self.db_path, timeout=30.0) as conn:
+        from src.api.db import get_connection, is_postgres
+        conn = get_connection()
+        try:
             if last_error:
-                conn.execute('''
-                    UPDATE worker_states 
-                    SET heartbeat = datetime('now'),
-                        status = 'RUNNING',
-                        jobs_processed = jobs_processed + ?,
-                        failures = failures + ?,
-                        last_error = ?
-                    WHERE worker_name = ?
-                ''', (jobs_processed, failure_increment, str(last_error), self.name))
+                if is_postgres():
+                    conn.execute('''
+                        UPDATE worker_states 
+                        SET heartbeat = CURRENT_TIMESTAMP,
+                            status = 'RUNNING',
+                            jobs_processed = jobs_processed + %s,
+                            failures = failures + %s,
+                            last_error = %s
+                        WHERE worker_name = %s
+                    ''', (jobs_processed, failure_increment, str(last_error), self.name))
+                else:
+                    conn.execute('''
+                        UPDATE worker_states 
+                        SET heartbeat = datetime('now'),
+                            status = 'RUNNING',
+                            jobs_processed = jobs_processed + ?,
+                            failures = failures + ?,
+                            last_error = ?
+                        WHERE worker_name = ?
+                    ''', (jobs_processed, failure_increment, str(last_error), self.name))
             else:
-                conn.execute('''
-                    UPDATE worker_states 
-                    SET heartbeat = datetime('now'),
-                        status = 'RUNNING',
-                        jobs_processed = jobs_processed + ?
-                    WHERE worker_name = ?
-                ''', (jobs_processed, self.name))
+                if is_postgres():
+                    conn.execute('''
+                        UPDATE worker_states 
+                        SET heartbeat = CURRENT_TIMESTAMP,
+                            status = 'RUNNING',
+                            jobs_processed = jobs_processed + %s
+                        WHERE worker_name = %s
+                    ''', (jobs_processed, self.name))
+                else:
+                    conn.execute('''
+                        UPDATE worker_states 
+                        SET heartbeat = datetime('now'),
+                            status = 'RUNNING',
+                            jobs_processed = jobs_processed + ?
+                        WHERE worker_name = ?
+                    ''', (jobs_processed, self.name))
             conn.commit()
+        finally:
+            conn.close()
 
     def stop(self):
         self.running = False
         self.metrics.update_operational_metric(f"{self.name}:status", "STOPPED")
-        with sqlite3.connect(self.db_path, timeout=30.0) as conn:
-            conn.execute('UPDATE worker_states SET status = "STOPPED" WHERE worker_name = ?', (self.name,))
+        from src.api.db import get_connection, is_postgres
+        conn = get_connection()
+        try:
+            if is_postgres():
+                conn.execute('UPDATE worker_states SET status = \'STOPPED\' WHERE worker_name = %s', (self.name,))
+            else:
+                conn.execute('UPDATE worker_states SET status = "STOPPED" WHERE worker_name = ?', (self.name,))
             conn.commit()
+        finally:
+            conn.close()

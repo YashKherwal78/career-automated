@@ -20,7 +20,6 @@ Architecture:
 import os
 import sys
 import time
-import sqlite3
 import logging
 
 from src.workers.worker_base import BaseWorker
@@ -151,18 +150,29 @@ class JobBoardWorker(BaseWorker):
 
     def _load_cursor(self, provider_name: str) -> str | None:
         """Load the last cursor stored for this provider (for incremental sync)."""
+        from src.api.db import get_connection, is_postgres
+        conn = get_connection()
         try:
-            with sqlite3.connect(self.db_path, timeout=10.0) as conn:
+            if is_postgres():
+                row = conn.execute(
+                    """SELECT cursor FROM job_board_snapshots
+                       WHERE provider = %s AND status IN ('SUCCESS', 'PARTIAL')
+                       ORDER BY synced_at DESC LIMIT 1""",
+                    (provider_name,),
+                ).fetchone()
+            else:
                 row = conn.execute(
                     """SELECT cursor FROM job_board_snapshots
                        WHERE provider = ? AND status IN ('SUCCESS', 'PARTIAL')
                        ORDER BY synced_at DESC LIMIT 1""",
                     (provider_name,),
                 ).fetchone()
-                return row[0] if row else None
+            return row[0] if row else None
         except Exception as e:
             logger.warning(f"JobBoardWorker: could not load cursor for {provider_name}: {e}")
             return None
+        finally:
+            conn.close()
 
     def _save_snapshot(
         self,
@@ -175,8 +185,27 @@ class JobBoardWorker(BaseWorker):
         status: str,
         error: str | None,
     ):
+        from src.api.db import get_connection, is_postgres
+        conn = get_connection()
         try:
-            with sqlite3.connect(self.db_path, timeout=10.0) as conn:
+            if is_postgres():
+                conn.execute(
+                    """INSERT INTO job_board_snapshots
+                       (provider, synced_at, cursor, jobs_found, jobs_new,
+                        jobs_updated, companies_discovered, status, error)
+                       VALUES (%s, EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)::integer, %s, %s, %s, %s, %s, %s, %s)""",
+                    (
+                        provider_name,
+                        next_cursor,
+                        jobs_found,
+                        jobs_new,
+                        jobs_updated,
+                        companies_discovered,
+                        status,
+                        error,
+                    ),
+                )
+            else:
                 conn.execute(
                     """INSERT INTO job_board_snapshots
                        (provider, synced_at, cursor, jobs_found, jobs_new,
@@ -193,9 +222,11 @@ class JobBoardWorker(BaseWorker):
                         error,
                     ),
                 )
-                conn.commit()
+            conn.commit()
         except Exception as e:
             logger.warning(f"JobBoardWorker: failed to save snapshot for {provider_name}: {e}")
+        finally:
+            conn.close()
 
 
 if __name__ == "__main__":

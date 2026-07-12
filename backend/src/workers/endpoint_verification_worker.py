@@ -1,7 +1,6 @@
 import os
 import sys
 import time
-import sqlite3
 import logging
 import asyncio
 from urllib.parse import urlparse
@@ -78,19 +77,34 @@ class EndpointVerificationWorker(BaseWorker):
     def _ensure_company_identity(self, domain: str, website: str, canonical_name: str) -> str:
         """Ensure a minimal company identity exists for verification payloads."""
         company_id = _normalize_company_id(domain, canonical_name)
-        with sqlite3.connect(self.db_path, timeout=30.0) as conn:
-            conn.row_factory = sqlite3.Row
-            row = conn.execute(
-                "SELECT company_id FROM company_identities WHERE company_id = ? OR domain = ? OR canonical_name = ?",
-                (company_id, domain, canonical_name)
-            ).fetchone()
+        from src.api.db import get_connection, is_postgres
+        conn = get_connection()
+        try:
+            if is_postgres():
+                row = conn.execute(
+                    "SELECT company_id FROM company_identities WHERE company_id = %s OR domain = %s OR canonical_name = %s",
+                    (company_id, domain, canonical_name)
+                ).fetchone()
+            else:
+                row = conn.execute(
+                    "SELECT company_id FROM company_identities WHERE company_id = ? OR domain = ? OR canonical_name = ?",
+                    (company_id, domain, canonical_name)
+                ).fetchone()
             if row:
                 return row["company_id"]
-            conn.execute(
-                "INSERT OR IGNORE INTO company_identities (company_id, domain, canonical_name, website) VALUES (?, ?, ?, ?)",
-                (company_id, domain, canonical_name or company_id, website or domain)
-            )
+            if is_postgres():
+                conn.execute(
+                    "INSERT INTO company_identities (company_id, domain, canonical_name, website) VALUES (%s, %s, %s, %s) ON CONFLICT (company_id) DO NOTHING",
+                    (company_id, domain, canonical_name or company_id, website or domain)
+                )
+            else:
+                conn.execute(
+                    "INSERT OR IGNORE INTO company_identities (company_id, domain, canonical_name, website) VALUES (?, ?, ?, ?)",
+                    (company_id, domain, canonical_name or company_id, website or domain)
+                )
             conn.commit()
+        finally:
+            conn.close()
         return company_id
 
     async def run_async(self):
@@ -134,8 +148,9 @@ class EndpointVerificationWorker(BaseWorker):
                 
                 # 2. Fallback: Select a company without an ACTIVE endpoint
                 if not company_id:
-                    with sqlite3.connect(self.db_path, timeout=30.0) as conn:
-                        conn.row_factory = sqlite3.Row
+                    from src.api.db import get_connection
+                    conn = get_connection()
+                    try:
                         cursor = conn.execute('''
                             SELECT i.company_id 
                             FROM company_identities i
@@ -147,6 +162,8 @@ class EndpointVerificationWorker(BaseWorker):
                         if row:
                             company_id = row["company_id"]
                             logger.info(f"Polled company from DB: {company_id}")
+                    finally:
+                        conn.close()
 
                 if not company_id:
                     # No companies to verify
@@ -156,12 +173,18 @@ class EndpointVerificationWorker(BaseWorker):
 
                 # Load company details
                 company_info = None
-                with sqlite3.connect(self.db_path, timeout=30.0) as conn:
-                    conn.row_factory = sqlite3.Row
-                    cursor = conn.execute("SELECT canonical_name, website, domain FROM company_identities WHERE company_id = ?", (company_id,))
+                from src.api.db import get_connection, is_postgres
+                conn = get_connection()
+                try:
+                    if is_postgres():
+                        cursor = conn.execute("SELECT canonical_name, website, domain FROM company_identities WHERE company_id = %s", (company_id,))
+                    else:
+                        cursor = conn.execute("SELECT canonical_name, website, domain FROM company_identities WHERE company_id = ?", (company_id,))
                     row = cursor.fetchone()
                     if row:
                         company_info = dict(row)
+                finally:
+                    conn.close()
 
                 if not company_info:
                     logger.warning(f"Company ID {company_id} not found in identities.")
@@ -199,8 +222,14 @@ class EndpointVerificationWorker(BaseWorker):
                     if verified:
                         logger.info(f"Successfully verified ATS endpoint for {company_id}!")
 
-                        endpoint_urls = [endpoint_url(v) for v in verified]
-                        endpoint_urls = [u for u in endpoint_urls if u]
+                        endpoint_urls = []
+                        for v in verified:
+                            if isinstance(v, dict):
+                                url = v.get("endpoint") or v.get("canonical_endpoint") or v.get("url")
+                            else:
+                                url = getattr(v, "url", None) or getattr(v, "endpoint", None)
+                            if url:
+                                endpoint_urls.append(url)
 
                         # Push to crawl_queue for JobCrawlerWorker
                         self.queue.push("crawl_queue", {"company_id": company_id})

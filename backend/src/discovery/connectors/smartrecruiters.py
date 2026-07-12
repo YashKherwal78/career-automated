@@ -37,7 +37,7 @@ class SmartRecruitersConnector(Connector):
         if result.status_code == 304:
             return
             
-        if not self.should_sync(board, result):
+        if not self.freshness_strategy().should_sync(board, result):
             return
             
         if result.etag:

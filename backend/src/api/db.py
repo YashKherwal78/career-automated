@@ -57,6 +57,9 @@ class CompatCursor:
     def __getattr__(self, name: str):
         return getattr(self._cursor, name)
 
+    def __iter__(self):
+        return iter(self._cursor)
+
     @property
     def row_factory(self):
         return self._row_factory
