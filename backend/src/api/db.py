@@ -10,7 +10,9 @@ USE_POSTGRES = bool(DATABASE_URL)
 try:
     import psycopg
     from psycopg.rows import dict_row
-except ImportError:  # pragma: no cover
+except ImportError as e:  # pragma: no cover
+    import logging
+    logging.error(f"Failed to import psycopg: {e}")
     psycopg = None
     dict_row = None
 
