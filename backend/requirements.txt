@@ -55,3 +55,4 @@ aiohttp==3.11.11
 beautifulsoup4==4.12.3
 psycopg>=3.0.0
 psycopg-binary>=3.0.0
+pyyaml
