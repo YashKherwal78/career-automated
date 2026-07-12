@@ -67,9 +67,9 @@ class JobRepository:
         # ── 1. Load candidate rows (no LIMIT/OFFSET yet) ─────────────────────
         query = f"""
             SELECT COALESCE(i.canonical_name, {json_extract('n.raw_payload_json', '$.company')}, n.company_id) AS canonical_name,
-                   n.job_id, n.title, n.job_score, n.provider, n.score_breakdown,
-                   n.match_score, n.priority_score, n.scoring_confidence,
-                   n.recommendation_reason, n.application_status,
+                   n.job_id, n.title, 0 as job_score, n.provider, '{}' as score_breakdown,
+                   0.0 as match_score, 0.0 as priority_score, 0.0 as scoring_confidence,
+                   '' as recommendation_reason, 'NEW' as application_status,
                    n.location, n.remote_type as remote, n.employment_type,
                    n.salary_min, n.salary_max, n.posted_at, n.apply_url,
                    n.description, n.status
@@ -169,9 +169,9 @@ class JobRepository:
         c.execute(
             """
             SELECT COALESCE(i.canonical_name, json_extract(n.raw_payload_json, '$.company'), n.company_id) AS canonical_name,
-                   n.job_id, n.title, n.job_score, n.provider, n.score_breakdown,
-                   n.match_score, n.priority_score, n.scoring_confidence,
-                   n.recommendation_reason, n.application_status,
+                   n.job_id, n.title, 0 as job_score, n.provider, '{}' as score_breakdown,
+                   0.0 as match_score, 0.0 as priority_score, 0.0 as scoring_confidence,
+                   '' as recommendation_reason, 'NEW' as application_status,
                    n.description, n.location, n.remote_type as remote,
                    n.salary_min, n.salary_max, n.apply_url, n.posted_at
             FROM normalized_jobs n
