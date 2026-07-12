@@ -15,9 +15,14 @@ app.add_middleware(
 from fastapi.staticfiles import StaticFiles
 from src.api.dependencies import get_db
 import time
-from src.api.db import table_exists
+from src.api.db import table_exists, DATABASE_URL, USE_POSTGRES
 from src.config.settings import settings as app_settings
 from src.discovery.pipeline.repositories.metrics_repository import MetricsRepository
+import logging
+
+logger = logging.getLogger("startup")
+logger.setLevel(logging.INFO)
+logger.info(f"STARTUP DATABASE_URL: {bool(DATABASE_URL)} USE_POSTGRES: {USE_POSTGRES}")
 
 start_time = time.time()
 
