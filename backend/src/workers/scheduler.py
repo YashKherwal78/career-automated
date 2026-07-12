@@ -45,6 +45,17 @@ class PipelineScheduler:
         self.db_path = db_path
         self.processes = {}
         self.running = True
+        
+        # Run database migrations before starting any workers
+        logger.info("Running database migrations...")
+        env = os.environ.copy()
+        env["PYTHONPATH"] = os.getcwd()
+        result = subprocess.run(["python3", "src/database/migrate.py"], env=env, capture_output=True, text=True)
+        if result.returncode != 0:
+            logger.error(f"Migration failed: {result.stderr}")
+        else:
+            logger.info(f"Migration completed: {result.stdout}")
+            
         self._init_db()
 
     def _init_db(self):
