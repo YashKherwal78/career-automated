@@ -42,21 +42,17 @@ class MigrationRunner:
         finally:
             conn.close()
 
-    def _column_exists(self, table_name: str, column_name: str) -> bool:
-        conn = get_connection()
-        try:
-            if is_postgres():
-                cursor = conn.execute(
-                    "SELECT column_name FROM information_schema.columns WHERE table_name=%s AND column_name=%s",
-                    (table_name, column_name)
-                )
-                return cursor.fetchone() is not None
-            else:
-                cursor = conn.execute(f"PRAGMA table_info({table_name})")
-                columns = [row[1] for row in cursor.fetchall()]
-                return column_name in columns
-        finally:
-            conn.close()
+    def _column_exists(self, conn, table_name: str, column_name: str) -> bool:
+        if is_postgres():
+            cursor = conn.execute(
+                "SELECT column_name FROM information_schema.columns WHERE table_name=%s AND column_name=%s",
+                (table_name, column_name)
+            )
+            return cursor.fetchone() is not None
+        else:
+            cursor = conn.execute(f"PRAGMA table_info({table_name})")
+            columns = [row[1] for row in cursor.fetchall()]
+            return column_name in columns
 
     def run_migrations(self):
         logger.info("Starting database migrations check...")
@@ -98,16 +94,25 @@ class MigrationRunner:
                     if not cleaned_statement:
                         continue
                     
+                    if is_postgres():
+                        # Translate SQLite syntax to PostgreSQL
+                        cleaned_statement = re.sub(r'(?i)\bINTEGER\s+PRIMARY\s+KEY\s+AUTOINCREMENT\b', 'SERIAL PRIMARY KEY', cleaned_statement)
+                        cleaned_statement = re.sub(r'(?i)\bBLOB\b', 'BYTEA', cleaned_statement)
+                        cleaned_statement = re.sub(r'(?i)\bREAL\b', 'DOUBLE PRECISION', cleaned_statement)
+                        # Postgres doesn't support STRICT on tables
+                        cleaned_statement = re.sub(r'(?i)WITHOUT\s+ROWID', '', cleaned_statement)
+                        cleaned_statement = re.sub(r'(?i)\bSTRICT\b', '', cleaned_statement)
+
                     # Safe ALTER TABLE checks to prevent crashes if column exists
                     alter_match = re.match(r"(?i)ALTER\s+TABLE\s+(\w+)\s+ADD\s+COLUMN\s+(\w+)", cleaned_statement)
                     if alter_match:
                         table_name = alter_match.group(1)
                         column_name = alter_match.group(2)
-                        if self._column_exists(table_name, column_name):
+                        if self._column_exists(conn, table_name, column_name):
                             logger.info(f"Column '{column_name}' already exists in table '{table_name}'. Skipping.")
                             continue
                     
-                    conn.execute(statement)
+                    conn.execute(cleaned_statement)
                 
                 conn.execute("INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)", (version, os.path.getmtime(file_path)))
                 conn.commit()
