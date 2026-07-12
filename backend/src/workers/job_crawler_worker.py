@@ -204,14 +204,15 @@ class JobCrawlerWorker(BaseWorker):
             except KeyboardInterrupt:
                 break
             except Exception as e:
-                logger.error(f"Error in JobCrawlerWorker loop: {e}", exc_info=True)
+                import traceback
+                logger.error(f"Error in JobCrawlerWorker loop: {e}\n{traceback.format_exc()}")
                 self.heartbeat(failure_increment=1, last_error=str(e))
                 self.metrics.record_event("CrawlFailed", {
                     "company_id": company_id if 'company_id' in locals() else "unknown",
                     "error": str(e),
                     "worker_id": self.worker_id
                 })
-                if q_item:
+                if q_item and item_id:
                     self.queue.nack("crawl_queue", item_id, reason=str(e))
                 await asyncio.sleep(15)
 

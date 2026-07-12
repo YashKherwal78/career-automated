@@ -135,7 +135,7 @@ def get_connection() -> CompatConnection:
             raise RuntimeError("DATABASE_URL is set but psycopg is not installed. Install psycopg[binary].")
         print("DEBUG: Calling psycopg.connect...", flush=True)
         try:
-            raw_conn = psycopg.connect(DATABASE_URL, autocommit=True)
+            raw_conn = psycopg.connect(DATABASE_URL, autocommit=True, prepare_threshold=None)
             print("DEBUG: psycopg.connect succeeded.", flush=True)
         except Exception as e:
             print(f"DEBUG: psycopg.connect failed: {e}", flush=True)
