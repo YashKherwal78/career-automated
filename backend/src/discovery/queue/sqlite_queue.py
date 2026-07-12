@@ -125,16 +125,16 @@ class SQLiteQueue(BaseQueue):
                 UPDATE local_queues
                 SET status = 'PROCESSING', locked_until = ?, last_attempt_at = ?
                 WHERE item_id = ?
-            ''', (lock_until, now, row["id"]))
+            ''', (lock_until, now, row["item_id"]))
             conn.commit()
             
             payload_val = row["payload"]
             parsed_payload = payload_val if isinstance(payload_val, dict) else json.loads(payload_val)
             
             return {
-                "last_attempt_at": last_attempt_at,
-                "created_at": created_at,
-                "queue_name": queue_name
+                "_item_id": row["item_id"],
+                "queue_name": queue_name,
+                "payload": parsed_payload
             }
         finally:
             conn.close()
