@@ -65,6 +65,8 @@ class JobCrawlerWorker(BaseWorker):
     async def run_async(self):
         logger.info(f"JobCrawlerWorker starting as {self.worker_id}")
         while self.running:
+            q_item = None
+            item_id = None
             try:
                 # 1. Pop from crawl_queue (if any explicit queue requests exist)
                 q_item = self.queue.pop("crawl_queue")
