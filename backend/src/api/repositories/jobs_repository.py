@@ -75,36 +75,36 @@ class JobRepository:
                    n.description, n.status
             FROM normalized_jobs n
             LEFT JOIN company_identities i ON n.company_id = i.company_id
-            WHERE n.status = ?
+            WHERE n.status = %s
         """
         params: List[Any] = [status]
 
         # Pipeline separation: B = external boards, A = ATS
         job_board_providers = ["linkedin", "google_jobs", "wellfound", "indeed"]
         if pipeline == "B":
-            query += " AND n.provider IN (" + ",".join(["?"] * len(job_board_providers)) + ")"
+            query += " AND n.provider IN (" + ",".join(["%s"] * len(job_board_providers)) + ")"
             params.extend(job_board_providers)
         else:
-            query += " AND n.provider NOT IN (" + ",".join(["?"] * len(job_board_providers)) + ")"
+            query += " AND n.provider NOT IN (" + ",".join(["%s"] * len(job_board_providers)) + ")"
             params.extend(job_board_providers)
 
         if provider:
-            query += " AND n.provider = ?"
+            query += " AND n.provider = %s"
             params.append(provider)
         if company:
-            query += f" AND (COALESCE(i.canonical_name, {json_extract('n.raw_payload_json', '$.company')}, '') LIKE ? OR n.title LIKE ?)"
+            query += f" AND (n.company_id ILIKE %s OR COALESCE(i.canonical_name, {json_extract('n.raw_payload_json', '$.company')}, '') ILIKE %s)"
             params.extend([f"%{company}%", f"%{company}%"])
         if location:
-            query += " AND n.location LIKE ?"
+            query += " AND n.location ILIKE %s"
             params.append(f"%{location}%")
         if remote_type:
-            query += " AND n.remote_type = ?"
+            query += " AND n.remote_type = %s"
             params.append(remote_type)
         if employment_type:
-            query += " AND n.employment_type = ?"
+            query += " AND n.employment_type = %s"
             params.append(employment_type)
         if min_salary is not None:
-            query += " AND (n.salary_max >= ? OR n.salary_min >= ?)"
+            query += " AND (n.salary_max >= %s OR n.salary_min >= %s)"
             params.extend([min_salary, min_salary])
 
         # Load all matching rows (up to a sane ceiling to protect memory)
