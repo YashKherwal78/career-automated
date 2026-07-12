@@ -120,24 +120,18 @@ class SQLiteQueue(BaseQueue):
             row = cursor.fetchone()
             if not row:
                 return None
-            item_id, payload_str, status, failures, retry_count, error, locked_until_val, next_retry_at, last_attempt_at, created_at = row
             
             conn.execute('''
                 UPDATE local_queues
                 SET status = 'PROCESSING', locked_until = ?, last_attempt_at = ?
                 WHERE item_id = ?
-            ''', (lock_until, now, item_id))
+            ''', (lock_until, now, row["id"]))
             conn.commit()
             
+            payload_val = row["payload"]
+            parsed_payload = payload_val if isinstance(payload_val, dict) else json.loads(payload_val)
+            
             return {
-                "_item_id": item_id,
-                "payload": json.loads(payload_str),
-                "status": status,
-                "failures": failures,
-                "retry_count": retry_count,
-                "error": error,
-                "locked_until": locked_until_val,
-                "next_retry_at": next_retry_at,
                 "last_attempt_at": last_attempt_at,
                 "created_at": created_at,
                 "queue_name": queue_name
