@@ -67,7 +67,7 @@ class JobRepository:
         # ── 1. Load candidate rows (no LIMIT/OFFSET yet) ─────────────────────
         query = f"""
             SELECT COALESCE(i.canonical_name, {json_extract('n.raw_payload_json', '$.company')}, n.company_id) AS canonical_name,
-                   n.job_id, n.title, 0 as job_score, n.provider, '{}' as score_breakdown,
+                   n.job_id, n.title, 0 as job_score, n.provider, '{{}}' as score_breakdown,
                    0.0 as match_score, 0.0 as priority_score, 0.0 as scoring_confidence,
                    '' as recommendation_reason, 'NEW' as application_status,
                    n.location, n.remote_type as remote, n.employment_type,
