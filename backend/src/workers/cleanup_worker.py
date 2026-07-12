@@ -27,7 +27,8 @@ class CleanupWorker(BaseWorker):
                     has_snapshots = False
                     if is_postgres():
                         cursor = conn.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'board_snapshots')")
-                        has_snapshots = cursor.fetchone()[0]
+                        row = cursor.fetchone()
+                        has_snapshots = list(row.values())[0] if hasattr(row, 'values') else row[0]
                     else:
                         cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='board_snapshots'")
                         has_snapshots = cursor.fetchone() is not None
@@ -38,14 +39,15 @@ class CleanupWorker(BaseWorker):
                         else:
                             c_del = conn.execute("DELETE FROM board_snapshots WHERE synced_at < ?", (seven_days_ago,))
                         if c_del.rowcount > 0:
-                            logger.info(f"Cleaned up {c_del.rowcount} stale snapshots.")
+                            logger.info(f"Cleaned up {c_del.rowcount} old board snapshots.")
                             processed_count += c_del.rowcount
                     
                     # 2. Retry failed endpoints by pushing back to discovery_queue
                     has_endpoints = False
                     if is_postgres():
                         cursor = conn.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'career_endpoints')")
-                        has_endpoints = cursor.fetchone()[0]
+                        row = cursor.fetchone()
+                        has_endpoints = list(row.values())[0] if hasattr(row, 'values') else row[0]
                     else:
                         cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='career_endpoints'")
                         has_endpoints = cursor.fetchone() is not None
@@ -53,7 +55,7 @@ class CleanupWorker(BaseWorker):
                     if has_endpoints:
                         # Find failed endpoints that need retry
                         cursor_f = conn.execute("SELECT company_id FROM career_endpoints WHERE status = 'FAILED' LIMIT 20")
-                        failed_ids = [row[0] for row in cursor_f.fetchall()]
+                        failed_ids = [row["company_id"] if hasattr(row, 'keys') else row[0] for row in cursor_f.fetchall()]
                         for cid in failed_ids:
                             if is_postgres():
                                 cursor_q = conn.execute('''
