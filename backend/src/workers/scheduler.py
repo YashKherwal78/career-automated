@@ -88,13 +88,15 @@ class PipelineScheduler:
             "EndpointVerificationWorker": "logs/verification.log",
             "JobCrawlerWorker": "logs/crawler.log",
             "CleanupWorker": "logs/cleanup.log",
-            "FastApiServer": "logs/api.log"
         }
-        log_file_path = log_map.get(name, f"logs/{name.lower()}.log")
-        log_file = open(log_file_path, "a")
-
-        # Launch process
-        proc = subprocess.Popen(cmd, env=env, stdout=log_file, stderr=log_file)
+        
+        if name == "FastApiServer":
+            proc = subprocess.Popen(cmd, env=env)
+        else:
+            log_file_path = log_map.get(name, f"logs/{name.lower()}.log")
+            log_file = open(log_file_path, "a")
+            proc = subprocess.Popen(cmd, env=env, stdout=log_file, stderr=log_file)
+            
         self.processes[name] = (proc, args)
 
         # Log state
