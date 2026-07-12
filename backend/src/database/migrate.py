@@ -99,6 +99,9 @@ class MigrationRunner:
                         cleaned_statement = re.sub(r'(?i)\bINTEGER\s+PRIMARY\s+KEY\s+AUTOINCREMENT\b', 'SERIAL PRIMARY KEY', cleaned_statement)
                         cleaned_statement = re.sub(r'(?i)\bBLOB\b', 'BYTEA', cleaned_statement)
                         cleaned_statement = re.sub(r'(?i)\bREAL\b', 'DOUBLE PRECISION', cleaned_statement)
+                        cleaned_statement = re.sub(r'(?i)\bDATETIME\b', 'TIMESTAMP', cleaned_statement)
+                        cleaned_statement = re.sub(r'(?i)unixepoch\(\'now\'\)', 'EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)', cleaned_statement)
+                        cleaned_statement = re.sub(r'(?i)unixepoch\(\)', 'EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)', cleaned_statement)
                         # Postgres doesn't support STRICT on tables
                         cleaned_statement = re.sub(r'(?i)WITHOUT\s+ROWID', '', cleaned_statement)
                         cleaned_statement = re.sub(r'(?i)\bSTRICT\b', '', cleaned_statement)
