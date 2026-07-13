@@ -23,23 +23,19 @@ class FastPathRegistry:
         self.db_path = db_path
         self.registry = ATSRegistry(db_path)
 
-    def fast_path_company(self, company_id: str, canonical_name: str, domain: str, website: str, metadata: Dict[str, Any]) -> bool:
-        """
-        Attempts to register a company directly as ACTIVE in the ats_registry using trusted metadata.
-        Returns True if successfully fast-pathed, False otherwise (indicating fallback is needed).
-        """
+    def prepare_fast_path_result(self, company_id: str, canonical_name: str, domain: str, website: str, metadata: Dict[str, Any]) -> Optional[VerificationResult]:
         known_ats = metadata.get("known_ats")
         ats_slug = metadata.get("ats_slug")
         board_url = metadata.get("board_url")
 
         if not known_ats or known_ats.lower() not in SUPPORTED_ATS:
             logger.debug(f"Fast-path skipped for {company_id}: Unknown or unsupported ATS '{known_ats}'")
-            return False
+            return None
 
         known_ats = known_ats.lower()
         if not ats_slug or not board_url:
             logger.debug(f"Fast-path skipped for {company_id}: Missing ats_slug or board_url")
-            return False
+            return None
 
         # Build endpoint and metadata based on ATS type requirements
         ats_metadata = {}
@@ -55,14 +51,12 @@ class FastPathRegistry:
             ats_metadata["board_token"] = ats_slug
             canonical_endpoint = f"https://jobs.ashbyhq.com/{ats_slug}"
         elif known_ats == "workday":
-            # Extract tenant & site from workday slug (pattern: tenant/site)
             parts = ats_slug.split('/')
             tenant = parts[0]
             site = parts[1] if len(parts) > 1 else "careers"
             ats_metadata["tenant"] = tenant
             ats_metadata["site"] = site
             
-            # Extract cluster domain from board_url if possible, fallback to tenant.wd1.myworkdayjobs.com
             parsed_url = urlparse(board_url)
             netloc = parsed_url.netloc or f"{tenant}.wd1.myworkdayjobs.com"
             canonical_endpoint = f"https://{netloc}/{site}"
@@ -71,13 +65,11 @@ class FastPathRegistry:
             ats_metadata["board_token"] = ats_slug
             canonical_endpoint = f"https://jobs.smartrecruiters.com/{ats_slug}"
         else:
-            return False
+            return None
 
-        # Generate unique hash for the endpoint
         endpoint_hash = hashlib.sha256(canonical_endpoint.encode()).hexdigest()
 
-        # Build VerificationResult to promote
-        vr = VerificationResult(
+        return VerificationResult(
             company_id=company_id,
             company_domain=domain,
             company_name=canonical_name,
@@ -97,10 +89,48 @@ class FastPathRegistry:
             ats_metadata=json.dumps(ats_metadata)
         )
 
+    def fast_path_company(self, company_id: str, canonical_name: str, domain: str, website: str, metadata: Dict[str, Any]) -> bool:
+        """
+        Attempts to register a company directly as ACTIVE in the ats_registry using trusted metadata.
+        Returns True if successfully fast-pathed, False otherwise (indicating fallback is needed).
+        """
+        vr = self.prepare_fast_path_result(company_id, canonical_name, domain, website, metadata)
+        if not vr:
+            return False
+
         try:
             self.registry.promote_endpoint(company_id, vr)
-            logger.info(f"Fast-pathed company {company_id} to active {known_ats} endpoint.")
+            logger.info(f"Fast-pathed company {company_id} to active {vr.ats_type} endpoint.")
             return True
         except Exception as e:
             logger.error(f"Failed to fast-path company {company_id} in registry: {e}")
             return False
+
+    def fast_path_companies_batch(self, batch: List[Dict[str, Any]]) -> List[str]:
+        """
+        Attempts to register a batch of companies directly as ACTIVE in the ats_registry using trusted metadata.
+        Returns a list of successfully fast-pathed company_ids.
+        """
+        from typing import List
+        promotions = []
+        for item in batch:
+            res = self.prepare_fast_path_result(
+                company_id=item["company_id"],
+                canonical_name=item["canonical_name"],
+                domain=item["domain"],
+                website=item["website"],
+                metadata=item["metadata"]
+            )
+            if res:
+                promotions.append((item["company_id"], res))
+        
+        if not promotions:
+            return []
+            
+        try:
+            self.registry.promote_endpoints_batch(promotions)
+            return [p[0] for p in promotions]
+        except Exception as e:
+            logger.error(f"Failed to fast-path batch in registry: {e}")
+            return []
+

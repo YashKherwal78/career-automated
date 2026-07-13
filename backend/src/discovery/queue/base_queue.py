@@ -25,3 +25,8 @@ class BaseQueue(ABC):
     def nack(self, queue_name: str, item_id: str, reason: str = "", backoff_seconds: int = 3600) -> bool:
         """Negative acknowledgment. Returns the item to the queue or pushes to a DLQ/Retry Queue."""
         pass
+
+    def push_many(self, queue_name: str, payloads: list[Dict[str, Any]]) -> list[str]:
+        """Pushes multiple items onto the queue. Returns list of item IDs."""
+        pass
+

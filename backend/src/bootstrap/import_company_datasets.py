@@ -396,42 +396,74 @@ def insert_records(records: list[CompanyRecord], db_path: str, dry_run: bool = F
             log.info(f"  ... and {len(records) - 5} more.")
         return stats
 
-    with sqlite3.connect(db_path, timeout=30.0) as conn:
-        # Pre-load existing domains to count skips accurately
-        existing = {row[0] for row in conn.execute("SELECT domain FROM company_identities")}
+    from src.api.db import get_connection, is_postgres
+    
+    # Pre-load existing domains to count skips accurately
+    conn = get_connection()
+    try:
+        if is_postgres():
+            existing = {row["domain"] for row in conn.execute("SELECT domain FROM company_identities").fetchall()}
+        else:
+            existing = {row[0] for row in conn.execute("SELECT domain FROM company_identities").fetchall()}
         log.info(f"Existing company_identities rows: {len(existing)}")
 
+        # Filter out records that are already imported
+        to_insert = []
         for r in records:
-            try:
-                conn.execute(
-                    """INSERT OR IGNORE INTO company_identities
-                       (company_id, domain, canonical_name, website, aliases)
-                       VALUES (?, ?, ?, ?, ?)""",
-                    (r.company_id, r.domain, r.canonical_name, r.website, r.aliases),
-                )
-                if r.domain in existing:
-                    stats["skipped"] += 1
-                else:
-                    stats["inserted"] += 1
-                    existing.add(r.domain)
-            except Exception as e:
-                log.warning(f"Insert error for {r.domain}: {e}")
-                stats["errors"] += 1
+            if r.domain in existing:
+                stats["skipped"] += 1
+            else:
+                to_insert.append((r.company_id, r.domain, r.canonical_name, r.website, r.aliases))
+                existing.add(r.domain)
 
-        conn.commit()
+        if to_insert:
+            log.info(f"Batch inserting {len(to_insert):,} new records...")
+            # Chunk insertions in batches of 1000 to prevent parameter limits
+            batch_size = 1000
+            for i in range(0, len(to_insert), batch_size):
+                chunk = to_insert[i:i + batch_size]
+                if is_postgres():
+                    # We can use execute_many or a fast raw cursor execution for PostgreSQL
+                    raw_cursor = conn.cursor()._cursor
+                    query = """
+                        INSERT INTO company_identities
+                        (company_id, domain, canonical_name, website, aliases)
+                        VALUES (%s, %s, %s, %s, %s)
+                        ON CONFLICT (company_id) DO NOTHING
+                    """
+                    raw_cursor.executemany(query, chunk)
+                else:
+                    conn.executemany(
+                        """INSERT OR IGNORE INTO company_identities
+                           (company_id, domain, canonical_name, website, aliases)
+                           VALUES (?, ?, ?, ?, ?)""",
+                        chunk,
+                    )
+                stats["inserted"] += len(chunk)
+            conn.commit()
+    except Exception as e:
+        log.error(f"Batch insertion failed: {e}")
+        stats["errors"] += len(records) - stats["skipped"] - stats["inserted"]
+    finally:
+        conn.close()
 
     return stats
+
 
 
 # ── Verification query ────────────────────────────────────────────────────────
 
 def run_verification(db_path: str):
     log.info("\n=== Post-Import Verification ===\n")
-    with sqlite3.connect(db_path) as conn:
-        total = conn.execute("SELECT COUNT(*) FROM company_identities").fetchone()[0]
-        unique_domains = conn.execute(
-            "SELECT COUNT(DISTINCT domain) FROM company_identities"
-        ).fetchone()[0]
+    from src.api.db import get_connection, is_postgres, json_extract
+    conn = get_connection()
+    try:
+        if is_postgres():
+            total = conn.execute("SELECT COUNT(*) cnt FROM company_identities").fetchone()["cnt"]
+            unique_domains = conn.execute("SELECT COUNT(DISTINCT domain) cnt FROM company_identities").fetchone()["cnt"]
+        else:
+            total = conn.execute("SELECT COUNT(*) FROM company_identities").fetchone()[0]
+            unique_domains = conn.execute("SELECT COUNT(DISTINCT domain) FROM company_identities").fetchone()[0]
 
         log.info(f"  Total company_identities rows : {total}")
         log.info(f"  Unique domains                : {unique_domains}")
@@ -441,29 +473,35 @@ def run_verification(db_path: str):
         else:
             log.info("  ✅ No duplicate domains.")
 
-        log.info("\n  By source (from aliases JSON):")
+        source_expr = json_extract("aliases", "$.source")
         rows = conn.execute(
-            """SELECT json_extract(aliases, '$.source') as src, COUNT(*) as cnt
+            f"""SELECT {source_expr} as src, COUNT(*) as cnt
                FROM company_identities
                GROUP BY src
                ORDER BY cnt DESC"""
         ).fetchall()
-        for src, cnt in rows:
-            log.info(f"    {src or 'unknown':20s}  {cnt:>6,}")
+        for row in rows:
+            d = dict(row)
+            log.info(f"    {d.get('src') or 'unknown':20s}  {d.get('cnt'):>6,}")
 
         log.info("\n  By known_ats (Jobhive only):")
+        ats_expr = json_extract("aliases", "$.known_ats")
         rows = conn.execute(
-            """SELECT json_extract(aliases, '$.known_ats') as ats, COUNT(*) as cnt
+            f"""SELECT {ats_expr} as ats, COUNT(*) as cnt
                FROM company_identities
-               WHERE json_extract(aliases, '$.source') = 'jobhive'
+               WHERE {source_expr} = 'jobhive'
                GROUP BY ats
                ORDER BY cnt DESC"""
         ).fetchall()
-        for ats, cnt in rows:
-            log.info(f"    {ats or 'unknown':20s}  {cnt:>6,}")
+        for row in rows:
+            d = dict(row)
+            log.info(f"    {d.get('ats') or 'unknown':20s}  {d.get('cnt'):>6,}")
 
         log.info("\n  Idempotency check: re-counting distinct domains…")
         log.info(f"  PASS — domain column has UNIQUE constraint, duplicates silently ignored.\n")
+    finally:
+        conn.close()
+
 
 
 # ── CLI ───────────────────────────────────────────────────────────────────────

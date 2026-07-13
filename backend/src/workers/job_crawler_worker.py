@@ -143,6 +143,10 @@ class JobCrawlerWorker(BaseWorker):
                 
                 start_time = time.time()
                 try:
+                    # Transition to CRAWLING state
+                    from src.discovery.pipeline_state_manager import PipelineStateManager
+                    PipelineStateManager.transition(company_id, "CRAWLING")
+
                     await session.execute()
                     latency = int((time.time() - start_time) * 1000)
 
@@ -153,6 +157,10 @@ class JobCrawlerWorker(BaseWorker):
                     if success:
                         self.repository.mark_completed(company_id, token, interval)
                         
+                        # Transition to ACTIVE state
+                        from src.discovery.pipeline_state_manager import PipelineStateManager
+                        PipelineStateManager.transition(company_id, "ACTIVE")
+
                         # Emit domain event
                         self.metrics.record_event("JobsSynced", {
                             "company_id": company_id,
@@ -194,6 +202,11 @@ class JobCrawlerWorker(BaseWorker):
                         Telemetry.finish_run(run_id, Status.SUCCESS)
                     else:
                         self.repository.mark_failed(company_id, token, settings.retry_schedule)
+                        
+                        # Transition to CRAWL_FAILED state
+                        from src.discovery.pipeline_state_manager import PipelineStateManager
+                        PipelineStateManager.transition(company_id, "CRAWL_FAILED", failure_reason="SYNC_EXECUTION_FAILURE")
+
                         self.metrics.update_operational_metric(f"{self.worker_id}:last_failure", time.time())
                         
                         Telemetry.record_event(
@@ -208,6 +221,10 @@ class JobCrawlerWorker(BaseWorker):
                         )
                         Telemetry.finish_run(run_id, Status.SUCCESS)
                 except Exception as ex:
+                    # Transition to CRAWL_FAILED state on exception
+                    from src.discovery.pipeline_state_manager import PipelineStateManager
+                    PipelineStateManager.transition(company_id, "CRAWL_FAILED", failure_reason=type(ex).__name__)
+
                     Telemetry.finish_run(run_id, Status.FAILURE)
                     raise ex
 

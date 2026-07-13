@@ -222,6 +222,10 @@ class EndpointVerificationWorker(BaseWorker):
                     if verified:
                         logger.info(f"Successfully verified ATS endpoint for {company_id}!")
 
+                        # Update state machine: VERIFIED
+                        from src.discovery.pipeline_state_manager import PipelineStateManager
+                        PipelineStateManager.transition(company_id, "VERIFIED")
+
                         endpoint_urls = []
                         for v in verified:
                             if isinstance(v, dict):
@@ -255,6 +259,11 @@ class EndpointVerificationWorker(BaseWorker):
                         Telemetry.finish_run(run_id, Status.SUCCESS)
                     else:
                         logger.info(f"Verification failed for {company_id}")
+
+                        # Update state machine: VERIFICATION_FAILED
+                        from src.discovery.pipeline_state_manager import PipelineStateManager
+                        PipelineStateManager.transition(company_id, "VERIFICATION_FAILED", failure_reason="NO_VALID_ATS_ENDPOINTS")
+
                         self.metrics.record_event("EndpointFailed", {
                             "company_id": company_id,
                             "reason": "No valid ATS endpoints discovered",
@@ -273,6 +282,10 @@ class EndpointVerificationWorker(BaseWorker):
                         self.heartbeat(failure_increment=1)
                         Telemetry.finish_run(run_id, Status.SUCCESS)
                 except Exception as ex:
+                    # Update state machine: VERIFICATION_FAILED
+                    from src.discovery.pipeline_state_manager import PipelineStateManager
+                    PipelineStateManager.transition(company_id, "VERIFICATION_FAILED", failure_reason="VERIFICATION_EXCEPTION")
+
                     Telemetry.record_event(
                         stage=Stage.VERIFICATION_EXECUTED,
                         status=Status.FAILURE,

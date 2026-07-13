@@ -38,7 +38,8 @@ class MigrationRunner:
         conn = get_connection()
         try:
             cursor = conn.execute("SELECT version FROM schema_migrations")
-            return {row[0] for row in cursor.fetchall()}
+            rows = cursor.fetchall()
+            return {r[0] if isinstance(r, tuple) else r["version"] for r in rows}
         finally:
             conn.close()
 
@@ -102,9 +103,12 @@ class MigrationRunner:
                         cleaned_statement = re.sub(r'(?i)\bDATETIME\b', 'TIMESTAMP', cleaned_statement)
                         cleaned_statement = re.sub(r'(?i)unixepoch\(\'now\'\)', 'EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)', cleaned_statement)
                         cleaned_statement = re.sub(r'(?i)unixepoch\(\)', 'EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)', cleaned_statement)
-                        # Postgres doesn't support STRICT on tables
                         cleaned_statement = re.sub(r'(?i)WITHOUT\s+ROWID', '', cleaned_statement)
                         cleaned_statement = re.sub(r'(?i)\bSTRICT\b', '', cleaned_statement)
+                    else:
+                        # Translate Postgres-specific keywords back to SQLite when not running Postgres
+                        cleaned_statement = re.sub(r'(?i)\bSERIAL\b', 'INTEGER', cleaned_statement)
+
 
                     # Safe ALTER TABLE checks to prevent crashes if column exists
                     alter_match = re.match(r"(?i)ALTER\s+TABLE\s+(\w+)\s+ADD\s+COLUMN\s+(\w+)", cleaned_statement)

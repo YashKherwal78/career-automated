@@ -167,3 +167,63 @@ class SQLiteQueue(BaseQueue):
             return cursor.rowcount > 0
         finally:
             conn.close()
+
+    def push_many(self, queue_name: str, payloads: list[Dict[str, Any]]) -> list[str]:
+        """Pushes multiple items onto the queue in a single transaction with duplicate filtering."""
+        from src.api.db import get_connection, is_postgres
+        import uuid
+        now = time.time()
+        conn = get_connection()
+        item_ids = []
+        try:
+            company_ids = [p.get("company_id") for p in payloads if p.get("company_id")]
+            if not company_ids:
+                return []
+            
+            placeholders = ",".join(["%s" if is_postgres() else "?"] * len(company_ids))
+            if is_postgres():
+                existing_rows = conn.execute(
+                    f"SELECT payload->>'company_id' as cid FROM local_queues WHERE queue_name = %s AND status = 'QUEUED' AND payload->>'company_id' IN ({placeholders})",
+                    [queue_name] + company_ids
+                ).fetchall()
+            else:
+                existing_rows = conn.execute(
+                    f"SELECT json_extract(payload, '$.company_id') as cid FROM local_queues WHERE queue_name = ? AND status = 'QUEUED' AND json_extract(payload, '$.company_id') IN ({placeholders})",
+                    [queue_name] + company_ids
+                ).fetchall()
+                
+            existing_cids = {dict(row)["cid"] for row in existing_rows if dict(row).get("cid")}
+
+            rows_to_insert = []
+            for p in payloads:
+                cid = p.get("company_id")
+                if cid and cid in existing_cids:
+                    continue
+                item_id = str(uuid.uuid4())
+                item_ids.append(item_id)
+                rows_to_insert.append((
+                    item_id, queue_name, json.dumps(p), 'QUEUED', 0,
+                    0, None, 0.0, 0.0, 0.0, now
+                ))
+
+            if rows_to_insert:
+                cursor = conn.cursor()
+                if is_postgres():
+                    cursor.executemany('''
+                        INSERT INTO local_queues (
+                            item_id, queue_name, payload, status, failures,
+                            retry_count, error, locked_until, next_retry_at, last_attempt_at, created_at
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ''', rows_to_insert)
+                else:
+                    cursor.executemany('''
+                        INSERT INTO local_queues (
+                            item_id, queue_name, payload, status, failures,
+                            retry_count, error, locked_until, next_retry_at, last_attempt_at, created_at
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ''', rows_to_insert)
+                conn.commit()
+        finally:
+            conn.close()
+        return item_ids
+
