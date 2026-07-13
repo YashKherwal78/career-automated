@@ -53,10 +53,10 @@ def pipeline_metrics():
         # Jobs added in last 24h / 7d
         now = time.time()
         funnel["jobs_last_24h"] = _q(conn,
-            "SELECT COUNT(*) cnt FROM normalized_jobs WHERE created_at > %s",
+            "SELECT COUNT(*) cnt FROM normalized_jobs WHERE normalized_at > %s",
             [now - 86400])["cnt"]
         funnel["jobs_last_7d"] = _q(conn,
-            "SELECT COUNT(*) cnt FROM normalized_jobs WHERE created_at > %s",
+            "SELECT COUNT(*) cnt FROM normalized_jobs WHERE normalized_at > %s",
             [now - 604800])["cnt"]
 
         # Companies with jobs breakdown
