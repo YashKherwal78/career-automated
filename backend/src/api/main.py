@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import jobs, companies, applications, contacts, analytics, daemons, settings, activities
+from .routers import jobs, companies, applications, contacts, analytics, daemons, settings, activities, health
 
 app = FastAPI(title="Career Automated API", version="1.0.0")
 
@@ -35,6 +35,7 @@ app.include_router(daemons.router, prefix="/api/v1/daemons", tags=["Daemons"])
 app.include_router(daemons.router, prefix="/api/v1/workers", tags=["Workers"])
 app.include_router(settings.router, prefix="/api/v1/settings", tags=["Settings"])
 app.include_router(activities.router, prefix="/api/v1/activities", tags=["Activities"])
+app.include_router(health.router, prefix="/api/v1/health", tags=["Health"])
 
 from fastapi.responses import HTMLResponse
 import os
@@ -43,50 +44,6 @@ from pathlib import Path
 # The React application is deployed independently.  A static build can still be
 # served by setting FRONTEND_STATIC_DIR to a directory that exists at runtime.
 
-@app.get("/api/v1/health")
-def get_health_status(db = Depends(get_db)):
-    metrics_repo = MetricsRepository(app_settings.db_path)
-    metrics = metrics_repo.get_all_metrics()
-    
-    c = db.cursor()
-    c.execute("SELECT count(*) FROM worker_states WHERE status='RUNNING'")
-    running_workers = c.fetchone()[0]
-    
-    c.execute("SELECT count(*) FROM ats_registry WHERE status='ACTIVE'")
-    active_endpoints = c.fetchone()[0]
-
-    c.execute("SELECT count(*) FROM normalized_jobs WHERE status='ACTIVE'")
-    active_jobs = c.fetchone()[0]
-
-    c.execute("SELECT count(*) FROM company_identities")
-    total_companies = c.fetchone()[0]
-
-    # Queue counts
-    c.execute("SELECT count(*) FROM local_queues WHERE queue_name='discovery_queue' AND status='QUEUED'")
-    discovery_depth = c.fetchone()[0]
-    c.execute("SELECT count(*) FROM local_queues WHERE queue_name='verification_queue' AND status='QUEUED'")
-    verification_depth = c.fetchone()[0]
-    c.execute("SELECT count(*) FROM local_queues WHERE queue_name='crawl_queue' AND status='QUEUED'")
-    crawl_depth = c.fetchone()[0]
-    
-    return {
-        "status": "healthy" if running_workers > 0 else "degraded",
-        "uptime": int(time.time() - start_time),
-        "workers": running_workers,
-        "database": "healthy",
-        "api": "healthy",
-        "version": "1.0.0",
-        "build": "production",
-        "jobs": active_jobs,
-        "companies": total_companies,
-        "verified": active_endpoints,
-        "queues": {
-            "discovery_queue": discovery_depth,
-            "verification_queue": verification_depth,
-            "crawl_queue": crawl_depth
-        },
-        "metrics": metrics
-    }
 
 @app.get("/api/v1/discovery")
 def get_discovery_queues(db = Depends(get_db)):

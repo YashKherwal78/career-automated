@@ -1,0 +1,66 @@
+DEBUG: get_connection called. USE_POSTGRES=True, DATABASE_URL=postgresql://postgres.jjwuqzkclfxxsfztuopv:v%2Fqx%2BZAjD%409%25w%2Bt@aws-0-ap-southeast-2.pooler.supabase.com:6543/postgres
+DEBUG: Calling psycopg.connect...
+DEBUG: psycopg.connect succeeded.
+DEBUG: get_connection called. USE_POSTGRES=True, DATABASE_URL=postgresql://postgres.jjwuqzkclfxxsfztuopv:v%2Fqx%2BZAjD%409%25w%2Bt@aws-0-ap-southeast-2.pooler.supabase.com:6543/postgres
+DEBUG: Calling psycopg.connect...
+DEBUG: psycopg.connect succeeded.
+DEBUG: get_connection called. USE_POSTGRES=True, DATABASE_URL=postgresql://postgres.jjwuqzkclfxxsfztuopv:v%2Fqx%2BZAjD%409%25w%2Bt@aws-0-ap-southeast-2.pooler.supabase.com:6543/postgres
+DEBUG: Calling psycopg.connect...
+DEBUG: psycopg.connect succeeded.
+DEBUG: get_connection called. USE_POSTGRES=True, DATABASE_URL=postgresql://postgres.jjwuqzkclfxxsfztuopv:v%2Fqx%2BZAjD%409%25w%2Bt@aws-0-ap-southeast-2.pooler.supabase.com:6543/postgres
+DEBUG: Calling psycopg.connect...
+DEBUG: psycopg.connect succeeded.
+DEBUG: get_connection called. USE_POSTGRES=True, DATABASE_URL=postgresql://postgres.jjwuqzkclfxxsfztuopv:v%2Fqx%2BZAjD%409%25w%2Bt@aws-0-ap-southeast-2.pooler.supabase.com:6543/postgres
+DEBUG: Calling psycopg.connect...
+DEBUG: psycopg.connect succeeded.
+=====================================================
+Tracing 45 companies
+=====================================================
+[posthog] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[reclaimprotocol] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[watsi] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[airware] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[laserfocus] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[sorce] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[marblism] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[skyrootaerospace] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[testxyzcompany] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[figma] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[discord] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[stripe] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[coinbase] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[airtable] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[notion] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[canva] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[doordash] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[instacart] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[hashicorp] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[gitlab] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[samsara] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[flexport] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[brex] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[scale-ai] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[miro] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[spotify] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[lucid-software] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[salesforce] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[fedex] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[ramp] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[linear] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[anduril] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[gusto] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[grammarly] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[benchling] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[vercel] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[netflix] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[postman] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[nvidia] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[visa] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[target] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[cisco] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[cohere] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[retool] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+[visa-inc.] Disc: False, FastP: False, Verif: False, Crawl: False, Jobs: 0, Fail: Exception: 'CompanyDiscoveryWorker' object has no attribute 'process_item'
+
+--- TRACE SUMMARY ---
+Total: 45, Success: 0
