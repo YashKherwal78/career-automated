@@ -28,21 +28,58 @@ class SQLiteReservationRepository(WorkReservationRepository):
     def reserve_due_board(self, worker_id: str, lock_duration: int = 300) -> Optional[Dict[str, Any]]:
         from src.api.db import get_connection, is_postgres
         now = time.time()
-        # Single atomic check-and-lock
         conn = get_connection()
         try:
-            # PostgreSQL locks rows with SELECT FOR UPDATE, SQLite locks the entire database with BEGIN IMMEDIATE
             if is_postgres():
-                # Locate due board and lock it
+                # Step 1: identify a due board and lock the row atomically
                 cursor = conn.execute('''
-                    SELECT id, company_id, priority, last_job_sync FROM ats_registry
+                    SELECT id, company_id
+                    FROM ats_registry
                     WHERE status = 'ACTIVE'
                       AND (reservation_token IS NULL OR reserved_until <= %s)
                       AND (next_check_at IS NULL OR next_check_at <= %s)
-                    ORDER BY priority DESC, last_job_sync ASC
+                    ORDER BY priority DESC, last_job_sync ASC NULLS FIRST
                     LIMIT 1
-                    FOR UPDATE
+                    FOR UPDATE SKIP LOCKED
                 ''', (now, now))
+                row = cursor.fetchone()
+                if not row:
+                    return None
+
+                company_id = dict(row)["company_id"]
+                token = f"{worker_id}-{uuid.uuid4().hex[:8]}"
+
+                # Step 2: lock the board
+                cursor_update = conn.execute('''
+                    UPDATE ats_registry
+                    SET reservation_token = %s,
+                        reserved_by = %s,
+                        reserved_until = %s
+                    WHERE company_id = %s
+                      AND status = 'ACTIVE'
+                      AND (reservation_token IS NULL OR reserved_until <= %s)
+                ''', (token, worker_id, now + lock_duration, company_id, now))
+
+                if cursor_update.rowcount == 0:
+                    # Race condition
+                    return None
+
+                # Step 3: fetch the FULL row now that it is locked
+                full_cursor = conn.execute(
+                    "SELECT * FROM ats_registry WHERE company_id = %s",
+                    (company_id,)
+                )
+                full_row = full_cursor.fetchone()
+                if not full_row:
+                    return None
+
+                board_data = dict(full_row)
+                board_data["reservation_token"] = token
+                board_data["reserved_by"] = worker_id
+                board_data["reserved_until"] = now + lock_duration
+                conn.commit()
+                return board_data
+
             else:
                 conn.execute("BEGIN IMMEDIATE")
                 cursor = conn.execute('''
@@ -53,29 +90,16 @@ class SQLiteReservationRepository(WorkReservationRepository):
                     ORDER BY priority DESC, last_job_sync ASC
                     LIMIT 1
                 ''', (now, now))
-                
-            row = cursor.fetchone()
-            if not row:
-                if not is_postgres():
+
+                row = cursor.fetchone()
+                if not row:
                     conn.rollback()
-                return None
+                    return None
 
-            board_data = dict(row)
-            company_id = board_data["company_id"]
-            token = f"{worker_id}-{uuid.uuid4().hex[:8]}"
+                board_data = dict(row)
+                company_id = board_data["company_id"]
+                token = f"{worker_id}-{uuid.uuid4().hex[:8]}"
 
-            # Lock the board
-            if is_postgres():
-                cursor_update = conn.execute('''
-                    UPDATE ats_registry
-                    SET reservation_token = %s,
-                        reserved_by = %s,
-                        reserved_until = %s
-                    WHERE company_id = %s
-                      AND status = 'ACTIVE'
-                      AND (reservation_token IS NULL OR reserved_until <= %s)
-                ''', (token, worker_id, now + lock_duration, company_id, now))
-            else:
                 cursor_update = conn.execute('''
                     UPDATE ats_registry
                     SET reservation_token = ?,
@@ -86,17 +110,16 @@ class SQLiteReservationRepository(WorkReservationRepository):
                       AND (reservation_token IS NULL OR reserved_until <= ?)
                 ''', (token, worker_id, now + lock_duration, company_id, now))
 
-            if cursor_update.rowcount > 0:
-                board_data["reservation_token"] = token
-                board_data["reserved_by"] = worker_id
-                board_data["reserved_until"] = now + lock_duration
-                conn.commit()
-                return board_data
-            else:
-                # Race condition lost
-                if not is_postgres():
+                if cursor_update.rowcount > 0:
+                    board_data["reservation_token"] = token
+                    board_data["reserved_by"] = worker_id
+                    board_data["reserved_until"] = now + lock_duration
+                    conn.commit()
+                    return board_data
+                else:
                     conn.rollback()
-                return None
+                    return None
+
         except Exception as e:
             if not is_postgres():
                 try:

@@ -22,12 +22,26 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger("JobCrawlerWorker")
 
 def make_board_from_registry_row(row):
+    # --- Defensive field validation ---
+    missing = [f for f in ("ats_type", "company_id") if f not in row or row[f] is None]
+    if missing:
+        raise ValueError(
+            f"make_board_from_registry_row: registry row missing required fields {missing}. "
+            f"Available keys: {list(row.keys())}"
+        )
+
     ats_type = row["ats_type"].lower()
-    endpoint = row["canonical_endpoint"] or row["endpoint"]
-    metadata_str = row["ats_metadata"] or "{}"
+    endpoint = row.get("canonical_endpoint") or row.get("endpoint")
+    if not endpoint:
+        raise ValueError(
+            f"make_board_from_registry_row: company '{row['company_id']}' has no endpoint or canonical_endpoint"
+        )
+
+    metadata_str = row.get("ats_metadata") or "{}"
     try:
-        metadata = json.loads(metadata_str)
-    except:
+        metadata = json.loads(metadata_str) if isinstance(metadata_str, str) else (metadata_str or {})
+    except Exception:
+        logger.warning(f"make_board_from_registry_row: failed to parse ats_metadata for {row.get('company_id')}, using empty dict")
         metadata = {}
         
     if ats_type == "greenhouse":
@@ -56,6 +70,7 @@ def make_board_from_registry_row(row):
         last_verified_at=row.get("last_verified") or time.time(),
         metadata=metadata
     )
+
 
 class JobCrawlerWorker(BaseWorker):
     def __init__(self):
