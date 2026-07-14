@@ -49,25 +49,11 @@ class EndpointVerificationWorker(BaseWorker):
         plugins = [
             GreenhouseDiscoveryPlugin(),
             LeverDiscoveryPlugin(),
-            WorkdayDiscoveryPlugin()
+            WorkdayDiscoveryPlugin(),
+            AshbyDiscoveryPlugin(),
         ]
         
-        if settings.enable_discovery_plugin_ashby:
-            plugins.append(AshbyDiscoveryPlugin())
-        if settings.enable_discovery_plugin_workable:
-            plugins.append(WorkableDiscoveryPlugin())
-        if settings.enable_discovery_plugin_smartrecruiters:
-            plugins.append(SmartRecruitersDiscoveryPlugin())
-        if settings.enable_discovery_plugin_teamtailor:
-            plugins.append(TeamtailorDiscoveryPlugin())
-        if settings.enable_discovery_plugin_breezy:
-            plugins.append(BreezyDiscoveryPlugin())
-        if settings.enable_discovery_plugin_recruitee:
-            plugins.append(RecruiteeDiscoveryPlugin())
-        if settings.enable_discovery_plugin_jobvite:
-            plugins.append(JobviteDiscoveryPlugin())
-            
-        replay_cache = ReplayCache(self.db_path)
+        replay_cache = ReplayCache(settings.db_path)
         self.orchestrator = DiscoveryOrchestrator(
             sources=sources,
             plugins=plugins,
@@ -170,6 +156,14 @@ class EndpointVerificationWorker(BaseWorker):
                     self.heartbeat()
                     await asyncio.sleep(settings.crawler_poll_interval)
                     continue
+                    
+                # Transition to VERIFYING state if not polling fallback
+                if q_item:
+                    from src.discovery.pipeline_state_manager import PipelineStateManager
+                    try:
+                        PipelineStateManager.transition(company_id, "VERIFYING")
+                    except Exception as e:
+                        logger.warning(f"Could not transition {company_id} to VERIFYING (maybe state mismatch): {e}")
 
                 # Load company details
                 company_info = None
@@ -202,46 +196,82 @@ class EndpointVerificationWorker(BaseWorker):
                 if not website.startswith("http"):
                     website = f"https://{website}"
 
-                # Budget parameters
-                budget = DiscoveryBudget(max_http_requests=25, max_latency_seconds=30.0, max_search_queries=5)
-                
-                run_id = f"verification-run-{company_id}-{int(time.time())}"
+                # New V3 Verification Logic
+                from src.discovery.endpoint_ranking_engine import EndpointRankingEngine
+                from src.discovery.endpoint_intelligence_service import EndpointIntelligenceService
+                from src.discovery.ats_detector import DetectorRegistry
                 from src.discovery.pipeline.telemetry import Telemetry, Stage, Status, ReasonCode
-                Telemetry.start_run(run_id, "EndpointVerificationWorker", trigger="Cron")
+                import httpx
                 
                 logger.info(f"Running verification for: {company_info['canonical_name']} ({website})")
+                
                 try:
-                    def endpoint_url(endpoint):
-                        if isinstance(endpoint, dict):
-                            return endpoint.get("url")
-                        return getattr(endpoint, "url", None)
+                    candidates = EndpointRankingEngine.get_ranked_candidates(company_id)
+                    verified_providers = set()
+                    
+                    async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
+                        for cand in candidates:
+                            # Skip if we already verified an endpoint for this specific ATS
+                            if cand.provider_id in verified_providers:
+                                logger.info(f"Skipping candidate for {cand.provider_id} since we already verified one.")
+                                continue
+                                
+                            try:
+                                resp = await client.get(cand.url)
+                                detector = DetectorRegistry.detect_all(cand.url, resp)
+                                
+                                if detector and detector.provider_id == cand.provider_id:
+                                    logger.info(f"Verified ATS {detector.provider_id} at {cand.url}")
+                                    EndpointIntelligenceService.report_verification_success(company_id, cand.provider_id, cand.url)
+                                    
+                                    # Insert canonical to ats_registry
+                                    canonical_url = detector.extract_canonical_url(cand.url, resp)
+                                    from src.api.db import get_connection, is_postgres
+                                    db_conn = get_connection()
+                                    try:
+                                        cur = db_conn.cursor()
+                                        if is_postgres():
+                                            cur.execute(
+                                                '''
+                                                INSERT INTO ats_registry (company_id, provider_id, candidate_id, endpoint, canonical_endpoint, status)
+                                                VALUES (%s, %s, %s, %s, %s, 'ACTIVE')
+                                                ON CONFLICT (company_id, provider_id) DO NOTHING
+                                                ''',
+                                                (company_id, cand.provider_id, cand.candidate_id, cand.url, canonical_url)
+                                            )
+                                        else:
+                                            cur.execute(
+                                                '''
+                                                INSERT OR IGNORE INTO ats_registry (company_id, provider_id, candidate_id, endpoint, canonical_endpoint, status)
+                                                VALUES (?, ?, ?, ?, ?, 'ACTIVE')
+                                                ''',
+                                                (company_id, cand.provider_id, cand.candidate_id, cand.url, canonical_url)
+                                            )
+                                        db_conn.commit()
+                                        EndpointIntelligenceService.log_registry_change(db_conn, company_id, cand.provider_id, None, canonical_url, "INITIAL_DISCOVERY")
+                                    finally:
+                                        db_conn.close()
+                                    
+                                    verified_providers.add(cand.provider_id)
+                                else:
+                                    # Verification failed (e.g. valid URL but no ATS signature matched)
+                                    reason = "SignatureMismatch" if resp.status_code == 200 else f"HTTP_{resp.status_code}"
+                                    EndpointIntelligenceService.report_verification_failure(company_id, cand.provider_id, cand.url, reason)
+                                    
+                            except Exception as http_e:
+                                logger.warning(f"Failed to fetch {cand.url}: {http_e}")
+                                EndpointIntelligenceService.report_verification_failure(company_id, cand.provider_id, cand.url, type(http_e).__name__)
 
-                    res = await self.orchestrator.execute(company_id, website, budget, run_id=run_id, company_id=company_id)
-                    verified = res.get("verified", [])
-
-                    if verified:
-                        logger.info(f"Successfully verified ATS endpoint for {company_id}!")
-
-                        # Update state machine: VERIFIED
+                    if verified_providers:
                         from src.discovery.pipeline_state_manager import PipelineStateManager
-                        PipelineStateManager.transition(company_id, "VERIFIED")
-
-                        endpoint_urls = []
-                        for v in verified:
-                            if isinstance(v, dict):
-                                url = v.get("endpoint") or v.get("canonical_endpoint") or v.get("url")
-                            else:
-                                url = getattr(v, "url", None) or getattr(v, "endpoint", None)
-                            if url:
-                                endpoint_urls.append(url)
-
-                        # Push to crawl_queue for JobCrawlerWorker
-                        self.queue.push("crawl_queue", {"company_id": company_id})
-                        
-                        # Emit event
+                        PipelineStateManager.transition(
+                            company_id, 
+                            "VERIFIED", 
+                            queue_op={"queue_name": "crawl_queue", "payload": {"company_id": company_id}}
+                        )
                         self.metrics.record_event("EndpointVerified", {
                             "company_id": company_id,
-                            "endpoints": endpoint_urls,
+                            "endpoints": list(verified_providers),
                             "worker_id": self.worker_id,
                             "source_queue": current_queue
                         })
@@ -250,13 +280,13 @@ class EndpointVerificationWorker(BaseWorker):
                         Telemetry.record_event(
                             stage=Stage.VERIFICATION_EXECUTED,
                             status=Status.SUCCESS,
-                            run_id=run_id,
+                            run_id="V3_VERIFICATION",
                             company_id=company_id,
                             worker_name=self.worker_id,
-                            metadata={"queue": current_queue, "endpoints": endpoint_urls}
+                            metadata={"queue": current_queue, "endpoints": list(verified_providers)}
                         )
                         self.heartbeat(jobs_processed=1)
-                        Telemetry.finish_run(run_id, Status.SUCCESS)
+                        Telemetry.finish_run("V3_VERIFICATION", Status.SUCCESS)
                     else:
                         logger.info(f"Verification failed for {company_id}")
 
@@ -273,15 +303,19 @@ class EndpointVerificationWorker(BaseWorker):
                         Telemetry.record_event(
                             stage=Stage.VERIFICATION_EXECUTED,
                             status=Status.FAILURE,
-                            run_id=run_id,
+                            run_id="V3_VERIFICATION",
                             company_id=company_id,
                             worker_name=self.worker_id,
                             reason_code=ReasonCode.UNKNOWN_ATS,
                             metadata={"queue": current_queue, "reason": "No valid ATS endpoints discovered"}
                         )
                         self.heartbeat(failure_increment=1)
-                        Telemetry.finish_run(run_id, Status.SUCCESS)
+                        Telemetry.finish_run("V3_VERIFICATION", Status.SUCCESS)
                 except Exception as ex:
+                    import traceback
+                    logger.error(f"ORIGINAL VERIFICATION ERROR: {ex}")
+                    traceback.print_exc()
+                    
                     # Update state machine: VERIFICATION_FAILED
                     from src.discovery.pipeline_state_manager import PipelineStateManager
                     PipelineStateManager.transition(company_id, "VERIFICATION_FAILED", failure_reason="VERIFICATION_EXCEPTION")
@@ -289,13 +323,13 @@ class EndpointVerificationWorker(BaseWorker):
                     Telemetry.record_event(
                         stage=Stage.VERIFICATION_EXECUTED,
                         status=Status.FAILURE,
-                        run_id=run_id,
+                        run_id="V3_VERIFICATION",
                         company_id=company_id,
                         worker_name=self.worker_id,
                         reason_code=ReasonCode.NETWORK_TIMEOUT,
                         metadata={"queue": current_queue, "error": str(ex)}
                     )
-                    Telemetry.finish_run(run_id, Status.FAILURE)
+                    Telemetry.finish_run("V3_VERIFICATION", Status.FAILURE)
                     raise ex
 
                 if q_item:

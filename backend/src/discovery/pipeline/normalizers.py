@@ -16,7 +16,7 @@ class JobNormalizer(ABC):
 class GreenhouseNormalizer(JobNormalizer):
     def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
         jobs = []
-        company_id = raw_job.board_identity.board_token if hasattr(raw_job.board_identity, 'board_token') else "unknown"
+        company_id = raw_job.company_id
         
         job_list = raw_job.payload.get("jobs", []) if "jobs" in raw_job.payload else [raw_job.payload]
         for job in job_list:
@@ -60,7 +60,7 @@ class GreenhouseNormalizer(JobNormalizer):
 class LeverNormalizer(JobNormalizer):
     def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
         jobs = []
-        company_id = raw_job.board_identity.board_token if hasattr(raw_job.board_identity, 'board_token') else "unknown"
+        company_id = raw_job.company_id
         
         job_list = raw_job.payload.get("jobs", []) if "jobs" in raw_job.payload else [raw_job.payload]
         for job in job_list:
@@ -102,7 +102,7 @@ class LeverNormalizer(JobNormalizer):
 class AshbyNormalizer(JobNormalizer):
     def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
         jobs = []
-        company_id = raw_job.board_identity.board_token if hasattr(raw_job.board_identity, 'board_token') else "unknown"
+        company_id = raw_job.company_id
         
         for job in raw_job.payload.get("jobs", []):
             external_id = str(job.get("id", ""))
@@ -141,7 +141,7 @@ class AshbyNormalizer(JobNormalizer):
 class SmartRecruitersNormalizer(JobNormalizer):
     def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
         jobs = []
-        company_id = raw_job.board_identity.board_token if hasattr(raw_job.board_identity, 'board_token') else "unknown"
+        company_id = raw_job.company_id
         
         for job in raw_job.payload.get("jobPostings", []):
             external_id = str(job.get("id", ""))

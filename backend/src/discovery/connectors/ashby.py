@@ -46,6 +46,11 @@ class AshbyConnector(Connector):
             board.metadata["last_content_hash"] = result.content_hash
             
         if result.status_code == 200:
-            yield RawJob(provider="ashby", board_identity=board.identity, payload=result.payload)
+            yield RawJob(provider="ashby", company_id=board.company_id, board_identity=board.identity, payload=result.payload)
 
-ConnectorRegistry.register('ashby', AshbyConnector)
+ConnectorRegistry.register('ashby', 'HTML', 10, AshbyConnector)
+
+class AshbyJSONConnector(AshbyConnector):
+    pass
+    
+ConnectorRegistry.register('ashby', 'JSON', 100, AshbyJSONConnector)

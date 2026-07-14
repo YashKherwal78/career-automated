@@ -6,6 +6,9 @@ import logging
 import asyncio
 from src.workers.worker_base import BaseWorker
 from src.discovery.pipeline.sync_session import BoardSyncSession
+from src.discovery.pipeline.planner.models import Policy
+from src.discovery.pipeline.planner.builder import PlanningContextBuilder
+from src.discovery.pipeline.planner.engine import CrawlPlanner
 from src.discovery.models import Board, StandardBoardIdentity, WorkdayBoardIdentity, GreenhouseBoardIdentity, LeverBoardIdentity
 from src.discovery.pipeline.repositories.reservation_repository import SQLiteReservationRepository
 from src.discovery.registry.connector_registry import ConnectorRegistry
@@ -23,14 +26,15 @@ logger = logging.getLogger("JobCrawlerWorker")
 
 def make_board_from_registry_row(row):
     # --- Defensive field validation ---
-    missing = [f for f in ("ats_type", "company_id") if f not in row or row[f] is None]
+    ats_key = "provider_id" if "provider_id" in row else "ats_type"
+    missing = [f for f in (ats_key, "company_id") if f not in row or row[f] is None]
     if missing:
         raise ValueError(
             f"make_board_from_registry_row: registry row missing required fields {missing}. "
             f"Available keys: {list(row.keys())}"
         )
 
-    ats_type = row["ats_type"].lower()
+    ats_type = row[ats_key].lower()
     endpoint = row.get("canonical_endpoint") or row.get("endpoint")
     if not endpoint:
         raise ValueError(
@@ -45,7 +49,14 @@ def make_board_from_registry_row(row):
         metadata = {}
         
     if ats_type == "greenhouse":
-        token = metadata.get("board_token") or endpoint.split("/")[-1]
+        import re
+        token = metadata.get("board_token")
+        if not token:
+            match = re.search(r'/boards/([^/?]+)', endpoint)
+            if match:
+                token = match.group(1)
+            else:
+                token = endpoint.split("/")[-1]
         identity = GreenhouseBoardIdentity(ats="greenhouse", board_token=token)
     elif ats_type == "lever":
         token = metadata.get("board_token") or endpoint.split("/")[-1]
@@ -62,6 +73,7 @@ def make_board_from_registry_row(row):
         identity = StandardBoardIdentity(ats=ats_type, board_token=token)
         
     return Board(
+        company_id=row["company_id"],
         identity=identity,
         endpoint=endpoint,
         provider=ats_type,
@@ -76,6 +88,11 @@ class JobCrawlerWorker(BaseWorker):
     def __init__(self):
         super().__init__("JobCrawlerWorker")
         self.repository = SQLiteReservationRepository(self.db_path)
+        self.context_builder = PlanningContextBuilder(
+            ats_registry=None,
+            connector_registry=ConnectorRegistry
+        )
+        self.planner = CrawlPlanner()
 
     async def run_async(self):
         logger.info(f"JobCrawlerWorker starting as {self.worker_id}")
@@ -123,6 +140,13 @@ class JobCrawlerWorker(BaseWorker):
                 company_id = row_data["company_id"]
                 token = row_data.get("reservation_token")
 
+                # Transition to CRAWL_PENDING
+                from src.discovery.pipeline_state_manager import PipelineStateManager
+                try:
+                    PipelineStateManager.transition(company_id, "CRAWL_PENDING")
+                except Exception as e:
+                    logger.warning(f"Could not transition {company_id} to CRAWL_PENDING: {e}")
+
                 # 3. Construct Board and Connector sync
                 board = make_board_from_registry_row(row_data)
                 
@@ -144,7 +168,6 @@ class JobCrawlerWorker(BaseWorker):
                 start_time = time.time()
                 try:
                     # Transition to CRAWLING state
-                    from src.discovery.pipeline_state_manager import PipelineStateManager
                     PipelineStateManager.transition(company_id, "CRAWLING")
 
                     await session.execute()
@@ -158,8 +181,7 @@ class JobCrawlerWorker(BaseWorker):
                         self.repository.mark_completed(company_id, token, interval)
                         
                         # Transition to ACTIVE state
-                        from src.discovery.pipeline_state_manager import PipelineStateManager
-                        PipelineStateManager.transition(company_id, "ACTIVE")
+                        PipelineStateManager.transition(company_id, "ACTIVE", crawl_status="SUCCESS")
 
                         # Emit domain event
                         self.metrics.record_event("JobsSynced", {
@@ -204,8 +226,7 @@ class JobCrawlerWorker(BaseWorker):
                         self.repository.mark_failed(company_id, token, settings.retry_schedule)
                         
                         # Transition to CRAWL_FAILED state
-                        from src.discovery.pipeline_state_manager import PipelineStateManager
-                        PipelineStateManager.transition(company_id, "CRAWL_FAILED", failure_reason="SYNC_EXECUTION_FAILURE")
+                        PipelineStateManager.transition(company_id, "CRAWL_FAILED", failure_reason="SYNC_EXECUTION_FAILURE", crawl_status="FAILED")
 
                         self.metrics.update_operational_metric(f"{self.worker_id}:last_failure", time.time())
                         
@@ -222,8 +243,7 @@ class JobCrawlerWorker(BaseWorker):
                         Telemetry.finish_run(run_id, Status.SUCCESS)
                 except Exception as ex:
                     # Transition to CRAWL_FAILED state on exception
-                    from src.discovery.pipeline_state_manager import PipelineStateManager
-                    PipelineStateManager.transition(company_id, "CRAWL_FAILED", failure_reason=type(ex).__name__)
+                    PipelineStateManager.transition(company_id, "CRAWL_FAILED", failure_reason=type(ex).__name__, crawl_status="FAILED")
 
                     Telemetry.finish_run(run_id, Status.FAILURE)
                     raise ex

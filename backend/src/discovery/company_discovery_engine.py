@@ -48,7 +48,7 @@ class ContinuousDiscoveryEngine:
         # 1. Fetch companies to process from company_identities
         with sqlite3.connect(self.db.db_path) as conn:
             conn.row_factory = sqlite3.Row
-            cursor = conn.execute("SELECT company_id, legal_name, website, domain FROM company_identities")
+            cursor = conn.execute("SELECT company_id, legal_name, website, domain FROM company_identities ORDER BY next_discovery_at ASC")
             companies = [dict(row) for row in cursor.fetchall()]
             
         total_companies = len(companies)

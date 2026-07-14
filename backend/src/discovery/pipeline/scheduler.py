@@ -45,10 +45,40 @@ class Scheduler:
             finally:
                 queue.task_done()
 
-    async def run(self, limit: int = 100):
+    async def run(self, limit: int = 100, required_capabilities: dict = None, exclude_capabilities: dict = None):
         current_time = time.time()
         logger.info(f"Fetching boards due for sync...")
         boards = self.board_repo.get_due_boards(current_time, limit)
+        
+        # Capability Routing: Filter boards based on connector capabilities
+        if required_capabilities or exclude_capabilities:
+            from src.discovery.registry.connector_registry import ConnectorRegistry
+            req = required_capabilities or {}
+            exc = exclude_capabilities or {}
+            
+            allowed_providers = set()
+            for provider in ConnectorRegistry._registry.keys():
+                strategies = ConnectorRegistry.get_all_strategies(provider)
+                if not strategies:
+                    continue
+                # We check the capabilities of the highest priority strategy
+                connector = strategies[0].connector_class()
+                caps = connector.capabilities()
+                
+                matches = True
+                for flag, val in req.items():
+                    if getattr(caps, flag, None) != val:
+                        matches = False
+                        break
+                for flag, val in exc.items():
+                    if getattr(caps, flag, None) == val:
+                        matches = False
+                        break
+                        
+                if matches:
+                    allowed_providers.add(provider)
+                    
+            boards = [b for b in boards if b.provider in allowed_providers]
         
         if not boards:
             logger.info("No boards due for sync at this time.")

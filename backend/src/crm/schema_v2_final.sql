@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS company_identities (
     founders TEXT, -- JSON Array
     investors TEXT, -- JSON Array (Knowledge Graph: YC, Peak XV, etc.)
     aliases TEXT, -- JSON Array
+    lifecycle_state TEXT DEFAULT 'DISCOVERED',
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 

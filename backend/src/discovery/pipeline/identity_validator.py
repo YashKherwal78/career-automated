@@ -48,6 +48,8 @@ class CompanyIdentityValidator:
         host_norm = CompanyIdentityValidator._normalize(hostname)
         if target_norm in host_norm or target_norm in tenant_norm:
             return True
+        if tenant_norm and tenant_norm in target_norm:
+            return True
             
         # If target name is very long and part of it matches
         if len(target_norm) > 4:

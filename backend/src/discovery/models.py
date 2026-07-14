@@ -64,6 +64,7 @@ class SelectionResult:
 
 @dataclass
 class Board:
+    company_id: str
     identity: BoardIdentity
     endpoint: str
     provider: str
@@ -111,6 +112,18 @@ class ConnectorCapability:
     supports_parallel_fetch: bool
     supports_snapshot: bool
 
+    # New Phase 2 Capabilities
+    supports_bulk_fetch: bool = False
+    supports_graphql: bool = False
+    requires_browser: bool = False
+    requires_cookie: bool = False
+    requires_js: bool = False
+    supports_delta: bool = False
+    supports_salary: bool = False
+    supports_departments: bool = False
+    supports_remote: bool = False
+    supports_location: bool = False
+
 @dataclass
 class BoardSyncTask:
     board_id: str
@@ -120,6 +133,7 @@ class BoardSyncTask:
 
 @dataclass
 class RawJob:
+    company_id: str
     provider: str
     board_identity: BoardIdentity
     payload: dict

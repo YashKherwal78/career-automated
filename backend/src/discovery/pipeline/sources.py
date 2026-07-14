@@ -32,7 +32,6 @@ class HeadProbeSource(DiscoverySource):
             async with sem:
                 try:
                     # Enforce a short 3-second timeout for head probes
-                    import async_timeout
                     # For compatibility we can just use asyncio.wait_for, but HttpClient might not respect it safely if session gets stuck.
                     # aiohttp session can take `timeout` in request if we pass it.
                     # Our context.fetch accepts **kwargs.
@@ -66,10 +65,15 @@ class HeadProbeSource(DiscoverySource):
                             evidence_list.append(Evidence(source="HeadProbe", weight=8, description="Redirected to careers subdomain"))
                             
                         c_out = Candidate(url=res.final_url, evidence=evidence_list)
+                    elif res.status_code == 200:
+                        # Ensure 200 OK active paths (like /jobs) are scraped by StaticLandingPageSource
+                        evidence_list = [Evidence(source="HeadProbe", weight=2, description="Active 200 OK path")]
+                        c_out = Candidate(url=res.final_url, evidence=evidence_list)
                         
                     return probe_res, c_out, res.redirect_chain if redirect_count > 0 else None
                         
                 except Exception as e:
+                    print(f"Exception in HeadProbeSource for {path}: {repr(e)}")
                     duration = int((time.time() - probe_start) * 1000)
                     return ProbeResult(
                         path=path,
@@ -333,3 +337,40 @@ class ExternalSearchSource(DiscoverySource):
             requests_used=0,
             bytes_downloaded=0
         )
+import urllib.parse
+from typing import List, Dict, Any
+from src.discovery.pipeline.fallback_models import Candidate, Evidence, DiscoveryBudget
+from src.discovery.pipeline.sources import DiscoverySource
+
+class HeuristicTokenSource(DiscoverySource):
+    """Generates fallback candidates based on the domain name."""
+    
+    async def fetch_evidence(self, company: str, website: str, budget: DiscoveryBudget, **kwargs) -> List[Candidate]:
+        candidates = []
+        try:
+            parsed = urllib.parse.urlparse(website)
+            domain = parsed.netloc.replace('www.', '')
+            token = domain.split('.')[0]
+            
+            # Known ATS url templates
+            ats_templates = [
+                ("greenhouse", f"https://boards.greenhouse.io/{token}"),
+                ("lever", f"https://jobs.lever.co/{token}"),
+                ("ashby", f"https://jobs.ashbyhq.com/{token}"),
+                ("workday", f"https://{token}.myworkdayjobs.com/en-US/careers"),
+                ("workable", f"https://apply.workable.com/{token}"),
+                ("smartrecruiters", f"https://careers.smartrecruiters.com/{token}"),
+                ("teamtailor", f"https://careers.{token}.com"),
+                ("breezy", f"https://{token}.breezy.hr")
+            ]
+            
+            for provider_id, url in ats_templates:
+                candidates.append(Candidate(
+                    url=url,
+                    evidence=[Evidence(source="HeuristicTokenSource", weight=1, description="Generated from domain heuristic")]
+                ))
+                
+        except Exception:
+            pass
+            
+        return candidates

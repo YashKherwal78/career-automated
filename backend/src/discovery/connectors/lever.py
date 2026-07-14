@@ -43,11 +43,28 @@ class LeverConnector(Connector):
         if result.status_code == 200 and isinstance(result.payload, list):
             # Lever returns a direct list of jobs
             for job in result.payload:
-                yield RawJob(provider="lever", board_identity=board.identity, payload=job)
+                yield RawJob(provider="lever", company_id=board.company_id, board_identity=board.identity, payload=job)
         elif result.status_code == 200 and isinstance(result.payload, dict):
             # Just in case it returns {"data": [...]} in some versions
             job_list = result.payload.get("data", [])
             for job in job_list:
-                yield RawJob(provider="lever", board_identity=board.identity, payload=job)
+                yield RawJob(provider="lever", company_id=board.company_id, board_identity=board.identity, payload=job)
 
-ConnectorRegistry.register('lever', LeverConnector)
+ConnectorRegistry.register('lever', 'HTML', 10, LeverConnector)
+
+class LeverJSONConnector(LeverConnector):
+    def capabilities(self) -> ConnectorCapability:
+        return ConnectorCapability(
+            pagination="none",
+            supports_etag=False,
+            supports_last_modified=False,
+            supports_content_hash=True,
+            supports_incremental=False,
+            supports_parallel_fetch=False,
+            supports_snapshot=True,
+            supports_bulk_fetch=True,
+            supports_location=True,
+            supports_remote=True
+        )
+    
+ConnectorRegistry.register('lever', 'JSON', 100, LeverJSONConnector)

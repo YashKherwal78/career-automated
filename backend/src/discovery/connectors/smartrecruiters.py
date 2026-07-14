@@ -76,4 +76,4 @@ class SmartRecruitersConnector(Connector):
                 
             offset += limit
 
-ConnectorRegistry.register('smartrecruiters', SmartRecruitersConnector)
+ConnectorRegistry.register('smartrecruiters', 'HTML', 10, SmartRecruitersConnector)

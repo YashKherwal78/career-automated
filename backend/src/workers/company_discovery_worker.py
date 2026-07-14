@@ -120,14 +120,18 @@ class CompanyDiscoveryWorker(BaseWorker):
                         if is_postgres():
                             conn.execute('''
                                 INSERT INTO company_identities (company_id, domain, canonical_name, website, aliases, lifecycle_state)
-                                VALUES (%s, %s, %s, %s, %s, 'DISCOVERED')
+                                VALUES (%s, %s, %s, %s, %s, NULL)
                                 ON CONFLICT (company_id) DO NOTHING
                             ''', (company_id, domain, name, website, aliases_json))
                         else:
                             conn.execute('''
                                 INSERT OR IGNORE INTO company_identities (company_id, domain, canonical_name, website, aliases, lifecycle_state)
-                                VALUES (?, ?, ?, ?, ?, 'DISCOVERED')
+                                VALUES (?, ?, ?, ?, ?, NULL)
                             ''', (company_id, domain, name, website, aliases_json))
+                            
+                        # Transition to DISCOVERED
+                        from src.discovery.pipeline_state_manager import PipelineStateManager
+                        PipelineStateManager.transition(company_id, "DISCOVERED", conn=conn)
                     elif existing and not existing_aliases and aliases_json:
                         if is_postgres():
                             conn.execute('UPDATE company_identities SET aliases = %s WHERE company_id = %s', (aliases_json, company_id))
@@ -191,55 +195,99 @@ class CompanyDiscoveryWorker(BaseWorker):
                 batch_number += 1
                 logger.info(f"Processing candidate batch {batch_number} ({len(candidates)} rows, IDs {candidates[0]['id']} to {candidates[-1]['id']})")
 
-                fast_path_candidates = []
-                fallback_candidates = []
+                import json
+                import asyncio
+                from src.discovery.pipeline.sources import HeadProbeSource, StaticLandingPageSource, ExternalSearchSource, HeuristicTokenSource
+                from src.discovery.pipeline.plugins.greenhouse_plugin import GreenhouseDiscoveryPlugin
+                from src.discovery.pipeline.plugins.lever_plugin import LeverDiscoveryPlugin
+                from src.discovery.pipeline.plugins.workday_plugin import WorkdayDiscoveryPlugin
+                from src.discovery.pipeline.plugins.ashby_plugin import AshbyDiscoveryPlugin
+                from src.discovery.pipeline.plugins.workable_plugin import WorkableDiscoveryPlugin
+                from src.discovery.pipeline.plugins.smartrecruiters_plugin import SmartRecruitersDiscoveryPlugin
+                from src.discovery.pipeline.plugins.teamtailor_plugin import TeamtailorDiscoveryPlugin
+                from src.discovery.pipeline.plugins.breezy_plugin import BreezyDiscoveryPlugin
+                from src.discovery.pipeline.fallback_models import DiscoveryBudget
+                from src.discovery.pipeline.discovery_orchestrator import DiscoveryOrchestrator
+                
+                # Setup orchestrator
+                sources = [HeadProbeSource(), StaticLandingPageSource(), ExternalSearchSource(), HeuristicTokenSource()]
+                plugins = [
+                    GreenhouseDiscoveryPlugin(), LeverDiscoveryPlugin(), WorkdayDiscoveryPlugin(), 
+                    AshbyDiscoveryPlugin(), WorkableDiscoveryPlugin(), SmartRecruitersDiscoveryPlugin(), 
+                    TeamtailorDiscoveryPlugin(), BreezyDiscoveryPlugin()
+                ]
+                orchestrator = DiscoveryOrchestrator(sources=sources, plugins=plugins)
+                # Google search is often rate-limited, but we keep it enabled
+                budget = DiscoveryBudget(max_http_requests=20, max_search_queries=2, max_latency_seconds=30.0)
+                
+                # We won't use fast_path promotion directly here anymore.
+                # Instead, all candidates go to endpoint_candidates and we rely on EndpointRankingEngine.
+                
+                all_candidates = []
+                company_ids_to_verify = []
 
                 for cand in candidates:
                     cid = cand["company_id"]
-                    aliases_str = cand.get("aliases")
-                    metadata = {}
-                    if aliases_str:
-                        try:
-                            metadata = json.loads(aliases_str)
-                        except Exception:
-                            pass
+                    try:
+                        res = asyncio.run(orchestrator.execute(
+                            company=cand["canonical_name"], 
+                            website=cand["website"], 
+                            budget=budget,
+                            company_id=cid
+                        ))
+                        
+                        plugins_results = res.get('all_candidates', [])
+                        
+                        for pr in plugins_results:
+                            all_candidates.append({
+                                "company_id": cid,
+                                "provider_id": getattr(pr, 'provider_id', pr.candidate.provider_id if hasattr(pr, 'candidate') else getattr(pr, 'ats_domain', 'unknown').split('.')[0]),
+                                "url": pr.url if hasattr(pr, 'url') else pr.candidate.url,
+                                "discovery_source": "DiscoveryOrchestrator",
+                                "evidence": [e.__dict__ for e in (pr.evidence if hasattr(pr, 'evidence') else [])],
+                                "confidence_score": getattr(pr, 'confidence_score', getattr(pr, 'normalized_score', 0))
+                            })
+                            
+                        if plugins_results:
+                            company_ids_to_verify.append(cid)
+                    except Exception as e:
+                        logger.error(f"DiscoveryOrchestrator failed for {cid}: {e}")
+
+                if all_candidates:
+                    # Upsert into endpoint_candidates
+                    cursor = conn.cursor()
+                    for cand in all_candidates:
+                        evidence_str = json.dumps(cand["evidence"])
+                        if is_postgres():
+                            cursor.execute('''
+                                INSERT INTO endpoint_candidates (company_id, provider_id, url, discovery_source, evidence, confidence_score)
+                                VALUES (%s, %s, %s, %s, %s, %s)
+                                ON CONFLICT (company_id, provider_id, url) DO UPDATE SET
+                                    confidence_score = EXCLUDED.confidence_score,
+                                    times_seen = endpoint_candidates.times_seen + 1,
+                                    last_seen = CURRENT_TIMESTAMP
+                            ''', (cand["company_id"], cand["provider_id"], cand["url"], cand["discovery_source"], evidence_str, cand["confidence_score"]))
+                        else:
+                            # Fallback sqlite
+                            cursor.execute('''
+                                INSERT INTO endpoint_candidates (company_id, provider_id, url, discovery_source, evidence, confidence_score)
+                                VALUES (?, ?, ?, ?, ?, ?)
+                                ON CONFLICT (company_id, provider_id, url) DO UPDATE SET
+                                    confidence_score = excluded.confidence_score,
+                                    times_seen = endpoint_candidates.times_seen + 1,
+                                    last_seen = CURRENT_TIMESTAMP
+                            ''', (cand["company_id"], cand["provider_id"], cand["url"], cand["discovery_source"], evidence_str, cand["confidence_score"]))
                     
-                    cand_payload = {
-                        "company_id": cid,
-                        "canonical_name": cand["canonical_name"],
-                        "domain": cand["domain"],
-                        "website": cand["website"],
-                        "metadata": metadata
-                    }
-
-                    if metadata.get("source") == "jobhive" and metadata.get("known_ats") in ["greenhouse", "lever", "ashby", "workday", "smartrecruiters"]:
-                        fast_path_candidates.append(cand_payload)
-                    else:
-                        fallback_candidates.append(cand_payload)
-
-                # Execute fast-path batch promotion (single transaction)
-                fast_pathed_ids = []
-                if fast_path_candidates:
-                    fast_pathed_ids = fast_patcher.fast_path_companies_batch(fast_path_candidates)
-                    if fast_pathed_ids:
-                        logger.info(f"Fast-pathed {len(fast_pathed_ids)} companies directly to active registry.")
-                        # Lifecycle transition: FAST_PATH_MATCHED
+                    # Transition all to VERIFICATION_PENDING (this creates the queue payload)
+                    if company_ids_to_verify:
                         from src.discovery.pipeline_state_manager import PipelineStateManager
-                        PipelineStateManager.transition_batch(fast_pathed_ids, "FAST_PATH_MATCHED", conn=conn)
-                        # Push to crawl_queue
-                        crawl_payloads = [{"company_id": cid} for cid in fast_pathed_ids]
-                        self.queue.push_many("crawl_queue", crawl_payloads)
-
-                # Fallback to verification queue
-                if fallback_candidates:
-                    verify_payloads = [{"company_id": c["company_id"]} for c in fallback_candidates]
-                    enqueued_ids = self.queue.push_many("verification_queue", verify_payloads)
-                    if enqueued_ids:
-                        logger.info(f"Enqueued {len(verify_payloads)} companies for fallback verification.")
-                        # Lifecycle transition: VERIFICATION_PENDING
-                        verify_cids = [c["company_id"] for c in fallback_candidates]
-                        from src.discovery.pipeline_state_manager import PipelineStateManager
-                        PipelineStateManager.transition_batch(verify_cids, "VERIFICATION_PENDING", conn=conn)
+                        PipelineStateManager.transition_batch(
+                            company_ids_to_verify, 
+                            "VERIFICATION_PENDING", 
+                            queue_op_name="verification_queue",
+                            conn=conn
+                        )
+                    logger.info(f"Enqueued {len(company_ids_to_verify)} companies for verification.")
 
                 conn.commit()
 

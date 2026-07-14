@@ -28,3 +28,6 @@ logs/
 data/reports/
 scratch/
 *.db
+
+# Research Directory
+research/

@@ -92,4 +92,9 @@ class WorkdayConnector(Connector):
             offset += limit
 
 from src.discovery.registry.connector_registry import ConnectorRegistry
-ConnectorRegistry.register('workday', WorkdayConnector)
+ConnectorRegistry.register('workday', 'HTML', 10, WorkdayConnector)
+
+class WorkdayJSONConnector(WorkdayConnector):
+    pass
+    
+ConnectorRegistry.register('workday', 'JSON', 100, WorkdayJSONConnector)

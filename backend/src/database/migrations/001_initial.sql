@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS company_identities (
     founders TEXT,
     investors TEXT,
     aliases TEXT,
+    lifecycle_state TEXT DEFAULT 'DISCOVERED',
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
