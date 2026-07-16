@@ -3,10 +3,10 @@ import json
 import time
 import uuid
 from typing import Any, Dict, Optional
-from backend.src.discovery.queue.base_queue import BaseQueue
-from backend.src.runtime.postgres.connection import get_connection, USE_POSTGRES
-from backend.src.runtime.redis.queue_manager import QueueManager
-from backend.src.runtime.redis.redis_client import RedisClient
+from src.discovery.queue.base_queue import BaseQueue
+from src.runtime.postgres.connection import get_connection, USE_POSTGRES
+from src.runtime.redis.queue_manager import QueueManager
+from src.runtime.redis.redis_client import RedisClient
 
 class SQLiteQueue(BaseQueue):
     """

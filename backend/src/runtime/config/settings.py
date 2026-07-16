@@ -11,25 +11,25 @@ class Settings:
     ENABLE_LOCAL_FALLBACKS: bool = os.getenv("ENABLE_LOCAL_FALLBACKS", "false").lower() == "true"
 
     # Database
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "").strip("'\"")
     
     # Redis
-    REDIS_URL: str = os.getenv("REDIS_URL", "")
+    REDIS_URL: str = os.getenv("REDIS_URL", "").strip("'\"")
     
     # Supabase
-    SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")
-    SUPABASE_SERVICE_ROLE_KEY: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+    SUPABASE_URL: str = os.getenv("SUPABASE_URL", "").strip("'\"")
+    SUPABASE_SERVICE_ROLE_KEY: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip("'\"")
     
     # Cloudflare R2
-    R2_BUCKET: str = os.getenv("CLOUDFLARE_R2_BUCKET", "careerautomated-assets")
-    R2_ENDPOINT: str = os.getenv("CLOUDFLARE_R2_ENDPOINT", "")
-    R2_ACCESS_KEY_ID: str = os.getenv("CLOUDFLARE_R2_ACCESS_KEY_ID", "")
-    R2_SECRET_ACCESS_KEY: str = os.getenv("CLOUDFLARE_R2_SECRET_ACCESS_KEY", "")
+    R2_BUCKET: str = os.getenv("CLOUDFLARE_R2_BUCKET", "careerautomated-assets").strip("'\"")
+    R2_ENDPOINT: str = os.getenv("CLOUDFLARE_R2_ENDPOINT", "").strip("'\"")
+    R2_ACCESS_KEY_ID: str = os.getenv("CLOUDFLARE_R2_ACCESS_KEY_ID", "").strip("'\"")
+    R2_SECRET_ACCESS_KEY: str = os.getenv("CLOUDFLARE_R2_SECRET_ACCESS_KEY", "").strip("'\"")
     
     # API Keys
-    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
-    GMAIL_ADDRESS: str = os.getenv("GMAIL_ADDRESS", "")
-    GMAIL_APP_PASSWORD: str = os.getenv("GMAIL_APP_PASSWORD", "")
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "").strip("'\"")
+    GMAIL_ADDRESS: str = os.getenv("GMAIL_ADDRESS", "").strip("'\"")
+    GMAIL_APP_PASSWORD: str = os.getenv("GMAIL_APP_PASSWORD", "").strip("'\"")
     
     @classmethod
     def validate(cls):

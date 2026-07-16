@@ -19,9 +19,9 @@ class CleanupRepository(BaseRepository):
             return []
 
     def is_in_discovery_queue(self, company_id: str) -> bool:
-        from backend.src.runtime.postgres.connection import USE_POSTGRES
+        from src.runtime.postgres.connection import USE_POSTGRES
         if USE_POSTGRES:
-            from backend.src.runtime.redis.redis_client import RedisClient
+            from src.runtime.redis.redis_client import RedisClient
             client = RedisClient.get_client()
             return bool(client.sismember("dedup:discovery_queue", str(company_id)))
 
@@ -36,7 +36,7 @@ class CleanupRepository(BaseRepository):
             return cursor_q.fetchone() is not None
 
     def recover_stuck_queues(self, now: float) -> int:
-        from backend.src.runtime.postgres.connection import USE_POSTGRES
+        from src.runtime.postgres.connection import USE_POSTGRES
         if USE_POSTGRES:
             # Redis TTL handles processing keys cleanup automatically
             return 0
