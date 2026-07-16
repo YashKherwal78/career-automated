@@ -169,6 +169,53 @@
                     </div>
                 </div>
 
+                <!-- Adaptive Crawl Scheduling Tiers -->
+                <div class="glass-card rounded-3xl p-6 space-y-4">
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h3 class="font-display text-lg font-bold text-ink">Adaptive Crawl Scheduling</h3>
+                            <p class="text-xs text-ink-soft mt-1">Dynamic workload distribution based on job churn</p>
+                        </div>
+                        <div class="text-right text-xs">
+                            <span class="text-ink-soft">Avg Interval: </span><span id="tier-avg-interval" class="font-bold">--h</span>
+                            <span class="mx-2 text-ink-soft">|</span>
+                            <span class="text-ink-soft">Avg Churn: </span><span id="tier-avg-churn" class="font-bold">--%</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-5 gap-3">
+                        <div class="bg-red-50 border border-red-100 rounded-xl p-3 text-center">
+                            <div class="text-[10px] uppercase font-bold text-red-800">Critical</div>
+                            <div class="text-2xl font-bold text-red-950 mt-1" id="tier-critical">-</div>
+                        </div>
+                        <div class="bg-amber-50 border border-amber-100 rounded-xl p-3 text-center">
+                            <div class="text-[10px] uppercase font-bold text-amber-800">High</div>
+                            <div class="text-2xl font-bold text-amber-950 mt-1" id="tier-high">-</div>
+                        </div>
+                        <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 text-center">
+                            <div class="text-[10px] uppercase font-bold text-blue-800">Normal</div>
+                            <div class="text-2xl font-bold text-blue-950 mt-1" id="tier-normal">-</div>
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
+                            <div class="text-[10px] uppercase font-bold text-slate-600">Low</div>
+                            <div class="text-2xl font-bold text-slate-800 mt-1" id="tier-low">-</div>
+                        </div>
+                        <div class="bg-zinc-100 border border-zinc-200 rounded-xl p-3 text-center opacity-70">
+                            <div class="text-[10px] uppercase font-bold text-zinc-600">Dormant</div>
+                            <div class="text-2xl font-bold text-zinc-800 mt-1" id="tier-dormant">-</div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center pt-2 border-t border-slate-100">
+                        <div class="text-xs">
+                            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1"></span>
+                            <span class="font-semibold" id="tier-due-now">-</span> <span class="text-ink-soft">Companies Due Now</span>
+                        </div>
+                        <div class="text-xs">
+                            <span class="inline-block w-2 h-2 rounded-full bg-slate-300 mr-1"></span>
+                            <span class="font-semibold" id="tier-waiting">-</span> <span class="text-ink-soft">Waiting</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Operations Home Summary widgets -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="glass-card rounded-3xl p-6 space-y-4">
@@ -400,6 +447,24 @@
             document.getElementById('home-companies').innerText = data.total_companies || '0';
             document.getElementById('home-verified').innerText = data.active_endpoints || '0';
             document.getElementById('home-jobs').innerText = data.active_jobs || '0';
+            
+            try {
+                const tiersRes = await fetch('/api/v1/health/tiers');
+                const tiersData = await tiersRes.json();
+                document.getElementById('tier-critical').innerText = tiersData.distribution.CRITICAL || 0;
+                document.getElementById('tier-high').innerText = tiersData.distribution.HIGH || 0;
+                document.getElementById('tier-normal').innerText = tiersData.distribution.NORMAL || 0;
+                document.getElementById('tier-low').innerText = tiersData.distribution.LOW || 0;
+                document.getElementById('tier-dormant').innerText = tiersData.distribution.DORMANT || 0;
+                
+                document.getElementById('tier-avg-interval').innerText = tiersData.avg_interval_hours + 'h';
+                document.getElementById('tier-avg-churn').innerText = (tiersData.avg_churn_rate * 100).toFixed(1) + '%';
+                
+                document.getElementById('tier-due-now').innerText = tiersData.queues.due_now || 0;
+                document.getElementById('tier-waiting').innerText = tiersData.queues.waiting || 0;
+            } catch (e) {
+                console.error("Failed to fetch tier data", e);
+            }
 
             const runsRes = await fetch('/api/v1/analytics/runs');
             const runs = await runsRes.json();

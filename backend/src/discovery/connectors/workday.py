@@ -61,7 +61,7 @@ class WorkdayConnector(Connector):
         if result.status_code == 200 and isinstance(result.payload, dict):
             job_list = result.payload.get("jobPostings", [])
             for job in job_list:
-                yield RawJob(provider="workday", board_identity=board.identity, payload=job)
+                yield RawJob(company_id=board.company_id, provider="workday", board_identity=board.identity, payload=job)
                 
             if len(job_list) < limit:
                 return
@@ -84,7 +84,7 @@ class WorkdayConnector(Connector):
                 break
                 
             for job in job_list:
-                yield RawJob(provider="workday", board_identity=board.identity, payload=job)
+                yield RawJob(company_id=board.company_id, provider="workday", board_identity=board.identity, payload=job)
                 
             if len(job_list) < limit:
                 break

@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 import re
 import sqlite3
 import json
@@ -31,7 +32,7 @@ def process_job(job: Dict) -> None:
     Adds a job to the database or updates it if it's a duplicate.
     Prioritizes ATS URLs.
     """
-    conn = sqlite3.connect(Config.DATABASE_PATH)
+    conn = get_connection()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     

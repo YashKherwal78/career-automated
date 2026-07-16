@@ -1,12 +1,9 @@
 from fastapi import APIRouter, Depends, Query
 from typing import Optional
-from src.api.dependencies import get_db
-from src.api.repositories.jobs_repository import JobRepository
+from src.api.dependencies import get_repos
+from src.core.repositories.manager import RepositoryManager
 
 router = APIRouter()
-
-def get_job_repo(db = Depends(get_db)):
-    return JobRepository(db)
 
 @router.get("")
 def get_jobs(
@@ -22,9 +19,9 @@ def get_jobs(
     seniority: Optional[str] = None,
     min_salary: Optional[float] = None,
     sort_by: str = "score",
-    repo: JobRepository = Depends(get_job_repo)
+    repos: RepositoryManager = Depends(get_repos)
 ):
-    return repo.get_jobs(
+    return repos.job.get_jobs(
         page=page,
         page_size=page_size,
         provider=provider,
@@ -54,9 +51,9 @@ def get_board_jobs(
     seniority: Optional[str] = None,
     min_salary: Optional[float] = None,
     sort_by: str = "newest",
-    repo: JobRepository = Depends(get_job_repo)
+    repos: RepositoryManager = Depends(get_repos)
 ):
-    return repo.get_jobs(
+    return repos.job.get_jobs(
         page=page,
         page_size=page_size,
         provider=provider,
@@ -73,9 +70,13 @@ def get_board_jobs(
     )
 
 @router.get("/{job_id}")
-def get_job(job_id: str, repo: JobRepository = Depends(get_job_repo)):
+def get_job(job_id: str, repos: RepositoryManager = Depends(get_repos)):
     from fastapi import HTTPException
-    job = repo.get_job(job_id)
+    job = repos.job.get_job(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     return job
+
+@router.get("/sync-history/{company_id}")
+def get_sync_history(company_id: str, repos: RepositoryManager = Depends(get_repos)):
+    return repos.dashboard.get_job_sync_history(company_id)

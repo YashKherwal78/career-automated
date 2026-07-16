@@ -1,85 +1,85 @@
 import sqlite3
 import json
 import time
+import uuid
 from typing import Any, Dict, Optional
-from src.discovery.queue.base_queue import BaseQueue
+from backend.src.discovery.queue.base_queue import BaseQueue
+from backend.src.runtime.postgres.connection import get_connection, USE_POSTGRES
+from backend.src.runtime.redis.queue_manager import QueueManager
+from backend.src.runtime.redis.redis_client import RedisClient
 
 class SQLiteQueue(BaseQueue):
     """
-    SQLite-backed implementation of BaseQueue for local development.
-    Uses a single table for all queues to mimic Redis lists.
+    Dual-Backend Queue implementation.
+    Delegates to Redis (via QueueManager) in production/PostgreSQL mode,
+    and falls back to SQLite in local/development mode.
     """
     
     def __init__(self, db_path: str = "data/crm.db"):
         self.db_path = db_path
-        self._init_db()
+        if not USE_POSTGRES:
+            self._init_db()
         
     def _init_db(self):
-        from src.api.db import get_connection, is_postgres
         conn = get_connection()
         try:
-            if not is_postgres():
-                conn.execute('PRAGMA journal_mode=WAL')
-                conn.execute('PRAGMA synchronous=NORMAL')
-                conn.execute('PRAGMA busy_timeout=10000')
-                conn.execute('''
-                    CREATE TABLE IF NOT EXISTS local_queues (
-                        item_id TEXT PRIMARY KEY,
-                        queue_name TEXT NOT NULL,
-                        payload JSON NOT NULL,
-                        status TEXT DEFAULT 'QUEUED',
-                        failures INTEGER DEFAULT 0,
-                        retry_count INTEGER DEFAULT 0,
-                        error TEXT,
-                        locked_until REAL DEFAULT 0.0,
-                        next_retry_at REAL DEFAULT 0.0,
-                        last_attempt_at REAL DEFAULT 0.0,
-                        created_at REAL NOT NULL
-                    )
-                ''')
-                existing_cols = [row[1] for row in conn.execute("PRAGMA table_info(local_queues)")]
-                if 'failures' not in existing_cols:
-                    conn.execute('ALTER TABLE local_queues ADD COLUMN failures INTEGER DEFAULT 0')
-                if 'retry_count' not in existing_cols:
-                    conn.execute('ALTER TABLE local_queues ADD COLUMN retry_count INTEGER DEFAULT 0')
-                if 'error' not in existing_cols:
-                    conn.execute('ALTER TABLE local_queues ADD COLUMN error TEXT')
-                if 'next_retry_at' not in existing_cols:
-                    conn.execute('ALTER TABLE local_queues ADD COLUMN next_retry_at REAL DEFAULT 0.0')
-                if 'last_attempt_at' not in existing_cols:
-                    conn.execute('ALTER TABLE local_queues ADD COLUMN last_attempt_at REAL DEFAULT 0.0')
-                conn.execute('CREATE INDEX IF NOT EXISTS idx_local_queues ON local_queues(queue_name, status, locked_until, next_retry_at)')
-            else:
-                conn.execute('''
-                    CREATE TABLE IF NOT EXISTS local_queues (
-                        item_id TEXT PRIMARY KEY,
-                        queue_name TEXT NOT NULL,
-                        payload JSONB NOT NULL,
-                        status TEXT DEFAULT 'QUEUED',
-                        failures INTEGER DEFAULT 0,
-                        retry_count INTEGER DEFAULT 0,
-                        error TEXT,
-                        locked_until DOUBLE PRECISION DEFAULT 0.0,
-                        next_retry_at DOUBLE PRECISION DEFAULT 0.0,
-                        last_attempt_at DOUBLE PRECISION DEFAULT 0.0,
-                        created_at DOUBLE PRECISION NOT NULL
-                    )
-                ''')
-                conn.execute('ALTER TABLE local_queues ADD COLUMN IF NOT EXISTS failures INTEGER DEFAULT 0')
-                conn.execute('ALTER TABLE local_queues ADD COLUMN IF NOT EXISTS retry_count INTEGER DEFAULT 0')
-                conn.execute('ALTER TABLE local_queues ADD COLUMN IF NOT EXISTS error TEXT')
-                conn.execute('ALTER TABLE local_queues ADD COLUMN IF NOT EXISTS next_retry_at DOUBLE PRECISION DEFAULT 0.0')
-                conn.execute('ALTER TABLE local_queues ADD COLUMN IF NOT EXISTS last_attempt_at DOUBLE PRECISION DEFAULT 0.0')
-                conn.execute('CREATE INDEX IF NOT EXISTS idx_local_queues ON local_queues(queue_name, status, locked_until, next_retry_at)')
+            conn.execute('PRAGMA journal_mode=WAL')
+            conn.execute('PRAGMA synchronous=NORMAL')
+            conn.execute('PRAGMA busy_timeout=10000')
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS local_queues (
+                    item_id TEXT PRIMARY KEY,
+                    queue_name TEXT NOT NULL,
+                    payload JSON NOT NULL,
+                    status TEXT DEFAULT 'QUEUED',
+                    failures INTEGER DEFAULT 0,
+                    retry_count INTEGER DEFAULT 0,
+                    error TEXT,
+                    locked_until REAL DEFAULT 0.0,
+                    next_retry_at REAL DEFAULT 0.0,
+                    last_attempt_at REAL DEFAULT 0.0,
+                    created_at REAL NOT NULL
+                )
+            ''')
+            existing_cols = [row[1] for row in conn.execute("PRAGMA table_info(local_queues)")]
+            if 'failures' not in existing_cols:
+                conn.execute('ALTER TABLE local_queues ADD COLUMN failures INTEGER DEFAULT 0')
+            if 'retry_count' not in existing_cols:
+                conn.execute('ALTER TABLE local_queues ADD COLUMN retry_count INTEGER DEFAULT 0')
+            if 'error' not in existing_cols:
+                conn.execute('ALTER TABLE local_queues ADD COLUMN error TEXT')
+            if 'next_retry_at' not in existing_cols:
+                conn.execute('ALTER TABLE local_queues ADD COLUMN next_retry_at REAL DEFAULT 0.0')
+            if 'last_attempt_at' not in existing_cols:
+                conn.execute('ALTER TABLE local_queues ADD COLUMN last_attempt_at REAL DEFAULT 0.0')
+            conn.execute('CREATE INDEX IF NOT EXISTS idx_local_queues ON local_queues(queue_name, status, locked_until, next_retry_at)')
         finally:
             conn.close()
             
     def push(self, queue_name: str, payload: Dict[str, Any]) -> str:
-        from src.api.db import get_connection
-        import uuid
         item_id = str(uuid.uuid4())
-        created_at = time.time()
         
+        if USE_POSTGRES:
+            # Redis Queue path
+            wrapped = {
+                "item_id": item_id,
+                "payload": payload,
+                "created_at": time.time(),
+                "failures": 0,
+                "retry_count": 0
+            }
+            QueueManager.enqueue(queue_name, wrapped)
+            
+            # Maintain active company set for duplicate filtering
+            cid = payload.get("company_id")
+            if cid:
+                client = RedisClient.get_client()
+                client.sadd(f"dedup:{queue_name}", str(cid))
+                
+            return item_id
+            
+        # SQLite Queue path
+        created_at = time.time()
         conn = get_connection()
         try:
             conn.execute('''
@@ -97,16 +97,32 @@ class SQLiteQueue(BaseQueue):
         return item_id
         
     def pop(self, queue_name: str, timeout: int = 0) -> Optional[Dict[str, Any]]:
-        """
-        Pops an item and locks it for 300 seconds.
-        """
-        from src.api.db import get_connection
+        if USE_POSTGRES:
+            # Redis Queue path (blocking pop)
+            wrapped = QueueManager.dequeue(queue_name, timeout=timeout or 5)
+            if not wrapped:
+                return None
+            
+            cid = wrapped["payload"].get("company_id")
+            if cid:
+                client = RedisClient.get_client()
+                client.srem(f"dedup:{queue_name}", str(cid))
+                
+            # Temporarily cache under processing status in case of failure/nack
+            client = RedisClient.get_client()
+            client.set(f"processing:{queue_name}:{wrapped['item_id']}", json.dumps(wrapped), ex=300)
+            
+            return {
+                "_item_id": wrapped["item_id"],
+                "queue_name": queue_name,
+                "payload": wrapped["payload"]
+            }
+            
+        # SQLite Queue path
         now = time.time()
-        lock_until = now + 300.0 # 5 minute lock
-        
+        lock_until = now + 300.0
         conn = get_connection()
         try:
-            # Find the oldest available item that is due for retry
             cursor = conn.execute('''
                 SELECT item_id, payload, status, failures, retry_count, error, locked_until,
                        next_retry_at, last_attempt_at, created_at
@@ -140,8 +156,12 @@ class SQLiteQueue(BaseQueue):
             conn.close()
             
     def ack(self, queue_name: str, item_id: str) -> bool:
-        """Deletes the item from the queue."""
-        from src.api.db import get_connection
+        if USE_POSTGRES:
+            # In Redis pop removes it automatically, so we just clean up the processing key
+            client = RedisClient.get_client()
+            return bool(client.delete(f"processing:{queue_name}:{item_id}"))
+            
+        # SQLite Queue path
         conn = get_connection()
         try:
             cursor = conn.execute('DELETE FROM local_queues WHERE item_id = ? AND queue_name = ?', (item_id, queue_name))
@@ -151,8 +171,20 @@ class SQLiteQueue(BaseQueue):
             conn.close()
             
     def nack(self, queue_name: str, item_id: str, reason: str = "", backoff_seconds: int = 3600) -> bool:
-        """Unlocks the item so it can be retried, applying a backoff."""
-        from src.api.db import get_connection
+        if USE_POSTGRES:
+            # Re-enqueue the processing item back to the Redis queue
+            client = RedisClient.get_client()
+            raw = client.get(f"processing:{queue_name}:{item_id}")
+            if raw:
+                wrapped = json.loads(raw)
+                wrapped["failures"] += 1
+                wrapped["retry_count"] += 1
+                QueueManager.enqueue(queue_name, wrapped)
+                client.delete(f"processing:{queue_name}:{item_id}")
+                return True
+            return False
+            
+        # SQLite Queue path
         now = time.time()
         next_retry_at = now + backoff_seconds
         conn = get_connection()
@@ -169,9 +201,18 @@ class SQLiteQueue(BaseQueue):
             conn.close()
 
     def push_many(self, queue_name: str, payloads: list[Dict[str, Any]]) -> list[str]:
-        """Pushes multiple items onto the queue in a single transaction with duplicate filtering."""
-        from src.api.db import get_connection, is_postgres
-        import uuid
+        if USE_POSTGRES:
+            # Push multiple payloads using Redis dedup set filtering
+            client = RedisClient.get_client()
+            item_ids = []
+            for p in payloads:
+                cid = p.get("company_id")
+                if cid and client.sismember(f"dedup:{queue_name}", str(cid)):
+                    continue
+                item_ids.append(self.push(queue_name, p))
+            return item_ids
+            
+        # SQLite Queue path
         now = time.time()
         conn = get_connection()
         item_ids = []
@@ -180,18 +221,11 @@ class SQLiteQueue(BaseQueue):
             if not company_ids:
                 return []
             
-            placeholders = ",".join(["%s" if is_postgres() else "?"] * len(company_ids))
-            if is_postgres():
-                existing_rows = conn.execute(
-                    f"SELECT payload->>'company_id' as cid FROM local_queues WHERE queue_name = %s AND status = 'QUEUED' AND payload->>'company_id' IN ({placeholders})",
-                    [queue_name] + company_ids
-                ).fetchall()
-            else:
-                existing_rows = conn.execute(
-                    f"SELECT json_extract(payload, '$.company_id') as cid FROM local_queues WHERE queue_name = ? AND status = 'QUEUED' AND json_extract(payload, '$.company_id') IN ({placeholders})",
-                    [queue_name] + company_ids
-                ).fetchall()
-                
+            placeholders = ",".join(["?"] * len(company_ids))
+            existing_rows = conn.execute(
+                f"SELECT json_extract(payload, '$.company_id') as cid FROM local_queues WHERE queue_name = ? AND status = 'QUEUED' AND json_extract(payload, '$.company_id') IN ({placeholders})",
+                [queue_name] + company_ids
+            ).fetchall()
             existing_cids = {dict(row)["cid"] for row in existing_rows if dict(row).get("cid")}
 
             rows_to_insert = []
@@ -208,22 +242,13 @@ class SQLiteQueue(BaseQueue):
 
             if rows_to_insert:
                 cursor = conn.cursor()
-                if is_postgres():
-                    cursor.executemany('''
-                        INSERT INTO local_queues (
-                            item_id, queue_name, payload, status, failures,
-                            retry_count, error, locked_until, next_retry_at, last_attempt_at, created_at
-                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    ''', rows_to_insert)
-                else:
-                    cursor.executemany('''
-                        INSERT INTO local_queues (
-                            item_id, queue_name, payload, status, failures,
-                            retry_count, error, locked_until, next_retry_at, last_attempt_at, created_at
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    ''', rows_to_insert)
+                cursor.executemany('''
+                    INSERT INTO local_queues (
+                        item_id, queue_name, payload, status, failures,
+                        retry_count, error, locked_until, next_retry_at, last_attempt_at, created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', rows_to_insert)
                 conn.commit()
         finally:
             conn.close()
         return item_ids
-

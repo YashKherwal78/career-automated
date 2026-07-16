@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 from src.system.logger import setup_logger
 logger = setup_logger('linkedin_jobs_provider')
 import yaml
@@ -94,7 +95,7 @@ class LinkedInJobsProvider:
                 import sqlite3
                 from src.config.config import Config
                 try:
-                    conn = sqlite3.connect(Config.DATABASE_PATH)
+                    conn = get_connection()
                     conn.execute("UPDATE apify_keys SET status = 'RATE_LIMITED' WHERE id = ?", (key_id,))
                     conn.commit()
                     conn.close()

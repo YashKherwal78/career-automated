@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 from src.system.logger import setup_logger
 logger = setup_logger('profile_extractor_v2')
 import os
@@ -74,7 +75,7 @@ class ProfileExtractorV2:
             return
             
         try:
-            conn = sqlite3.connect(DB_PATH)
+            conn = get_connection()
             c = conn.cursor()
             
             # Analyze question frequency

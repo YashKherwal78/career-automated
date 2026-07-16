@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 from src.system.logger import setup_logger
 logger = setup_logger('engine')
 import os
@@ -15,7 +16,7 @@ class AutoapplyEngine:
     def __init__(self, dry_run: bool = False):
         self.dry_run = dry_run
         self.max_daily_applications = 1
-        self.conn = sqlite3.connect(Config.DATABASE_PATH)
+        self.conn = get_connection()
         self.conn.row_factory = sqlite3.Row
         
         # Instantiate dependencies once per batch

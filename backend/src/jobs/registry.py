@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 import sqlite3
 import time
 import logging
@@ -13,7 +14,7 @@ class JobRegistry:
         self._init_db()
 
     def _init_db(self):
-        with sqlite3.connect(self.db_path) as conn:
+        with get_connection() as conn:
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS jobs (
                     job_id TEXT PRIMARY KEY,
@@ -60,7 +61,7 @@ class JobRegistry:
         import json
         now = time.time()
         
-        with sqlite3.connect(self.db_path) as conn:
+        with get_connection() as conn:
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
             
@@ -130,7 +131,7 @@ class JobRegistry:
             conn.commit()
             
     def get_jobs_by_company(self, company_id: str, status: str = 'OPEN') -> List[Dict]:
-        with sqlite3.connect(self.db_path) as conn:
+        with get_connection() as conn:
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
             rows = cursor.execute("SELECT * FROM jobs WHERE company_id = ? AND status = ?", (company_id, status)).fetchall()

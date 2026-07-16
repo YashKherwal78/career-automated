@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 import sqlite3
 from typing import List, Dict, Any
 from src.config.config import Config
@@ -15,7 +16,7 @@ class DiscoveryQueue:
         Fetches the next batch of companies to scan based on priority and lifecycle.
         Prioritizes P0 > P1 > P2 > P3.
         """
-        conn = sqlite3.connect(self.db_path)
+        conn = get_connection()
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         

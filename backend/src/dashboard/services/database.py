@@ -1,46 +1,86 @@
-from src.system.logger import setup_logger
-logger = setup_logger('database')
-import sqlite3
-import pandas as pd
-from src.config.config import Config
 import os
+import requests
+import pandas as pd
+import time
+from typing import Dict, Any
+from src.system.logger import setup_logger
 
-DB_PATH = Config.DATABASE_PATH
+logger = setup_logger('api_client')
 
-def get_db_connection():
-    # Use read-only connection URI to prevent locks
-    conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
-    conn.row_factory = sqlite3.Row
-    return conn
+MISSION_CONTROL_API_URL = os.environ.get("MISSION_CONTROL_API_URL", "http://localhost:8000/api/v1")
 
+class ApiClient:
+    _cache = {}
+    _cache_time = {}
+    _poll_interval = 5  # seconds
+
+    @classmethod
+    def _get(cls, endpoint: str, params: dict = None) -> Any:
+        url = f"{MISSION_CONTROL_API_URL.rstrip('/')}/{endpoint.lstrip('/')}"
+        cache_key = f"{url}_{str(params)}"
+        
+        now = time.time()
+        if cache_key in cls._cache and (now - cls._cache_time.get(cache_key, 0)) < cls._poll_interval:
+            return cls._cache[cache_key]
+
+        try:
+            res = requests.get(url, params=params, timeout=10)
+            res.raise_for_status()
+            data = res.json()
+            cls._cache[cache_key] = data
+            cls._cache_time[cache_key] = now
+            return data
+        except Exception as e:
+            logger.error(f"API Error fetching {url}: {e}")
+            return None
+
+    @classmethod
+    def get_dashboard_summary(cls):
+        return cls._get("/dashboard")
+
+    @classmethod
+    def get_workers(cls):
+        return cls._get("/workers")
+
+    @classmethod
+    def get_jobs(cls, params=None):
+        return cls._get("/jobs", params=params)
+        
+    @classmethod
+    def get_companies(cls, params=None):
+        return cls._get("/companies", params=params)
+
+    @classmethod
+    def get_health(cls):
+        return cls._get("/health")
+
+    @classmethod
+    def get_repositories_health(cls):
+        return cls._get("/system/repositories")
+
+    @classmethod
+    def get_system_version(cls):
+        return cls._get("/system/version")
+
+    @classmethod
+    def get_tier_distribution(cls):
+        return cls._get("/health/tiers")
+
+    @classmethod
+    def get_coverage(cls):
+        return cls._get("/health/coverage")
+
+# Legacy compatibility wrappers
 def fetch_table(table_name: str) -> pd.DataFrame:
-    try:
-        conn = get_db_connection()
-        df = pd.read_sql_query(f"SELECT * FROM {table_name}", conn)
-        conn.close()
-        return df
-    except Exception as e:
-        logger.info(f"Error reading {table_name}: {e}")
-        return pd.DataFrame()
+    # We should no longer use fetch_table. Returning empty for safety during migration.
+    return pd.DataFrame()
 
 def fetch_query(query: str, params=()) -> pd.DataFrame:
-    try:
-        conn = get_db_connection()
-        df = pd.read_sql_query(query, conn, params=params)
-        conn.close()
-        return df
-    except Exception as e:
-        logger.info(f"Error executing query: {e}")
-        return pd.DataFrame()
+    # We should no longer use fetch_query.
+    return pd.DataFrame()
 
 def get_latest_heartbeats() -> pd.DataFrame:
-    query = """
-    SELECT worker_name, status, started_at, finished_at, execution_time, items_processed
-    FROM worker_heartbeats
-    WHERE (worker_name, timestamp) IN (
-        SELECT worker_name, MAX(timestamp) 
-        FROM worker_heartbeats 
-        GROUP BY worker_name
-    )
-    """
-    return fetch_query(query)
+    workers = ApiClient.get_workers()
+    if not workers:
+        return pd.DataFrame()
+    return pd.DataFrame(workers.get("workers", []))

@@ -10,7 +10,6 @@ from src.discovery.pipeline.planner.models import Policy
 from src.discovery.pipeline.planner.builder import PlanningContextBuilder
 from src.discovery.pipeline.planner.engine import CrawlPlanner
 from src.discovery.models import Board, StandardBoardIdentity, WorkdayBoardIdentity, GreenhouseBoardIdentity, LeverBoardIdentity
-from src.discovery.pipeline.repositories.reservation_repository import SQLiteReservationRepository
 from src.discovery.registry.connector_registry import ConnectorRegistry
 from src.config.settings import settings
 
@@ -87,7 +86,6 @@ def make_board_from_registry_row(row):
 class JobCrawlerWorker(BaseWorker):
     def __init__(self):
         super().__init__("JobCrawlerWorker")
-        self.repository = SQLiteReservationRepository(self.db_path)
         self.context_builder = PlanningContextBuilder(
             ats_registry=None,
             connector_registry=ConnectorRegistry
@@ -114,22 +112,12 @@ class JobCrawlerWorker(BaseWorker):
                 row_data = None
                 if company_id:
                     # Explicit queue item requested, lock it directly if active
-                    from src.api.db import get_connection, is_postgres
-                    conn = get_connection()
-                    try:
-                        if is_postgres():
-                            cursor = conn.execute("SELECT * FROM ats_registry WHERE company_id = %s AND status = 'ACTIVE'", (company_id,))
-                        else:
-                            cursor = conn.execute("SELECT * FROM ats_registry WHERE company_id = ? AND status = 'ACTIVE'", (company_id,))
-                        row = cursor.fetchone()
-                        if row:
-                            row_data = dict(row)
-                            row_data["reservation_token"] = "QUEUE-EXPLICIT"
-                    finally:
-                        conn.close()
+                    row_data = self.repos.company.get_active_company(company_id)
+                    if row_data:
+                        row_data["reservation_token"] = "QUEUE-EXPLICIT"
                 else:
                     # Scan for due board
-                    row_data = self.repository.reserve_due_board(self.worker_id, lock_duration=300)
+                    row_data = self.repos.company_state.reserve_due_board(self.worker_id, lock_duration=300)
 
                 if not row_data:
                     # No work, update heartbeat and poll sleep
@@ -178,7 +166,7 @@ class JobCrawlerWorker(BaseWorker):
 
                     # 4. Persistence managed exclusively by repository
                     if success:
-                        self.repository.mark_completed(company_id, token, interval)
+                        self.repos.company_state.mark_completed(company_id, token, interval)
                         
                         # Transition to ACTIVE state
                         PipelineStateManager.transition(company_id, "ACTIVE", crawl_status="SUCCESS")
@@ -223,7 +211,7 @@ class JobCrawlerWorker(BaseWorker):
                         
                         Telemetry.finish_run(run_id, Status.SUCCESS)
                     else:
-                        self.repository.mark_failed(company_id, token, settings.retry_schedule)
+                        self.repos.company_state.mark_failed(company_id, token, settings.retry_schedule)
                         
                         # Transition to CRAWL_FAILED state
                         PipelineStateManager.transition(company_id, "CRAWL_FAILED", failure_reason="SYNC_EXECUTION_FAILURE", crawl_status="FAILED")

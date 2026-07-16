@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 import sqlite3
 import hashlib
 from typing import List, Dict, Any
@@ -12,7 +13,7 @@ class JobLifecycleManager:
         
     def process_polled_jobs(self, endpoint_id: str, company_id: str, connector: str, raw_jobs: List[Dict[str, Any]]):
         """Processes an array of raw jobs, computes hashes, and updates lifecycle states."""
-        conn = sqlite3.connect(self.db_path)
+        conn = get_connection()
         c = conn.cursor()
         
         current_fingerprints = set()

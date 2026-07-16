@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 import sqlite3
 import json
 
@@ -6,7 +7,7 @@ DB_PATH = 'data/crm.db'
 def fetch_metrics():
     print("=== END-TO-END PRODUCTION VALIDATION METRICS ===")
     
-    with sqlite3.connect(DB_PATH) as conn:
+    with get_connection() as conn:
         c = conn.cursor()
         
         # 1. Queue Health

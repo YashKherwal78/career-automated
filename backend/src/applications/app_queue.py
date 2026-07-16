@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 from src.system.logger import setup_logger
 logger = setup_logger('app_queue')
 import sqlite3
@@ -9,7 +10,7 @@ def generate_daily_queue():
     Generates the daily application queue by isolating the top 20 HIGH priority jobs.
     """
     logger.info("Agent 0: Generating Daily Application Queue...")
-    conn = sqlite3.connect(Config.DATABASE_PATH)
+    conn = get_connection()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     

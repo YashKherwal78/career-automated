@@ -93,10 +93,13 @@ class BoardSyncSession:
 
             # 6. Upsert and Diff
             b_id = f"{self.board.identity.tenant}_{self.board.identity.site}" if hasattr(self.board.identity, 'tenant') else getattr(self.board.identity, 'board_token', 'unknown')
-            inserted, updated, archived = self.job_repo.upsert_and_diff(valid_jobs, b_id, self.started_at)
+            inserted, updated, archived, prev_jobs = self.job_repo.upsert_and_diff(valid_jobs, b_id, self.started_at)
             self.stats["jobs_inserted"] = inserted
             self.stats["jobs_updated"] = updated
             self.stats["jobs_archived"] = archived
+            
+            # Phase 1: Adaptive Crawl Scheduling
+            self.stats["churn_percentage"] = (inserted + updated + archived) / max(prev_jobs, 1)
             
             self.stats["success"] = True
             

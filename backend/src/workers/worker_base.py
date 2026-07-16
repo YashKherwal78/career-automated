@@ -2,127 +2,72 @@ import os
 import sys
 import time
 import signal
+from typing import Optional
 from src.config.settings import settings
 from src.discovery.queue.sqlite_queue import SQLiteQueue
 from src.discovery.pipeline.repositories.metrics_repository import MetricsRepository
+from src.core.repositories.manager import RepositoryManager
+from src.core.repositories.interfaces import WorkerState, WorkerType
 
 class BaseWorker:
-    def __init__(self, name: str, db_path: str = None):
+    def __init__(self, name: str, db_path: str = None, repos: Optional[RepositoryManager] = None):
         self.name = name
         self.db_path = db_path or settings.db_path
+        self.repos = repos or RepositoryManager(self.db_path)
         self.worker_id = f"{name.lower()}-{os.getpid()}"
+        
+        # Legacy components
         self.queue = SQLiteQueue(self.db_path)
         self.metrics = MetricsRepository(self.db_path)
+        
         self.running = True
         self._init_state()
         self._register_signals()
 
+    def _determine_worker_type(self) -> WorkerType:
+        n = self.name.lower()
+        if "discovery" in n:
+            return WorkerType.DISCOVERY
+        if "verification" in n:
+            return WorkerType.VERIFICATION
+        if "crawler" in n or "board" in n:
+            return WorkerType.CRAWLER
+        if "apply" in n:
+            return WorkerType.APPLY
+        if "learning" in n:
+            return WorkerType.LEARNING
+        return WorkerType.CRAWLER # fallback
+
     def _register_signals(self):
         def handle_shutdown(sig, frame):
             # Graceful teardown
-            self.stop()
+            self.stop("Received shutdown signal")
             sys.exit(0)
         signal.signal(signal.SIGTERM, handle_shutdown)
         signal.signal(signal.SIGINT, handle_shutdown)
 
     def _init_state(self):
-        from src.api.db import get_connection, is_postgres
-        conn = get_connection()
-        try:
-            conn.execute('''
-                CREATE TABLE IF NOT EXISTS worker_states (
-                    worker_name TEXT PRIMARY KEY,
-                    pid INTEGER,
-                    status TEXT,
-                    started_at TEXT,
-                    heartbeat TEXT,
-                    jobs_processed INTEGER DEFAULT 0,
-                    failures INTEGER DEFAULT 0,
-                    last_error TEXT
-                )
-            ''')
-            if is_postgres():
-                conn.execute('''
-                    INSERT INTO worker_states (worker_name, pid, status, started_at, heartbeat, jobs_processed, failures, last_error)
-                    VALUES (%s, %s, 'STARTING', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0, 0, NULL)
-                    ON CONFLICT (worker_name) DO UPDATE SET
-                        pid = EXCLUDED.pid,
-                        status = EXCLUDED.status,
-                        started_at = EXCLUDED.started_at,
-                        heartbeat = EXCLUDED.heartbeat,
-                        jobs_processed = EXCLUDED.jobs_processed,
-                        failures = EXCLUDED.failures,
-                        last_error = EXCLUDED.last_error
-                ''', (self.name, os.getpid()))
-            else:
-                conn.execute('''
-                    INSERT OR REPLACE INTO worker_states (worker_name, pid, status, started_at, heartbeat, jobs_processed, failures, last_error)
-                    VALUES (?, ?, 'STARTING', datetime('now'), datetime('now'), 0, 0, NULL)
-                ''', (self.name, os.getpid()))
-            conn.commit()
-        finally:
-            conn.close()
+        self.repos.worker.register_worker(
+            worker_id=self.worker_id,
+            worker_name=self.name,
+            worker_type=self._determine_worker_type(),
+            pid=os.getpid()
+        )
+        self.repos.worker.heartbeat(self.worker_id, WorkerState.STARTING)
 
     def heartbeat(self, jobs_processed=0, failure_increment=0, last_error=None):
         # Update operational metrics
         self.metrics.update_operational_metric(f"{self.name}:heartbeat", time.time())
         self.metrics.update_operational_metric(f"{self.name}:status", "RUNNING")
         
-        from src.api.db import get_connection, is_postgres
-        conn = get_connection()
-        try:
-            if last_error:
-                if is_postgres():
-                    conn.execute('''
-                        UPDATE worker_states 
-                        SET heartbeat = CURRENT_TIMESTAMP,
-                            status = 'RUNNING',
-                            jobs_processed = jobs_processed + %s,
-                            failures = failures + %s,
-                            last_error = %s
-                        WHERE worker_name = %s
-                    ''', (jobs_processed, failure_increment, str(last_error), self.name))
-                else:
-                    conn.execute('''
-                        UPDATE worker_states 
-                        SET heartbeat = datetime('now'),
-                            status = 'RUNNING',
-                            jobs_processed = jobs_processed + ?,
-                            failures = failures + ?,
-                            last_error = ?
-                        WHERE worker_name = ?
-                    ''', (jobs_processed, failure_increment, str(last_error), self.name))
-            else:
-                if is_postgres():
-                    conn.execute('''
-                        UPDATE worker_states 
-                        SET heartbeat = CURRENT_TIMESTAMP,
-                            status = 'RUNNING',
-                            jobs_processed = jobs_processed + %s
-                        WHERE worker_name = %s
-                    ''', (jobs_processed, self.name))
-                else:
-                    conn.execute('''
-                        UPDATE worker_states 
-                        SET heartbeat = datetime('now'),
-                            status = 'RUNNING',
-                            jobs_processed = jobs_processed + ?
-                        WHERE worker_name = ?
-                    ''', (jobs_processed, self.name))
-            conn.commit()
-        finally:
-            conn.close()
+        self.repos.worker.heartbeat(self.worker_id, WorkerState.RUNNING)
+        if jobs_processed > 0 or failure_increment > 0:
+            self.repos.worker.record_progress(self.worker_id, jobs_processed=jobs_processed, failures=failure_increment)
+        
+        if last_error:
+            self.repos.worker.record_error(self.worker_id, str(last_error))
 
-    def stop(self):
+    def stop(self, reason: str = "Graceful shutdown"):
         self.running = False
         self.metrics.update_operational_metric(f"{self.name}:status", "STOPPED")
-        from src.api.db import get_connection, is_postgres
-        conn = get_connection()
-        try:
-            if is_postgres():
-                conn.execute('UPDATE worker_states SET status = \'STOPPED\' WHERE worker_name = %s', (self.name,))
-            else:
-                conn.execute('UPDATE worker_states SET status = "STOPPED" WHERE worker_name = ?', (self.name,))
-            conn.commit()
-        finally:
-            conn.close()
+        self.repos.worker.stop_worker(self.worker_id, reason_for_exit=reason)

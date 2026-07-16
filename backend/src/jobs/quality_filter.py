@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 from src.system.logger import setup_logger
 logger = setup_logger('quality_filter')
 import re
@@ -62,7 +63,7 @@ def apply_quality_filters():
     """
     Runs over all jobs in the database and updates their quality score.
     """
-    conn = sqlite3.connect(Config.DATABASE_PATH)
+    conn = get_connection()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     

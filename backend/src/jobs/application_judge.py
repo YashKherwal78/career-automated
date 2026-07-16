@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 from src.system.logger import setup_logger
 logger = setup_logger('application_judge')
 import sqlite3
@@ -38,7 +39,7 @@ Do not include markdown blocks, just the raw JSON.
 
 class ApplicationJudge:
     def __init__(self):
-        self.conn = sqlite3.connect(Config.DATABASE_PATH)
+        self.conn = get_connection()
         self.conn.row_factory = sqlite3.Row
         self.cursor = self.conn.cursor()
         self.client = LLMRouter()

@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 import asyncio
 import aiohttp
 import time
@@ -30,7 +31,7 @@ class JobCrawlerOrchestrator:
         
         # 1. Fetch endpoints that are active
         # In a real system, we'd check `last_job_sync + plugin.crawl_policy() < now`
-        with sqlite3.connect(Config.DATABASE_PATH) as conn:
+        with get_connection() as conn:
             conn.row_factory = sqlite3.Row
             rows = conn.execute(
                 "SELECT id, company_id, ats_type, canonical_endpoint, last_job_sync FROM ats_registry WHERE status = 'ACTIVE' LIMIT ?",
@@ -79,7 +80,7 @@ class JobCrawlerOrchestrator:
                     self.job_registry.sync_jobs(company_id, ats_type, normalized_jobs, crawl_version)
                     
                     # Update ATS Registry sync stats
-                    with sqlite3.connect(Config.DATABASE_PATH) as conn:
+                    with get_connection() as conn:
                         conn.execute("""
                             UPDATE ats_registry SET 
                                 last_job_sync = ?, 

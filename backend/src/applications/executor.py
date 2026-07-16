@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 from src.system.logger import setup_logger
 logger = setup_logger('executor')
 import re
@@ -42,7 +43,7 @@ class ApplicationExecutor:
         self.rag_client = rag_client
         self.llm_client = llm_client
         self.company_context = company_context
-        self.conn = sqlite3.connect(Config.DATABASE_PATH)
+        self.conn = get_connection()
         self.conn.row_factory = sqlite3.Row
         self.audit_log = []
         self.telemetry = {

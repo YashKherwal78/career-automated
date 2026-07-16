@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 from src.system.logger import setup_logger
 logger = setup_logger('career_discovery')
 import sqlite3
@@ -149,7 +150,7 @@ class CareerDiscoveryEngine:
     def process_batch(self) -> Tuple[int, int]:
         logger.info("[CareerDiscoveryEngine] Booting Asynchronous Worker Pool (20 workers)...")
         
-        conn = sqlite3.connect(self.db_path)
+        conn = get_connection()
         c = conn.cursor()
         
         # Pull batch from DISCOVERED queue

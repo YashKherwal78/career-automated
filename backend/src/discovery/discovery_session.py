@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 import yaml
 import sqlite3
 import uuid
@@ -14,7 +15,7 @@ class DiscoverySession:
         self._create_session()
 
     def _init_db(self):
-        conn = sqlite3.connect(self.db_path)
+        conn = get_connection()
         cursor = conn.cursor()
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS discovery_sessions (
@@ -40,7 +41,7 @@ class DiscoverySession:
         conn.close()
 
     def _create_session(self):
-        conn = sqlite3.connect(self.db_path)
+        conn = get_connection()
         cursor = conn.cursor()
         cursor.execute('''
             INSERT INTO discovery_sessions (session_id, started_at, status)
@@ -50,7 +51,7 @@ class DiscoverySession:
         conn.close()
 
     def log_metrics(self, companies_scanned=0, connectors_executed=0, jobs_returned=0, jobs_verified=0, new_companies=0, errors=0, warnings=0, api_calls=0, credits_consumed=0, relevant_opportunities_produced=0):
-        conn = sqlite3.connect(self.db_path)
+        conn = get_connection()
         cursor = conn.cursor()
         cursor.execute('''
             UPDATE discovery_sessions
@@ -74,7 +75,7 @@ class DiscoverySession:
         duration = (finished_at - self.started_at).total_seconds()
         
         # Calculate cost metrics before finishing
-        conn = sqlite3.connect(self.db_path)
+        conn = get_connection()
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute('SELECT credits_consumed, relevant_opportunities_produced FROM discovery_sessions WHERE session_id = ?', (self.session_id,))

@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 from src.system.logger import setup_logger
 logger = setup_logger('apify_manager')
 import sqlite3
@@ -7,7 +8,7 @@ from src.config.config import Config
 
 class ApifyManager:
     def __init__(self):
-        self.conn = sqlite3.connect(Config.DATABASE_PATH)
+        self.conn = get_connection()
         self.conn.row_factory = sqlite3.Row
         
     def register_credential_ids(self, credential_ids: list):

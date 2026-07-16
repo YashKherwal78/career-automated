@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 from typing import Dict, Any, List
 import sqlite3
 
@@ -32,7 +33,7 @@ class CompanyIntake:
         """
         # Minimal mock implementation for architecture validation
         try:
-            conn = sqlite3.connect(self.db_path)
+            conn = get_connection()
             cursor = conn.cursor()
             
             # 1. Check if exists

@@ -5,6 +5,8 @@ import subprocess
 import signal
 import logging
 from src.config.settings import settings
+from src.core.repositories.manager import RepositoryManager
+from src.core.repositories.interfaces import WorkerState, WorkerType
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("Scheduler")
@@ -40,11 +42,24 @@ if not os.environ.get("NO_API"):
     port = os.environ.get("PORT", "8000")
     WorkerRegistry.register("FastApiServer", ["-m", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", port])
 
+def get_worker_type(name: str) -> WorkerType:
+    if "Discovery" in name:
+        return WorkerType.DISCOVERY
+    if "Verification" in name:
+        return WorkerType.VERIFICATION
+    if "Crawler" in name or "JobBoard" in name:
+        return WorkerType.CRAWLER
+    if "FastApi" in name or "Scheduler" in name:
+        return WorkerType.SCHEDULER
+    return WorkerType.SCHEDULER
+
 class PipelineScheduler:
     def __init__(self, db_path: str = settings.db_path):
         self.db_path = db_path
+        self.repos = RepositoryManager(self.db_path)
         self.processes = {}
         self.running = True
+        self.scheduler_id = f"scheduler_{os.getpid()}"
         
         # Run database migrations before starting any workers
         logger.info("Running database migrations...")
@@ -56,27 +71,14 @@ class PipelineScheduler:
         else:
             logger.info(f"Migration completed: {result.stdout}")
             
-        self._init_db()
-
-    def _init_db(self):
-        from src.api.db import get_connection
-        conn = get_connection()
-        try:
-            conn.execute('''
-                CREATE TABLE IF NOT EXISTS worker_states (
-                    worker_name TEXT PRIMARY KEY,
-                    pid INTEGER,
-                    status TEXT,
-                    started_at TEXT,
-                    heartbeat TEXT,
-                    jobs_processed INTEGER DEFAULT 0,
-                    failures INTEGER DEFAULT 0,
-                    last_error TEXT
-                )
-            ''')
-            conn.commit()
-        finally:
-            conn.close()
+        # Register the scheduler itself
+        self.repos.worker.register_worker(
+            worker_id=self.scheduler_id,
+            worker_name="PipelineScheduler",
+            worker_type=WorkerType.SCHEDULER,
+            pid=os.getpid()
+        )
+        self.repos.worker.heartbeat(worker_id=self.scheduler_id, state=WorkerState.RUNNING)
 
     def start_worker(self, name: str, args: list):
         logger.info(f"Starting worker: {name} (args={args})")
@@ -91,36 +93,17 @@ class PipelineScheduler:
         env = os.environ.copy()
         env["PYTHONPATH"] = os.getcwd()
 
-        # Redirect worker logs to stdout for Railway logging
-        # Log state
         proc = subprocess.Popen(cmd, env=env)
         self.processes[name] = (proc, args)
 
-        # Log state
-        from src.api.db import get_connection, is_postgres
-        conn = get_connection()
-        try:
-            if is_postgres():
-                conn.execute('''
-                    INSERT INTO worker_states (worker_name, pid, status, started_at, heartbeat, jobs_processed, failures, last_error)
-                    VALUES (%s, %s, 'RUNNING', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0, 0, NULL)
-                    ON CONFLICT (worker_name) DO UPDATE SET
-                        pid = EXCLUDED.pid,
-                        status = EXCLUDED.status,
-                        started_at = EXCLUDED.started_at,
-                        heartbeat = EXCLUDED.heartbeat,
-                        jobs_processed = EXCLUDED.jobs_processed,
-                        failures = EXCLUDED.failures,
-                        last_error = EXCLUDED.last_error
-                ''', (name, proc.pid))
-            else:
-                conn.execute('''
-                    INSERT OR REPLACE INTO worker_states (worker_name, pid, status, started_at, heartbeat, jobs_processed, failures, last_error)
-                    VALUES (?, ?, 'RUNNING', datetime('now'), datetime('now'), 0, 0, NULL)
-                ''', (name, proc.pid))
-            conn.commit()
-        finally:
-            conn.close()
+        worker_id = f"{name}_{proc.pid}"
+        self.repos.worker.register_worker(
+            worker_id=worker_id,
+            worker_name=name,
+            worker_type=get_worker_type(name),
+            pid=proc.pid
+        )
+        self.repos.worker.heartbeat(worker_id=worker_id, state=WorkerState.RUNNING)
 
     def monitor(self):
         logger.info("Scheduler monitoring loop active.")
@@ -131,56 +114,25 @@ class PipelineScheduler:
         while self.running:
             try:
                 time.sleep(5)
+                
+                # Update scheduler heartbeat
+                self.repos.worker.heartbeat(worker_id=self.scheduler_id, state=WorkerState.RUNNING)
+                
                 for name, (proc, args) in list(self.processes.items()):
-                    # Check if subprocess is still running
+                    worker_id = f"{name}_{proc.pid}"
                     exit_code = proc.poll()
                     if exit_code is not None:
                         logger.warning(f"Worker {name} exited with code {exit_code}. Restarting...")
                         
-                        # Increment failures in states table
-                        from src.api.db import get_connection, is_postgres
-                        conn = get_connection()
-                        try:
-                            if is_postgres():
-                                conn.execute('''
-                                    UPDATE worker_states 
-                                    SET failures = failures + 1,
-                                        last_error = %s
-                                    WHERE worker_name = %s
-                                ''', (f"Process exited with code {exit_code}", name))
-                            else:
-                                conn.execute('''
-                                    UPDATE worker_states 
-                                    SET failures = failures + 1,
-                                        last_error = ?
-                                    WHERE worker_name = ?
-                                ''', (f"Process exited with code {exit_code}", name))
-                            conn.commit()
-                        finally:
-                            conn.close()
+                        # Record error and stop worker
+                        self.repos.worker.record_error(worker_id=worker_id, error_message=f"Process exited with code {exit_code}")
+                        self.repos.worker.stop_worker(worker_id=worker_id, reason_for_exit=f"Crashed with code {exit_code}")
 
                         self.start_worker(name, args)
                     else:
                         # Update heartbeat pulse in states table for uvicorn (others update their own)
                         if name == "FastApiServer":
-                            from src.api.db import get_connection, is_postgres
-                            conn = get_connection()
-                            try:
-                                if is_postgres():
-                                    conn.execute('''
-                                        UPDATE worker_states 
-                                        SET heartbeat = CURRENT_TIMESTAMP
-                                        WHERE worker_name = %s
-                                    ''', (name,))
-                                else:
-                                    conn.execute('''
-                                        UPDATE worker_states 
-                                        SET heartbeat = datetime('now')
-                                        WHERE worker_name = ?
-                                    ''', (name,))
-                                conn.commit()
-                            finally:
-                                conn.close()
+                            self.repos.worker.heartbeat(worker_id=worker_id, state=WorkerState.RUNNING)
 
             except KeyboardInterrupt:
                 break
@@ -192,28 +144,24 @@ class PipelineScheduler:
     def shutdown(self):
         logger.info("Shutdown initiated. Terminating all processes...")
         self.running = False
+        
         for name, (proc, args) in self.processes.items():
             logger.info(f"Terminating process {name} (PID: {proc.pid})")
+            worker_id = f"{name}_{proc.pid}"
             proc.terminate()
             try:
                 proc.wait(timeout=5)
+                reason = "Terminated gracefully"
             except subprocess.TimeoutExpired:
                 logger.warning(f"Process {name} did not exit. Killing...")
                 proc.kill()
+                reason = "Killed forcefully"
             
-            # Update database status
-            from src.api.db import get_connection, is_postgres
-            conn = get_connection()
-            try:
-                if is_postgres():
-                    conn.execute('UPDATE worker_states SET status = \'STOPPED\' WHERE worker_name = %s', (name,))
-                else:
-                    conn.execute('UPDATE worker_states SET status = "STOPPED" WHERE worker_name = ?', (name,))
-                conn.commit()
-            finally:
-                conn.close()
+            # Stop the worker in repository
+            self.repos.worker.stop_worker(worker_id=worker_id, reason_for_exit=reason)
 
         logger.info("All managed processes terminated.")
+        self.repos.worker.stop_worker(worker_id=self.scheduler_id, reason_for_exit="Scheduler shutdown")
 
 if __name__ == "__main__":
     scheduler = PipelineScheduler()

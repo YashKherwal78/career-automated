@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 from src.system.logger import setup_logger
 logger = setup_logger('engine')
 import sqlite3
@@ -43,7 +44,7 @@ class DiscoveryEngine:
         for c in curated:
             raw_companies.append((c, "Curated Startups"))
 
-        conn = sqlite3.connect(self.db_path)
+        conn = get_connection()
         c = conn.cursor()
         
         added_count = 0

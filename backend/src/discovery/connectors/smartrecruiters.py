@@ -49,7 +49,7 @@ class SmartRecruitersConnector(Connector):
         if result.status_code == 200 and isinstance(result.payload, dict):
             content = result.payload.get("content", [])
             for job in content:
-                yield RawJob(provider="smartrecruiters", board_identity=board.identity, payload=job)
+                yield RawJob(company_id=board.company_id, provider="smartrecruiters", board_identity=board.identity, payload=job)
                 
             if len(content) < limit:
                 return
@@ -69,7 +69,7 @@ class SmartRecruitersConnector(Connector):
                 break
                 
             for job in content:
-                yield RawJob(provider="smartrecruiters", board_identity=board.identity, payload=job)
+                yield RawJob(company_id=board.company_id, provider="smartrecruiters", board_identity=board.identity, payload=job)
                 
             if len(content) < limit:
                 break

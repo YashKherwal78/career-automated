@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 from src.system.logger import setup_logger
 logger = setup_logger('ingestion')
 import os
@@ -63,7 +64,7 @@ class IngestionEngine:
         if not raw_companies:
             return 0
 
-        conn = sqlite3.connect(self.db_path)
+        conn = get_connection()
         c = conn.cursor()
         self._ensure_schema(c)
         

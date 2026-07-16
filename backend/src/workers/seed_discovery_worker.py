@@ -34,98 +34,14 @@ class SeedDiscoveryWorker(BaseWorker):
         return domain
 
     def _company_exists(self, domain: str) -> bool:
-        if not domain:
-            return True
-        from src.api.db import get_connection, is_postgres
-        conn = get_connection()
-        try:
-            if is_postgres():
-                cursor = conn.execute("SELECT 1 FROM company_identities WHERE domain = %s OR company_id = %s", (domain, domain.split(".")[0]))
-            else:
-                cursor = conn.execute("SELECT 1 FROM company_identities WHERE domain = ? OR company_id = ?", (domain, domain.split(".")[0]))
-            return cursor.fetchone() is not None
-        finally:
-            conn.close()
+        return self.repos.discovery.company_exists(domain)
 
     def _persist_seed_metadata(self, seed: dict, now: float):
         domain = self._normalize_domain(seed["website"])
         company_id = seed.get("company_id") or domain.split(".")[0]
+        dt_str = datetime.fromtimestamp(now, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
         
-        from src.api.db import get_connection, is_postgres
-        conn = get_connection()
-        try:
-            # 1. Insert seed to company_identities
-            if is_postgres():
-                conn.execute(
-                    """
-                    INSERT INTO company_identities (company_id, legal_name, canonical_name, website, domain)
-                    VALUES (%s, %s, %s, %s, %s)
-                    ON CONFLICT (company_id) DO NOTHING
-                    """,
-                    (company_id, seed["name"], company_id, seed["website"], domain)
-                )
-            else:
-                conn.execute(
-                    """
-                    INSERT OR IGNORE INTO company_identities (company_id, legal_name, canonical_name, website, domain)
-                    VALUES (?, ?, ?, ?, ?)
-                    """,
-                    (company_id, seed["name"], company_id, seed["website"], domain)
-                )
-            
-            # 2. Insert metadata to company_discovery_sources
-            dt_str = datetime.fromtimestamp(now, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
-            
-            if is_postgres():
-                cursor = conn.execute(
-                    "SELECT first_seen FROM company_discovery_sources WHERE company_name = %s AND source = %s AND discovery_type = %s",
-                    (seed["name"], seed["source"], "automated")
-                )
-            else:
-                cursor = conn.execute(
-                    "SELECT first_seen FROM company_discovery_sources WHERE company_name = ? AND source = ? AND discovery_type = ?",
-                    (seed["name"], seed["source"], "automated")
-                )
-            row = cursor.fetchone()
-            if row:
-                if is_postgres():
-                    conn.execute(
-                        """
-                        UPDATE company_discovery_sources
-                        SET last_seen = %s, confidence = %s
-                        WHERE company_name = %s AND source = %s AND discovery_type = %s
-                        """,
-                        (dt_str, int(seed.get("confidence", 1.0) * 10), seed["name"], seed["source"], "automated")
-                    )
-                else:
-                    conn.execute(
-                        """
-                        UPDATE company_discovery_sources
-                        SET last_seen = ?, confidence = ?
-                        WHERE company_name = ?, source = ?, discovery_type = ?
-                        """,
-                        (dt_str, int(seed.get("confidence", 1.0) * 10), seed["name"], seed["source"], "automated")
-                    )
-            else:
-                if is_postgres():
-                    conn.execute(
-                        """
-                        INSERT INTO company_discovery_sources (company_name, source, discovery_type, confidence, first_seen, last_seen)
-                        VALUES (%s, %s, %s, %s, %s, %s)
-                        """,
-                        (seed["name"], seed["source"], "automated", int(seed.get("confidence", 1.0) * 10), dt_str, dt_str)
-                    )
-                else:
-                    conn.execute(
-                        """
-                        INSERT INTO company_discovery_sources (company_name, source, discovery_type, confidence, first_seen, last_seen)
-                        VALUES (?, ?, ?, ?, ?, ?)
-                        """,
-                        (seed["name"], seed["source"], "automated", int(seed.get("confidence", 1.0) * 10), dt_str, dt_str)
-                    )
-            conn.commit()
-        finally:
-            conn.close()
+        self.repos.discovery.persist_seed_metadata(company_id, seed, domain, dt_str)
 
     async def run_async(self):
         logger.info("SeedDiscoveryWorker started.")

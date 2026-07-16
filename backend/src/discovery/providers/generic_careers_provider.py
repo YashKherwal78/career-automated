@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 from src.system.logger import setup_logger
 logger = setup_logger('generic_careers_provider')
 import requests
@@ -21,7 +22,7 @@ class GenericCareersProvider(BaseProvider):
         return ProviderCapabilities()
         
     def _discover_jobs_internal(self, target_roles: list = None) -> List[StandardJob]:
-        conn = sqlite3.connect(Config.DATABASE_PATH)
+        conn = get_connection()
         c = conn.cursor()
         c.execute("""
             SELECT company_name, website, careers_url 

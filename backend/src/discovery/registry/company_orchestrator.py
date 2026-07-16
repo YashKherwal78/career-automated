@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 import sqlite3
 import json
 import hashlib
@@ -65,7 +66,7 @@ class SourceOrchestrator:
 
     def _init_db(self):
         if self.dry_run: return
-        conn = sqlite3.connect(self.db_path)
+        conn = get_connection()
         c = conn.cursor()
         c.execute('''
             CREATE TABLE IF NOT EXISTS connector_cache (
@@ -99,7 +100,7 @@ class SourceOrchestrator:
     def add_source(self, source: CompanySource):
         self.sources.append(source)
         if not self.dry_run:
-            conn = sqlite3.connect(self.db_path)
+            conn = get_connection()
             c = conn.cursor()
             c.execute("INSERT OR IGNORE INTO source_health (source_name) VALUES (?)", (source.name,))
             conn.commit()
@@ -107,7 +108,7 @@ class SourceOrchestrator:
 
     def _update_health(self, source_name: str, success: bool, latency: float):
         if self.dry_run: return
-        conn = sqlite3.connect(self.db_path)
+        conn = get_connection()
         c = conn.cursor()
         if success:
             c.execute('''
@@ -127,7 +128,7 @@ class SourceOrchestrator:
 
     def _should_skip_source(self, source_name: str) -> bool:
         if self.dry_run: return False
-        conn = sqlite3.connect(self.db_path)
+        conn = get_connection()
         c = conn.cursor()
         c.execute("SELECT consecutive_failures FROM source_health WHERE source_name = ?", (source_name,))
         row = c.fetchone()
@@ -144,7 +145,7 @@ class SourceOrchestrator:
         ttl_map = self.config.get("yc_orchestrator", {}).get("ttl", {})
         ttl_hours = self._parse_ttl(ttl_map.get(source_name, "24h"))
         
-        conn = sqlite3.connect(self.db_path)
+        conn = get_connection()
         c = conn.cursor()
         c.execute(f'''
             SELECT 1 FROM connector_cache 
@@ -169,7 +170,7 @@ class SourceOrchestrator:
             if self._is_cache_fresh(source.name):
                 logger.info(f"Cache hit for {source.name}. Using raw cache.")
                 self.metrics["cache_hits"] += 1
-                conn = sqlite3.connect(self.db_path)
+                conn = get_connection()
                 c = conn.cursor()
                 c.execute("SELECT raw_json FROM connector_cache WHERE source = ?", (source.name,))
                 companies = json.loads(c.fetchone()[0])
@@ -187,7 +188,7 @@ class SourceOrchestrator:
                     self.metrics["cache_misses"] += 1
                     
                     if not self.dry_run:
-                        conn = sqlite3.connect(self.db_path)
+                        conn = get_connection()
                         c = conn.cursor()
                         c.execute('''
                             INSERT OR REPLACE INTO connector_cache (source, raw_json, last_updated, normalization_version)
@@ -217,7 +218,7 @@ class SourceOrchestrator:
         conn = None
         c = None
         if not self.dry_run:
-            conn = sqlite3.connect(self.db_path)
+            conn = get_connection()
             c = conn.cursor()
             
         current_map = {comp.get("company_id"): comp for comp in current_merged}

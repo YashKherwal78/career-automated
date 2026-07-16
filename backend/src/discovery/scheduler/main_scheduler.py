@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 import asyncio
 import logging
 import sqlite3
@@ -39,7 +40,7 @@ class Scheduler:
         now = int(time.time())
         dispatched_count = 0
         
-        with sqlite3.connect(self.db_path, timeout=15.0) as conn:
+        with get_connection() as conn:
             # Note: Requires company_crawl_queue table to exist
             try:
                 # Find companies that are due for a check and aren't currently running

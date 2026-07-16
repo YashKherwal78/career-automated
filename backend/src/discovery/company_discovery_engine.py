@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 import sqlite3
 import time
 import logging
@@ -46,7 +47,7 @@ class ContinuousDiscoveryEngine:
         logger.info("Starting Continuous Company Discovery Engine...")
         
         # 1. Fetch companies to process from company_identities
-        with sqlite3.connect(self.db.db_path) as conn:
+        with get_connection() as conn:
             conn.row_factory = sqlite3.Row
             cursor = conn.execute("SELECT company_id, legal_name, website, domain FROM company_identities ORDER BY next_discovery_at ASC")
             companies = [dict(row) for row in cursor.fetchall()]

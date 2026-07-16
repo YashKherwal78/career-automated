@@ -26,8 +26,7 @@ from src.workers.worker_base import BaseWorker
 from src.config.settings import settings
 from src.discovery.providers.job_board_registry import JobBoardRegistry
 from src.discovery.pipeline.company_resolver import CompanyResolver
-from src.discovery.pipeline.job_board_normalizer import JobBoardNormalizer
-from src.discovery.pipeline.repositories.job import JobRepository
+from src.discovery.pipeline.company_resolver import CompanyResolver
 
 logging.basicConfig(
     level=logging.INFO,
@@ -45,7 +44,7 @@ class JobBoardWorker(BaseWorker):
     def __init__(self):
         super().__init__("JobBoardWorker")
         self.registry = JobBoardRegistry()
-        self.job_repo = JobRepository(self.db_path)
+        from src.discovery.pipeline.job_board_normalizer import JobBoardNormalizer
         self.resolver = CompanyResolver(self.db_path, self.queue)
         self.normalizer = JobBoardNormalizer(self.resolver)
 
@@ -112,7 +111,7 @@ class JobBoardWorker(BaseWorker):
                 continue
 
             try:
-                inserted, updated, _ = self.job_repo.upsert_and_diff(
+                inserted, updated, _ = self.repos.job.upsert_and_diff(
                     [canonical], board_id=provider.name, synced_at=time.time()
                 )
                 jobs_new += inserted
@@ -150,29 +149,7 @@ class JobBoardWorker(BaseWorker):
 
     def _load_cursor(self, provider_name: str) -> str | None:
         """Load the last cursor stored for this provider (for incremental sync)."""
-        from src.api.db import get_connection, is_postgres
-        conn = get_connection()
-        try:
-            if is_postgres():
-                row = conn.execute(
-                    """SELECT cursor FROM job_board_snapshots
-                       WHERE provider = %s AND status IN ('SUCCESS', 'PARTIAL')
-                       ORDER BY synced_at DESC LIMIT 1""",
-                    (provider_name,),
-                ).fetchone()
-            else:
-                row = conn.execute(
-                    """SELECT cursor FROM job_board_snapshots
-                       WHERE provider = ? AND status IN ('SUCCESS', 'PARTIAL')
-                       ORDER BY synced_at DESC LIMIT 1""",
-                    (provider_name,),
-                ).fetchone()
-            return row[0] if row else None
-        except Exception as e:
-            logger.warning(f"JobBoardWorker: could not load cursor for {provider_name}: {e}")
-            return None
-        finally:
-            conn.close()
+        return self.repos.job.load_cursor(provider_name)
 
     def _save_snapshot(
         self,
@@ -185,48 +162,19 @@ class JobBoardWorker(BaseWorker):
         status: str,
         error: str | None,
     ):
-        from src.api.db import get_connection, is_postgres
-        conn = get_connection()
         try:
-            if is_postgres():
-                conn.execute(
-                    """INSERT INTO job_board_snapshots
-                       (provider, synced_at, cursor, jobs_found, jobs_new,
-                        jobs_updated, companies_discovered, status, error)
-                       VALUES (%s, EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)::integer, %s, %s, %s, %s, %s, %s, %s)""",
-                    (
-                        provider_name,
-                        next_cursor,
-                        jobs_found,
-                        jobs_new,
-                        jobs_updated,
-                        companies_discovered,
-                        status,
-                        error,
-                    ),
-                )
-            else:
-                conn.execute(
-                    """INSERT INTO job_board_snapshots
-                       (provider, synced_at, cursor, jobs_found, jobs_new,
-                        jobs_updated, companies_discovered, status, error)
-                       VALUES (?, unixepoch('now'), ?, ?, ?, ?, ?, ?, ?)""",
-                    (
-                        provider_name,
-                        next_cursor,
-                        jobs_found,
-                        jobs_new,
-                        jobs_updated,
-                        companies_discovered,
-                        status,
-                        error,
-                    ),
-                )
-            conn.commit()
+            self.repos.job.save_snapshot(
+                provider_name,
+                next_cursor,
+                jobs_found,
+                jobs_new,
+                jobs_updated,
+                companies_discovered,
+                status,
+                error
+            )
         except Exception as e:
             logger.warning(f"JobBoardWorker: failed to save snapshot for {provider_name}: {e}")
-        finally:
-            conn.close()
 
 
 if __name__ == "__main__":

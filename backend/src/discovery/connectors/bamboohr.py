@@ -83,6 +83,6 @@ class BambooHRConnector(Connector):
                             "id": job_id
                         }
                         
-                        yield RawJob(provider="bamboohr", board_identity=board.identity, payload=payload)
+                        yield RawJob(company_id=board.company_id, provider="bamboohr", board_identity=board.identity, payload=payload)
 
 ConnectorRegistry.register('bamboohr', 'HTML', 10, BambooHRConnector)

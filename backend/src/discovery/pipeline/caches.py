@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 import sqlite3
 import json
 import time
@@ -9,7 +10,7 @@ class NegativeCache:
         self._init_db()
         
     def _init_db(self):
-        with sqlite3.connect(self.db_path) as conn:
+        with get_connection() as conn:
             conn.execute('''CREATE TABLE IF NOT EXISTS negative_cache (
                 key TEXT PRIMARY KEY,
                 reason TEXT,
@@ -17,7 +18,7 @@ class NegativeCache:
             )''')
             
     def get(self, key: str) -> Optional[str]:
-        with sqlite3.connect(self.db_path) as conn:
+        with get_connection() as conn:
             cur = conn.execute("SELECT reason, timestamp FROM negative_cache WHERE key = ?", (key,))
             row = cur.fetchone()
             if row:
@@ -27,7 +28,7 @@ class NegativeCache:
         return None
         
     def set(self, key: str, reason: str):
-        with sqlite3.connect(self.db_path) as conn:
+        with get_connection() as conn:
             conn.execute("INSERT OR REPLACE INTO negative_cache (key, reason, timestamp) VALUES (?, ?, ?)",
                          (key, reason, time.time()))
 
@@ -37,7 +38,7 @@ class SearchCache:
         self._init_db()
         
     def _init_db(self):
-        with sqlite3.connect(self.db_path) as conn:
+        with get_connection() as conn:
             conn.execute('''CREATE TABLE IF NOT EXISTS search_cache (
                 query TEXT PRIMARY KEY,
                 url TEXT,
@@ -45,13 +46,13 @@ class SearchCache:
             )''')
             
     def get(self, query: str) -> Optional[str]:
-        with sqlite3.connect(self.db_path) as conn:
+        with get_connection() as conn:
             cur = conn.execute("SELECT url FROM search_cache WHERE query = ?", (query,))
             row = cur.fetchone()
             return row[0] if row else None
             
     def set(self, query: str, url: str):
-        with sqlite3.connect(self.db_path) as conn:
+        with get_connection() as conn:
             conn.execute("INSERT OR REPLACE INTO search_cache (query, url, timestamp) VALUES (?, ?, ?)",
                          (query, url, time.time()))
 
@@ -61,7 +62,7 @@ class ReplayCache:
         self._init_db()
         
     def _init_db(self):
-        with sqlite3.connect(self.db_path) as conn:
+        with get_connection() as conn:
             conn.execute('''CREATE TABLE IF NOT EXISTS replay_cache (
                 url TEXT PRIMARY KEY,
                 method TEXT,
@@ -77,7 +78,7 @@ class ReplayCache:
             )''')
             
     def get(self, url: str, method: str) -> Optional[Dict[str, Any]]:
-        with sqlite3.connect(self.db_path) as conn:
+        with get_connection() as conn:
             cur = conn.execute("SELECT final_url, status_code, request_headers, response_headers, payload, redirect_chain, timestamp FROM replay_cache WHERE url = ? AND method = ?", (url, method))
             row = cur.fetchone()
             if row:
@@ -94,7 +95,7 @@ class ReplayCache:
         return None
         
     def set(self, url: str, method: str, final_url: str, status_code: int, request_headers: Dict[str, str], response_headers: Dict[str, str], payload: bytes, redirect_chain: List[str], pipeline_version: str = "v1", parser_version: str = "v1"):
-        with sqlite3.connect(self.db_path) as conn:
+        with get_connection() as conn:
             conn.execute('''INSERT OR REPLACE INTO replay_cache 
                 (url, method, final_url, status_code, request_headers, response_headers, payload, redirect_chain, pipeline_version, parser_version, timestamp) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',

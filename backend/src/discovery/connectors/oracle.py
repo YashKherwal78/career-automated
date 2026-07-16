@@ -31,6 +31,6 @@ class OracleJSONConnector(Connector):
         yield result
         if result.status_code == 200 and isinstance(result.payload, dict):
             for job in result.payload.get("items", []):
-                yield RawJob(provider="oracle", board_identity=board.identity, payload=job)
+                yield RawJob(company_id=board.company_id, provider="oracle", board_identity=board.identity, payload=job)
 
 ConnectorRegistry.register('oracle', 'JSON', 100, OracleJSONConnector)

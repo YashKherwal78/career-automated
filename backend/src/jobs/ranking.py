@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 from src.system.logger import setup_logger
 logger = setup_logger('ranking')
 import re
@@ -194,7 +195,7 @@ def rank_opportunity(job: Dict, company_scores: Dict[str, int], role_scores: Dic
 
 def apply_ranking_engine():
     logger.info("Agent 0: Applying Adaptive Opportunity Ranking (Phase 2-8)...")
-    conn = sqlite3.connect(Config.DATABASE_PATH)
+    conn = get_connection()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     

@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 from src.system.logger import setup_logger
 logger = setup_logger('feedback_tracker')
 import sqlite3
@@ -11,7 +12,7 @@ class FeedbackTracker:
         self._init_db()
         
     def _init_db(self):
-        conn = sqlite3.connect(self.db_path)
+        conn = get_connection()
         c = conn.cursor()
         c.execute("""
         CREATE TABLE IF NOT EXISTS application_outcomes (
@@ -34,7 +35,7 @@ class FeedbackTracker:
         """
         outcome should be 'INTERVIEW' or 'REJECTED'
         """
-        conn = sqlite3.connect(self.db_path)
+        conn = get_connection()
         c = conn.cursor()
         c.execute("""
         INSERT INTO application_outcomes 

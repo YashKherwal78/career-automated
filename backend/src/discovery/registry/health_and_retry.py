@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 import sqlite3
 import datetime
 from typing import Optional, List
@@ -20,7 +21,7 @@ class RetryManager:
         return (now + delta).isoformat()
 
     def queue_discovery_retry(self, company_id: str, failure_reason: str):
-        conn = sqlite3.connect(self.db_path)
+        conn = get_connection()
         c = conn.cursor()
         
         c.execute("SELECT retry_count FROM discovery_retry_queue WHERE company_id = ?", (company_id,))
@@ -45,7 +46,7 @@ class RetryManager:
         conn.close()
 
     def queue_monitoring_retry(self, endpoint_id: str, failure_reason: str):
-        conn = sqlite3.connect(self.db_path)
+        conn = get_connection()
         c = conn.cursor()
         
         c.execute("SELECT retry_count FROM monitoring_retry_queue WHERE endpoint_id = ?", (endpoint_id,))
@@ -92,7 +93,7 @@ class HealthScorer:
     def update_endpoint_health(self, endpoint_id: str, success_rate: float, avg_latency: float, recent_failures: int):
         score = self.compute_health_score(endpoint_id, success_rate, avg_latency, recent_failures)
         
-        conn = sqlite3.connect(self.db_path)
+        conn = get_connection()
         c = conn.cursor()
         c.execute('''
             UPDATE career_endpoints 

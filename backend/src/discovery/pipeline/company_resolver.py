@@ -10,6 +10,7 @@ When a company cannot be resolved, this resolver enqueues the domain into
 discovery_queue so Pipeline A can discover, verify, and register the company.
 """
 
+from src.api.db import get_connection
 import hashlib
 import logging
 import sqlite3
@@ -76,7 +77,7 @@ class CompanyResolver:
         """
         domain = _extract_domain(apply_url)
 
-        with sqlite3.connect(self.db_path, timeout=10.0) as conn:
+        with get_connection() as conn:
             conn.row_factory = sqlite3.Row
 
             # 1. Exact canonical_name match (case-insensitive)
@@ -129,7 +130,7 @@ class CompanyResolver:
         """
         try:
             # Check if already queued to avoid duplicates
-            with sqlite3.connect(self.db_path, timeout=10.0) as conn:
+            with get_connection() as conn:
                 existing = conn.execute(
                     """SELECT 1 FROM local_queues
                        WHERE queue_name = 'discovery_queue'

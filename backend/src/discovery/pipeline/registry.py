@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 import sqlite3
 import json
 import os
@@ -10,7 +11,7 @@ class BoardRegistry:
         self._init_db()
         
     def _init_db(self):
-        with sqlite3.connect(self.db_path) as conn:
+        with get_connection() as conn:
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS boards (
                     id TEXT PRIMARY KEY,
@@ -48,7 +49,7 @@ class BoardRegistry:
         identity_dict = board.identity.__dict__
         identity_dict['ats'] = board.identity.ats
         
-        with sqlite3.connect(self.db_path) as conn:
+        with get_connection() as conn:
             conn.execute("""
                 INSERT INTO boards (
                     id, company_name, provider, identity_json, endpoint,
@@ -68,7 +69,7 @@ class BoardRegistry:
             conn.commit()
             
     def get_active_boards(self) -> List[dict]:
-        with sqlite3.connect(self.db_path) as conn:
+        with get_connection() as conn:
             conn.row_factory = sqlite3.Row
             cursor = conn.execute("SELECT * FROM boards WHERE active = 1")
             return [dict(row) for row in cursor.fetchall()]

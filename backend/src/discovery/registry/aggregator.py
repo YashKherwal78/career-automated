@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 from src.system.logger import setup_logger
 logger = setup_logger('aggregator')
 import sqlite3
@@ -62,7 +63,7 @@ class SourceAggregator:
                 self.active_connectors.append(cls(self.db_path))
 
     def log_crawl_run(self, connector_name: str, started_at: str, stats: dict, status: str):
-        conn = sqlite3.connect(self.db_path)
+        conn = get_connection()
         c = conn.cursor()
         run_id = str(uuid.uuid4())
         finished_at = datetime.datetime.utcnow().isoformat()

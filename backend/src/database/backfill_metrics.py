@@ -1,9 +1,10 @@
+from src.api.db import get_connection
 import sqlite3
 import time
 
 def backfill():
     db_path = "data/crm.db"
-    conn = sqlite3.connect(db_path)
+    conn = get_connection()
     c = conn.cursor()
     
     print("Starting telemetry metrics backfill...")

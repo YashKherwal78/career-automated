@@ -52,6 +52,6 @@ class WorkableJSONConnector(Connector):
         if result.status_code == 200 and isinstance(result.payload, dict):
             jobs = result.payload.get("jobs", [])
             for job in jobs:
-                yield RawJob(provider="workable", board_identity=board.identity, payload=job)
+                yield RawJob(company_id=board.company_id, provider="workable", board_identity=board.identity, payload=job)
 
 ConnectorRegistry.register('workable', 'JSON', 100, WorkableJSONConnector)

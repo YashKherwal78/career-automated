@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import jobs, companies, applications, contacts, analytics, daemons, settings, activities, health
+from .routers import jobs, companies, applications, contacts, analytics, daemons, settings, activities, health, system, scheduler, providers
 
 app = FastAPI(title="Career Automated API", version="1.0.0")
 
@@ -36,6 +36,9 @@ app.include_router(daemons.router, prefix="/api/v1/workers", tags=["Workers"])
 app.include_router(settings.router, prefix="/api/v1/settings", tags=["Settings"])
 app.include_router(activities.router, prefix="/api/v1/activities", tags=["Activities"])
 app.include_router(health.router, prefix="/api/v1/health", tags=["Health"])
+app.include_router(system.router, prefix="/api/v1/system", tags=["System"])
+app.include_router(scheduler.router, prefix="/api/v1/scheduler", tags=["Scheduler"])
+app.include_router(providers.router, prefix="/api/v1/providers", tags=["Providers"])
 
 from fastapi.responses import HTMLResponse
 import os
@@ -45,63 +48,32 @@ from pathlib import Path
 # served by setting FRONTEND_STATIC_DIR to a directory that exists at runtime.
 
 
+from src.api.dependencies import get_repos
+
 @app.get("/api/v1/discovery")
-def get_discovery_queues(db = Depends(get_db)):
-    c = db.cursor()
-    # Check if local_queues exists
-    if not table_exists(db, "local_queues"):
-        return {"discovery_queue": 0, "verification_queue": 0, "crawl_queue": 0}
-        
-    c.execute("SELECT count(*) FROM local_queues WHERE queue_name = 'discovery_queue' AND status = 'QUEUED'")
-    dq = c.fetchone()[0]
-    
-    c.execute("SELECT count(*) FROM local_queues WHERE queue_name = 'verification_queue' AND status = 'QUEUED'")
-    vq = c.fetchone()[0]
-    
-    c.execute("SELECT count(*) FROM local_queues WHERE queue_name = 'crawl_queue' AND status = 'QUEUED'")
-    cq = c.fetchone()[0]
-    
-    return {
-        "discovery_queue": dq,
-        "verification_queue": vq,
-        "crawl_queue": cq
-    }
+def get_discovery_queues(repos = Depends(get_repos)):
+    return repos.dashboard.get_queue_counts()
 
 @app.get("/api/v1/dashboard")
-def get_dashboard_summary(db = Depends(get_db)):
-    c = db.cursor()
+def get_dashboard_summary(repos = Depends(get_repos)):
+    metrics = repos.dashboard.get_pipeline_metrics()
+    funnel = metrics.get("funnel", {})
+    workers = metrics.get("workers", [])
     
-    c.execute("SELECT count(*) FROM company_identities")
-    companies = c.fetchone()[0]
+    active_w = sum(1 for w in workers if w.get("status") == "RUNNING")
+    failed_w = sum(1 for w in workers if w.get("failures", 0) > 0)
     
-    c.execute("SELECT count(*) FROM ats_registry WHERE status = 'ACTIVE'")
-    verified = c.fetchone()[0]
-    
-    c.execute("SELECT count(*) FROM normalized_jobs WHERE status = 'ACTIVE'")
-    jobs = c.fetchone()[0]
-    
-    # Active/failed workers
-    if table_exists(db, "worker_states"):
-        c.execute("SELECT count(*) FROM worker_states WHERE status = 'RUNNING'")
-        active_w = c.fetchone()[0]
-        c.execute("SELECT count(*) FROM worker_states WHERE failures > 0")
-        failed_w = c.fetchone()[0]
-    else:
-        active_w = 0
-        failed_w = 0
-        
-    # Queue counts
-    q_counts = get_discovery_queues(db)
+    q_counts = repos.dashboard.get_queue_counts()
     
     return {
-        "companies": companies,
-        "verified": verified,
-        "jobs": jobs,
+        "companies": funnel.get("companies_discovered", 0),
+        "verified": funnel.get("ats_registry_active", 0),
+        "jobs": funnel.get("jobs_active", 0),
         "active_workers": active_w,
         "failed_workers": failed_w,
-        "discovery_queue": q_counts["discovery_queue"],
-        "verification_queue": q_counts["verification_queue"],
-        "crawl_queue": q_counts["crawl_queue"]
+        "discovery_queue": q_counts.get("discovery_queue", 0),
+        "verification_queue": q_counts.get("verification_queue", 0),
+        "crawl_queue": q_counts.get("crawl_queue", 0)
     }
 
 frontend_static_dir = os.environ.get("FRONTEND_STATIC_DIR")

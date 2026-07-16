@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 import sqlite3
 import json
 from datetime import datetime
@@ -17,7 +18,7 @@ class EventBus:
 
     def publish(self, event_type: str, payload: Dict[str, Any]):
         """Publishes an event to the system_events table."""
-        conn = sqlite3.connect(DB_PATH)
+        conn = get_connection()
         cursor = conn.cursor()
         cursor.execute('''
             INSERT INTO system_events (event_type, payload, status)
@@ -37,7 +38,7 @@ class EventBus:
         Polls the system_events table for PENDING events and executes their registered handlers.
         Marks events as COMPLETED or FAILED.
         """
-        conn = sqlite3.connect(DB_PATH)
+        conn = get_connection()
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         

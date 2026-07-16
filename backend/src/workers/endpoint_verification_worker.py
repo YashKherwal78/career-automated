@@ -63,35 +63,7 @@ class EndpointVerificationWorker(BaseWorker):
     def _ensure_company_identity(self, domain: str, website: str, canonical_name: str) -> str:
         """Ensure a minimal company identity exists for verification payloads."""
         company_id = _normalize_company_id(domain, canonical_name)
-        from src.api.db import get_connection, is_postgres
-        conn = get_connection()
-        try:
-            if is_postgres():
-                row = conn.execute(
-                    "SELECT company_id FROM company_identities WHERE company_id = %s OR domain = %s OR canonical_name = %s",
-                    (company_id, domain, canonical_name)
-                ).fetchone()
-            else:
-                row = conn.execute(
-                    "SELECT company_id FROM company_identities WHERE company_id = ? OR domain = ? OR canonical_name = ?",
-                    (company_id, domain, canonical_name)
-                ).fetchone()
-            if row:
-                return row["company_id"]
-            if is_postgres():
-                conn.execute(
-                    "INSERT INTO company_identities (company_id, domain, canonical_name, website) VALUES (%s, %s, %s, %s) ON CONFLICT (company_id) DO NOTHING",
-                    (company_id, domain, canonical_name or company_id, website or domain)
-                )
-            else:
-                conn.execute(
-                    "INSERT OR IGNORE INTO company_identities (company_id, domain, canonical_name, website) VALUES (?, ?, ?, ?)",
-                    (company_id, domain, canonical_name or company_id, website or domain)
-                )
-            conn.commit()
-        finally:
-            conn.close()
-        return company_id
+        return self.repos.company.ensure_company_identity(company_id, domain, canonical_name, website)
 
     async def run_async(self):
         logger.info(f"EndpointVerificationWorker starting as {self.worker_id}")
@@ -134,22 +106,9 @@ class EndpointVerificationWorker(BaseWorker):
                 
                 # 2. Fallback: Select a company without an ACTIVE endpoint
                 if not company_id:
-                    from src.api.db import get_connection
-                    conn = get_connection()
-                    try:
-                        cursor = conn.execute('''
-                            SELECT i.company_id 
-                            FROM company_identities i
-                            LEFT JOIN ats_registry r ON i.company_id = r.company_id AND r.status = 'ACTIVE'
-                            WHERE r.company_id IS NULL
-                            LIMIT 1
-                        ''')
-                        row = cursor.fetchone()
-                        if row:
-                            company_id = row["company_id"]
-                            logger.info(f"Polled company from DB: {company_id}")
-                    finally:
-                        conn.close()
+                    company_id = self.repos.company.get_company_without_active_endpoint()
+                    if company_id:
+                        logger.info(f"Polled company from DB: {company_id}")
 
                 if not company_id:
                     # No companies to verify
@@ -166,19 +125,7 @@ class EndpointVerificationWorker(BaseWorker):
                         logger.warning(f"Could not transition {company_id} to VERIFYING (maybe state mismatch): {e}")
 
                 # Load company details
-                company_info = None
-                from src.api.db import get_connection, is_postgres
-                conn = get_connection()
-                try:
-                    if is_postgres():
-                        cursor = conn.execute("SELECT canonical_name, website, domain FROM company_identities WHERE company_id = %s", (company_id,))
-                    else:
-                        cursor = conn.execute("SELECT canonical_name, website, domain FROM company_identities WHERE company_id = ?", (company_id,))
-                    row = cursor.fetchone()
-                    if row:
-                        company_info = dict(row)
-                finally:
-                    conn.close()
+                company_info = self.repos.company.get_company_info(company_id)
 
                 if not company_info:
                     logger.warning(f"Company ID {company_id} not found in identities.")
@@ -226,31 +173,16 @@ class EndpointVerificationWorker(BaseWorker):
                                     
                                     # Insert canonical to ats_registry
                                     canonical_url = detector.extract_canonical_url(cand.url, resp)
-                                    from src.api.db import get_connection, is_postgres
-                                    db_conn = get_connection()
-                                    try:
-                                        cur = db_conn.cursor()
-                                        if is_postgres():
-                                            cur.execute(
-                                                '''
-                                                INSERT INTO ats_registry (company_id, provider_id, candidate_id, endpoint, canonical_endpoint, status)
-                                                VALUES (%s, %s, %s, %s, %s, 'ACTIVE')
-                                                ON CONFLICT (company_id, provider_id) DO NOTHING
-                                                ''',
-                                                (company_id, cand.provider_id, cand.candidate_id, cand.url, canonical_url)
-                                            )
-                                        else:
-                                            cur.execute(
-                                                '''
-                                                INSERT OR IGNORE INTO ats_registry (company_id, provider_id, candidate_id, endpoint, canonical_endpoint, status)
-                                                VALUES (?, ?, ?, ?, ?, 'ACTIVE')
-                                                ''',
-                                                (company_id, cand.provider_id, cand.candidate_id, cand.url, canonical_url)
-                                            )
-                                        db_conn.commit()
+                                    self.repos.company.report_canonical_endpoint(
+                                        company_id=company_id,
+                                        provider_id=cand.provider_id,
+                                        candidate_id=cand.candidate_id,
+                                        endpoint=cand.url,
+                                        canonical_endpoint=canonical_url
+                                    )
+                                    
+                                    with self.repos.transaction() as db_conn:
                                         EndpointIntelligenceService.log_registry_change(db_conn, company_id, cand.provider_id, None, canonical_url, "INITIAL_DISCOVERY")
-                                    finally:
-                                        db_conn.close()
                                     
                                     verified_providers.add(cand.provider_id)
                                 else:

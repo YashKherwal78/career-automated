@@ -1,3 +1,4 @@
+from src.api.db import get_connection
 from src.system.logger import setup_logger
 logger = setup_logger('vc_connectors')
 import requests
@@ -27,7 +28,7 @@ class BaseResumableConnector(SourceConnector):
 
     def _scrape_tc_tag(self, tag: str, max_pages: int) -> int:
         """Helper to scrape real startups from TechCrunch VC tags to bypass VC Cloudflare protection."""
-        conn = sqlite3.connect(self.db_path)
+        conn = get_connection()
         c = conn.cursor()
         page = self._get_cursor(c)
         added = 0

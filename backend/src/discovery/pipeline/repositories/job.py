@@ -10,10 +10,10 @@ class JobRepository(BaseRepository):
         # Use existing normalized_jobs table created by migrations
         pass
 
-    def upsert_and_diff(self, jobs: List[CanonicalJob], board_id: str, synced_at: float) -> Tuple[int, int, int]:
+    def upsert_and_diff(self, jobs: List[CanonicalJob], board_id: str, synced_at: float) -> Tuple[int, int, int, int]:
         """
         Takes the new canonical jobs, diffs against existing active jobs for the board/company.
-        Returns (inserted, updated, archived).
+        Returns (inserted, updated, archived, previous_jobs).
         """
         inserted = 0
         updated = 0
@@ -114,4 +114,4 @@ class JobRepository(BaseRepository):
             
             conn.commit()
             
-        return (inserted, updated, archived)
+        return (inserted, updated, archived, len(active_hashes))

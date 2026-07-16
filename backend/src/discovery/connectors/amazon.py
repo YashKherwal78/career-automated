@@ -43,6 +43,6 @@ class AmazonJSONConnector(Connector):
         
         if result.status_code == 200 and isinstance(result.payload, dict):
             for job in result.payload.get("jobs", []):
-                yield RawJob(provider="amazon", board_identity=board.identity, payload=job)
+                yield RawJob(company_id=board.company_id, provider="amazon", board_identity=board.identity, payload=job)
 
 ConnectorRegistry.register('amazon', 'JSON', 100, AmazonJSONConnector)
