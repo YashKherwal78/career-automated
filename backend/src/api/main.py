@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import jobs, companies, applications, contacts, analytics, daemons, settings, activities, health, system, scheduler, providers
+from .routers import jobs, companies, applications, contacts, analytics, daemons, settings, activities, health, system, scheduler, providers, users
+from src.runtime.auth.dependencies import get_current_user
 
 app = FastAPI(title="Career Automated API", version="1.0.0")
 
@@ -26,19 +27,23 @@ logger.info(f"STARTUP DATABASE_URL: {bool(DATABASE_URL)} USE_POSTGRES: {USE_POST
 
 start_time = time.time()
 
-app.include_router(jobs.router, prefix="/api/v1/jobs", tags=["Jobs"])
-app.include_router(companies.router, prefix="/api/v1/companies", tags=["Companies"])
-app.include_router(applications.router, prefix="/api/v1/applications", tags=["Applications"])
-app.include_router(contacts.router, prefix="/api/v1/contacts", tags=["Contacts"])
-app.include_router(analytics.router, prefix="/api/v1/analytics", tags=["Analytics"])
-app.include_router(daemons.router, prefix="/api/v1/daemons", tags=["Daemons"])
-app.include_router(daemons.router, prefix="/api/v1/workers", tags=["Workers"])
-app.include_router(settings.router, prefix="/api/v1/settings", tags=["Settings"])
-app.include_router(activities.router, prefix="/api/v1/activities", tags=["Activities"])
+# Authenticated Routers
+app.include_router(users.router, prefix="/api/v1/users", tags=["Users"], dependencies=[Depends(get_current_user)])
+app.include_router(jobs.router, prefix="/api/v1/jobs", tags=["Jobs"], dependencies=[Depends(get_current_user)])
+app.include_router(companies.router, prefix="/api/v1/companies", tags=["Companies"], dependencies=[Depends(get_current_user)])
+app.include_router(applications.router, prefix="/api/v1/applications", tags=["Applications"], dependencies=[Depends(get_current_user)])
+app.include_router(contacts.router, prefix="/api/v1/contacts", tags=["Contacts"], dependencies=[Depends(get_current_user)])
+app.include_router(analytics.router, prefix="/api/v1/analytics", tags=["Analytics"], dependencies=[Depends(get_current_user)])
+app.include_router(daemons.router, prefix="/api/v1/daemons", tags=["Daemons"], dependencies=[Depends(get_current_user)])
+app.include_router(daemons.router, prefix="/api/v1/workers", tags=["Workers"], dependencies=[Depends(get_current_user)])
+app.include_router(settings.router, prefix="/api/v1/settings", tags=["Settings"], dependencies=[Depends(get_current_user)])
+app.include_router(activities.router, prefix="/api/v1/activities", tags=["Activities"], dependencies=[Depends(get_current_user)])
+app.include_router(system.router, prefix="/api/v1/system", tags=["System"], dependencies=[Depends(get_current_user)])
+app.include_router(scheduler.router, prefix="/api/v1/scheduler", tags=["Scheduler"], dependencies=[Depends(get_current_user)])
+app.include_router(providers.router, prefix="/api/v1/providers", tags=["Providers"], dependencies=[Depends(get_current_user)])
+
+# Public Routers
 app.include_router(health.router, prefix="/api/v1/health", tags=["Health"])
-app.include_router(system.router, prefix="/api/v1/system", tags=["System"])
-app.include_router(scheduler.router, prefix="/api/v1/scheduler", tags=["Scheduler"])
-app.include_router(providers.router, prefix="/api/v1/providers", tags=["Providers"])
 
 from fastapi.responses import HTMLResponse
 import os
@@ -51,11 +56,11 @@ from pathlib import Path
 from src.api.dependencies import get_repos
 
 @app.get("/api/v1/discovery")
-def get_discovery_queues(repos = Depends(get_repos)):
+def get_discovery_queues(repos = Depends(get_repos), current_user = Depends(get_current_user)):
     return repos.dashboard.get_queue_counts()
 
 @app.get("/api/v1/dashboard")
-def get_dashboard_summary(repos = Depends(get_repos)):
+def get_dashboard_summary(repos = Depends(get_repos), current_user = Depends(get_current_user)):
     metrics = repos.dashboard.get_pipeline_metrics()
     funnel = metrics.get("funnel", {})
     workers = metrics.get("workers", [])
