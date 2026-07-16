@@ -1,0 +1,39 @@
+# Environments & Virtual Directories
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.git/
+.github/
+
+# Database & Locks
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+*.sqlite
+*.sqlite3
+backend/data/*.db
+
+# Frontend Node Modules & Builds
+frontend/node_modules/
+frontend/dist/
+node_modules/
+
+# Logs & Diagnostics
+*.log
+*.out
+logs/
+stripe_retest_v*
+stripe_trace*
+stripe_audit*
+
+# Local Artifacts & Scrapers
+artifacts/
+research/
+scratch/
+tailored_*
+data/generated_resumes/
