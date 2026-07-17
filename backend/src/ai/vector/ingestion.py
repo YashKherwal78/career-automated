@@ -82,7 +82,8 @@ class DocumentIngestionService:
         texts_to_embed: List[str] = []
         temp_chunks: List[ChunkDTO] = []
         
-        # Calculate chunk checksums
+        # Calculate chunk checksums and check cache
+        indices_needing_embedding = []
         for idx, item in enumerate(chunk_dicts):
             chunk_content = item["content"]
             chunk_hash = hashlib.md5(chunk_content.encode("utf-8")).hexdigest()
@@ -100,16 +101,27 @@ class DocumentIngestionService:
                 chunk_index=idx,
                 chunk_metadata=chunk_meta
             )
+            
+            # Attempt to reuse existing embedding by chunk checksum
+            existing_emb = VectorRepository.get_chunk_by_checksum(chunk_hash)
+            if existing_emb:
+                chunk_dto.embedding = existing_emb
+                logger.info(f"Reusing cached embedding for chunk index {idx} (checksum match).")
+            else:
+                indices_needing_embedding.append(len(temp_chunks))
+                texts_to_embed.append(chunk_content)
+                
             temp_chunks.append(chunk_dto)
-            texts_to_embed.append(chunk_content)
 
-        # Generate embeddings (batch operations)
-        logger.info(f"Generating embeddings for {len(texts_to_embed)} chunks...")
-        embeddings = embedder.embed_batch(texts_to_embed)
-        
-        for chunk, emb in zip(temp_chunks, embeddings):
-            chunk.embedding = emb
-            chunks_to_save.append(chunk)
+        # Generate embeddings only for new/modified chunks
+        if texts_to_embed:
+            logger.info(f"Generating embeddings for {len(texts_to_embed)} new/modified chunks...")
+            embeddings = embedder.embed_batch(texts_to_embed)
+            for sub_idx, emb in enumerate(embeddings):
+                target_chunk_idx = indices_needing_embedding[sub_idx]
+                temp_chunks[target_chunk_idx].embedding = emb
+
+        chunks_to_save = temp_chunks
 
         # 6. Save chunks and finalize status
         DocumentRepository.update_status(doc_id, "INDEXING")

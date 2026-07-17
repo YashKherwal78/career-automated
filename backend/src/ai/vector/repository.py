@@ -158,6 +158,25 @@ class VectorRepository:
             conn.close()
 
     @staticmethod
+    def get_chunk_by_checksum(checksum: str) -> Optional[List[float]]:
+        """Fetch existing chunk embedding by checksum to skip re-embedding."""
+        conn = get_connection()
+        try:
+            cursor = conn.execute(
+                "SELECT embedding FROM public.vector_chunks WHERE chunk_checksum = ? LIMIT 1",
+                (checksum,)
+            )
+            row = cursor.fetchone()
+            if not row:
+                return None
+            emb_str = row[0] if isinstance(row, tuple) else row["embedding"]
+            if not emb_str:
+                return None
+            return json.loads(emb_str)
+        finally:
+            conn.close()
+
+    @staticmethod
     def search_similarity(
         namespace: str,
         query_embedding: List[float],
