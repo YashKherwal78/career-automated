@@ -24,10 +24,11 @@ Target table: company_identities (Pipeline A bootstrap table)
 Rules:
   - Idempotent: INSERT OR IGNORE — safe to run multiple times.
   - Dedup: primary key is domain; duplicate domains are skipped silently.
-  - No ATS marked ACTIVE: known_ats stored as metadata only.
-    EndpointVerificationWorker remains the source of truth for ATS status.
+  - Jobhive (IMPORTED_REGISTRY) companies are written with verification_source =
+    'IMPORTED_REGISTRY' and immediately registered as ACTIVE in ats_registry.
+    They NEVER enter EndpointVerificationWorker.
+  - DPIIT / unknown-ATS companies enter normal Pipeline A discovery flow.
   - Does NOT modify any workers, pipelines, or schedulers.
-  - Pipeline A is untouched; this only adds rows to company_identities.
 
 Usage:
   python3 src/bootstrap/import_company_datasets.py
@@ -383,10 +384,15 @@ def deduplicate(records: list[CompanyRecord]) -> list[CompanyRecord]:
 
 def insert_records(records: list[CompanyRecord], db_path: str, dry_run: bool = False) -> dict:
     """
-    INSERT OR IGNORE into company_identities.
-    Returns stats: {inserted, skipped, errors}
+    INSERT OR IGNORE into company_identities, then register ACTIVE endpoints
+    in ats_registry for all jobhive (IMPORTED_REGISTRY) records.
+    Returns stats: {inserted, skipped, errors, registry_inserted}
     """
-    stats = {"inserted": 0, "skipped": 0, "errors": 0}
+    import hashlib
+    import time
+    from urllib.parse import urlparse as _urlparse
+
+    stats = {"inserted": 0, "skipped": 0, "errors": 0, "registry_inserted": 0}
 
     if dry_run:
         log.info(f"[DRY RUN] Would attempt to insert {len(records)} records.")
@@ -397,8 +403,7 @@ def insert_records(records: list[CompanyRecord], db_path: str, dry_run: bool = F
         return stats
 
     from src.api.db import get_connection, is_postgres
-    
-    # Pre-load existing domains to count skips accurately
+
     conn = get_connection()
     try:
         if is_postgres():
@@ -407,46 +412,141 @@ def insert_records(records: list[CompanyRecord], db_path: str, dry_run: bool = F
             existing = {row[0] for row in conn.execute("SELECT domain FROM company_identities").fetchall()}
         log.info(f"Existing company_identities rows: {len(existing)}")
 
-        # Filter out records that are already imported
-        to_insert = []
+        # Separate jobhive (IMPORTED_REGISTRY) from other sources
+        to_insert_registry = []   # (company_id, domain, name, website, aliases)
+        to_insert_discovery = []  # same tuple, no ATS endpoint known
+
         for r in records:
             if r.domain in existing:
                 stats["skipped"] += 1
+                continue
+            existing.add(r.domain)
+            aliases_dict = json.loads(r.aliases) if r.aliases else {}
+            if aliases_dict.get("source") == "jobhive" and aliases_dict.get("known_ats") and aliases_dict.get("board_url"):
+                to_insert_registry.append(r)
             else:
-                to_insert.append((r.company_id, r.domain, r.canonical_name, r.website, r.aliases))
-                existing.add(r.domain)
+                to_insert_discovery.append(r)
 
-        if to_insert:
-            log.info(f"Batch inserting {len(to_insert):,} new records...")
-            # Chunk insertions in batches of 1000 to prevent parameter limits
-            batch_size = 1000
-            for i in range(0, len(to_insert), batch_size):
-                chunk = to_insert[i:i + batch_size]
+        now = time.time()
+        batch_size = 1000
+
+        # ── Insert IMPORTED_REGISTRY companies (jobhive) ──────────────────────
+        if to_insert_registry and is_postgres():
+            # Pre-populate all required providers
+            providers = {json.loads(r.aliases).get("known_ats", "").lower() for r in to_insert_registry if r.aliases}
+            providers.discard("")
+            raw = conn.cursor()._cursor
+            for provider in providers:
+                raw.execute(
+                    "INSERT INTO ats_providers (provider_id, display_name) VALUES (%s, %s) ON CONFLICT (provider_id) DO NOTHING",
+                    (provider, provider.title()),
+                )
+
+            log.info(f"Inserting {len(to_insert_registry):,} IMPORTED_REGISTRY companies...")
+            for i in range(0, len(to_insert_registry), batch_size):
+                chunk = to_insert_registry[i:i + batch_size]
+                # Insert identities
+                raw.executemany(
+                    """
+                    INSERT INTO company_identities
+                        (company_id, domain, canonical_name, website, aliases,
+                         lifecycle_state, verification_source)
+                    VALUES (%s, %s, %s, %s, %s, 'ACTIVE', 'IMPORTED_REGISTRY')
+                    ON CONFLICT (company_id) DO UPDATE
+                        SET lifecycle_state = 'ACTIVE',
+                            verification_source = 'IMPORTED_REGISTRY'
+                    """,
+                    [(r.company_id, r.domain, r.canonical_name, r.website, r.aliases) for r in chunk],
+                )
+                # Build registry rows
+                reg_rows = []
+                for r in chunk:
+                    al = json.loads(r.aliases)
+                    provider = al.get("known_ats", "").lower()
+                    endpoint = al.get("board_url", "")
+                    if not provider or not endpoint:
+                        continue
+                    ep_hash = hashlib.sha256(endpoint.encode()).hexdigest()
+                    try:
+                        parsed = _urlparse(endpoint if endpoint.startswith("http") else f"https://{endpoint}")
+                        company_domain = parsed.netloc.replace("www.", "") or r.domain
+                    except Exception:
+                        company_domain = r.domain
+                    reg_rows.append((
+                        r.company_id, company_domain, r.canonical_name,
+                        provider, endpoint, endpoint, ep_hash,
+                        "ACTIVE", "jobhive",
+                        now, now, now, now + 14 * 24 * 3600,
+                    ))
+                if reg_rows:
+                    raw.executemany(
+                        """
+                        INSERT INTO ats_registry (
+                            company_id, company_domain, company_name, provider_id,
+                            endpoint, canonical_endpoint, endpoint_hash,
+                            status, discovery_source,
+                            created_at, last_checked, last_verified, recheck_after
+                        ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                        ON CONFLICT (company_id, status)
+                            WHERE status = 'ACTIVE'
+                        DO UPDATE SET
+                            provider_id        = EXCLUDED.provider_id,
+                            endpoint           = EXCLUDED.endpoint,
+                            canonical_endpoint = EXCLUDED.canonical_endpoint,
+                            endpoint_hash      = EXCLUDED.endpoint_hash,
+                            discovery_source   = EXCLUDED.discovery_source,
+                            last_checked       = EXCLUDED.last_checked,
+                            last_verified      = EXCLUDED.last_verified,
+                            recheck_after      = EXCLUDED.recheck_after
+                        """,
+                        reg_rows,
+                    )
+                    stats["registry_inserted"] += len(reg_rows)
+                stats["inserted"] += len(chunk)
+            conn.commit()
+
+        # ── Insert DISCOVERY companies (unknown ATS) ─────────────────────────
+        if to_insert_discovery:
+            log.info(f"Inserting {len(to_insert_discovery):,} DISCOVERY companies...")
+            discovery_rows = [
+                (r.company_id, r.domain, r.canonical_name, r.website, r.aliases)
+                for r in to_insert_discovery
+            ]
+            for i in range(0, len(discovery_rows), batch_size):
+                chunk = discovery_rows[i:i + batch_size]
                 if is_postgres():
-                    # We can use execute_many or a fast raw cursor execution for PostgreSQL
-                    raw_cursor = conn.cursor()._cursor
-                    query = """
+                    raw = conn.cursor()._cursor
+                    raw.executemany(
+                        """
                         INSERT INTO company_identities
-                        (company_id, domain, canonical_name, website, aliases)
+                            (company_id, domain, canonical_name, website, aliases)
                         VALUES (%s, %s, %s, %s, %s)
                         ON CONFLICT (company_id) DO NOTHING
-                    """
-                    raw_cursor.executemany(query, chunk)
+                        """,
+                        chunk,
+                    )
                 else:
                     conn.executemany(
-                        """INSERT OR IGNORE INTO company_identities
-                           (company_id, domain, canonical_name, website, aliases)
-                           VALUES (?, ?, ?, ?, ?)""",
+                        "INSERT OR IGNORE INTO company_identities"
+                        " (company_id, domain, canonical_name, website, aliases)"
+                        " VALUES (?, ?, ?, ?, ?)",
                         chunk,
                     )
                 stats["inserted"] += len(chunk)
             conn.commit()
+
     except Exception as e:
         log.error(f"Batch insertion failed: {e}")
         stats["errors"] += len(records) - stats["skipped"] - stats["inserted"]
     finally:
         conn.close()
 
+    log.info(
+        f"Import complete — inserted: {stats['inserted']:,}, "
+        f"skipped: {stats['skipped']:,}, "
+        f"registry_active: {stats['registry_inserted']:,}, "
+        f"errors: {stats['errors']}"
+    )
     return stats
 
 

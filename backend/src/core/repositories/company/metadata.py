@@ -67,7 +67,7 @@ class CompanyRepository(BaseRepository, ICompanyRepository):
     def get_company_info(self, company_id: str, tx=None) -> Optional[Dict[str, Any]]:
         with self.transaction() as conn:
             p = conn.dialect.placeholder()
-            cursor = conn.execute(f"SELECT canonical_name, website, domain FROM company_identities WHERE company_id = {p}", (company_id,))
+            cursor = conn.execute(f"SELECT canonical_name, website, domain, aliases, verification_source FROM company_identities WHERE company_id = {p}", (company_id,))
             row = cursor.fetchone()
             if row:
                 return dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in cursor.description], row))
@@ -96,7 +96,7 @@ class CompanyRepository(BaseRepository, ICompanyRepository):
                     i.company_id, 
                     i.canonical_name as company_name, 
                     i.website, 
-                    r.ats_type, 
+                    r.provider_id as ats_type, 
                     r.status,
                     r.job_count, 
                     r.last_checked, 

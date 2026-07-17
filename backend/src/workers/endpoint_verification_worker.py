@@ -133,6 +133,12 @@ class EndpointVerificationWorker(BaseWorker):
                         self.queue.ack(current_queue, item_id)
                     continue
 
+                if company_info.get("verification_source") == "IMPORTED_REGISTRY":
+                    logger.info(f"Skipping verification for {company_id} (IMPORTED_REGISTRY source).")
+                    if q_item:
+                        self.queue.ack(current_queue, item_id)
+                    continue
+
                 website = company_info.get("website") or company_info.get("domain")
                 if not website:
                     logger.warning(f"No website or domain for company {company_id}")
