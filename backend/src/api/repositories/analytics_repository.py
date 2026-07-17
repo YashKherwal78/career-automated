@@ -2,19 +2,35 @@ class AnalyticsRepository:
     def __init__(self, db):
         self.db = db
 
+    def _val(self, row):
+        """Extract first value from a row, supporting both dict-like and tuple formats."""
+        if row is None:
+            return 0
+        if isinstance(row, dict) or hasattr(row, 'values'):
+            return next(iter(row.values()))
+        return row[0]
+
+    def _list(self, row):
+        """Convert a row (dict-like or tuple) to a standard list."""
+        if row is None:
+            return []
+        if isinstance(row, dict) or hasattr(row, 'values'):
+            return list(row.values())
+        return list(row)
+
     def get_funnel_kpis(self):
         c = self.db.cursor()
         c.execute("SELECT count(DISTINCT company_id) FROM company_identities")
-        total_companies = c.fetchone()[0]
+        total_companies = self._val(c.fetchone())
         
         c.execute("SELECT count(DISTINCT endpoint_id) FROM career_endpoints WHERE status = 'VERIFIED'")
-        verified_ats = c.fetchone()[0]
+        verified_ats = self._val(c.fetchone())
         
         c.execute("SELECT count(job_id) FROM normalized_jobs WHERE status = 'ACTIVE'")
-        active_jobs = c.fetchone()[0]
+        active_jobs = self._val(c.fetchone())
         
         c.execute("SELECT count(application_id) FROM applications")
-        applications = c.fetchone()[0]
+        applications = self._val(c.fetchone())
         
         return {
             "companies": total_companies,
@@ -30,16 +46,16 @@ class AnalyticsRepository:
     def get_pipeline_kpis(self):
         c = self.db.cursor()
         c.execute("SELECT count(*) FROM company_identities")
-        companies_count = c.fetchone()[0]
+        companies_count = self._val(c.fetchone())
         
         c.execute("SELECT count(*) FROM career_endpoints")
-        endpoints_count = c.fetchone()[0]
+        endpoints_count = self._val(c.fetchone())
         
         c.execute("SELECT count(*) FROM ats_registry WHERE status = 'ACTIVE'")
-        verified_count = c.fetchone()[0]
+        verified_count = self._val(c.fetchone())
         
         c.execute("SELECT count(*) FROM normalized_jobs WHERE status = 'ACTIVE'")
-        jobs_count = c.fetchone()[0]
+        jobs_count = self._val(c.fetchone())
 
         workers = {
             "discovery": "Stopped",
@@ -51,9 +67,10 @@ class AnalyticsRepository:
         try:
             c.execute("SELECT worker_name, status, failures FROM worker_states")
             for row in c.fetchall():
-                name = row[0].lower()
-                status = row[1]
-                failures = row[2]
+                vals = self._list(row)
+                name = vals[0].lower()
+                status = vals[1]
+                failures = vals[2]
                 if "discovery" in name:
                     workers["discovery"] = status
                 elif "verification" in name:
@@ -69,11 +86,11 @@ class AnalyticsRepository:
         dq, vq, cq = 0, 0, 0
         try:
             c.execute("SELECT count(*) FROM local_queues WHERE queue_name = 'discovery_queue' AND status = 'QUEUED'")
-            dq = c.fetchone()[0]
+            dq = self._val(c.fetchone())
             c.execute("SELECT count(*) FROM local_queues WHERE queue_name = 'verification_queue' AND status = 'QUEUED'")
-            vq = c.fetchone()[0]
+            vq = self._val(c.fetchone())
             c.execute("SELECT count(*) FROM local_queues WHERE queue_name = 'crawl_queue' AND status = 'QUEUED'")
-            cq = c.fetchone()[0]
+            cq = self._val(c.fetchone())
         except Exception:
             pass
 
@@ -96,25 +113,25 @@ class AnalyticsRepository:
         c = self.db.cursor()
         c.execute("SELECT * FROM pipeline_runs ORDER BY started_at DESC LIMIT 50")
         columns = [col[0] for col in c.description]
-        return [dict(zip(columns, row)) for row in c.fetchall()]
+        return [dict(zip(columns, self._list(row))) for row in c.fetchall()]
 
     def get_plugins(self):
         c = self.db.cursor()
         c.execute("SELECT * FROM plugin_metrics")
         columns = [col[0] for col in c.description]
-        return [dict(zip(columns, row)) for row in c.fetchall()]
+        return [dict(zip(columns, self._list(row))) for row in c.fetchall()]
 
     def get_sources(self):
         c = self.db.cursor()
         c.execute("SELECT * FROM source_metrics")
         columns = [col[0] for col in c.description]
-        return [dict(zip(columns, row)) for row in c.fetchall()]
+        return [dict(zip(columns, self._list(row))) for row in c.fetchall()]
 
     def get_workers(self):
         c = self.db.cursor()
         c.execute("SELECT * FROM worker_metrics")
         columns = [col[0] for col in c.description]
-        return [dict(zip(columns, row)) for row in c.fetchall()]
+        return [dict(zip(columns, self._list(row))) for row in c.fetchall()]
 
     def get_queues(self):
         c = self.db.cursor()
@@ -127,12 +144,13 @@ class AnalyticsRepository:
         ''')
         result = []
         for row in c.fetchall():
+            vals = self._list(row)
             result.append({
-                "queue_name": row[0],
-                "status": row[1],
-                "count": row[2],
-                "failures": row[3] or 0,
-                "retry_count": row[4] or 0,
+                "queue_name": vals[0],
+                "status": vals[1],
+                "count": vals[2],
+                "failures": vals[3] or 0,
+                "retry_count": vals[4] or 0,
             })
         return result
 
@@ -141,21 +159,21 @@ class AnalyticsRepository:
         
         # Dead verified boards
         c.execute("SELECT COUNT(*) FROM ats_registry WHERE status = 'FAILED'")
-        dead_boards = c.fetchone()[0]
+        dead_boards = self._val(c.fetchone())
         
         # Zero-job boards
         c.execute("SELECT COUNT(*) FROM ats_registry WHERE job_count = 0")
-        zero_job_boards = c.fetchone()[0]
+        zero_job_boards = self._val(c.fetchone())
         
         # Duplicate companies
         c.execute("SELECT COUNT(*) - COUNT(DISTINCT company_id) FROM company_identities")
-        dup_companies = c.fetchone()[0]
+        dup_companies = self._val(c.fetchone())
         
         # Stale boards (not checked in last 14 days)
         import time
         stale_threshold = time.time() - (14 * 24 * 3600)
         c.execute("SELECT COUNT(*) FROM ats_registry WHERE last_checked < ?", (stale_threshold,))
-        stale_boards = c.fetchone()[0]
+        stale_boards = self._val(c.fetchone())
         
         return {
             "dead_verified_boards": dead_boards,
@@ -173,7 +191,7 @@ class AnalyticsRepository:
             ORDER BY timestamp ASC
         """, (company_id,))
         columns = [col[0] for col in c.description]
-        return [dict(zip(columns, row)) for row in c.fetchall()]
+        return [dict(zip(columns, self._list(row))) for row in c.fetchall()]
 
     def get_priorities(self):
         c = self.db.cursor()
@@ -181,7 +199,7 @@ class AnalyticsRepository:
         
         # 1. Backlog Check
         c.execute("SELECT count(*) FROM local_queues WHERE queue_name='discovery_queue' AND status='QUEUED'")
-        backlog = c.fetchone()[0]
+        backlog = self._val(c.fetchone())
         if backlog > 500:
             priorities.append({
                 "severity": "warning",
@@ -191,7 +209,7 @@ class AnalyticsRepository:
             
         # 2. Dead verified boards
         c.execute("SELECT COUNT(*) FROM ats_registry WHERE status = 'FAILED'")
-        dead = c.fetchone()[0]
+        dead = self._val(c.fetchone())
         if dead > 0:
             priorities.append({
                 "severity": "danger",
@@ -203,7 +221,8 @@ class AnalyticsRepository:
         c.execute("SELECT verified, candidates_found FROM plugin_metrics WHERE plugin='workable'")
         row = c.fetchone()
         if row:
-            verified, candidates = row
+            vals = self._list(row)
+            verified, candidates = vals[0], vals[1]
             precision = (verified / candidates) * 100 if candidates > 0 else 100
             if precision < 50:
                 priorities.append({
@@ -230,19 +249,19 @@ class AnalyticsRepository:
             ORDER BY created_at ASC LIMIT 50
         """, (queue_name,))
         columns = [col[0] for col in c.description]
-        return [dict(zip(columns, row)) for row in c.fetchall()]
+        return [dict(zip(columns, self._list(row))) for row in c.fetchall()]
 
     def get_dead_boards(self):
         c = self.db.cursor()
         c.execute("SELECT company_id, endpoint, provider_id as ats_type, failure_count FROM ats_registry WHERE status = 'FAILED' LIMIT 50")
         columns = [col[0] for col in c.description]
-        return [dict(zip(columns, row)) for row in c.fetchall()]
+        return [dict(zip(columns, self._list(row))) for row in c.fetchall()]
 
     def get_zero_job_boards(self):
         c = self.db.cursor()
         c.execute("SELECT company_id, endpoint, provider_id as ats_type, job_count FROM ats_registry WHERE job_count = 0 LIMIT 50")
         columns = [col[0] for col in c.description]
-        return [dict(zip(columns, row)) for row in c.fetchall()]
+        return [dict(zip(columns, self._list(row))) for row in c.fetchall()]
 
     def get_duplicate_companies(self):
         c = self.db.cursor()
@@ -254,7 +273,7 @@ class AnalyticsRepository:
             ) LIMIT 50
         """)
         columns = [col[0] for col in c.description]
-        return [dict(zip(columns, row)) for row in c.fetchall()]
+        return [dict(zip(columns, self._list(row))) for row in c.fetchall()]
 
     def get_ats_drilldown(self, ats_type: str):
         c = self.db.cursor()
@@ -269,19 +288,20 @@ class AnalyticsRepository:
             WHERE LOWER(provider_id) = LOWER(?)
         """, (ats_type,))
         row = c.fetchone()
-        seen = row[0] or 0
-        verified = row[1] or 0
-        dead = row[2] or 0
-        jobs = row[3] or 0
+        vals = self._list(row)
+        seen = vals[0] or 0
+        verified = vals[1] or 0
+        dead = vals[2] or 0
+        jobs = vals[3] or 0
         
         # 2. Count zero job boards
         c.execute("SELECT COUNT(*) FROM ats_registry WHERE LOWER(provider_id) = LOWER(?) AND job_count = 0", (ats_type,))
-        zero_job = c.fetchone()[0] or 0
+        zero_job = self._val(c.fetchone()) or 0
         
         # 3. Latency (from events)
         c.execute("SELECT AVG(latency_ms) FROM pipeline_events WHERE LOWER(ats_type) = LOWER(?) AND latency_ms IS NOT NULL", (ats_type,))
         latency_row = c.fetchone()
-        avg_latency = latency_row[0] or 120.0
+        avg_latency = self._val(latency_row) or 120.0
         
         # Calculate conversion rates
         parser_success = 98.5
@@ -308,16 +328,17 @@ class AnalyticsRepository:
         
         def get_count(table, where="1=1"):
             c.execute(f"SELECT COUNT(*) FROM {table} WHERE {where}")
-            return c.fetchone()[0]
+            return self._val(c.fetchone())
 
         def get_event_stats(stage_name):
             c.execute("SELECT COUNT(*), AVG(latency_ms) FROM pipeline_events WHERE stage = ?", (stage_name,))
             row = c.fetchone()
-            count = row[0] or 0
+            vals = self._list(row)
+            count = vals[0] or 0
             # If no data exists, we MUST return None to indicate 'Telemetry Unavailable'
             if count == 0:
                 return {"count": None, "latency_ms": None}
-            return {"count": count, "latency_ms": round(row[1] or 0, 1) if row[1] else None}
+            return {"count": count, "latency_ms": round(vals[1] or 0, 1) if vals[1] else None}
 
         universe = get_count("company_identities")
         homepage = get_event_stats("HOMEPAGE_FETCH")
@@ -349,7 +370,8 @@ class AnalyticsRepository:
         total_jobs = 0
         
         for row in c.fetchall():
-            plugin, candidates, verified, jobs, dead = row
+            vals = self._list(row)
+            plugin, candidates, verified, jobs, dead = vals[0], vals[1], vals[2], vals[3], vals[4]
             if not plugin: continue
             pid = plugin.lower()
             
