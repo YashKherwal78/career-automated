@@ -54,6 +54,22 @@ class BaseWorker:
             pid=os.getpid()
         )
         self.repos.worker.heartbeat(self.worker_id, WorkerState.STARTING)
+        
+        import threading
+        self._hb_thread = threading.Thread(target=self._heartbeat_loop, daemon=True)
+        self._hb_thread.start()
+
+    def _heartbeat_loop(self):
+        while self.running:
+            try:
+                self.repos.worker.heartbeat(self.worker_id, WorkerState.RUNNING)
+            except Exception:
+                pass
+            for _ in range(30):
+                if not self.running:
+                    break
+                time.sleep(1)
+
 
     def heartbeat(self, jobs_processed=0, failure_increment=0, last_error=None):
         # Update operational metrics
