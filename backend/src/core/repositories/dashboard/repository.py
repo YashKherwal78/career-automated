@@ -81,11 +81,21 @@ class DashboardRepository(BaseRepository):
             active_crawlers_count = 0
             active_workers_count = 0
             for w in workers:
-                # Heartbeat within last 90 seconds is considered active
-                if now - w.get("heartbeat", 0.0) < 90.0:
-                    active_workers_count += 1
-                    if "crawler" in w.get("worker_name", "").lower():
-                        active_crawlers_count += 1
+                hb = w.get("heartbeat")
+                if hb is not None:
+                    if hasattr(hb, "timestamp"):
+                        hb_ts = hb.timestamp()
+                    else:
+                        try:
+                            hb_ts = float(hb)
+                        except (ValueError, TypeError):
+                            hb_ts = 0.0
+                    
+                    # Heartbeat within last 90 seconds is considered active
+                    if now - hb_ts < 90.0:
+                        active_workers_count += 1
+                        if "crawler" in w.get("worker_name", "").lower():
+                            active_crawlers_count += 1
 
             funnel["active_crawlers"] = active_crawlers_count
             funnel["active_workers"] = active_workers_count
