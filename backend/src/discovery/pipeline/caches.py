@@ -1,4 +1,4 @@
-from src.api.db import get_connection
+from src.api.db import get_connection, is_postgres
 import sqlite3
 import json
 import time
@@ -29,8 +29,10 @@ class NegativeCache:
         
     def set(self, key: str, reason: str):
         with get_connection() as conn:
-            conn.execute("INSERT OR REPLACE INTO negative_cache (key, reason, timestamp) VALUES (?, ?, ?)",
-                         (key, reason, time.time()))
+            conn.execute("""
+                INSERT INTO negative_cache (key, reason, timestamp) VALUES (?, ?, ?)
+                ON CONFLICT (key) DO UPDATE SET reason = EXCLUDED.reason, timestamp = EXCLUDED.timestamp
+            """, (key, reason, time.time()))
 
 class SearchCache:
     def __init__(self, db_path: str):
@@ -53,8 +55,10 @@ class SearchCache:
             
     def set(self, query: str, url: str):
         with get_connection() as conn:
-            conn.execute("INSERT OR REPLACE INTO search_cache (query, url, timestamp) VALUES (?, ?, ?)",
-                         (query, url, time.time()))
+            conn.execute("""
+                INSERT INTO search_cache (query, url, timestamp) VALUES (?, ?, ?)
+                ON CONFLICT (query) DO UPDATE SET url = EXCLUDED.url, timestamp = EXCLUDED.timestamp
+            """, (query, url, time.time()))
 
 class ReplayCache:
     def __init__(self, db_path: str):
@@ -63,14 +67,15 @@ class ReplayCache:
         
     def _init_db(self):
         with get_connection() as conn:
-            conn.execute('''CREATE TABLE IF NOT EXISTS replay_cache (
+            payload_type = "BYTEA" if is_postgres() else "BLOB"
+            conn.execute(f'''CREATE TABLE IF NOT EXISTS replay_cache (
                 url TEXT PRIMARY KEY,
                 method TEXT,
                 final_url TEXT,
                 status_code INTEGER,
                 request_headers TEXT,
                 response_headers TEXT,
-                payload BLOB,
+                payload {payload_type},
                 redirect_chain TEXT,
                 pipeline_version TEXT,
                 parser_version TEXT,

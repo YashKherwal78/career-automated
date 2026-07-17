@@ -81,15 +81,18 @@ class DiscoveryRepository(BaseRepository):
     def persist_seed_metadata(self, company_id: str, seed: dict, domain: str, dt_str: str) -> None:
         with self.transaction() as conn:
             p = conn.dialect.placeholder()
-            # 1. Insert seed to company_identities
-            conn.execute(
-                f"""
-                INSERT INTO company_identities (company_id, legal_name, canonical_name, website, domain)
-                VALUES ({p}, {p}, {p}, {p}, {p})
-                ON CONFLICT (company_id) DO NOTHING
-                """,
-                (company_id, seed["name"], company_id, seed["website"], domain)
-            )
+            # Check if domain or company_id already exists to prevent duplicate domain key violation
+            cursor = conn.execute(f"SELECT 1 FROM company_identities WHERE company_id = {p} OR domain = {p}", (company_id, domain))
+            if not cursor.fetchone():
+                # 1. Insert seed to company_identities
+                conn.execute(
+                    f"""
+                    INSERT INTO company_identities (company_id, legal_name, canonical_name, website, domain)
+                    VALUES ({p}, {p}, {p}, {p}, {p})
+                    ON CONFLICT (company_id) DO NOTHING
+                    """,
+                    (company_id, seed["name"], company_id, seed["website"], domain)
+                )
             
             # 2. Insert metadata to company_discovery_sources
             cursor = conn.execute(
@@ -119,7 +122,7 @@ class DiscoveryRepository(BaseRepository):
         """Imports a single seed from CSV and returns True if a new company was inserted."""
         with self.transaction() as conn:
             p = conn.dialect.placeholder()
-            cursor = conn.execute(f"SELECT aliases FROM company_identities WHERE company_id = {p}", (company_id,))
+            cursor = conn.execute(f"SELECT aliases FROM company_identities WHERE company_id = {p} OR domain = {p}", (company_id, domain))
             
             existing = cursor.fetchone()
             existing_aliases = existing.get("aliases") if isinstance(existing, dict) else (existing[0] if existing else None)
@@ -132,6 +135,6 @@ class DiscoveryRepository(BaseRepository):
                 ''', (company_id, domain, name, website, aliases_json))
                 return True
             elif existing and not existing_aliases and aliases_json:
-                conn.execute(f'UPDATE company_identities SET aliases = {p} WHERE company_id = {p}', (aliases_json, company_id))
+                conn.execute(f'UPDATE company_identities SET aliases = {p} WHERE company_id = {p} OR domain = {p}', (aliases_json, company_id, domain))
             return False
 

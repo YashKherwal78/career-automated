@@ -30,7 +30,7 @@ class EndpointRankingEngine:
             q = """
                 SELECT candidate_id, company_id, provider_id, url, discovery_source, confidence_score, health_score, lifecycle_state
                 FROM endpoint_candidates
-                WHERE company_id = %s AND lifecycle_state IN ('DISCOVERED', 'VERIFYING', 'UNHEALTHY', 'ACTIVE')
+                WHERE company_id = %s AND lifecycle_state IN ('DISCOVERED', 'VERIFIED', 'UNHEALTHY', 'ACTIVE')
                 ORDER BY confidence_score DESC, last_seen DESC
                 """
             if not is_postgres():

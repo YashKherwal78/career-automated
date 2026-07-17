@@ -17,10 +17,10 @@ fi
 echo "Starting CareerAutomated Tmux Session..."
 
 # Window 1: Pipeline (runs run_pipeline.py with NO_API=1 to let uvicorn run in its own window)
-NO_API=1 tmux new-session -d -s "$SESSION_NAME" -n "pipeline" "cd backend && python3 run_pipeline.py 2>&1 | tee ../logs/scheduler.log"
+NO_API=1 tmux new-session -d -s "$SESSION_NAME" -n "pipeline" "cd backend && ../venv/bin/python run_pipeline.py 2>&1 | tee ../logs/scheduler.log"
 
 # Window 2: FastAPI (runs uvicorn)
-tmux new-window -t "$SESSION_NAME" -n "fastapi" "cd backend && python3 -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000 2>&1 | tee ../logs/api.log"
+tmux new-window -t "$SESSION_NAME" -n "fastapi" "cd backend && ../venv/bin/python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000 2>&1 | tee ../logs/api.log"
 
 # Window 3: Frontend (runs Vite server)
 tmux new-window -t "$SESSION_NAME" -n "frontend" "cd frontend && npm run dev 2>&1 | tee ../logs/frontend.log"

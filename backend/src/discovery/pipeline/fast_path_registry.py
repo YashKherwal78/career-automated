@@ -3,7 +3,7 @@ import sqlite3
 import time
 import hashlib
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from urllib.parse import urlparse
 from src.discovery.pipeline.ats_registry import ATSRegistry
 from src.discovery.pipeline.fallback_models import VerificationResult

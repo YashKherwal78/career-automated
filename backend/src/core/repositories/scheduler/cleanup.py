@@ -13,8 +13,7 @@ class CleanupRepository(BaseRepository):
     def get_failed_endpoints(self) -> List[str]:
         with self.transaction() as conn:
             if self.schema.table_exists("career_endpoints"):
-                limit = conn.dialect.create_limit(20)
-                cursor_f = conn.execute(f"SELECT company_id FROM career_endpoints WHERE status = 'FAILED' {limit}")
+                cursor_f = conn.execute("SELECT company_id FROM career_endpoints WHERE status = 'FAILED' LIMIT 20")
                 return [row["company_id"] if hasattr(row, 'keys') else row[0] for row in cursor_f.fetchall()]
             return []
 
@@ -66,7 +65,8 @@ class CleanupRepository(BaseRepository):
             # Check the dialect name directly to execute appropriate vacuum syntax.
             # Usually VACUUM ANALYZE for Postgres, ANALYZE for SQLite.
             if type(conn.dialect).__name__ == "PostgreSQLAdapter":
-                conn.execute("VACUUM ANALYZE")
+                # Skip manual vacuum/analyze on PostgreSQL, GCP has autovacuum
+                pass
             else:
                 conn.execute("ANALYZE")
                 if should_vacuum:

@@ -65,7 +65,7 @@ class PipelineScheduler:
         logger.info("Running database migrations...")
         env = os.environ.copy()
         env["PYTHONPATH"] = os.getcwd()
-        result = subprocess.run(["python3", "src/database/migrate.py"], env=env, capture_output=True, text=True)
+        result = subprocess.run([sys.executable, "src/database/migrate.py"], env=env, capture_output=True, text=True)
         if result.returncode != 0:
             logger.error(f"Migration failed: {result.stderr}")
         else:

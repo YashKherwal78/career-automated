@@ -32,8 +32,8 @@ VALID_TRANSITIONS = {
     "VERIFYING": {"VERIFIED", "VERIFICATION_FAILED"},
     "VERIFIED": {"CRAWL_PENDING"},
     "CRAWL_PENDING": {"CRAWLING"},
-    "CRAWLING": {"ACTIVE", "CRAWL_FAILED"},
-    "ACTIVE": {"ACTIVE"}  # Allowed to update crawl_status while remaining ACTIVE
+    "CRAWLING": {"ACTIVE", "CRAWL_FAILED", "CRAWL_PENDING", "CRAWLING"},
+    "ACTIVE": {"ACTIVE", "CRAWL_PENDING", "CRAWLING", "CRAWL_FAILED"}
 }
 
 VALID_HEALTH_STATES = {
@@ -99,8 +99,8 @@ class PipelineStateManager:
             PipelineStateManager._validate_transition(current_state, to_state)
             
             # 3. Build update query
-            updates = ["lifecycle_state = ?", "updated_at = ?"]
-            params = [to_state, time.time()]
+            updates = ["lifecycle_state = ?"]
+            params = [to_state]
             
             if health_state:
                 updates.append("health_state = ?")

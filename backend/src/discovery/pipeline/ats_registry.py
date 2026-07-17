@@ -28,7 +28,7 @@ class ATSRegistry:
                         company_id TEXT,
                         company_domain TEXT,
                         company_name TEXT,
-                        ats_type TEXT,
+                        provider_id TEXT,
                         endpoint TEXT,
                         canonical_endpoint TEXT,
                         endpoint_hash TEXT,
@@ -60,7 +60,7 @@ class ATSRegistry:
                         company_id TEXT,
                         company_domain TEXT,
                         company_name TEXT,
-                        ats_type TEXT,
+                        provider_id TEXT,
                         endpoint TEXT,
                         canonical_endpoint TEXT,
                         endpoint_hash TEXT,
@@ -91,7 +91,7 @@ class ATSRegistry:
             conn.execute("CREATE INDEX IF NOT EXISTS idx_ats_registry_endpoint_hash ON ats_registry(endpoint_hash)")
             conn.execute("CREATE INDEX IF NOT EXISTS idx_ats_registry_company_id ON ats_registry(company_id)")
             conn.execute("CREATE INDEX IF NOT EXISTS idx_ats_registry_status ON ats_registry(status)")
-            conn.execute("CREATE INDEX IF NOT EXISTS idx_ats_registry_ats_type ON ats_registry(ats_type)")
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_ats_registry_provider_id ON ats_registry(provider_id)")
             conn.execute("CREATE INDEX IF NOT EXISTS idx_ats_registry_recheck_after ON ats_registry(recheck_after)")
             conn.commit()
         finally:
@@ -194,7 +194,7 @@ class ATSRegistry:
             if is_postgres():
                 conn.execute("""
                     INSERT INTO ats_registry (
-                        company_id, company_domain, company_name, ats_type, endpoint, canonical_endpoint, endpoint_hash,
+                        company_id, company_domain, company_name, provider_id, endpoint, canonical_endpoint, endpoint_hash,
                         status, discovery_source, search_provider, search_query, search_rank,
                         identity_score, inspector_score, plugin_name, plugin_version, ats_metadata,
                         created_at, last_checked, last_verified, recheck_after
@@ -203,7 +203,7 @@ class ATSRegistry:
                     DO UPDATE SET
                         company_domain = EXCLUDED.company_domain,
                         company_name = EXCLUDED.company_name,
-                        ats_type = EXCLUDED.ats_type,
+                        provider_id = EXCLUDED.provider_id,
                         endpoint = EXCLUDED.endpoint,
                         canonical_endpoint = EXCLUDED.canonical_endpoint,
                         endpoint_hash = EXCLUDED.endpoint_hash,
@@ -238,7 +238,7 @@ class ATSRegistry:
             else:
                 conn.execute("""
                     INSERT INTO ats_registry (
-                        company_id, company_domain, company_name, ats_type, endpoint, canonical_endpoint, endpoint_hash,
+                        company_id, company_domain, company_name, provider_id, endpoint, canonical_endpoint, endpoint_hash,
                         status, discovery_source, search_provider, search_query, search_rank,
                         identity_score, inspector_score, plugin_name, plugin_version, ats_metadata,
                         created_at, last_checked, last_verified, recheck_after
@@ -386,7 +386,7 @@ class ATSRegistry:
                 if is_postgres():
                     cursor.executemany("""
                         INSERT INTO ats_registry (
-                            company_id, company_domain, company_name, ats_type, endpoint, canonical_endpoint, endpoint_hash,
+                            company_id, company_domain, company_name, provider_id, endpoint, canonical_endpoint, endpoint_hash,
                             status, discovery_source, search_provider, search_query, search_rank,
                             identity_score, inspector_score, plugin_name, plugin_version, ats_metadata,
                             created_at, last_checked, last_verified, recheck_after
@@ -395,7 +395,7 @@ class ATSRegistry:
                         DO UPDATE SET
                             company_domain = EXCLUDED.company_domain,
                             company_name = EXCLUDED.company_name,
-                            ats_type = EXCLUDED.ats_type,
+                            provider_id = EXCLUDED.provider_id,
                             endpoint = EXCLUDED.endpoint,
                             canonical_endpoint = EXCLUDED.canonical_endpoint,
                             endpoint_hash = EXCLUDED.endpoint_hash,
@@ -410,7 +410,7 @@ class ATSRegistry:
                 else:
                     cursor.executemany("""
                         INSERT INTO ats_registry (
-                            company_id, company_domain, company_name, ats_type, endpoint, canonical_endpoint, endpoint_hash,
+                            company_id, company_domain, company_name, provider_id, endpoint, canonical_endpoint, endpoint_hash,
                             status, discovery_source, search_provider, search_query, search_rank,
                             identity_score, inspector_score, plugin_name, plugin_version, ats_metadata,
                             created_at, last_checked, last_verified, recheck_after

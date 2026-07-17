@@ -34,7 +34,7 @@ class JobCrawlerOrchestrator:
         with get_connection() as conn:
             conn.row_factory = sqlite3.Row
             rows = conn.execute(
-                "SELECT id, company_id, ats_type, canonical_endpoint, last_job_sync FROM ats_registry WHERE status = 'ACTIVE' LIMIT ?",
+                "SELECT id, company_id, provider_id as ats_type, canonical_endpoint, last_job_sync FROM ats_registry WHERE status = 'ACTIVE' LIMIT ?",
                 (limit,)
             ).fetchall()
             

@@ -94,7 +94,7 @@ class RedisClient:
                 pool = redis.ConnectionPool.from_url(
                     Settings.REDIS_URL,
                     decode_responses=True,
-                    socket_timeout=5.0,
+                    socket_timeout=30.0,
                     socket_connect_timeout=5.0
                 )
                 cls._instance = redis.Redis(connection_pool=pool)

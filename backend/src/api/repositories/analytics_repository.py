@@ -234,13 +234,13 @@ class AnalyticsRepository:
 
     def get_dead_boards(self):
         c = self.db.cursor()
-        c.execute("SELECT company_id, endpoint, ats_type, failure_count FROM ats_registry WHERE status = 'FAILED' LIMIT 50")
+        c.execute("SELECT company_id, endpoint, provider_id as ats_type, failure_count FROM ats_registry WHERE status = 'FAILED' LIMIT 50")
         columns = [col[0] for col in c.description]
         return [dict(zip(columns, row)) for row in c.fetchall()]
 
     def get_zero_job_boards(self):
         c = self.db.cursor()
-        c.execute("SELECT company_id, endpoint, ats_type, job_count FROM ats_registry WHERE job_count = 0 LIMIT 50")
+        c.execute("SELECT company_id, endpoint, provider_id as ats_type, job_count FROM ats_registry WHERE job_count = 0 LIMIT 50")
         columns = [col[0] for col in c.description]
         return [dict(zip(columns, row)) for row in c.fetchall()]
 
@@ -266,7 +266,7 @@ class AnalyticsRepository:
                    SUM(CASE WHEN status='FAILED' THEN 1 ELSE 0 END),
                    SUM(COALESCE(job_count, 0))
             FROM ats_registry 
-            WHERE LOWER(ats_type) = LOWER(?)
+            WHERE LOWER(provider_id) = LOWER(?)
         """, (ats_type,))
         row = c.fetchone()
         seen = row[0] or 0
@@ -275,7 +275,7 @@ class AnalyticsRepository:
         jobs = row[3] or 0
         
         # 2. Count zero job boards
-        c.execute("SELECT COUNT(*) FROM ats_registry WHERE LOWER(ats_type) = LOWER(?) AND job_count = 0", (ats_type,))
+        c.execute("SELECT COUNT(*) FROM ats_registry WHERE LOWER(provider_id) = LOWER(?) AND job_count = 0", (ats_type,))
         zero_job = c.fetchone()[0] or 0
         
         # 3. Latency (from events)

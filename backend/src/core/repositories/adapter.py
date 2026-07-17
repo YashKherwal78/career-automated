@@ -14,6 +14,9 @@ class DatabaseAdapter(ABC):
     def cursor(self):
         return self._conn.cursor()
 
+    def create_limit(self, limit: int) -> str:
+        return f"LIMIT {limit}"
+
     @property
     def row_factory(self):
         return getattr(self._conn, 'row_factory', None)

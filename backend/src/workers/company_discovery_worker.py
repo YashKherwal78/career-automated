@@ -113,9 +113,6 @@ class CompanyDiscoveryWorker(BaseWorker):
                         PipelineStateManager.transition(company_id, "DISCOVERED", conn=conn)
 
     def process_candidates(self):
-        fast_patcher = FastPathRegistry(self.db_path)
-        
-        # 1. Read last checkpoint ID from worker_progress
         last_id = self.repos.discovery.get_checkpoint(self.worker_id)
 
         logger.info(f"Resuming discovery from checkpoint ID: {last_id}")

@@ -61,11 +61,11 @@ class DashboardRepository(BaseRepository):
             funnel["jobs_last_7d"] = self._q(conn, f"SELECT COUNT(*) cnt FROM normalized_jobs WHERE normalized_at > {p}", [now - 604800])["cnt"]
 
             per_company = self._ql(conn, """
-                SELECT n.company_id, a.ats_type, COUNT(*) job_count,
+                SELECT n.company_id, a.provider_id as ats_type, COUNT(*) job_count,
                        a.last_successful_crawl, a.failure_count, a.status as ats_status
                 FROM normalized_jobs n
                 LEFT JOIN ats_registry a ON a.company_id = n.company_id
-                GROUP BY n.company_id, a.ats_type, a.last_successful_crawl,
+                GROUP BY n.company_id, a.provider_id, a.last_successful_crawl,
                          a.failure_count, a.status
                 ORDER BY job_count DESC
             """)
@@ -118,7 +118,7 @@ class DashboardRepository(BaseRepository):
         try:
             ats_stats = self._ql(conn, """
                 SELECT
-                    ats_type,
+                    provider_id as ats_type,
                     COUNT(*) total_companies,
                     SUM(CASE WHEN status = 'ACTIVE' THEN 1 ELSE 0 END) active,
                     SUM(CASE WHEN last_successful_crawl IS NOT NULL THEN 1 ELSE 0 END) crawled,
@@ -126,15 +126,15 @@ class DashboardRepository(BaseRepository):
                     AVG(failure_count) avg_failures,
                     MAX(last_successful_crawl) most_recent_crawl
                 FROM ats_registry
-                GROUP BY ats_type
+                GROUP BY provider_id
                 ORDER BY total_companies DESC
             """)
 
             jobs_per_ats = self._ql(conn, """
-                SELECT a.ats_type, COUNT(*) job_count, COUNT(DISTINCT n.company_id) companies_with_jobs
+                SELECT a.provider_id as ats_type, COUNT(*) job_count, COUNT(DISTINCT n.company_id) companies_with_jobs
                 FROM normalized_jobs n
                 JOIN ats_registry a ON a.company_id = n.company_id
-                GROUP BY a.ats_type
+                GROUP BY a.provider_id
                 ORDER BY job_count DESC
             """)
 
@@ -166,7 +166,7 @@ class DashboardRepository(BaseRepository):
     def get_coverage_report(self, top_companies: List[str], tx: Optional[Any] = None) -> Dict[str, Any]:
         conn = tx if tx else self.get_connection()
         try:
-            registry = {r["company_id"]: r for r in self._ql(conn, "SELECT company_id, ats_type, status FROM ats_registry")}
+            registry = {r["company_id"]: r for r in self._ql(conn, "SELECT company_id, provider_id as ats_type, status FROM ats_registry")}
             job_counts = {r["company_id"]: r["cnt"] for r in self._ql(conn, "SELECT company_id, COUNT(*) cnt FROM normalized_jobs GROUP BY company_id")}
 
             companies = []
