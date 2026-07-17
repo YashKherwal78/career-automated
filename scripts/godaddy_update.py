@@ -58,8 +58,7 @@ def main():
     records = [
         ("A", "@", [{"data": "76.76.21.21", "ttl": 600}]),
         ("CNAME", "www", [{"data": "cname.vercel-dns.com", "ttl": 3600}]),
-        ("CNAME", "api", [{"data": "v0t9rz3o.up.railway.app", "ttl": 3600}]),
-        ("TXT", "_railway-verify.api", [{"data": "railway-verify=5bcb4fb6995dea72d19cc52d09c0845da130a2b14aabdf2e883f55aada219181", "ttl": 3600}])
+        ("A", "api", [{"data": "34.131.238.232", "ttl": 3600}])
     ]
 
     print(f"Updating DNS for {domain} using GoDaddy API")
