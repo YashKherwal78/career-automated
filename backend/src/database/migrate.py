@@ -94,7 +94,7 @@ class MigrationRunner:
                     cleaned_statement = '\n'.join(lines).strip()
                     if not cleaned_statement:
                         continue
-                    
+
                     if is_postgres():
                         # Translate SQLite syntax to PostgreSQL
                         cleaned_statement = re.sub(r'(?i)\bINTEGER\s+PRIMARY\s+KEY\s+AUTOINCREMENT\b', 'SERIAL PRIMARY KEY', cleaned_statement)
@@ -106,11 +106,20 @@ class MigrationRunner:
                         cleaned_statement = re.sub(r'(?i)WITHOUT\s+ROWID', '', cleaned_statement)
                         cleaned_statement = re.sub(r'(?i)\bSTRICT\b', '', cleaned_statement)
                     else:
+                        # Skip CREATE EXTENSION statements in SQLite
+                        if "CREATE EXTENSION" in cleaned_statement.upper():
+                            continue
+                        # Skip HNSW index creation statements in SQLite
+                        if "USING HNSW" in cleaned_statement.upper():
+                            continue
                         # Translate Postgres-specific keywords back to SQLite when not running Postgres
                         cleaned_statement = re.sub(r'(?i)\bSERIAL\b', 'INTEGER', cleaned_statement)
+                        cleaned_statement = re.sub(r'(?i)\bvector\(\d+\)\b', 'TEXT', cleaned_statement)
+                        cleaned_statement = re.sub(r'(?i)\bvector\b', 'TEXT', cleaned_statement)
+                        cleaned_statement = re.sub(r'(?i)\bUUID\b', 'TEXT', cleaned_statement)
+                        cleaned_statement = re.sub(r'(?i)\bJSONB\b', 'TEXT', cleaned_statement)
+                        cleaned_statement = re.sub(r'(?i)\bDEFAULT\s+gen_random_uuid\(\)', '', cleaned_statement)
 
-
-                    # Safe ALTER TABLE checks to prevent crashes if column exists
                     alter_match = re.match(r"(?i)ALTER\s+TABLE\s+(\w+)\s+ADD\s+COLUMN\s+(\w+)", cleaned_statement)
                     if alter_match:
                         table_name = alter_match.group(1)

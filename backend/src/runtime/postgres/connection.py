@@ -92,7 +92,7 @@ def get_connection() -> CompatConnection:
     if USE_POSTGRES:
         if psycopg is None:
             raise RuntimeError("psycopg binary is not installed.")
-        raw_conn = psycopg.connect(Settings.DATABASE_URL, autocommit=False)
+        raw_conn = psycopg.connect(Settings.DATABASE_URL, autocommit=False, prepare_threshold=None)
         return CompatConnection(raw_conn, is_sqlite=False)
     
     # SQLite fallback (mostly for tests/local check compat)
