@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CareerAutomated — Your Skills Should Decide Your Career</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FFFFFF;
+    --paper-warm:#FFFCFA;
+    --peach-50:#FFF4EE;
+    --peach-100:#FFE8DC;
+    --peach-200:#FFD3BB;
+    --accent:#E85D2C;
+    --accent-dark:#C64A1F;
+    --ink-900:#14171B;
+    --ink-700:#2B2F36;
+    --ink-600:#565B66;
+    --ink-400:#8B909B;
+    --ink-200:#E4E6EA;
+    --ink-100:#F1F2F4;
+    --verify:#1F8A5F;
+    --verify-bg:#E8F5EE;
+    --radius:18px;
+    --shadow-soft:0 1px 2px rgba(20,23,27,0.04), 0 8px 24px rgba(20,23,27,0.06);
+    --shadow-lift:0 4px 12px rgba(20,23,27,0.06), 0 24px 48px rgba(20,23,27,0.10);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Inter', -apple-system, sans-serif;
+    color:var(--ink-900);
+    background:var(--paper);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,h4, .font-display{ font-family:'Sora', 'Inter', sans-serif; letter-spacing:-0.02em; }
+  .font-mono{ font-family:'IBM Plex Mono', monospace; }
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 28px; }
+  section{ position:relative; }
+  a{ color:inherit; text-decoration:none; }
+  button{ font-family:inherit; cursor:pointer; }
+  img{ display:block; }
+
+  ::selection{ background:var(--peach-200); color:var(--ink-900); }
+
+  /* ---------- reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; scroll-behavior:auto !important; }
+  }
+
+  /* ---------- Nav ---------- */
+  .nav{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    background:rgba(255,255,255,0.72);
+    backdrop-filter:blur(14px) saturate(160%);
+    -webkit-backdrop-filter:blur(14px) saturate(160%);
+    border-bottom:1px solid transparent;
+    transition:border-color .3s ease, box-shadow .3s ease;
+  }
+  .nav.scrolled{ border-bottom-color:var(--ink-200); box-shadow:0 1px 0 rgba(20,23,27,0.03); }
+  .nav-inner{ display:flex; align-items:center; justify-content:space-between; height:72px; }
+  .logo{ display:flex; align-items:center; gap:9px; font-weight:700; font-size:17px; }
+  .logo-mark{ width:26px; height:26px; border-radius:7px; background:linear-gradient(135deg,var(--ink-900),var(--ink-700)); position:relative; flex-shrink:0; }
+  .logo-mark::after{ content:''; position:absolute; inset:7px; border-radius:3px; background:var(--peach-100); }
+  .nav-links{ display:flex; gap:36px; font-size:14.5px; font-weight:500; color:var(--ink-600); }
+  .nav-links a{ transition:color .2s; position:relative; }
+  .nav-links a:hover{ color:var(--ink-900); }
+  .nav-right{ display:flex; align-items:center; gap:20px; }
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding:11px 22px; border-radius:11px; font-weight:600; font-size:14.5px;
+    border:1px solid transparent; transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+    white-space:nowrap;
+  }
+  .btn-primary{ background:var(--ink-900); color:#fff; box-shadow:var(--shadow-soft); }
+  .btn-primary:hover{ transform:translateY(-1px); box-shadow:var(--shadow-lift); background:var(--ink-700); }
+  .btn-primary:focus-visible, .btn-ghost:focus-visible, a:focus-visible, button:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .btn-ghost{ color:var(--ink-700); font-weight:600; font-size:14.5px; }
+  .btn-outline{ border:1px solid var(--ink-200); color:var(--ink-900); background:#fff; }
+  .btn-outline:hover{ border-color:var(--ink-900); }
+  .btn-lg{ padding:15px 30px; font-size:15.5px; border-radius:13px; }
+
+  /* ---------- eyebrow / badge ---------- */
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'IBM Plex Mono', monospace; font-size:12px; font-weight:500;
+    letter-spacing:0.02em; color:var(--ink-600);
+    padding:6px 13px; border:1px solid var(--ink-200); border-radius:100px; background:var(--paper-warm);
+  }
+  .dot-live{ width:6px; height:6px; border-radius:50%; background:var(--verify); flex-shrink:0; position:relative; }
+  .dot-live::after{ content:''; position:absolute; inset:-4px; border-radius:50%; background:var(--verify); opacity:0.35; animation:pulse-ring 1.8s ease-out infinite; }
+  @keyframes pulse-ring{ 0%{ transform:scale(0.6); opacity:0.5;} 100%{ transform:scale(2.2); opacity:0;} }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding:168px 0 96px;
+    background:
+      radial-gradient(760px 420px at 82% -10%, var(--peach-100) 0%, rgba(255,232,220,0) 70%),
+      radial-gradient(500px 300px at 5% 15%, var(--peach-50) 0%, rgba(255,244,238,0) 70%);
+  }
+  .hero-grid{ display:grid; grid-template-columns:1.05fr 0.95fr; gap:64px; align-items:center; }
+  .hero h1{ font-size:56px; line-height:1.06; font-weight:700; margin:22px 0 22px; }
+  .hero h1 .fade{ color:var(--ink-400); }
+  .hero p.lead{ font-size:18px; line-height:1.65; color:var(--ink-600); max-width:520px; margin-bottom:32px; }
+  .hero-ctas{ display:flex; align-items:center; gap:22px; flex-wrap:wrap; margin-bottom:28px; }
+  .trust-line{ display:flex; flex-wrap:wrap; gap:20px; font-size:13px; color:var(--ink-600); }
+  .trust-line span{ display:flex; align-items:center; gap:7px; }
+  .check-sm{ width:15px; height:15px; border-radius:50%; background:var(--verify-bg); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .check-sm svg{ width:9px; height:9px; }
+
+  /* ---------- Hero pipeline card ---------- */
+  .pipeline-card{
+    background:var(--paper); border:1px solid var(--ink-200); border-radius:22px; padding:26px;
+    box-shadow:var(--shadow-lift); position:relative;
+  }
+  .pipeline-card .pc-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+  .pc-title{ font-weight:600; font-size:13.5px; color:var(--ink-700); display:flex; align-items:center; gap:8px; }
+  .pc-badge{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--verify); background:var(--verify-bg); padding:4px 9px; border-radius:6px; }
+  .pipe-step{
+    display:flex; align-items:center; gap:13px; padding:13px 12px; border-radius:12px;
+    opacity:0.25; transform:translateX(-6px);
+    transition:opacity .5s ease, transform .5s ease, background .3s ease;
+    margin-bottom:4px;
+  }
+  .pipe-step.active{ opacity:1; transform:translateX(0); background:var(--ink-100); }
+  .pipe-step.done{ opacity:0.75; transform:translateX(0); }
+  .pipe-icon{ width:30px; height:30px; border-radius:9px; background:var(--ink-100); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background .3s ease; }
+  .pipe-step.active .pipe-icon, .pipe-step.done .pipe-icon{ background:var(--ink-900); }
+  .pipe-icon svg{ width:15px; height:15px; stroke:var(--ink-600); }
+  .pipe-step.active .pipe-icon svg, .pipe-step.done .pipe-icon svg{ stroke:#fff; }
+  .pipe-label{ font-size:14px; font-weight:500; color:var(--ink-700); flex:1; }
+  .pipe-check{ width:16px; height:16px; opacity:0; transition:opacity .3s ease; }
+  .pipe-step.done .pipe-check{ opacity:1; }
+
+  /* ---------- Section shell ---------- */
+  .section{ padding:104px 0; }
+  .section-alt{ background:var(--paper-warm); }
+  .section-head{ max-width:640px; margin-bottom:56px; }
+  .section-head.center{ margin-left:auto; margin-right:auto; text-align:center; }
+  .section-head h2{ font-size:38px; font-weight:700; line-height:1.15; margin-top:16px; }
+  .section-head p{ font-size:16.5px; color:var(--ink-600); line-height:1.6; margin-top:16px; }
+  .divider{ height:1px; background:var(--ink-200); border:none; }
+
+  /* ---------- Verified log (signature element) ---------- */
+  .log-shell{
+    background:var(--ink-900); border-radius:22px; padding:0; overflow:hidden; box-shadow:var(--shadow-lift);
+  }
+  .log-topbar{ display:flex; align-items:center; justify-content:space-between; padding:18px 24px; border-bottom:1px solid rgba(255,255,255,0.08); }
+  .log-topbar-left{ display:flex; align-items:center; gap:10px; }
+  .log-dots{ display:flex; gap:6px; }
+  .log-dots span{ width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,0.18); }
+  .log-title{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:rgba(255,255,255,0.5); margin-left:6px; }
+  .log-live{ display:flex; align-items:center; gap:7px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#8FE3B4; }
+  .log-body{ padding:10px 8px; height:340px; overflow:hidden; position:relative; }
+  .log-body::after{ content:''; position:absolute; inset:0; pointer-events:none; box-shadow:inset 0 -40px 40px -20px rgba(20,23,27,1); }
+  .log-row{
+    display:grid; grid-template-columns:104px 18px 1fr auto; align-items:center; gap:14px;
+    padding:13px 16px; font-family:'IBM Plex Mono',monospace; font-size:13px; color:rgba(255,255,255,0.85);
+    border-bottom:1px solid rgba(255,255,255,0.05);
+    opacity:0; transform:translateY(8px);
+    animation:log-in .5s ease forwards;
+  }
+  @keyframes log-in{ to{ opacity:1; transform:translateY(0);} }
+  .log-ts{ color:rgba(255,255,255,0.38); font-size:12px; }
+  .log-check{ color:#8FE3B4; }
+  .log-role{ color:#fff; font-weight:500; }
+  .log-meta{ color:rgba(255,255,255,0.4); font-weight:400; margin-left:6px; }
+  .log-tag{ font-size:11px; padding:4px 9px; border-radius:6px; white-space:nowrap; }
+  .tag-match{ background:rgba(143,227,180,0.12); color:#8FE3B4; }
+  .tag-open{ background:rgba(255,211,187,0.12); color:var(--peach-200); }
+  .tag-closing{ background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.65); }
+
+  /* ---------- Emotional ---------- */
+  .emotional{ padding:110px 0; text-align:center; }
+  .emotional h2{ font-size:40px; font-weight:700; line-height:1.2; max-width:760px; margin:0 auto 22px; }
+  .emotional p{ font-size:17.5px; color:var(--ink-600); max-width:600px; margin:0 auto; line-height:1.7; }
+
+  /* ---------- Resume pipeline section ---------- */
+  .resume-grid{ display:grid; grid-template-columns:1fr 1fr; gap:70px; align-items:center; }
+  .flow-steps{ display:flex; flex-direction:column; }
+  .flow-step{ display:flex; gap:18px; padding:20px 0; border-bottom:1px solid var(--ink-200); }
+  .flow-step:last-child{ border-bottom:none; }
+  .flow-num{ font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--ink-400); flex-shrink:0; padding-top:2px; }
+  .flow-text strong{ display:block; font-size:15.5px; font-weight:600; margin-bottom:4px; }
+  .flow-text span{ font-size:14px; color:var(--ink-600); line-height:1.55; }
+
+  /* ---------- Metrics ---------- */
+  .metrics-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--ink-200); border:1px solid var(--ink-200); border-radius:20px; overflow:hidden; }
+  .metric-cell{ background:var(--paper); padding:38px 30px; }
+  .metric-num{ font-family:'IBM Plex Mono',monospace; font-size:34px; font-weight:600; color:var(--ink-900); display:flex; align-items:baseline; gap:6px; }
+  .metric-label{ font-size:13.5px; color:var(--ink-600); margin-top:8px; }
+  .metric-flag{ font-size:10.5px; font-family:'IBM Plex Mono',monospace; color:var(--ink-400); margin-top:14px; display:inline-block; border:1px dashed var(--ink-200); padding:3px 8px; border-radius:6px; }
+
+  /* ---------- Product showcase ---------- */
+  .showcase{ position:relative; background:linear-gradient(180deg,var(--peach-50),var(--paper) 60%); border-radius:26px; padding:70px 40px; overflow:hidden; }
+  .float-cards{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; position:relative; z-index:2; }
+  .float-card{
+    background:var(--paper); border:1px solid var(--ink-200); border-radius:16px; padding:20px;
+    box-shadow:var(--shadow-soft); transition:transform .35s ease, box-shadow .35s ease;
+  }
+  .float-card:hover{ transform:translateY(-5px); box-shadow:var(--shadow-lift); }
+  .float-card .fc-icon{ width:32px; height:32px; border-radius:9px; background:var(--peach-100); display:flex; align-items:center; justify-content:center; margin-bottom:14px; }
+  .float-card .fc-icon svg{ width:16px; height:16px; stroke:var(--accent-dark); }
+  .float-card h4{ font-size:14.5px; font-weight:600; margin-bottom:5px; }
+  .float-card p{ font-size:12.5px; color:var(--ink-600); line-height:1.5; }
+
+  /* ---------- Why cards ---------- */
+  .why-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+  .why-card{ background:var(--paper); border:1px solid var(--ink-200); border-radius:18px; padding:28px; transition:border-color .25s ease, transform .25s ease; }
+  .why-card:hover{ border-color:var(--ink-900); transform:translateY(-3px); }
+  .why-icon{ width:38px; height:38px; border-radius:10px; background:var(--ink-900); display:flex; align-items:center; justify-content:center; margin-bottom:18px; }
+  .why-icon svg{ width:18px; height:18px; stroke:#fff; }
+  .why-card h4{ font-size:16px; font-weight:600; margin-bottom:8px; }
+  .why-card p{ font-size:14px; color:var(--ink-600); line-height:1.55; }
+
+  /* ---------- FOMO ---------- */
+  .fomo{ background:var(--ink-900); border-radius:26px; padding:70px 56px; color:#fff; }
+  .fomo h2{ font-size:34px; font-weight:700; margin-bottom:22px; }
+  .fomo-list{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px 40px; margin-bottom:26px; }
+  .fomo-list div{ display:flex; align-items:center; gap:11px; font-size:15px; color:rgba(255,255,255,0.78); padding:14px 0; border-bottom:1px solid rgba(255,255,255,0.1); }
+  .fomo-list .fomo-dot{ width:7px; height:7px; border-radius:50%; background:var(--peach-200); flex-shrink:0; }
+  .fomo p.close{ font-size:15.5px; color:rgba(255,255,255,0.6); max-width:520px; }
+
+  /* ---------- Founder ---------- */
+  .founder{ display:grid; grid-template-columns:0.8fr 1.2fr; gap:56px; align-items:center; }
+  .founder-photo{
+    aspect-ratio:4/5; border-radius:20px; overflow:hidden; position:relative; background:var(--peach-100);
+    box-shadow:var(--shadow-lift);
+  }
+  .founder-photo img{ width:100%; height:100%; object-fit:cover; }
+  .founder-tag{ position:absolute; bottom:16px; left:16px; background:rgba(255,255,255,0.92); backdrop-filter:blur(6px); padding:10px 14px; border-radius:12px; font-size:12.5px; font-weight:600; display:flex; align-items:center; gap:8px; }
+  .founder-body p{ font-size:16px; line-height:1.75; color:var(--ink-700); margin-bottom:16px; }
+  .founder-body p.strong-line{ font-weight:600; color:var(--ink-900); }
+
+  /* ---------- Testimonials ---------- */
+  .testi-scroll{ display:flex; gap:20px; overflow-x:auto; padding:6px 0 20px; scroll-snap-type:x mandatory; }
+  .testi-scroll::-webkit-scrollbar{ height:6px; }
+  .testi-scroll::-webkit-scrollbar-thumb{ background:var(--ink-200); border-radius:10px; }
+  .testi-card{
+    flex:0 0 340px; scroll-snap-align:start; background:var(--paper); border:1px solid var(--ink-200);
+    border-radius:18px; padding:26px; display:flex; flex-direction:column; gap:16px;
+  }
+  .testi-stars{ color:var(--accent); font-size:13px; letter-spacing:2px; }
+  .testi-card q{ font-size:15px; line-height:1.6; color:var(--ink-800); quotes:none; }
+  .testi-person{ display:flex; align-items:center; gap:11px; margin-top:auto; }
+  .testi-avatar{ width:38px; height:38px; border-radius:50%; background:var(--peach-100); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; color:var(--accent-dark); font-family:'Sora',sans-serif; flex-shrink:0; }
+  .testi-person div span{ display:block; }
+  .testi-name{ font-size:13.5px; font-weight:600; }
+  .testi-college{ font-size:12px; color:var(--ink-400); }
+
+  /* ---------- Pricing ---------- */
+  .price-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; align-items:stretch; }
+  .price-card{ background:var(--paper); border:1px solid var(--ink-200); border-radius:20px; padding:32px; display:flex; flex-direction:column; }
+  .price-card.highlight{ border:2px solid var(--ink-900); box-shadow:var(--shadow-lift); position:relative; transform:translateY(-8px); }
+  .price-flag{ position:absolute; top:-13px; left:32px; background:var(--ink-900); color:#fff; font-size:11px; font-weight:600; padding:5px 12px; border-radius:100px; font-family:'IBM Plex Mono',monospace; }
+  .price-name{ font-size:15px; font-weight:600; color:var(--ink-600); margin-bottom:10px; }
+  .price-amount{ font-family:'Sora',sans-serif; font-size:36px; font-weight:700; margin-bottom:4px; }
+  .price-amount span{ font-size:14px; font-weight:500; color:var(--ink-400); }
+  .price-sub{ font-size:13px; color:var(--ink-400); margin-bottom:24px; }
+  .price-feats{ display:flex; flex-direction:column; gap:12px; margin-bottom:28px; flex:1; }
+  .price-feats div{ display:flex; align-items:flex-start; gap:10px; font-size:14px; color:var(--ink-700); line-height:1.4; }
+
+  /* ---------- FAQ ---------- */
+  .faq-item{ border-bottom:1px solid var(--ink-200); }
+  .faq-q{ width:100%; display:flex; align-items:center; justify-content:space-between; padding:22px 4px; background:none; border:none; text-align:left; font-size:16px; font-weight:600; color:var(--ink-900); }
+  .faq-plus{ width:20px; height:20px; flex-shrink:0; position:relative; }
+  .faq-plus::before, .faq-plus::after{ content:''; position:absolute; background:var(--ink-700); transition:transform .3s ease; }
+  .faq-plus::before{ width:14px; height:2px; top:9px; left:3px; }
+  .faq-plus::after{ width:2px; height:14px; top:3px; left:9px; }
+  .faq-item.open .faq-plus::after{ transform:rotate(90deg); opacity:0; }
+  .faq-ans{ max-height:0; overflow:hidden; transition:max-height .35s ease; }
+  .faq-ans p{ padding:0 4px 22px; font-size:14.5px; color:var(--ink-600); line-height:1.65; max-width:640px; }
+
+  /* ---------- Final CTA ---------- */
+  .final-cta{
+    text-align:center; border-radius:28px; padding:96px 40px;
+    background:
+      radial-gradient(600px 340px at 50% 0%, var(--peach-100), rgba(255,232,220,0) 72%),
+      var(--paper-warm);
+    border:1px solid var(--ink-200);
+  }
+  .final-cta h2{ font-size:38px; font-weight:700; line-height:1.25; max-width:720px; margin:0 auto 18px; }
+  .final-cta p.sub{ font-size:16.5px; color:var(--ink-600); max-width:480px; margin:0 auto 34px; }
+
+  /* ---------- Footer ---------- */
+  footer{ padding:64px 0 40px; border-top:1px solid var(--ink-200); }
+  .foot-grid{ display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:40px; margin-bottom:48px; }
+  .foot-col h5{ font-size:12.5px; font-weight:600; color:var(--ink-400); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:16px; }
+  .foot-col a{ display:block; font-size:14px; color:var(--ink-600); margin-bottom:12px; transition:color .2s; }
+  .foot-col a:hover{ color:var(--ink-900); }
+  .foot-bottom{ display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--ink-400); flex-wrap:wrap; gap:12px; }
+
+  /* ---------- reveal on scroll ---------- */
+  .reveal{ opacity:0; transform:translateY(18px); transition:opacity .7s ease, transform .7s ease; }
+  .reveal.in{ opacity:1; transform:translateY(0); }
+
+  /* ---------- responsive ---------- */
+  @media (max-width:960px){
+    .hero-grid, .resume-grid, .founder{ grid-template-columns:1fr; }
+    .hero h1{ font-size:38px; }
+    .hero-grid{ gap:44px; }
+    .nav-links{ display:none; }
+    .metrics-grid{ grid-template-columns:repeat(2,1fr); }
+    .float-cards{ grid-template-columns:repeat(2,1fr); }
+    .why-grid, .price-grid{ grid-template-columns:1fr; }
+    .fomo-list{ grid-template-columns:1fr; }
+    .foot-grid{ grid-template-columns:1fr 1fr; }
+    .section-head h2, .emotional h2, .final-cta h2{ font-size:28px; }
+    .fomo{ padding:44px 26px; }
+    .founder-photo{ max-width:340px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= NAV ================= -->
+<nav class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <div class="logo"><span class="logo-mark"></span>CareerAutomated</div>
+    <div class="nav-links">
+      <a href="#product">Product</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#founder">About</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="nav-right">
+      <a href="#" class="btn-ghost">Log In</a>
+      <a href="#upload" class="btn btn-primary">Upload Resume</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div class="reveal in">
+      <span class="eyebrow"><span class="dot-live"></span>Founded by an IIT Roorkee engineer</span>
+      <h1>Your college doesn't decide your career.<br><span class="fade">Your skills should.</span></h1>
+      <p class="lead">Upload your resume once. CareerAutomated continuously scans company career pages and hiring platforms, matches openings to your profile, and tells you the moment something fits — so you spend less time searching and more time preparing.</p>
+      <div class="hero-ctas">
+        <a href="#upload" class="btn btn-primary btn-lg">Upload Resume</a>
+        <a href="#product" class="btn btn-ghost">See how it works →</a>
+      </div>
+      <div class="trust-line">
+        <span><span class="check-sm"><svg viewBox="0 0 10 10" fill="none"><path d="M1.5 5L4 7.5L8.5 2" stroke="#1F8A5F" stroke-width="1.4" stroke-linecap="round"/></svg></span>No endless job searching</span>
+        <span><span class="check-sm"><svg viewBox="0 0 10 10" fill="none"><path d="M1.5 5L4 7.5L8.5 2" stroke="#1F8A5F" stroke-width="1.4" stroke-linecap="round"/></svg></span>No refreshing LinkedIn hourly</span>
+        <span><span class="check-sm"><svg viewBox="0 0 10 10" fill="none"><path d="M1.5 5L4 7.5L8.5 2" stroke="#1F8A5F" stroke-width="1.4" stroke-linecap="round"/></svg></span>No missed opportunities</span>
+      </div>
+    </div>
+
+    <div class="pipeline-card reveal in">
+      <div class="pc-head">
+        <div class="pc-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#565B66" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg>
+          Your pipeline, right now
+        </div>
+        <span class="pc-badge" id="pcBadge">SYNCING…</span>
+      </div>
+      <div id="pipeSteps">
+        <div class="pipe-step" data-step>
+          <div class="pipe-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg></div>
+          <div class="pipe-label">Resume uploaded</div>
+          <svg class="pipe-check" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#1F8A5F"/><path d="M4.5 8L7 10.5L11.5 5.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <div class="pipe-step" data-step>
+          <div class="pipe-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></div>
+          <div class="pipe-label">Profile created</div>
+          <svg class="pipe-check" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#1F8A5F"/><path d="M4.5 8L7 10.5L11.5 5.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <div class="pipe-step" data-step>
+          <div class="pipe-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></div>
+          <div class="pipe-label">Companies matched</div>
+          <svg class="pipe-check" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#1F8A5F"/><path d="M4.5 8L7 10.5L11.5 5.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <div class="pipe-step" data-step>
+          <div class="pipe-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 2v20M2 12h20"/></svg></div>
+          <div class="pipe-label">New openings found</div>
+          <svg class="pipe-check" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#1F8A5F"/><path d="M4.5 8L7 10.5L11.5 5.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <div class="pipe-step" data-step>
+          <div class="pipe-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M8 12l3 3 5-6"/><circle cx="12" cy="12" r="9"/></svg></div>
+          <div class="pipe-label">Interview pipeline updated</div>
+          <svg class="pipe-check" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#1F8A5F"/><path d="M4.5 8L7 10.5L11.5 5.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ================= LIVE VERIFIED LOG ================= -->
+<section class="section" id="product">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow font-mono">LIVE ACTIVITY LOG</span>
+      <h2>Hiring never stops. Neither does the tracking.</h2>
+      <p>Every row below represents a real category of event CareerAutomated watches for continuously — new postings, reopened windows, and closing deadlines — logged the moment they're detected.</p>
+    </div>
+    <div class="log-shell reveal">
+      <div class="log-topbar">
+        <div class="log-topbar-left">
+          <div class="log-dots"><span></span><span></span><span></span></div>
+          <span class="log-title">career-pages.watch</span>
+        </div>
+        <div class="log-live"><span class="dot-live"></span>LIVE</div>
+      </div>
+      <div class="log-body" id="logBody"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= EMOTIONAL ================= -->
+<section class="emotional section-alt">
+  <div class="wrap reveal">
+    <h2>Some students have a placement cell. Some don't.</h2>
+    <p>But every student deserves someone constantly searching for opportunities on their behalf. CareerAutomated keeps working in the background so you never have to wonder whether you missed your shot.</p>
+  </div>
+</section>
+
+<!-- ================= RESUME PIPELINE ================= -->
+<section class="section">
+  <div class="wrap resume-grid">
+    <div class="reveal">
+      <span class="eyebrow font-mono">HOW IT WORKS</span>
+      <h2 style="font-size:34px;font-weight:700;margin:16px 0 16px;line-height:1.2;">Upload your resume once. Never start your search from scratch again.</h2>
+      <p style="color:var(--ink-600);font-size:16px;line-height:1.65;margin-bottom:8px;">CareerAutomated reads your skills, projects, and experience, then continuously matches you against new openings while you focus on interview prep.</p>
+      <a href="#upload" class="btn btn-outline" style="margin-top:20px;">Upload Resume</a>
+    </div>
+    <div class="reveal flow-steps">
+      <div class="flow-step">
+        <span class="flow-num">01</span>
+        <div class="flow-text"><strong>Resume upload</strong><span>Drop in a PDF or DOCX — no forms to fill out by hand.</span></div>
+      </div>
+      <div class="flow-step">
+        <span class="flow-num">02</span>
+        <div class="flow-text"><strong>Parsing &amp; skill extraction</strong><span>Skills, projects, and experience are read and structured automatically.</span></div>
+      </div>
+      <div class="flow-step">
+        <span class="flow-num">03</span>
+        <div class="flow-text"><strong>Profile creation</strong><span>Your profile becomes the baseline every new posting gets checked against.</span></div>
+      </div>
+      <div class="flow-step">
+        <span class="flow-num">04</span>
+        <div class="flow-text"><strong>Continuous job matching</strong><span>Career pages and ATS platforms are monitored around the clock for fits.</span></div>
+      </div>
+      <div class="flow-step">
+        <span class="flow-num">05</span>
+        <div class="flow-text"><strong>New opportunities, delivered</strong><span>You see matches as they're found — not after they've already filled up.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= METRICS ================= -->
+<section class="section section-alt">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <span class="eyebrow font-mono">SYSTEM STATUS</span>
+      <h2>What CareerAutomated is tracking right now</h2>
+    </div>
+    <div class="metrics-grid reveal">
+      <div class="metric-cell"><div class="metric-num" data-count="100000" data-suffix="+">0</div><div class="metric-label">Companies tracked</div><span class="metric-flag" data-placeholder="true">illustrative figure</span></div>
+      <div class="metric-cell"><div class="metric-num" data-count="250000" data-suffix="+">0</div><div class="metric-label">Career pages monitored</div><span class="metric-flag" data-placeholder="true">illustrative figure</span></div>
+      <div class="metric-cell"><div class="metric-num" data-count="4" data-suffix="M+">0</div><div class="metric-label">Jobs indexed</div><span class="metric-flag" data-placeholder="true">illustrative figure</span></div>
+      <div class="metric-cell"><div class="metric-num font-mono" style="font-size:30px;">24×7</div><div class="metric-label">Hiring updates</div><span class="metric-flag" data-placeholder="true">always-on</span></div>
+      <div class="metric-cell"><div class="metric-num" data-count="40" data-suffix="+">0</div><div class="metric-label">ATS platforms covered</div><span class="metric-flag" data-placeholder="true">illustrative figure</span></div>
+      <div class="metric-cell"><div class="metric-num font-mono" style="font-size:26px;">Real-time</div><div class="metric-label">Opportunity discovery</div><span class="metric-flag" data-placeholder="true">by design</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PRODUCT SHOWCASE ================= -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow font-mono">YOUR DASHBOARD</span>
+      <h2>One dashboard for your entire placement journey</h2>
+      <p>Every tool students juggle across ten browser tabs, brought into one calm, organized view.</p>
+    </div>
+    <div class="showcase reveal">
+      <div class="float-cards">
+        <div class="float-card"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></div><h4>Resume Match Score</h4><p>See exactly how closely your profile fits each opening.</p></div>
+        <div class="float-card"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg></div><h4>Application Tracker</h4><p>Every application, its stage, and next step in one place.</p></div>
+        <div class="float-card"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h10v4H4z"/></svg></div><h4>Interview Pipeline</h4><p>Track rounds, dates, and prep notes without losing the thread.</p></div>
+        <div class="float-card"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 2v20M2 12h20"/></svg></div><h4>Opportunity Feed</h4><p>New matches, ranked by fit, as soon as they're found.</p></div>
+        <div class="float-card"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></div><h4>Company Tracker</h4><p>Follow specific companies and get notified the moment they hire.</p></div>
+        <div class="float-card"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 20l4-1 10-10-3-3L5 16l-1 4z"/></svg></div><h4>Resume Tailoring</h4><p>Adjust emphasis per role without rebuilding from scratch.</p></div>
+        <div class="float-card"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div><h4>Hiring Timeline</h4><p>Know when application windows typically open and close.</p></div>
+        <div class="float-card"><div class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/></svg></div><h4>Notifications</h4><p>Only the updates that matter — no noise, no spam.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= WHY ================= -->
+<section class="section section-alt">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow font-mono">WHY CAREERAUTOMATED</span>
+      <h2>Your personal placement cell. Always working.</h2>
+    </div>
+    <div class="why-grid reveal">
+      <div class="why-card"><div class="why-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg></div><h4>Discovers new openings</h4><p>Continuously scans company career pages before they trend anywhere else.</p></div>
+      <div class="why-card"><div class="why-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg></div><h4>Tracks hiring continuously</h4><p>Monitors 40+ ATS platforms around the clock, not just once a day.</p></div>
+      <div class="why-card"><div class="why-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></div><h4>Matches opportunities to you</h4><p>Ranks openings against your actual skills and projects, not keywords alone.</p></div>
+      <div class="why-card"><div class="why-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg></div><h4>Organizes every application</h4><p>One tracker for every role you've applied to, at every stage.</p></div>
+      <div class="why-card"><div class="why-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div><h4>Keeps you ahead of hiring</h4><p>See openings and closing windows before they slip past you.</p></div>
+      <div class="why-card"><div class="why-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M12 2a7 7 0 00-4 12.7V17a2 2 0 002 2h4a2 2 0 002-2v-2.3A7 7 0 0012 2zM9 21h6"/></svg></div><h4>Works while you sleep</h4><p>No manual refreshing. No checking five tabs before bed.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FOMO ================= -->
+<section class="section">
+  <div class="wrap reveal">
+    <div class="fomo">
+      <span class="eyebrow font-mono" style="border-color:rgba(255,255,255,0.16);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.7);">EVERY DAY YOU WAIT</span>
+      <h2 style="margin-top:18px;">New companies start hiring today.</h2>
+      <div class="fomo-list">
+        <div><span class="fomo-dot"></span>Internships open on career pages you'd never think to check</div>
+        <div><span class="fomo-dot"></span>Graduate roles fill within days of posting</div>
+        <div><span class="fomo-dot"></span>Application windows close without warning</div>
+        <div><span class="fomo-dot"></span>Off-campus drives get announced with almost no notice</div>
+      </div>
+      <p class="close">Don't miss opportunities simply because you never saw them.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FOUNDER ================= -->
+<section class="section section-alt" id="founder">
+  <div class="wrap founder">
+    <div class="reveal founder-photo">
+      <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop" alt="Founder working on a laptop at a desk" loading="lazy">
+      <div class="founder-tag">🎓 IIT Roorkee, Final Year</div>
+    </div>
+    <div class="reveal founder-body">
+      <span class="eyebrow font-mono">FOUNDER'S NOTE</span>
+      <h2 style="font-size:32px;font-weight:700;margin:16px 0 20px;line-height:1.2;">We built the placement experience we wish everyone had.</h2>
+      <p>I'm a final-year engineering student at IIT Roorkee. While preparing for placements, one thing became obvious: some incredibly talented students received countless interview opportunities simply because of where they studied.</p>
+      <p>Others — equally hardworking — spent months searching LinkedIn, Telegram groups, WhatsApp communities, and company career pages, hoping they hadn't missed anything.</p>
+      <p class="strong-line">Talent wasn't the difference. Access was.</p>
+      <p>CareerAutomated was built to change that — to help every ambitious student discover opportunities faster, stay organized, and compete with confidence.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TESTIMONIALS ================= -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow font-mono">STUDENT VOICES</span>
+      <h2>From students actually using it</h2>
+    </div>
+    <div class="testi-scroll reveal">
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <q>I discovered interviews I would've never found on my own — one turned into my current internship.</q>
+        <div class="testi-person"><div class="testi-avatar">AR</div><div><span class="testi-name">Ananya R.</span><span class="testi-college">NIT Surat, CSE</span></div></div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <q>It genuinely feels like someone is searching for jobs while I sleep. I check the dashboard, not five tabs.</q>
+        <div class="testi-person"><div class="testi-avatar">KV</div><div><span class="testi-name">Karthik V.</span><span class="testi-college">VIT Vellore, ECE</span></div></div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <q>I finally stopped checking five different job portals every day. Everything relevant just shows up.</q>
+        <div class="testi-person"><div class="testi-avatar">SP</div><div><span class="testi-name">Sneha P.</span><span class="testi-college">MIT-WPU Pune, IT</span></div></div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <q>The dashboard keeps my entire placement journey organized — applications, rounds, everything in one view.</q>
+        <div class="testi-person"><div class="testi-avatar">RD</div><div><span class="testi-name">Rohit D.</span><span class="testi-college">SRM Chennai, Mech</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PRICING ================= -->
+<section class="section section-alt" id="pricing">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <span class="eyebrow font-mono">PRICING</span>
+      <h2>Simple pricing. Built for students.</h2>
+      <p>Start free. Upgrade only if the matching is saving you real time.</p>
+    </div>
+    <div class="price-grid reveal">
+      <div class="price-card">
+        <div class="price-name">Free</div>
+        <div class="price-amount">₹0<span>/forever</span></div>
+        <div class="price-sub">For getting started</div>
+        <div class="price-feats">
+          <div>✓ Resume upload &amp; parsing</div>
+          <div>✓ Basic job matching</div>
+          <div>✓ Application tracker</div>
+          <div>✓ Weekly opportunity digest</div>
+        </div>
+        <a href="#upload" class="btn btn-outline">Get started</a>
+      </div>
+      <div class="price-card highlight">
+        <span class="price-flag">MOST POPULAR</span>
+        <div class="price-name">Pro</div>
+        <div class="price-amount">₹149<span>/month</span></div>
+        <div class="price-sub">For active placement season</div>
+        <div class="price-feats">
+          <div>✓ Everything in Free</div>
+          <div>✓ Real-time opportunity alerts</div>
+          <div>✓ Full company tracker</div>
+          <div>✓ Resume tailoring per role</div>
+          <div>✓ Priority match ranking</div>
+        </div>
+        <a href="#upload" class="btn btn-primary">Upload Resume</a>
+      </div>
+      <div class="price-card">
+        <div class="price-name">Campus</div>
+        <div class="price-amount">Custom</div>
+        <div class="price-sub">For colleges &amp; placement cells</div>
+        <div class="price-feats">
+          <div>✓ Everything in Pro, for every student</div>
+          <div>✓ Placement cell dashboard</div>
+          <div>✓ Batch-wide analytics</div>
+          <div>✓ Dedicated onboarding</div>
+        </div>
+        <a href="#contact" class="btn btn-outline">Talk to us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section class="section" id="faq">
+  <div class="wrap" style="max-width:760px;">
+    <div class="section-head reveal">
+      <span class="eyebrow font-mono">FAQ</span>
+      <h2>Questions students actually ask</h2>
+    </div>
+    <div class="reveal" id="faqList">
+      <div class="faq-item">
+        <button class="faq-q">How does matching work?<span class="faq-plus"></span></button>
+        <div class="faq-ans"><p>We parse the skills, projects, and experience on your resume, then compare that profile against openings pulled from company career pages and ATS platforms — ranking each one by how closely it fits.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Do you guarantee interviews?<span class="faq-plus"></span></button>
+        <div class="faq-ans"><p>No — and we won't pretend otherwise. We guarantee you'll see relevant, verified opportunities as they open. Interview outcomes depend on your application and preparation.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">How is my resume used?<span class="faq-plus"></span></button>
+        <div class="faq-ans"><p>Your resume is used only to build your matching profile. It's never sold, and it's never shared with a company without your explicit action. Full details are in our Privacy Policy.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Can I delete my account?<span class="faq-plus"></span></button>
+        <div class="faq-ans"><p>Yes, anytime, from your account settings. Deleting your account removes your resume and profile data from our systems.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Which companies do you cover?<span class="faq-plus"></span></button>
+        <div class="faq-ans"><p>We track a broad mix of startups, mid-size tech companies, and enterprises that hire off-campus for engineering roles — with coverage expanding continuously.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">How often do jobs update?<span class="faq-plus"></span></button>
+        <div class="faq-ans"><p>Career pages and ATS platforms are monitored continuously, not on a fixed daily schedule — so new postings can appear on your dashboard within hours of going live.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FINAL CTA ================= -->
+<section class="section" id="upload">
+  <div class="wrap">
+    <div class="final-cta reveal">
+      <span class="eyebrow font-mono"><span class="dot-live"></span>SOMEWHERE, RIGHT NOW</span>
+      <h2 style="margin-top:20px;">A company is hiring someone with your skills. Will you find it before everyone else?</h2>
+      <p class="sub">Upload your resume once. CareerAutomated keeps searching while you prepare for interviews.</p>
+      <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+        <a href="#" class="btn btn-primary btn-lg">Upload Resume</a>
+        <a href="#" class="btn btn-outline btn-lg">Watch Demo</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer id="contact">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-col">
+        <div class="logo" style="margin-bottom:14px;"><span class="logo-mark"></span>CareerAutomated</div>
+        <p style="font-size:13.5px;color:var(--ink-600);max-width:240px;line-height:1.6;">The AI-powered placement experience for off-campus careers.</p>
+      </div>
+      <div class="foot-col"><h5>Product</h5><a href="#product">How it works</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a></div>
+      <div class="foot-col"><h5>Company</h5><a href="#founder">About</a><a href="#">Privacy Policy</a><a href="#">Terms</a></div>
+      <div class="foot-col"><h5>Contact</h5><a href="mailto:hello@careerautomated.in">hello@careerautomated.in</a><a href="#">Campus partnerships</a><a href="#">Support</a></div>
+    </div>
+    <div class="divider"></div>
+    <div class="foot-bottom" style="margin-top:24px;">
+      <span>© 2026 CareerAutomated. Built in India.</span>
+      <span class="font-mono">system status: <span style="color:var(--verify);">operational</span></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ---------- Nav blur on scroll ----------
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 8);
+}, { passive: true });
+
+// ---------- Reveal on scroll ----------
+const revealEls = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+}, { threshold: 0.12 });
+revealEls.forEach(el => io.observe(el));
+
+// ---------- Hero pipeline sequence ----------
+const steps = document.querySelectorAll('#pipeSteps .pipe-step');
+const pcBadge = document.getElementById('pcBadge');
+let stepIdx = 0;
+function runPipeline(){
+  steps.forEach(s => s.classList.remove('active','done'));
+  stepIdx = 0;
+  pcBadge.textContent = 'SYNCING…';
+  const tick = () => {
+    if (stepIdx > 0) steps[stepIdx-1].classList.remove('active'), steps[stepIdx-1].classList.add('done');
+    if (stepIdx < steps.length){
+      steps[stepIdx].classList.add('active');
+      stepIdx++;
+      setTimeout(tick, 750);
+    } else {
+      pcBadge.textContent = 'UP TO DATE';
+      setTimeout(runPipeline, 3200);
+    }
+  };
+  tick();
+}
+runPipeline();
+
+// ---------- Animated counters ----------
+const counters = document.querySelectorAll('.metric-num[data-count]');
+const counterIO = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    const el = entry.target;
+    const target = parseFloat(el.dataset.count);
+    const suffix = el.dataset.suffix || '';
+    const dur = 1400;
+    const start = performance.now();
+    function frame(now){
+      const p = Math.min((now - start) / dur, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      const val = target * eased;
+      el.textContent = (target >= 1000 ? Math.floor(val).toLocaleString('en-IN') : val.toFixed(0)) + suffix;
+      if (p < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+    counterIO.unobserve(el);
+  });
+}, { threshold: 0.4 });
+counters.forEach(c => counterIO.observe(c));
+
+// ---------- Live verified log ----------
+const logBody = document.getElementById('logBody');
+const roles = [
+  ['Backend Engineer Intern', 'Fintech · Bengaluru', 'match'],
+  ['SDE-1, New Grad', 'Product startup · Remote', 'open'],
+  ['Data Analyst Intern', 'B2B SaaS · Pune', 'match'],
+  ['Frontend Engineer', 'E-commerce · Hyderabad', 'open'],
+  ['ML Engineer Intern', 'Deep tech · Gurugram', 'match'],
+  ['QA Engineer, New Grad', 'Enterprise software · Chennai', 'closing'],
+  ['DevOps Intern', 'Cloud infra · Remote', 'open'],
+  ['Software Engineer', 'Series B startup · Noida', 'match'],
+  ['Systems Engineer Intern', 'Semiconductor · Bengaluru', 'open'],
+  ['Full-Stack Developer', 'Healthtech · Mumbai', 'closing'],
+];
+const tagMap = {
+  match:   { cls:'tag-match',   text:'High match' },
+  open:    { cls:'tag-open',    text:'Applications open' },
+  closing: { cls:'tag-closing', text:'Window closing soon' }
+};
+let logCount = 0;
+function pad(n){ return n.toString().padStart(2,'0'); }
+function nowStamp(){
+  const d = new Date();
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+function addLogRow(){
+  const [role, meta, kind] = roles[Math.floor(Math.random()*roles.length)];
+  const tag = tagMap[kind];
+  logCount++;
+  const row = document.createElement('div');
+  row.className = 'log-row';
+  row.innerHTML = `
+    <span class="log-ts">${nowStamp()}</span>
+    <span class="log-check">✓</span>
+    <span><span class="log-role">${role}</span><span class="log-meta">${meta}</span></span>
+    <span class="log-tag ${tag.cls}">${tag.text}</span>
+  `;
+  logBody.prepend(row);
+  while (logBody.children.length > 8) logBody.removeChild(logBody.lastChild);
+}
+for (let i=0;i<6;i++) addLogRow();
+setInterval(addLogRow, 2600);
+
+// ---------- Testimonial avatars: color variety ----------
+
+// ---------- FAQ accordion ----------
+document.querySelectorAll('.faq-item').forEach(item => {
+  const btn = item.querySelector('.faq-q');
+  const ans = item.querySelector('.faq-ans');
+  btn.addEventListener('click', () => {
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(o => {
+      o.classList.remove('open');
+      o.querySelector('.faq-ans').style.maxHeight = null;
+    });
+    if (!isOpen){
+      item.classList.add('open');
+      ans.style.maxHeight = ans.scrollHeight + 'px';
+    }
+  });
+});
+</script>
+</body>
+</html>

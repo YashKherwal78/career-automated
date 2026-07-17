@@ -1,0 +1,1 @@
+import { createFileRoute } from '@tanstack/react-router'; export const Route = createFileRoute('/mission-control/decision-engine')({ component: () => <div className='p-6 text-zinc-400'>Decision Engine (Phase 7) coming soon...</div> });

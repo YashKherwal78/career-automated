@@ -1,0 +1,1 @@
+import { createFileRoute } from '@tanstack/react-router'; export const Route = createFileRoute('/mission-control/telemetry')({ component: () => <div className='p-6 text-zinc-400'>Telemetry Coverage (Phase 3) coming soon...</div> });

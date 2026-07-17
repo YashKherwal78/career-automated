@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Automated | Pipeline Control Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050b14;
+            --surface: rgba(15, 23, 42, 0.7);
+            --surface-hover: rgba(30, 41, 59, 0.9);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.3);
+            --border: rgba(255, 255, 255, 0.08);
+            --green: #10b981;
+            --red: #ef4444;
+            --yellow: #f59e0b;
+            --purple: #8b5cf6;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background-image: radial-gradient(circle at 50% -20%, #1e3a8a 0%, transparent 40%);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .logo { font-size: 24px; font-weight: 700; color: white; margin-bottom: 32px; display: flex; align-items: center; gap: 8px; letter-spacing: -0.5px;}
+        .logo span { color: var(--accent); }
+        .nav-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-weight: 600;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+        .nav-item:hover { background: rgba(255, 255, 255, 0.05); color: white; }
+        .nav-item.active {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+        
+        /* Main Content */
+        .main { flex: 1; padding: 40px; overflow-y: auto; position: relative; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+        .header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px;}
+        
+        /* Funnel Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 40px;}
+        .stat-card {
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: transform 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .stat-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.2); }
+        .stat-value { font-size: 32px; font-weight: 700; color: white; }
+        .stat-label { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;}
+        
+        /* Colors for specific KPIs */
+        .stat-card.actionable .stat-value { color: var(--red); }
+        .stat-card.contacts .stat-value { color: var(--green); }
+        .stat-card.referrals .stat-value { color: var(--purple); }
+
+        /* Action Queue */
+        .section-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; color: white;}
+        .queue-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+        .queue-table th { text-align: left; padding: 0 16px 8px 16px; color: var(--text-secondary); font-size: 11px; text-transform: uppercase; font-weight: 600; letter-spacing: 1px;}
+        .queue-table td { padding: 16px; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); vertical-align: middle; }
+        .queue-table td:first-child { border-left: 1px solid var(--border); border-top-left-radius: 8px; border-bottom-left-radius: 8px;}
+        .queue-table td:last-child { border-right: 1px solid var(--border); border-top-right-radius: 8px; border-bottom-right-radius: 8px;}
+        
+        .queue-table tr { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .queue-table tbody tr:hover { transform: scale(1.01); box-shadow: 0 10px 20px rgba(0,0,0,0.2); z-index: 10; position: relative;}
+        
+        .score-badge { background: rgba(16, 185, 129, 0.15); color: #34d399; padding: 6px 10px; border-radius: 6px; font-weight: 700; font-size: 13px;}
+        .action-btn { 
+            background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease; box-shadow: 0 4px 15px var(--accent-glow); font-size: 13px;
+        }
+        .action-btn:hover { background: #2563eb; transform: translateY(-1px); }
+        .explainability { font-size: 12px; color: var(--text-secondary); margin-top: 6px; display: block; line-height: 1.4;}
+        .company-name { font-weight: 700; font-size: 15px; color: white;}
+        .ats-badge { display: inline-block; padding: 4px 8px; background: rgba(255,255,255,0.05); border-radius: 4px; font-size: 11px; color: var(--text-secondary); margin-top: 4px;}
+
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">Career<span>Automated</span></div>
+        <div class="nav-item active">🏠 Action Center</div>
+        <div class="nav-item">💼 Opportunities</div>
+        <div class="nav-item">📄 Applications</div>
+        <div class="nav-item">👥 Contacts</div>
+        <div class="nav-item">📊 Analytics</div>
+        <div class="nav-item">⚙️ Daemons</div>
+    </div>
+    
+    <div class="main">
+        <div class="header">
+            <h1>Action Center</h1>
+        </div>
+        
+        <div class="stats-grid" id="kpis">
+            <div class="stat-card"><div class="stat-label">Verified ATS</div><div class="stat-value" id="kpi-ats">...</div></div>
+            <div class="stat-card"><div class="stat-label">Live Jobs</div><div class="stat-value" id="kpi-jobs">...</div></div>
+            <div class="stat-card actionable"><div class="stat-label">🔥 Pending Apply</div><div class="stat-value" id="kpi-apply">128</div></div>
+            <div class="stat-card contacts"><div class="stat-label">👤 Find Contacts</div><div class="stat-value">64</div></div>
+            <div class="stat-card referrals"><div class="stat-label">🤝 Referrals</div><div class="stat-value">21</div></div>
+        </div>
+        
+        <div class="section-title">High-Priority Opportunities</div>
+        <table class="queue-table">
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>Role & Signals</th>
+                    <th>Match Score</th>
+                    <th>Next Action</th>
+                </tr>
+            </thead>
+            <tbody id="job-queue">
+                <!-- Populated by JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function loadDashboard() {
+            try {
+                // Fetch KPIs
+                const kpiRes = await fetch('/api/v1/analytics/funnel');
+                const kpis = await kpiRes.json();
+                document.getElementById('kpi-ats').innerText = kpis.verified_ats.toLocaleString();
+                document.getElementById('kpi-jobs').innerText = kpis.live_jobs.toLocaleString();
+                
+                // Fetch Jobs
+                const res = await fetch('/api/v1/jobs');
+                const jobs = await res.json();
+                
+                const tbody = document.getElementById('job-queue');
+                tbody.innerHTML = '';
+                
+                jobs.forEach(job => {
+                    const row = document.createElement('tr');
+                    
+                    let explain = "";
+                    try { 
+                        explain = job.score_breakdown.join(", "); 
+                    } catch(e) {}
+                    
+                    row.innerHTML = `
+                        <td>
+                            <div class="company-name">${job.canonical_name}</div>
+                            <div class="ats-badge">${job.provider}</div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: white;">${job.title}</div>
+                            <span class="explainability">${explain} <br/> <i style="color: #64748b">${job.recommendation_reason || ""}</i></span>
+                        </td>
+                        <td><span class="score-badge">${job.job_score}</span></td>
+                        <td><button class="action-btn">AUTO APPLY</button></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+            } catch (err) {
+                console.error("Failed to load Career Automated data", err);
+            }
+        }
+        loadDashboard();
+    </script>
+</body>
+</html>

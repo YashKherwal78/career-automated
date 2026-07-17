@@ -1,0 +1,1 @@
+import { createFileRoute } from '@tanstack/react-router'; import { PipelineNetworkMap } from '../../components/mission-control/PipelineNetworkMap'; export const Route = createFileRoute('/mission-control/')({ component: () => <PipelineNetworkMap /> });
