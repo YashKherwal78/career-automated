@@ -20,24 +20,13 @@ import { Container } from "@/components/primitives/container";
 import { Section, SectionHeading } from "@/components/primitives/section";
 import { FadeIn, Stagger, StaggerItem } from "@/components/primitives/motion";
 
+import { generateMetadata } from "../lib/seo";
+
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "CareerAutomated — The AI career operating system" },
-      {
-        name: "description",
-        content:
-          "CareerAutomated finds matching jobs, tailors your resume, drafts applications, and tracks every follow-up — so you can spend your time preparing for interviews instead of applying to them.",
-      },
-      { property: "og:title", content: "CareerAutomated — The AI career operating system" },
-      {
-        property: "og:description",
-        content: "Spend less time applying, more time interviewing. You stay in control. AI does the repetitive work.",
-      },
-    ],
-  }),
+  head: () => generateMetadata("/"),
   component: Home,
 });
+
 
 function Home() {
   return (

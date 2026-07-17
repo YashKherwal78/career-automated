@@ -4,17 +4,16 @@ import { Check, ArrowRight, Sparkles } from "lucide-react";
 import { Section, SectionHeading } from "@/components/primitives/section";
 import { FadeIn, Stagger, StaggerItem } from "@/components/primitives/motion";
 
+import { generateMetadata } from "../lib/seo";
+
 export const Route = createFileRoute("/pricing")({
-  head: () => ({
-    meta: [
-      { title: "Pricing — CareerAutomated" },
-      { name: "description", content: "Simple pricing. Free plan to start. Upgrade only when it pays for itself in time saved." },
-      { property: "og:title", content: "Pricing — CareerAutomated" },
-      { property: "og:description", content: "Free, Pro, and Premium plans. Monthly or yearly." },
-    ],
+  head: () => generateMetadata("/pricing", {
+    title: "Pricing Plans",
+    description: "Simple pricing. Free plan to start. Upgrade only when it pays for itself in time saved.",
   }),
   component: Pricing,
 });
+
 
 type Cycle = "monthly" | "yearly";
 

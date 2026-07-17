@@ -38,6 +38,7 @@ import { Route as DashboardCompaniesRouteImport } from './routes/dashboard/compa
 import { Route as DashboardApplicationsRouteImport } from './routes/dashboard/applications'
 import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard/analytics'
 import { Route as DashboardAdminRouteImport } from './routes/dashboard/admin'
+import { Route as AboutProductRouteImport } from './routes/about/product'
 import { Route as DashboardJobsJobIdRouteImport } from './routes/dashboard/jobs.$jobId'
 
 const UploadRoute = UploadRouteImport.update({
@@ -188,6 +189,11 @@ const DashboardAdminRoute = DashboardAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => DashboardRoute,
 } as any)
+const AboutProductRoute = AboutProductRouteImport.update({
+  id: '/product',
+  path: '/product',
+  getParentRoute: () => AboutRoute,
+} as any)
 const DashboardJobsJobIdRoute = DashboardJobsJobIdRouteImport.update({
   id: '/$jobId',
   path: '/$jobId',
@@ -196,7 +202,7 @@ const DashboardJobsJobIdRoute = DashboardJobsJobIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '/about': typeof AboutRouteWithChildren
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/faq': typeof FaqRoute
@@ -209,6 +215,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
+  '/about/product': typeof AboutProductRoute
   '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/applications': typeof DashboardApplicationsRoute
@@ -228,7 +235,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '/about': typeof AboutRouteWithChildren
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/health': typeof HealthRoute
@@ -239,6 +246,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
+  '/about/product': typeof AboutProductRoute
   '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/applications': typeof DashboardApplicationsRoute
@@ -259,7 +267,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '/about': typeof AboutRouteWithChildren
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/faq': typeof FaqRoute
@@ -272,6 +280,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/upload': typeof UploadRoute
+  '/about/product': typeof AboutProductRoute
   '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/applications': typeof DashboardApplicationsRoute
@@ -306,6 +315,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/upload'
+    | '/about/product'
     | '/dashboard/admin'
     | '/dashboard/analytics'
     | '/dashboard/applications'
@@ -336,6 +346,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/upload'
+    | '/about/product'
     | '/dashboard/admin'
     | '/dashboard/analytics'
     | '/dashboard/applications'
@@ -368,6 +379,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/upload'
+    | '/about/product'
     | '/dashboard/admin'
     | '/dashboard/analytics'
     | '/dashboard/applications'
@@ -388,7 +400,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
+  AboutRoute: typeof AboutRouteWithChildren
   ContactRoute: typeof ContactRoute
   DashboardRoute: typeof DashboardRouteWithChildren
   FaqRoute: typeof FaqRoute
@@ -608,6 +620,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAdminRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/about/product': {
+      id: '/about/product'
+      path: '/product'
+      fullPath: '/about/product'
+      preLoaderRoute: typeof AboutProductRouteImport
+      parentRoute: typeof AboutRoute
+    }
     '/dashboard/jobs/$jobId': {
       id: '/dashboard/jobs/$jobId'
       path: '/$jobId'
@@ -617,6 +636,16 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AboutRouteChildren {
+  AboutProductRoute: typeof AboutProductRoute
+}
+
+const AboutRouteChildren: AboutRouteChildren = {
+  AboutProductRoute: AboutProductRoute,
+}
+
+const AboutRouteWithChildren = AboutRoute._addFileChildren(AboutRouteChildren)
 
 interface DashboardJobsRouteChildren {
   DashboardJobsJobIdRoute: typeof DashboardJobsJobIdRoute
@@ -682,7 +711,7 @@ const MissionControlRouteWithChildren = MissionControlRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
+  AboutRoute: AboutRouteWithChildren,
   ContactRoute: ContactRoute,
   DashboardRoute: DashboardRouteWithChildren,
   FaqRoute: FaqRoute,

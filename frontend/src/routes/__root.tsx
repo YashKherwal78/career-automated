@@ -61,25 +61,33 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
-const TITLE = "CareerAutomated — The AI career operating system";
-const DESC = "Spend less time applying, more time interviewing. CareerAutomated finds matching jobs, tailors your resume, and drafts applications — you stay in control and approve every send.";
+import {
+  generateMetadata,
+  generateOrganizationSchema,
+  generateWebSiteSchema,
+  generateSoftwareApplicationSchema,
+} from "../lib/seo";
+
+const defaultSEO = generateMetadata("/");
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: TITLE },
-      { name: "description", content: DESC },
-      { name: "author", content: "CareerAutomated" },
-      { property: "og:title", content: TITLE },
-      { property: "og:description", content: DESC },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, shrink-to-fit=no" },
+      { name: "theme-color", content: "#E85D2C" },
+      { name: "application-name", content: "CareerAutomated" },
+      { name: "apple-mobile-web-app-title", content: "CareerAutomated" },
+      { name: "format-detection", content: "telephone=no" },
+      { name: "google-site-verification", content: (import.meta.env?.VITE_GOOGLE_SITE_VERIFICATION || "") },
+      ...defaultSEO.meta,
     ],
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "preconnect", href: "https://api.fontshare.com" },
@@ -91,6 +99,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap",
       },
+      ...defaultSEO.links,
     ],
   }),
 
@@ -105,6 +114,24 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(generateOrganizationSchema()),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(generateWebSiteSchema()),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(generateSoftwareApplicationSchema()),
+          }}
+        />
       </head>
       <body>
         {children}

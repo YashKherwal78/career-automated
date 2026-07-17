@@ -1,2 +1,9 @@
 User-agent: *
 Allow: /
+Disallow: /dashboard*
+Disallow: /mission-control*
+Disallow: /onboarding*
+Disallow: /upload*
+Disallow: /signup*
+
+Sitemap: https://careerautomated.in/sitemap.xml

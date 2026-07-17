@@ -1,17 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Radar, Target, Bell, Scale, Compass, Zap } from "lucide-react";
 
+import { generateMetadata } from "../lib/seo";
+
 export const Route = createFileRoute("/about")({
-  head: () => ({
-    meta: [
-      { title: "About — CareerAutomated" },
-      { name: "description", content: "A student-built platform, for students who don't have the advantages some campuses do." },
-      { property: "og:title", content: "About — CareerAutomated" },
-      { property: "og:description", content: "We built the placement cell we wished we had. Solo-founder story, mission, and how we work." },
-    ],
+  head: () => generateMetadata("/about", {
+    title: "About Us",
+    description: "A student-built platform, for students who don't have the advantages some campuses do."
   }),
   component: About,
 });
+
 
 const PILLARS = [
   { icon: Radar, title: "Coverage", body: "We track company hiring directly, not just what's posted on job boards." },
