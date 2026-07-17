@@ -148,7 +148,7 @@ class JobRepository(BaseRepository, IJobRepository):
         archived = 0
         
         if not jobs:
-            return (0, 0, 0)
+            return (0, 0, 0, 0)
             
         company_id = jobs[0].company_id
 

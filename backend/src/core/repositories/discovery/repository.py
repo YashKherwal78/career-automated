@@ -16,14 +16,13 @@ class DiscoveryRepository(BaseRepository):
         with self.transaction() as conn:
             p = conn.dialect.placeholder()
             limit_clause = conn.dialect.create_limit(limit)
-            # Use standard modulo operator %. SQLite and Postgres both support %.
-            # However, when string formatting, we must escape it as %% if we use % formatting, 
-            # but with f-strings, we don't need to double-escape it unless it's used inside a format call.
-            # Using f-string safely:
+            # Use modulo operator for sharding. Must use %% in the SQL string because
+            # psycopg treats a bare % as a format placeholder, causing "incomplete placeholder" errors.
+            # %% is the escaped literal percent sign in psycopg-formatted queries.
             cursor = conn.execute(
                 f"SELECT id, company_id, canonical_name, domain, website, aliases "
                 f"FROM company_identities "
-                f"WHERE id > {p} AND id % {p} = {p} "
+                f"WHERE id > {p} AND id %% {p} = {p} "
                 f"ORDER BY id ASC {limit_clause}",
                 (last_id, num_shards, shard_id)
             )

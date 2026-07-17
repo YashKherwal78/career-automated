@@ -134,7 +134,7 @@ class CompanyStateRepository(BaseRepository, ICompanyStateRepository):
             p = conn.dialect.placeholder()
             cursor = conn.execute(f"SELECT failure_count FROM ats_registry WHERE company_id = {p}", (company_id,))
             row = cursor.fetchone()
-            failures = row[0] if row else 0
+            failures = (row["failure_count"] if isinstance(row, dict) or hasattr(row, "keys") else row[0]) if row else 0
             failures += 1
 
             index = min(failures - 1, len(backoff_schedule) - 1)
