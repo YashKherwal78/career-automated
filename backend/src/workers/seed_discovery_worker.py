@@ -109,6 +109,7 @@ class SeedDiscoveryWorker(BaseWorker):
             except Exception as e:
                 logger.error(f"Error in SeedDiscoveryWorker loop: {e}")
                 self.heartbeat(failure_increment=1, last_error=str(e))
+                self.check_fatal_exception(e)
                 await asyncio.sleep(30)
                 
         self.stop()

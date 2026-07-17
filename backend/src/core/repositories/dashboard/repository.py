@@ -40,6 +40,13 @@ class DashboardRepository(BaseRepository):
     def get_pipeline_metrics(self, tx: Optional[Any] = None) -> Dict[str, Any]:
         conn = tx if tx else self.get_connection()
         try:
+            now = time.time()
+            if hasattr(conn, 'dialect'):
+                p = conn.dialect.placeholder()
+            else:
+                p = "?"
+
+            # General funnel stats
             funnel = {
                 "companies_discovered": self._q(conn, "SELECT COUNT(*) cnt FROM company_identities")["cnt"],
                 "ats_registry_total": self._q(conn, "SELECT COUNT(*) cnt FROM ats_registry")["cnt"],
@@ -52,13 +59,77 @@ class DashboardRepository(BaseRepository):
                 "jobs_active": self._q(conn, "SELECT COUNT(*) cnt FROM normalized_jobs WHERE status = 'ACTIVE'")["cnt"],
             }
 
-            now = time.time()
-            if hasattr(conn, 'dialect'):
-                p = conn.dialect.placeholder()
-            else:
-                p = "?"
+            # Discovered time-based stats
+            funnel["jobs_last_1h"] = self._q(conn, f"SELECT COUNT(*) cnt FROM normalized_jobs WHERE normalized_at > {p}", [now - 3600])["cnt"]
             funnel["jobs_last_24h"] = self._q(conn, f"SELECT COUNT(*) cnt FROM normalized_jobs WHERE normalized_at > {p}", [now - 86400])["cnt"]
             funnel["jobs_last_7d"] = self._q(conn, f"SELECT COUNT(*) cnt FROM normalized_jobs WHERE normalized_at > {p}", [now - 604800])["cnt"]
+
+            # Crawl throughput rates
+            jobs_15m = self._q(conn, f"SELECT COUNT(*) cnt FROM normalized_jobs WHERE normalized_at > {p}", [now - 900])["cnt"]
+            funnel["crawl_rate_jobs_per_minute"] = round(jobs_15m / 15.0, 2)
+            
+            jobs_1m = self._q(conn, f"SELECT COUNT(*) cnt FROM normalized_jobs WHERE normalized_at > {p}", [now - 60])["cnt"]
+            funnel["db_writes_per_minute"] = jobs_1m
+
+            # Worker states
+            workers = []
+            try:
+                workers = self._ql(conn, "SELECT * FROM worker_states ORDER BY heartbeat DESC LIMIT 20")
+            except Exception:
+                pass
+
+            active_crawlers_count = 0
+            active_workers_count = 0
+            for w in workers:
+                # Heartbeat within last 90 seconds is considered active
+                if now - w.get("heartbeat", 0.0) < 90.0:
+                    active_workers_count += 1
+                    if "crawler" in w.get("worker_name", "").lower():
+                        active_crawlers_count += 1
+
+            funnel["active_crawlers"] = active_crawlers_count
+            funnel["active_workers"] = active_workers_count
+
+            # Worker performance metrics (failed crawls, success rate, avg latency)
+            try:
+                metrics_summary = self._q(conn, "SELECT SUM(processed) as total_proc, SUM(failed) as total_fail, AVG(avg_latency) as mean_lat FROM worker_metrics")
+                total_p = metrics_summary.get("total_proc") or 0
+                total_f = metrics_summary.get("total_fail") or 0
+                funnel["failed_crawls"] = total_f
+                funnel["avg_crawl_latency_ms"] = round(metrics_summary.get("mean_lat") or 0.0, 1)
+                if total_p + total_f > 0:
+                    funnel["success_rate"] = round((total_p / (total_p + total_f)) * 100, 2)
+                else:
+                    funnel["success_rate"] = 100.0
+            except Exception:
+                funnel["failed_crawls"] = 0
+                funnel["avg_crawl_latency_ms"] = 0.0
+                funnel["success_rate"] = 100.0
+
+            # Queue stats
+            queues = []
+            from src.runtime.postgres.connection import USE_POSTGRES
+            if USE_POSTGRES:
+                from src.runtime.redis.queue_manager import QueueManager
+                try:
+                    res_q = [
+                        {"queue_name": "discovery_queue", "status": "QUEUED", "cnt": QueueManager.size("discovery_queue")},
+                        {"queue_name": "verification_queue", "status": "QUEUED", "cnt": QueueManager.size("verification_queue")},
+                        {"queue_name": "crawl_queue", "status": "QUEUED", "cnt": QueueManager.size("crawl_queue")},
+                    ]
+                    queues = res_q
+                except Exception:
+                    pass
+            else:
+                try:
+                    queues = self._ql(conn, """
+                        SELECT queue_name, status, COUNT(*) cnt
+                        FROM local_queues
+                        GROUP BY queue_name, status
+                        ORDER BY queue_name, status
+                    """)
+                except Exception:
+                    pass
 
             per_company = self._ql(conn, """
                 SELECT n.company_id, a.provider_id as ats_type, COUNT(*) job_count,
@@ -69,23 +140,6 @@ class DashboardRepository(BaseRepository):
                          a.failure_count, a.status
                 ORDER BY job_count DESC
             """)
-
-            workers = []
-            try:
-                workers = self._ql(conn, "SELECT * FROM worker_states ORDER BY heartbeat DESC LIMIT 20")
-            except Exception:
-                pass
-
-            queues = []
-            try:
-                queues = self._ql(conn, """
-                    SELECT queue_name, status, COUNT(*) cnt
-                    FROM local_queues
-                    GROUP BY queue_name, status
-                    ORDER BY queue_name, status
-                """)
-            except Exception:
-                pass
 
             return {
                 "ts": int(time.time()),
@@ -99,6 +153,18 @@ class DashboardRepository(BaseRepository):
                 conn.close()
 
     def get_queue_counts(self, tx: Optional[Any] = None) -> Dict[str, int]:
+        from src.runtime.postgres.connection import USE_POSTGRES
+        if USE_POSTGRES:
+            from src.runtime.redis.queue_manager import QueueManager
+            try:
+                return {
+                    "discovery_queue": QueueManager.size("discovery_queue"),
+                    "verification_queue": QueueManager.size("verification_queue"),
+                    "crawl_queue": QueueManager.size("crawl_queue")
+                }
+            except Exception:
+                return {"discovery_queue": 0, "verification_queue": 0, "crawl_queue": 0}
+        
         conn = tx if tx else self.get_connection()
         try:
             res = {"discovery_queue": 0, "verification_queue": 0, "crawl_queue": 0}

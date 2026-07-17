@@ -66,6 +66,7 @@ class JobBoardWorker(BaseWorker):
             except Exception as e:
                 logger.error(f"JobBoardWorker unhandled error: {e}", exc_info=True)
                 self.heartbeat(failure_increment=1, last_error=str(e))
+                self.check_fatal_exception(e)
                 time.sleep(60)
         self.stop()
         logger.info("JobBoardWorker stopped.")

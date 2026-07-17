@@ -280,6 +280,7 @@ class EndpointVerificationWorker(BaseWorker):
             except Exception as e:
                 logger.error(f"Error in EndpointVerificationWorker loop: {e}")
                 self.heartbeat(failure_increment=1, last_error=str(e))
+                self.check_fatal_exception(e)
                 if q_item and item_id:
                     self.queue.nack(current_queue or "verification_queue", item_id, reason=str(e), backoff_seconds=300)
                 await asyncio.sleep(30)

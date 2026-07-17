@@ -67,6 +67,42 @@ class BaseWorker:
         if last_error:
             self.repos.worker.record_error(self.worker_id, str(last_error))
 
+    def check_fatal_exception(self, e: Exception):
+        """Checks if an exception is a fatal database or redis connection loss and exits if so."""
+        msg = str(e).lower()
+        
+        # Connection keywords
+        fatal_keywords = [
+            "connection refused", 
+            "could not connect to server",
+            "connection lost", 
+            "connection closed",
+            "operationalerror", 
+            "interfaceerror",
+            "redis.exceptions.connectionerror",
+            "redis.exceptions.timeouterr",
+            "terminating connection due to administrator command",
+            "admin shutdown"
+        ]
+        
+        is_fatal = False
+        # Check exception class name
+        class_name = f"{e.__class__.__module__}.{e.__class__.__name__}".lower()
+        if any(kw in class_name for kw in ["operationalerror", "interfaceerror", "connectionerror", "timeouterror"]):
+            is_fatal = True
+            
+        # Check error message string
+        if any(kw in msg for kw in fatal_keywords):
+            is_fatal = True
+            
+        if is_fatal:
+            import sys
+            import logging
+            logger = logging.getLogger(self.name)
+            logger.critical(f"FATAL CONNECTION LOSS DETECTED: {e}. Exiting process for self-healing recovery...")
+            self.stop(f"Fatal connection loss: {type(e).__name__}")
+            sys.exit(1)
+
     def stop(self, reason: str = "Graceful shutdown"):
         self.running = False
         self.metrics.update_operational_metric(f"{self.name}:status", "STOPPED")
