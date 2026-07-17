@@ -58,6 +58,10 @@ class PipelineStateManager:
         # Allow initial transition to DISCOVERED
         if not current_state and to_state == "DISCOVERED":
             return
+        
+        # Allow idempotent same-state transitions (e.g. repeated failure marks)
+        if current_state == to_state:
+            return
             
         if current_state and current_state in VALID_TRANSITIONS:
             if to_state not in VALID_TRANSITIONS[current_state]:
