@@ -91,9 +91,14 @@ class JobCrawlerWorker(BaseWorker):
             connector_registry=ConnectorRegistry
         )
         self.planner = CrawlPlanner()
+        self.provider_id = None
+        if len(sys.argv) > 1 and "--provider" in sys.argv:
+            idx = sys.argv.index("--provider")
+            if idx + 1 < len(sys.argv):
+                self.provider_id = sys.argv[idx + 1]
 
     async def run_async(self):
-        logger.info(f"JobCrawlerWorker starting as {self.worker_id}")
+        logger.info(f"JobCrawlerWorker starting as {self.worker_id} for provider {self.provider_id}")
         while self.running:
             q_item = None
             item_id = None
@@ -117,7 +122,7 @@ class JobCrawlerWorker(BaseWorker):
                         row_data["reservation_token"] = "QUEUE-EXPLICIT"
                 else:
                     # Scan for due board
-                    row_data = self.repos.company_state.reserve_due_board(self.worker_id, lock_duration=300)
+                    row_data = self.repos.company_state.reserve_due_board(self.worker_id, provider_id=self.provider_id, lock_duration=300)
 
                 if not row_data:
                     # No work, update heartbeat and poll sleep
@@ -153,12 +158,67 @@ class JobCrawlerWorker(BaseWorker):
                 
                 logger.info(f"{self.worker_id} syncing jobs for {company_id} ({board.provider}) using policy interval {interval}s")
                 
+                class CrawlContext:
+                    def __init__(self):
+                        self.cancelled = False
+                        self.failed = False
+                    def is_set(self):
+                        return self.cancelled or self.failed
+                    def set_failed(self):
+                        self.failed = True
+                    def cancel(self):
+                        self.cancelled = True
+
+                async def lease_renewal_loop(cid, ltoken, ctx):
+                    import datetime
+                    while not ctx.is_set():
+                        for _ in range(90):
+                            if ctx.is_set():
+                                return
+                            await asyncio.sleep(1)
+                        if ctx.is_set():
+                            return
+                        try:
+                            expiry_dt = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=300)
+                            with self.repos.company_state.transaction() as conn:
+                                cur = conn.execute('''
+                                    UPDATE ats_registry
+                                    SET reserved_until_tz = %s
+                                    WHERE company_id = %s AND lease_token = %s
+                                ''', (expiry_dt, cid, ltoken))
+                                if cur.rowcount == 0:
+                                    logger.error(f"Lease renewal failed for {cid} - lease lost!")
+                                    ctx.set_failed()
+                                    return
+                            logger.info(f"Successfully renewed lease for {cid}")
+                        except Exception as e:
+                            logger.error(f"Lease renewal exception for {cid}: {e}")
+
                 start_time = time.time()
                 try:
                     # Transition to CRAWLING state
                     PipelineStateManager.transition(company_id, "CRAWLING")
 
-                    await session.execute()
+                    ctx = CrawlContext()
+                    renewal_task = asyncio.create_task(lease_renewal_loop(company_id, token, ctx))
+                    
+                    try:
+                        sync_task = asyncio.create_task(session.execute())
+                        while not sync_task.done():
+                            if ctx.failed:
+                                sync_task.cancel()
+                                logger.error(f"Sync task for {company_id} cancelled because lease was lost.")
+                                break
+                            await asyncio.sleep(0.5)
+                        if not ctx.failed:
+                            await sync_task
+                    finally:
+                        ctx.cancel()
+                        await renewal_task
+
+                    if ctx.failed:
+                        raise RuntimeError(f"Crawl aborted: lease lost for company {company_id}")
+
                     latency = int((time.time() - start_time) * 1000)
 
                     success = session.stats.get("success", False)
@@ -166,7 +226,20 @@ class JobCrawlerWorker(BaseWorker):
 
                     # 4. Persistence managed exclusively by repository
                     if success:
-                        self.repos.company_state.mark_completed(company_id, token, interval)
+                        with self.repos.transaction():
+                            self.repos.company_state.mark_completed(company_id, token, interval)
+                            self.repos.outbox.save_event(
+                                event_type="JobSynced",
+                                aggregate_type="Company",
+                                aggregate_id=company_id,
+                                payload={
+                                    "company_id": company_id,
+                                    "provider": board.provider,
+                                    "jobs_found": job_count,
+                                    "latency_ms": latency,
+                                    "worker_id": self.worker_id
+                                }
+                            )
                         
                         # Transition to ACTIVE state
                         PipelineStateManager.transition(company_id, "ACTIVE", crawl_status="SUCCESS")
@@ -211,7 +284,20 @@ class JobCrawlerWorker(BaseWorker):
                         
                         Telemetry.finish_run(run_id, Status.SUCCESS)
                     else:
-                        self.repos.company_state.mark_failed(company_id, token, settings.retry_schedule)
+                        with self.repos.transaction():
+                            self.repos.company_state.mark_failed(company_id, token, settings.retry_schedule)
+                            self.repos.outbox.save_event(
+                                event_type="CrawlFailed",
+                                aggregate_type="Company",
+                                aggregate_id=company_id,
+                                payload={
+                                    "company_id": company_id,
+                                    "provider": board.provider,
+                                    "failure_reason": "SYNC_EXECUTION_FAILURE",
+                                    "latency_ms": latency,
+                                    "worker_id": self.worker_id
+                                }
+                            )
                         
                         # Transition to CRAWL_FAILED state
                         PipelineStateManager.transition(company_id, "CRAWL_FAILED", failure_reason="SYNC_EXECUTION_FAILURE", crawl_status="FAILED")

@@ -17,6 +17,7 @@ from src.core.repositories.provider.repository import ProviderRepository
 from src.core.repositories.connector.repository import ConnectorRepository
 from src.core.repositories.scheduler.scheduler import SchedulerRepository
 from src.core.repositories.migration.repository import MigrationRepository
+from src.core.repositories.outbox.repository import OutboxRepository
 
 
 class RepositoryManager(BaseRepository):
@@ -42,6 +43,7 @@ class RepositoryManager(BaseRepository):
         self._connector: ConnectorRepository | None = None
         self._scheduler: SchedulerRepository | None = None
         self._migration: MigrationRepository | None = None
+        self._outbox: OutboxRepository | None = None
         self._discovery: Any | None = None
         self._metrics: Any | None = None
         self._cleanup: Any | None = None
@@ -130,6 +132,13 @@ class RepositoryManager(BaseRepository):
         if self._scheduler is None:
             self._scheduler = SchedulerRepository(self.db_path)
         return self._scheduler
+
+    @property
+    def outbox(self) -> OutboxRepository:
+        if self._outbox is None:
+            from src.core.repositories.outbox.repository import OutboxRepository
+            self._outbox = OutboxRepository(self.db_path)
+        return self._outbox
 
     @property
     def migration(self) -> MigrationRepository:

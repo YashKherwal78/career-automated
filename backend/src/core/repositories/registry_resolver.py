@@ -10,15 +10,12 @@ class RegistryResolver:
 
     @staticmethod
     def metadata_table(provider: str) -> str:
-        safe_provider = RegistryResolver._sanitize(provider)
-        return f"registry_{safe_provider}"
+        return "ats_registry"
 
     @staticmethod
     def state_table(provider: str) -> str:
-        safe_provider = RegistryResolver._sanitize(provider)
-        return f"registry_{safe_provider}_state"
+        return "ats_registry"
 
     @staticmethod
     def history_table(provider: str) -> str:
-        safe_provider = RegistryResolver._sanitize(provider)
-        return f"registry_{safe_provider}_history"
+        return "registry_history"

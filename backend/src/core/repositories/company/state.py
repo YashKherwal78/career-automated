@@ -54,100 +54,107 @@ class CompanyStateRepository(BaseRepository, ICompanyStateRepository):
             ))
                 
     def update_failure(self, provider: str, company_id: str, updates: Dict[str, Any], tx: Optional[Any] = None) -> None:
+        import datetime
+        now_dt = datetime.datetime.now(datetime.timezone.utc)
+        next_check_val = updates.get('next_check_at', 0.0)
+        if isinstance(next_check_val, (int, float)):
+            next_check_dt = datetime.datetime.fromtimestamp(next_check_val, datetime.timezone.utc)
+        else:
+            next_check_dt = now_dt + datetime.timedelta(hours=2)
+            
         with self.transaction() as conn:
-            p = conn.dialect.placeholder()
-            conn.execute(f"""
+            conn.execute("""
                 UPDATE ats_registry 
-                SET status={p},
+                SET status=%s,
                     failure_count=failure_count+1,
-                    next_check_at={p}
-                WHERE company_id={p}
+                    next_check_at_tz=%s
+                WHERE company_id=%s
             """, (
                 updates['status'].value if hasattr(updates['status'], 'value') else updates['status'], 
-                updates.get('next_check_at', 0.0), company_id
+                next_check_dt, company_id
             ))
 
-    def reserve_due_board(self, worker_id: str, lock_duration: int = 300, tx: Optional[Any] = None) -> Optional[Dict[str, Any]]:
+    def reserve_due_board(self, worker_id: str, provider_id: Optional[str] = None, lock_duration: int = 300, tx: Optional[Any] = None) -> Optional[Dict[str, Any]]:
         import time
         import uuid
-        now = time.time()
+        import datetime
+        now_dt = datetime.datetime.now(datetime.timezone.utc)
+        token = f"{worker_id}-{uuid.uuid4().hex[:8]}"
+        expiry_dt = now_dt + datetime.timedelta(seconds=lock_duration)
         with self.transaction() as conn:
-            p = conn.dialect.placeholder()
-            limit = conn.dialect.create_limit(1)
+            params = []
+            provider_filter = ""
+            if provider_id:
+                provider_filter = "AND provider_id = %s"
+                params.append(provider_id)
+            params.extend([now_dt, now_dt])
+            params.extend([token, worker_id, expiry_dt, token])
+
             cursor = conn.execute(f'''
-                SELECT * FROM ats_registry
-                WHERE status = 'ACTIVE'
-                  AND (reservation_token IS NULL OR reserved_until <= {p})
-                  AND (next_check_at IS NULL OR next_check_at <= {p})
-                ORDER BY priority DESC, last_job_sync ASC
-                {limit}
-            ''', (now, now))
-
+                WITH reserved AS (
+                    SELECT id FROM ats_registry
+                    WHERE status = 'ACTIVE'
+                      {provider_filter}
+                      AND (reservation_token IS NULL OR reserved_until_tz <= %s)
+                      AND (next_check_at_tz IS NULL OR next_check_at_tz <= %s)
+                    ORDER BY priority DESC,
+                             (CASE WHEN last_job_sync IS NULL THEN 0 ELSE 1 END) ASC,
+                             next_check_at_tz ASC
+                    LIMIT 1
+                    FOR UPDATE SKIP LOCKED
+                )
+                UPDATE ats_registry a
+                SET reservation_token = %s,
+                    reserved_by = %s,
+                    reserved_until_tz = %s,
+                    lease_token = %s,
+                    lease_epoch = lease_epoch + 1
+                FROM reserved r
+                WHERE a.id = r.id
+                RETURNING a.*
+            ''', tuple(params))
             row = cursor.fetchone()
-            if not row:
-                return None
-
-            board_data = dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in cursor.description], row))
-            company_id = board_data["company_id"]
-            token = f"{worker_id}-{uuid.uuid4().hex[:8]}"
-
-            cursor_update = conn.execute(f'''
-                UPDATE ats_registry
-                SET reservation_token = {p},
-                    reserved_by = {p},
-                    reserved_until = {p}
-                WHERE company_id = {p}
-                  AND status = 'ACTIVE'
-                  AND (reservation_token IS NULL OR reserved_until <= {p})
-            ''', (token, worker_id, now + lock_duration, company_id, now))
-
-            if cursor_update.rowcount > 0:
-                board_data["reservation_token"] = token
-                board_data["reserved_by"] = worker_id
-                board_data["reserved_until"] = now + lock_duration
-                return board_data
-            else:
-                return None
+            if row:
+                return dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in cursor.description], row))
+            return None
 
     def mark_completed(self, company_id: str, token: str, interval: int, tx: Optional[Any] = None) -> None:
-        import time
-        now = time.time()
-        next_check = now + interval
+        import datetime
+        now_dt = datetime.datetime.now(datetime.timezone.utc)
+        next_check_dt = now_dt + datetime.timedelta(seconds=interval)
         with self.transaction() as conn:
-            p = conn.dialect.placeholder()
-            conn.execute(f'''
+            conn.execute('''
                 UPDATE ats_registry
-                SET last_job_sync = {p},
-                    last_successful_crawl = {p},
+                SET last_job_sync = %s,
+                    last_successful_crawl = %s,
                     failure_count = 0,
                     reservation_token = NULL,
                     reserved_by = NULL,
-                    reserved_until = 0.0,
-                    next_check_at = {p}
-                WHERE company_id = {p} AND reservation_token = {p}
-            ''', (now, now, next_check, company_id, token))
+                    reserved_until_tz = NULL,
+                    next_check_at_tz = %s
+                WHERE company_id = %s AND lease_token = %s
+            ''', (now_dt, now_dt, next_check_dt, company_id, token))
 
     def mark_failed(self, company_id: str, token: str, backoff_schedule: list, tx: Optional[Any] = None) -> None:
-        import time
-        now = time.time()
+        import datetime
+        now_dt = datetime.datetime.now(datetime.timezone.utc)
         with self.transaction() as conn:
-            p = conn.dialect.placeholder()
-            cursor = conn.execute(f"SELECT failure_count FROM ats_registry WHERE company_id = {p}", (company_id,))
+            cursor = conn.execute("SELECT failure_count FROM ats_registry WHERE company_id = %s", (company_id,))
             row = cursor.fetchone()
             failures = (row["failure_count"] if isinstance(row, dict) or hasattr(row, "keys") else row[0]) if row else 0
             failures += 1
 
             index = min(failures - 1, len(backoff_schedule) - 1)
             backoff = backoff_schedule[index]
-            next_check = now + backoff
+            next_check_dt = now_dt + datetime.timedelta(seconds=backoff)
 
-            conn.execute(f'''
+            conn.execute('''
                 UPDATE ats_registry
-                SET failure_count = {p},
+                SET failure_count = %s,
                     reservation_token = NULL,
                     reserved_by = NULL,
-                    reserved_until = 0.0,
-                    next_check_at = {p}
-                WHERE company_id = {p} AND reservation_token = {p}
-            ''', (failures, next_check, company_id, token))
+                    reserved_until_tz = NULL,
+                    next_check_at_tz = %s
+                WHERE company_id = %s AND lease_token = %s
+            ''', (failures, next_check_dt, company_id, token))
 
