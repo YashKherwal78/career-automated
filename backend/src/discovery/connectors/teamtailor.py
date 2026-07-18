@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import AsyncIterator
 from src.discovery.models import RawJob, ConnectorCapability, Board, FetchResult
@@ -31,6 +32,18 @@ class TeamtailorJSONConnector(Connector):
         base = board.endpoint.rstrip("/")
         api_url = f"{base}/jobs.json"
         result = await http_client.fetch("GET", api_url)
+        
+        # Teamtailor may serve jobs.json with a non-JSON Content-Type,
+        # causing HttpClient to return raw bytes instead of a parsed dict.
+        # Decode bytes to dict manually so the snapshot path doesn't fail.
+        if isinstance(result.payload, (bytes, bytearray)):
+            try:
+                result.payload = json.loads(result.payload.decode("utf-8"))
+            except Exception:
+                # If we can't decode, yield the raw result and bail
+                yield result
+                return
+        
         yield result
         if result.status_code == 200 and isinstance(result.payload, dict):
             for item in result.payload.get("items", []):
