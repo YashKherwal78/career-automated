@@ -118,10 +118,12 @@ class CompanyStateRepository(BaseRepository, ICompanyStateRepository):
                 return dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in cursor.description], row))
             return None
 
-    def mark_completed(self, company_id: str, token: str, interval: int, tx: Optional[Any] = None) -> None:
+    def mark_completed(self, company_id: str, token: str, interval_seconds: int = 86400, tx: Optional[Any] = None) -> None:
         import datetime
         now_dt = datetime.datetime.now(datetime.timezone.utc)
-        next_check_dt = now_dt + datetime.timedelta(seconds=interval)
+        now_epoch = now_dt.timestamp()
+        next_check_dt = now_dt + datetime.timedelta(seconds=interval_seconds)
+        
         with self.transaction() as conn:
             conn.execute('''
                 UPDATE ats_registry
@@ -133,7 +135,7 @@ class CompanyStateRepository(BaseRepository, ICompanyStateRepository):
                     reserved_until_tz = NULL,
                     next_check_at_tz = %s
                 WHERE company_id = %s AND lease_token = %s
-            ''', (now_dt, now_dt, next_check_dt, company_id, token))
+            ''', (now_epoch, now_epoch, next_check_dt, company_id, token))
 
     def mark_failed(self, company_id: str, token: str, backoff_schedule: list, tx: Optional[Any] = None) -> None:
         import datetime
