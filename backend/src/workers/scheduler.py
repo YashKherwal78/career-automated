@@ -125,7 +125,8 @@ class PipelineScheduler:
                           AND provider_id = %s 
                           AND (next_check_at_tz IS NULL OR next_check_at_tz <= NOW())
                     ''', (provider,))
-                    backlog = cur.fetchone()[0]
+                    row = cur.fetchone()
+                    backlog = (row["count"] if isinstance(row, dict) or hasattr(row, "keys") else row[0]) if row else 0
 
                     # desired_workers calculation: max(1, min(backlog // 20, 5))
                     desired = 1 if backlog > 0 else 0

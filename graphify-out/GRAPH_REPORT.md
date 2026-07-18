@@ -1,16 +1,16 @@
-# Graph Report - hrmailfiles  (2026-07-14)
+# Graph Report - hrmailfiles  (2026-07-17)
 
 ## Corpus Check
-- 636 files · ~2,069,960 words
+- 750 files · ~2,103,713 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4227 nodes · 7513 edges · 377 communities (253 shown, 124 thin omitted)
-- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 762 edges (avg confidence: 0.51)
+- 4948 nodes · 8818 edges · 425 communities (305 shown, 120 thin omitted)
+- Extraction: 89% EXTRACTED · 11% INFERRED · 0% AMBIGUOUS · INFERRED: 947 edges (avg confidence: 0.53)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `e0dcb70e`
+- Built from commit: `ac2b22be`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -290,8 +290,10 @@
 - outreach_trace_report.md
 - README.md
 - settings.py
+- verify_scale.py
 - report.md
 - class-variance-authority
+- CacheManager
 - cmdk
 - extraction-spec.md
 - data_quality_report.md
@@ -334,7 +336,6 @@
 - tailwindcss
 - @tailwindcss/vite
 - @tanstack/react-router
-- @tanstack/react-start
 - @tanstack/router-plugin
 - tw-animate-css
 - vaul
@@ -353,47 +354,81 @@
 - stop.sh
 - startup_target_report.md
 - top_opportunities_preview.md
+- Overall Readiness: ✅ PASS
+- MetricsRepository
+- Status: ✅ PASS
+- ConnectorRepository
+- .promote_endpoints_batch
+- Overall Status: ❌ FAIL
+- Status: ✅ PASS
+- CareerEndpointRepository
+- DiscoveryCandidateRepository
+- .generate_market_tasks
+- get_csv_providers
+- system.py
+- CryptoManager
+- Phase 4 Data Migration
+- Cloudflare R2 Connection Summary
+- .validate
+- 00_verify_connection.py
+- clsx
+- @radix-ui/react-radio-group
+- @radix-ui/react-switch
+- react-day-picker
+- @supabase/supabase-js
+- input-otp
+- lucide-react
+- react-resizable-panels
+- recharts
+- vercel.json
+- @radix-ui/react-tooltip
+- react-dom
+- @supabase/supabase-js
+- @tanstack/react-query
+- @tanstack/react-start
+- tw-animate-css
+- zod
 
 ## God Nodes (most connected - your core abstractions)
 1. `Config` - 124 edges
-2. `setup_logger()` - 109 edges
-3. `get_connection()` - 86 edges
-4. `SourceInspector` - 78 edges
-5. `cn()` - 75 edges
-6. `is_postgres()` - 70 edges
-7. `get_connection()` - 58 edges
-8. `Board` - 54 edges
-9. `HttpClient` - 50 edges
-10. `LLMRouter` - 50 edges
+2. `setup_logger()` - 112 edges
+3. `SourceInspector` - 78 edges
+4. `cn()` - 75 edges
+5. `get_connection()` - 58 edges
+6. `is_postgres()` - 55 edges
+7. `Board` - 54 edges
+8. `HttpClient` - 50 edges
+9. `LLMRouter` - 50 edges
+10. `RepositoryManager` - 46 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `generate_email()` --indirect_call--> `Config`  [INFERRED]
   main.py → backend/src/config/config.py
-- `orchestrate_10_phase_agent()` --calls--> `add_or_update_lead()`  [INFERRED]
-  test_new_flow.py → backend/src/crm/database.py
-- `orchestrate_10_phase_agent()` --calls--> `get_lead()`  [INFERRED]
-  test_new_flow.py → backend/src/crm/database.py
 - `test_workday_company()` --indirect_call--> `WorkdayBoardIdentity`  [INFERRED]
   test_multiple_workdays.py → backend/src/discovery/models.py
 - `orchestrate_10_phase_agent()` --calls--> `run_intelligence_engine()`  [INFERRED]
   test_new_flow.py → backend/src/intelligence/intelligence.py
+- `run_validation()` --calls--> `ApplicationExecutor`  [EXTRACTED]
+  test_greenhouse_v1.py → backend/src/applications/executor.py
+- `ProviderDefinition` --uses--> `ApifyManager`  [INFERRED]
+  backend/src/common/credential_provider.py → backend/src/integrations/apify_manager.py
 
 ## Import Cycles
 - None detected.
 
-## Communities (377 total, 124 thin omitted)
+## Communities (425 total, 120 thin omitted)
 
 ### Community 0 - "Config"
-Cohesion: 0.04
-Nodes (21): Returns (verification_status, http_status), verify_url(), generate_daily_queue(), Generates the daily application queue by isolating the top 20 HIGH priority jobs, Config, StandardJob, CompanyCareersProvider, BaseProvider (+13 more)
+Cohesion: 0.07
+Nodes (16): FeedbackTracker, outcome should be 'INTERVIEW' or 'REJECTED', ApplicationHandler, Native Playwright handler for Wellfound 'Easy Apply' flows., WellfoundHandler, MatchEngine, Enforces the V1.4 target distribution by percentiles:         Top 5% -> 90+, Evaluates discovered jobs against the Candidate Intelligence DB     Returns a sc (+8 more)
 
 ### Community 1 - "routeTree.gen.ts"
 Cohesion: 0.03
-Nodes (68): getRouter(), PILLARS, Route, STEPS, Route, Topic, Route, Route (+60 more)
+Nodes (67): getRouter(), Route, Topic, Route, Route, Route, Route, SECTIONS (+59 more)
 
 ### Community 2 - "DiscoveryContext"
-Cohesion: 0.08
-Nodes (47): BrowserSearchSource, Fallback discovery mechanism using a secondary Exa search strategy.     (Replace, _categorize(), collect_evidence(), Candidate, rank_candidates(), RankedCandidate, CandidateEvaluator — Sprint C1B  Evidence Collection → Scoring → Ranking → Thres (+39 more)
+Cohesion: 0.12
+Nodes (37): ContinuousDiscoveryEngine, DiscoveryDB, Any, BrowserSearchSource, Fallback discovery mechanism using a secondary Exa search strategy.     (Replace, ReplayCache, DiscoveryContext, DiscoveryOrchestrator (+29 more)
 
 ### Community 3 - "ApifyManager"
 Cohesion: 0.15
@@ -401,15 +436,19 @@ Nodes (5): ApifyManager, Registers credential IDs into SQLite., Returns (db_id, 
 
 ### Community 4 - "SourceInspector"
 Cohesion: 0.04
-Nodes (25): e.g., 'greenhouse', 'ashby' - must match the adapter's source_name, Validates the URL using the provider's native API., Abstract interface for verifying that a detected URL is a valid,     functioning, SourceInspector, BreezyInspector, GreenhouseInspector, JobviteInspector, LeverInspector (+17 more)
+Nodes (25): AshbyInspector, DefaultInspector, ABC, e.g., 'greenhouse', 'ashby' - must match the adapter's source_name, Validates the URL using the provider's native API., Fallback validator for ATS providers that don't have a dedicated API validator y, Abstract interface for verifying that a detected URL is a valid,     functioning, SourceInspector (+17 more)
 
 ### Community 5 - "CompanyIntelligenceEngine"
-Cohesion: 0.06
-Nodes (16): CompanyIntelligenceEngine, Computes the company health score dynamically on demand.         Factors: recent, Computes priority scores, relevance, and assigns scan frequencies.     Listens t, BaseDiscoveryProvider, OpportunitySeed, ABC, Interface for all discovery providers.      Every provider must return a list of, CompanyIntelligenceProvider (+8 more)
+Cohesion: 0.09
+Nodes (7): CompanyIntelligenceEngine, Computes the company health score dynamically on demand.         Factors: recent, Computes priority scores, relevance, and assigns scan frequencies.     Listens t, IndeedProvider, BaseProvider, QueryGenerator, Centralizes search query generation for job boards and search providers.
+
+### Community 6 - "dotenv"
+Cohesion: 0.12
+Nodes (8): check_inbox_for_replies(), collect_company_metadata(), Groq, Uses DDG search to attempt to find company domain, employee count, and CTO/Found, dotenv, fail(), run(), Registry Consolidation Audit Script Compares every SQLite registry_* table again
 
 ### Community 7 - "get_connection"
-Cohesion: 0.03
-Nodes (44): _enqueue_batch(), migrate_existing_companies(), get_connection(), is_postgres(), show_dashboard(), MigrationRunner, ConfidenceFormula, EndpointIntelligenceService (+36 more)
+Cohesion: 0.13
+Nodes (10): ConfidenceFormula, EndpointIntelligenceService, Any, Called when an endpoint candidate fails verification (e.g. 404, invalid signatur, Called by JobCrawlerWorker after a successful sync., Called by JobCrawlerWorker after a sync fails., confidence = provider_weight + historical_success + freshness + evidence - histo, Centralized service for managing confidence, health, and history of ATS endpoint (+2 more)
 
 ### Community 8 - "devDependencies"
 Cohesion: 0.04
@@ -428,40 +467,40 @@ Cohesion: 0.05
 Nodes (39): Input, Separator, SheetContent, SheetContentProps, SheetDescription, SheetFooter(), SheetHeader(), SheetOverlay (+31 more)
 
 ### Community 12 - "StandardBoardIdentity"
-Cohesion: 0.05
-Nodes (19): BoardIdentity, GreenhouseBoardIdentity, LeverBoardIdentity, SelectionResult, VerifiedCandidate, WorkdayBoardIdentity, GreenhouseParser, JobviteParser (+11 more)
+Cohesion: 0.14
+Nodes (5): Extracts the SmartRecruiters board slug and hits their API.         e.g., https:, SmartRecruitersInspector, SmartRecruitersParser, Any, SmartRecruitersDiscoveryPlugin
 
 ### Community 13 - "Last updated: June 2026"
 Cohesion: 0.05
 Nodes (42): AVAILABILITY, COMPENSATION, Experience 1: OrangeLabs (Feb 2026 – Apr 2026), Experience 2: ScoreMe Solutions (May 2025 – Jun 2025), Experience 3: Bharat Electronics Limited (Jun 2025 – Jul 2025), Final Year B.Tech, IIT Roorkee (Chemical Engineering, 2022–2026), Formatting Rules (Override Everything), LANGUAGES (+34 more)
 
 ### Community 14 - "BoardSyncSession"
-Cohesion: 0.08
-Nodes (35): DetectorRegistry, Central registry of ATS detectors., ContinuousDiscoveryEngine, DiscoveryDB, Any, Any, ReplayCache, Pipeline B — Company Resolver.  Resolves a free-text company name + apply URL fr (+27 more)
+Cohesion: 0.05
+Nodes (39): run_production(), DetectorRegistry, Central registry of ATS detectors., EndpointCandidate, EndpointRankingEngine, BaseModel, Ranks available candidates for a given company based on confidence score., Retrieves all active or discovered candidates for a company, sorted by confidenc (+31 more)
 
 ### Community 15 - "get_connection"
-Cohesion: 0.08
-Nodes (29): clean_contacts(), add_or_update_lead(), add_to_company_registry(), add_to_opportunity_cache(), get_active_greenhouse_slugs(), get_all_contacted_emails(), get_all_uncontacted_scored_leads(), get_connection() (+21 more)
+Cohesion: 0.07
+Nodes (29): clean_contacts(), add_to_company_registry(), add_to_opportunity_cache(), get_active_greenhouse_slugs(), get_all_contacted_emails(), get_all_uncontacted_scored_leads(), get_connection(), get_daily_stats() (+21 more)
 
 ### Community 16 - "index.tsx"
 Cohesion: 0.06
 Nodes (21): FadeIn(), FadeInProps, Stagger(), StaggerItem(), StaggerProps, HeadingProps, Section(), SectionHeading() (+13 more)
 
 ### Community 17 - "OutreachEngine"
-Cohesion: 0.10
-Nodes (18): get_cached_intelligence(), set_cached_intelligence(), calculate_priority_score(), run_intelligence_engine(), ProjectSelector, Returns (Project, [Rejected_Project], Reasoning, Confidence), EmailCritic, EmailClient (+10 more)
+Cohesion: 0.07
+Nodes (30): get_cached_intelligence(), set_cached_intelligence(), calculate_priority_score(), run_intelligence_engine(), ProjectSelector, Returns (Project, [Rejected_Project], Reasoning, Confidence), ApplicationJudge, CriticRejection (+22 more)
 
 ### Community 18 - "utils.ts"
 Cohesion: 0.05
 Nodes (25): AccordionContent, AccordionItem, AccordionTrigger, Alert, AlertDescription, AlertTitle, alertVariants, Avatar (+17 more)
 
 ### Community 19 - "BoardRepository"
-Cohesion: 0.09
-Nodes (21): Board, BoardSyncTask, StandardBoardIdentity, ConnectorExecutor, ExecutionResult, Executes a single session under the concurrency semaphore., BoardRepository, Scheduler (+13 more)
+Cohesion: 0.10
+Nodes (17): BoardIdentity, GreenhouseBoardIdentity, LeverBoardIdentity, SelectionResult, StandardBoardIdentity, VerifiedCandidate, WorkdayBoardIdentity, ConnectorExecutor (+9 more)
 
 ### Community 20 - "WorkflowState"
-Cohesion: 0.07
-Nodes (20): FeedbackTracker, outcome should be 'INTERVIEW' or 'REJECTED', ApplicationHandler, Native Playwright handler for Wellfound 'Easy Apply' flows., WellfoundHandler, MatchEngine, Enforces the V1.4 target distribution by percentiles:         Top 5% -> 90+, Evaluates discovered jobs against the Candidate Intelligence DB     Returns a sc (+12 more)
+Cohesion: 0.05
+Nodes (43): chunk_document(), Chunker, estimate_tokens(), Any, Split markdown content by heading boundaries (#, ##, ###), fall back to plain te, Split plain text into chunks based on paragraph breaks and token limits, with ov, Rough estimation of token count based on standard English word-to-token ratio (1, EmbeddingProvider (+35 more)
 
 ### Community 21 - "DiscoveryPlugin"
 Cohesion: 0.06
@@ -476,48 +515,48 @@ Cohesion: 0.08
 Nodes (18): AnalyticsRepository, get_analytics_repo(), get_ats_drilldown(), get_data_quality(), get_dead_boards(), get_duplicate_companies(), get_funnel(), get_lineage() (+10 more)
 
 ### Community 24 - "CredentialProvider"
-Cohesion: 0.11
-Nodes (16): AuthException, Credential, CredentialProvider, ProviderDefinition, Exception, RateLimitException, Abstract Base Class for Credential Management, ExaProvider (+8 more)
+Cohesion: 0.10
+Nodes (16): AuthException, ProviderDefinition, Exception, RateLimitException, ABC, SearchResult, SearchProvider, ExaProvider (+8 more)
 
 ### Community 25 - "Board"
-Cohesion: 0.09
-Nodes (23): AmazonJSONConnector, BambooHRConnector, GreenhouseConnector, LeverConnector, LeverJSONConnector, OracleJSONConnector, TeamtailorJSONConnector, WorkableJSONConnector (+15 more)
+Cohesion: 0.12
+Nodes (11): GreenhouseConnector, GreenhouseJSONConnector, LeverConnector, LeverJSONConnector, TeamtailorJSONConnector, WorkableJSONConnector, ConnectorCapability, DefaultFreshnessStrategy (+3 more)
 
 ### Community 26 - "DashboardContext.tsx"
-Cohesion: 0.09
-Nodes (18): DashboardContext, DashboardContextType, API_BASE, ApiAnalyticsService, ApiCompanyService, ApiPipelineService, ApiResumeService, Company (+10 more)
+Cohesion: 0.08
+Nodes (20): DashboardContext, DashboardContextType, API_BASE, ApiAnalyticsService, ApiCompanyService, ApiJobService, ApiPipelineService, ApiResumeService (+12 more)
 
 ### Community 27 - "dependencies"
 Cohesion: 0.20
 Nodes (10): @actions/core, @actions/github, dependencies, @actions/core, @actions/github, dotenv, @supabase/supabase-js, zod (+2 more)
 
 ### Community 28 - "Credential"
-Cohesion: 0.48
-Nodes (4): CredentialExhaustedException, Any, Wraps the existing ApifyManager logic for persistent tracking.     Never stores, SQLiteCredentialProvider
+Cohesion: 0.15
+Nodes (9): Credential, CredentialExhaustedException, CredentialProvider, CredentialTelemetry, InMemoryCredentialProvider, Any, Wraps the existing ApifyManager logic for persistent tracking.     Never stores, Abstract Base Class for Credential Management (+1 more)
 
 ### Community 29 - "RawJob"
 Cohesion: 0.11
 Nodes (21): CanonicalJob, JobIdentity, RawJob, Convert a StandardJob to a CanonicalJob.          Args:             job:      St, JobValidator, Returns (valid_jobs, invalid_records)., Validates jobs before persistence to prevent corrupt data., Returns a list of error messages. Empty list means valid. (+13 more)
 
 ### Community 30 - "LLMRouter"
-Cohesion: 0.10
-Nodes (13): get_lead_by_hr_email(), ApplicationJudge, CriticRejection, Exception, classify_reply(), monitor_inbox(), GroqManager, Executes a chat completion. Uses tenacity for exponential backoff.         If a (+5 more)
+Cohesion: 0.21
+Nodes (6): GroqManager, Executes a chat completion. Uses tenacity for exponential backoff.         If a, FakeChoice, FakeMessage, FakeResponse, FakeUsage
 
 ### Community 31 - "import_company_datasets.py"
-Cohesion: 0.15
-Nodes (25): json_extract(), CompanyRecord, deduplicate(), domain_to_id(), extract_domain(), fetch_url(), infer_website(), insert_records() (+17 more)
+Cohesion: 0.16
+Nodes (24): CompanyRecord, deduplicate(), domain_to_id(), extract_domain(), fetch_url(), infer_website(), insert_records(), load_dpiit() (+16 more)
 
 ### Community 32 - "run_health_check"
 Cohesion: 0.09
 Nodes (22): init_db(), build_pipeline(), # TODO: Load Candidate Context Logic, run(), PipelineContext, PipelineStage, ABC, Executes the pipeline stage and updates the context. (+14 more)
 
 ### Community 33 - "CompanyResolver"
-Cohesion: 0.12
-Nodes (15): CompanyResolver, Resolves StandardJob.company + apply_url to an existing company_id.      Resolut, Args:             db_path: Path to the SQLite database.             queue:   A S, JobBoardNormalizer, Pipeline B — Job Board Normalizer.  Converts a StandardJob (from any job board p, Stable 16-char id derived from the canonical apply URL., Converts StandardJob → CanonicalJob.      Uses CompanyResolver to map the compan, _url_hash() (+7 more)
+Cohesion: 0.13
+Nodes (20): EmptyState(), LoadingSkeleton(), StatCard(), StatusBadge(), useDashboard(), AdminConsolePage(), Route, AnalyticsPage() (+12 more)
 
 ### Community 34 - "DefaultFreshnessStrategy"
-Cohesion: 0.13
-Nodes (3): GreenhouseJSONConnector, SmartRecruitersConnector, ConnectorCapability
+Cohesion: 0.17
+Nodes (7): SmartRecruitersConnector, Connector, Base interface for ATS Connectors.     A Connector strictly handles provider com, ConnectorRegistry, Returns the highest priority connector instance for the provider., Returns a list of connector classes that match all specified capability flags., StrategyRegistration
 
 ### Community 35 - "SourceConnector"
 Cohesion: 0.12
@@ -528,20 +567,20 @@ Cohesion: 0.12
 Nodes (23): main(), parseIssueBody(), HEADERS, MARKERS, TABLES, __dirname, __filename, generateMarkdownTable() (+15 more)
 
 ### Community 37 - "useDashboard"
-Cohesion: 0.12
-Nodes (21): EmptyState(), LoadingSkeleton(), StatCard(), StatusBadge(), useDashboard(), AdminConsolePage(), Route, AnalyticsPage() (+13 more)
+Cohesion: 0.06
+Nodes (10): DatabaseAdapter, PostgreSQLAdapter, ABC, Any, SQLiteAdapter, BaseRepository, Any, _TxConnectionWrapper (+2 more)
 
 ### Community 38 - "WellfoundScraper"
-Cohesion: 0.20
-Nodes (6): insert_discovered_job(), Inserts a job if URL is unique. Returns True if inserted, False if duplicate., Calls Apify Wellfound Scraper to extract real jobs., Emergency fallback using Playwright if all Apify actors fail.         Currently, WellfoundScraper, DiscoveryWorker
+Cohesion: 0.07
+Nodes (15): Any, BaseRepository, Convenient entry‑point for all repository objects.      Example usage::, RepositoryManager, MetricsRepository, BaseRepository, RepositoryManager, Validates that the database schema is fully initialized and migrations have run. (+7 more)
 
 ### Community 39 - "CuratedRepositoryProvider"
-Cohesion: 0.10
-Nodes (11): add_discovery_source(), Upserts a discovery source for a company. Returns the total unique sources found, Handles cloning, pulling, and incremental sync of Git repositories., RepositoryManager, Runs sync across all sources and returns list of files that need parsing., Orchestrates generic sync over multiple specific source managers (Git, CSV, etc., SourceManager, MarkdownJobParser (+3 more)
+Cohesion: 0.06
+Nodes (19): add_discovery_source(), Upserts a discovery source for a company. Returns the total unique sources found, Handles cloning, pulling, and incremental sync of Git repositories., RepositoryManager, Runs sync across all sources and returns list of files that need parsing., Orchestrates generic sync over multiple specific source managers (Git, CSV, etc., SourceManager, MarkdownJobParser (+11 more)
 
 ### Community 40 - "add_or_update_lead"
-Cohesion: 0.14
-Nodes (12): _determine_company_size(), enrich_company(), EnrichmentProvider, GetProspectProvider, HunterProvider, ABC, Returns standard dict of role to email, Analyzes the domain and recommends which base resume to send.     Options: AI Re (+4 more)
+Cohesion: 0.09
+Nodes (25): add_or_update_lead(), get_lead(), get_lead_by_hr_email(), Upserts a lead based on company_name, update_lead_state(), PipelineStage, Enum, transition_state() (+17 more)
 
 ### Community 41 - "cn"
 Cohesion: 0.12
@@ -560,7 +599,7 @@ Cohesion: 0.07
 Nodes (19): Register an instantiated connector., Any, Executes the platform-specific search logic and returns (raw_jobs, warnings)., Overrides DiscoveryConnector.discover to implement Search Escalation Policy., Base class for all Search Connectors (Pipeline B1).     Owns Adaptive Escalation, SearchConnectorBase, ConnectorResult, DiscoveryConnector (+11 more)
 
 ### Community 45 - "PlanningContext"
-Cohesion: 0.16
+Cohesion: 0.15
 Nodes (16): PlanningContextBuilder, Any, EndpointIntelligence, PlanningContext, PlanningContextBuilder, Any, RuntimeState, CrawlPlanner (+8 more)
 
 ### Community 46 - ".run"
@@ -568,56 +607,60 @@ Cohesion: 0.14
 Nodes (14): CandidateFit, EditOperation, RewriteStrategy, StructuredJob, Any, ResumeEditor, Any, CandidateFit (+6 more)
 
 ### Community 47 - "ProfileManager"
-Cohesion: 0.09
-Nodes (12): AutoapplyEngine, Maps the recommended resume string from the DB to an absolute resume path, ProfileManager, Returns the fact value. Uses dynamic JSON if confidence >= 70 or human_verified, Manages the candidate profile used for form automation. Self-Learning V2., LocationResolver, QuestionClassifier, QuestionEngine (+4 more)
+Cohesion: 0.21
+Nodes (5): AutoapplyEngine, Maps the recommended resume string from the DB to an absolute resume path, RAGClient, Dynamically generates chunks from yash_master_profile.md., Retrieves Top 5 chunks using BM25, then reranks, returning the Final Top chunks.
 
 ### Community 48 - "WorkdayDiscoveryPlugin"
-Cohesion: 0.10
-Nodes (7): Any, Any, Any, Normalize a Workday URL to the tenant board URL.          Input examples:, WorkdayDiscoveryPlugin, CrawlResult, Job
+Cohesion: 0.09
+Nodes (5): WorkdayParser, Any, Normalize a Workday URL to the tenant board URL.          Input examples:, WorkdayDiscoveryPlugin, TestWorkdayParser
 
 ### Community 49 - "fallback_models.py"
-Cohesion: 0.18
-Nodes (3): TeamtailorParser, Any, TeamtailorDiscoveryPlugin
+Cohesion: 0.08
+Nodes (14): getCanonicalUrl(), generateMetadata(), getSitemapEntries(), sitemapProviders, PageImage, PageMeta, SitemapEntry, SitemapProvider (+6 more)
 
 ### Community 50 - "GreenhouseHandler"
-Cohesion: 0.15
-Nodes (9): GreenhouseHandler, Page, Executes the Greenhouse application workflow.         Returns a dict with status, Iterates over custom fields. Returns True if all successfully answered and safe, Fix 4: Scan all required fields for empty or invalid values., Checks if the OTP verification screen is visible using robust signals., Dumps forensic state immediately after an OTP submission., Handles the OTP retrieval and submission flow with exponential backoff. (+1 more)
+Cohesion: 0.17
+Nodes (8): GreenhouseHandler, Executes the Greenhouse application workflow.         Returns a dict with status, Iterates over custom fields. Returns True if all successfully answered and safe, Fix 4: Scan all required fields for empty or invalid values., Checks if the OTP verification screen is visible using robust signals., Dumps forensic state immediately after an OTP submission., Handles the OTP retrieval and submission flow with exponential backoff., Attempts to deterministically repair missing fields or OTPs.
 
 ### Community 51 - "What You Must Do When Invoked"
 Cohesion: 0.08
 Nodes (24): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+16 more)
 
 ### Community 52 - "main.py"
-Cohesion: 0.13
-Nodes (23): append_log(), delete_processed_rows(), generate_email(), get_company_context(), init_log(), load_config(), main(), make_stats_panel() (+15 more)
+Cohesion: 0.11
+Nodes (26): Table, append_log(), delete_processed_rows(), generate_email(), get_company_context(), init_log(), load_config(), main() (+18 more)
 
 ### Community 53 - "IntentFilter"
-Cohesion: 0.14
-Nodes (11): JobRepository, Any, Load jobs from DB → HardRejectFilter → JIE (IntentFilter) → Sort → Paginate → Re, HardRejectFilter, HardRejectFilter — ONE reusable binary filter.  Returns KEEP or REJECT. No scori, Binary filter that evaluates a single job against a CandidateProfile.     Respon, IntentFilter, IntentFilter — wraps JIE (JDExtractor + FitAnalyzer) to score jobs.  This is the (+3 more)
+Cohesion: 0.09
+Nodes (13): json_extract(), JobRepository, Any, Load jobs from DB → HardRejectFilter → JIE (IntentFilter) → Sort → Paginate → Re, IJobRepository, JobRepository, BaseRepository, Takes the new canonical jobs, diffs against existing active jobs for the board/c (+5 more)
 
 ### Community 54 - "RAGClient"
-Cohesion: 0.18
-Nodes (11): RAGClient, Dynamically generates chunks from yash_master_profile.md., Retrieves Top 5 chunks using BM25, then reranks, returning the Final Top chunks., compile_and_count_pages(), extract_numbers(), extract_projects_from_tex(), parse_jd(), Extracts all integers and decimals from text. (+3 more)
+Cohesion: 0.12
+Nodes (15): CompanyResolver, Resolves StandardJob.company + apply_url to an existing company_id.      Resolut, Args:             db_path: Path to the SQLite database.             queue:   A S, JobBoardNormalizer, Pipeline B — Job Board Normalizer.  Converts a StandardJob (from any job board p, Stable 16-char id derived from the canonical apply URL., Converts StandardJob → CanonicalJob.      Uses CompanyResolver to map the compan, _url_hash() (+7 more)
 
 ### Community 55 - "CompanyDiscoveryWorker"
-Cohesion: 0.21
-Nodes (8): Any, Exception, Executes a lifecycle transition for a batch of companies atomically., Executes a lifecycle transition atomically within a single database transaction., TransitionError, test_fast_path_transitions(), test_invalid_transitions(), test_valid_canonical_transitions()
+Cohesion: 0.07
+Nodes (10): GreenhouseParser, LeverParser, GreenhouseDiscoveryPlugin, Any, Normalize a Greenhouse URL to the board-level URL.          Input examples:, LeverDiscoveryPlugin, Any, Normalize a Lever URL to the board-level URL.          Input examples: (+2 more)
+
+### Community 56 - "Connector"
+Cohesion: 0.09
+Nodes (34): col_intersection(), get_pg_cols(), get_pg_pks(), get_sq_cols(), main(), normalize(), pg_connect(), Any (+26 more)
 
 ### Community 57 - ".run_async"
-Cohesion: 0.24
-Nodes (11): connector_metrics(), coverage_report(), health_check(), pipeline_metrics(), _q(), _ql(), Health & Observability API GET /api/v1/health          - system health check GET, Per-ATS connector reliability stats. (+3 more)
+Cohesion: 0.17
+Nodes (11): connector_metrics(), coverage_report(), health_check(), pipeline_metrics(), Health & Observability API GET /api/v1/health          - system health check GET, Basic health probe for Railway / uptime monitors., Full pipeline funnel: Discovery → Verification → Crawl → Jobs., Per-ATS connector reliability stats. (+3 more)
 
 ### Community 58 - "SeedDiscoveryWorker"
-Cohesion: 0.16
-Nodes (8): ABC, Any, Discovers new company seeds.         Returns a list of dicts:         {, SeedSource, Any, SearchSource, Any, YCombinatorSource
+Cohesion: 0.13
+Nodes (10): ABC, Any, Discovers new company seeds.         Returns a list of dicts:         {, SeedSource, Any, SearchSource, Any, YCombinatorSource (+2 more)
 
 ### Community 59 - "DuckDuckGoProvider"
 Cohesion: 0.12
 Nodes (14): discover_contacts(), Phase 1 - Contact Discovery (Safe Job Discovery Architecture)     Order:     1., discover_email(), Phase 4 - Email Discovery     Tries GetProspect first (mocked if no key), falls, Executes the V0.1 Referral Engine flow:     1. Safe Job Discovery (Max 5 contact, run_referral_engine(), Phase 2 - Profile Intelligence     Uses Apify LinkedIn Profile Scraper.     For, scrape_profile() (+6 more)
 
 ### Community 60 - "ConnectorRegistry"
-Cohesion: 0.18
-Nodes (8): ConnectorRegistry, Runtime registry for all Discovery Connectors.     Reads config, instantiates cl, AshbyConnector, AshbyJSONConnector, CrawlPolicy, CrawlPriority, Enum, Returns the crawl policy configuration for this connector.
+Cohesion: 0.20
+Nodes (11): ConnectorRegistry, Runtime registry for all Discovery Connectors.     Reads config, instantiates cl, AshbyConnector, AshbyJSONConnector, WorkdayConnector, WorkdayJSONConnector, CrawlPolicy, CrawlPriority (+3 more)
 
 ### Community 61 - "ATSDetector"
 Cohesion: 0.13
@@ -629,22 +672,22 @@ Nodes (20): 10. Live Data Only, 11. Architecture Principles, 12. Performance, 13
 
 ### Community 63 - "ATSProvider"
 Cohesion: 0.12
-Nodes (5): ATSProvider, ProviderCapabilities, ProviderRegistry, Protocol, VerificationResult
+Nodes (3): ATSProvider, ProviderRegistry, Protocol
 
 ### Community 64 - "CareerDiscoveryEngine"
 Cohesion: 0.14
 Nodes (10): ATSDetector, CareerDiscoveryEngine, ClientSession, Manages optional fallbacks to search engines like Google/LinkedIn if the main cr, Detects ATS endpoints using DOM signatures, URL structures, and Regex fallbacks., Returns (ATS_Name, board_token, confidence), The core async worker logic to discover a company's career page., SearchProviderManager (+2 more)
 
 ### Community 65 - "ApplicationResult"
-Cohesion: 0.18
-Nodes (9): ApplicationResult, BaseAdapter, ABC, Any, Executes the application logic for a specific ATS connector.         Returns an, GreenhouseAdapter, Any, ApplicationDispatcher (+1 more)
+Cohesion: 0.10
+Nodes (9): CompanyRepository, Any, BaseRepository, CompanyStateRepository, Any, BaseRepository, ICompanyRepository, Centralizes the logic for determining the table names for provider-specific regi (+1 more)
 
 ### Community 66 - "SearchResult"
 Cohesion: 0.15
 Nodes (10): DuckDuckGoSearchProvider, SearchProvider, SearchResult, SearchProvider, SearchResult, SerperSearchProvider, MockSearchProvider, Protocol (+2 more)
 
 ### Community 67 - "WebsiteCrawlerStrategy"
-Cohesion: 0.15
+Cohesion: 0.14
 Nodes (8): _extract_all_urls(), _is_career_link(), Candidate, Find internal pages worth visiting (career pages + about/company)., From a depth-1 page, find links that specifically look like career pages., Pull every URL-shaped string from the full HTML source., Heuristic: does this anchor look like a career/jobs page?, WebsiteCrawlerStrategy
 
 ### Community 68 - "SourceAdapter"
@@ -656,44 +699,48 @@ Cohesion: 0.11
 Nodes (18): aliases, components, hooks, lib, ui, utils, iconLibrary, registries (+10 more)
 
 ### Community 70 - "signup.tsx"
-Cohesion: 0.11
-Nodes (12): Button, ButtonProps, LinkButton, LinkButtonProps, Size, sizes, Variant, variants (+4 more)
+Cohesion: 0.06
+Nodes (31): Sidebar(), TopBar(), Button, ButtonProps, LinkButton, LinkButtonProps, Size, sizes (+23 more)
 
 ### Community 71 - "SmartRecruitersDiscoveryPlugin"
-Cohesion: 0.24
-Nodes (4): GoogleJobsBoardProvider, Google Jobs Pipeline B provider.  Wraps GoogleJobsProvider using the JobBoardPro, Pipeline B adapter over the existing GoogleJobsProvider., GoogleJobsProvider
+Cohesion: 0.29
+Nodes (3): Any, BaseRepository, WorkerRepository
 
 ### Community 72 - "ENGINEERING_PRINCIPLES.md"
 Cohesion: 0.11
 Nodes (17): 10. Repository Hygiene, 11. Production Verification, 12. Funnel Driven Development, 13. One Responsibility Per Module, 14. Backward Compatibility, 15. AI Agent Rules, 1. Single Source of Truth, 2. Mandatory Repository Discovery (+9 more)
 
 ### Community 73 - "CompatCursor"
-Cohesion: 0.16
-Nodes (3): CompatConnection, CompatCursor, Any
+Cohesion: 0.13
+Nodes (5): Any, table_exists(), CompatConnection, CompatCursor, Any
 
 ### Community 74 - "JobviteDiscoveryPlugin"
-Cohesion: 0.20
-Nodes (7): JobBoardProvider, ABC, Pipeline B — Job Board Provider base interface.  All Pipeline B providers implem, Abstract base for all Pipeline B providers.      Implementations must:       - R, Unique provider name, e.g. 'linkedin', 'google_jobs'., Returns True only when all required credentials/config are present.         Work, Fetch a batch of jobs from this job board.          Args:             cursor: Op
+Cohesion: 0.11
+Nodes (14): CompanyState, ICompanyStateRepository, IConnectorRepository, IMigrationRepository, ISchedulerRepository, ISessionRepository, IWorkerRepository, ABC (+6 more)
+
+### Community 75 - "RecruiteeDiscoveryPlugin"
+Cohesion: 0.09
+Nodes (8): BreezyParser, TeamtailorParser, BreezyDiscoveryPlugin, Any, Any, TeamtailorDiscoveryPlugin, main(), run_pipeline_for_company()
 
 ### Community 76 - "StructuredJob"
-Cohesion: 0.27
-Nodes (12): CandidateProfile, FitAnalyzer, BaseModel, CandidateFit, StructuredJob, CandidateFit, FitDetail, BaseModel (+4 more)
+Cohesion: 0.16
+Nodes (15): IntentFilter — wraps JIE (JDExtractor + FitAnalyzer) to score jobs.  This is the, CandidateProfile, FitAnalyzer, BaseModel, CandidateFit, StructuredJob, CandidateFit, FitDetail (+7 more)
 
 ### Community 77 - "DiscoverySession"
 Cohesion: 0.19
 Nodes (6): ConnectorManager, Any, Runs all healthy connectors in parallel.         Returns a list of raw payloads., Orchestrates the healthy connectors supplied by the registry.     Connectors ret, DiscoverySession, ConnectorRegistry
 
 ### Community 78 - ".score_job"
-Cohesion: 0.22
-Nodes (9): _build_jie_profile(), Any, CandidateProfile, Return 0.0–1.0 based on how well the job title matches target roles., Score a batch of jobs that already passed HardRejectFilter.          Returns:, Legacy interface used by scratch scripts.         Returns (passed, rejected, met, Bridge: CandidateProfile (YAML config) → JIE's internal CandidateProfile (pydant, Score a single job using the existing JIE.          Returns:             (intent (+1 more)
+Cohesion: 0.21
+Nodes (11): _build_jie_profile(), IntentFilter, Any, CandidateProfile, Return 0.0–1.0 based on how well the job title matches target roles., Score a batch of jobs that already passed HardRejectFilter.          Returns:, Legacy interface used by scratch scripts.         Returns (passed, rejected, met, Bridge: CandidateProfile (YAML config) → JIE's internal CandidateProfile (pydant (+3 more)
 
 ### Community 79 - "SourceRegistry"
-Cohesion: 0.18
-Nodes (8): CompanyPipeline, PipelineResult, Orchestrates the discovery and verification of boards for a single company., Instantiates and registers a SourceAdapter., Instantiates and registers a SourceInspector., Iterates through registered adapters to find one that can handle the URL., Central registry for ATS plugins and inspectors., SourceRegistry
+Cohesion: 0.15
+Nodes (7): BoardIngestionEngine, BoardRegistry, Instantiates and registers a SourceAdapter., Instantiates and registers a SourceInspector., Iterates through registered adapters to find one that can handle the URL., Central registry for ATS plugins and inspectors., SourceRegistry
 
 ### Community 80 - "__root.tsx"
-Cohesion: 0.17
-Nodes (9): Container(), SiteFooter(), NAV_LINKS, SiteNav(), LovableErrorOptions, LovableEvents, reportLovableError(), Window (+1 more)
+Cohesion: 0.15
+Nodes (11): Container(), SiteFooter(), NAV_LINKS, SiteNav(), AuthProvider(), LovableErrorOptions, LovableEvents, reportLovableError() (+3 more)
 
 ### Community 81 - "command.tsx"
 Cohesion: 0.12
@@ -704,32 +751,28 @@ Cohesion: 0.12
 Nodes (11): Menubar, MenubarCheckboxItem, MenubarContent, MenubarItem, MenubarLabel, MenubarRadioItem, MenubarSeparator, MenubarShortcut() (+3 more)
 
 ### Community 83 - "database.py"
-Cohesion: 0.26
-Nodes (5): fetch_query(), fetch_table(), get_db_connection(), get_latest_heartbeats(), DataFrame
+Cohesion: 0.14
+Nodes (6): ApiClient, fetch_query(), fetch_table(), get_latest_heartbeats(), Any, DataFrame
 
 ### Community 84 - "BaseBackend"
 Cohesion: 0.17
 Nodes (10): BackendFactory, Globally instantiates the active backend based on configuration/environment vari, BaseBackend, ABC, Any, Executes a search query and returns the raw response dictionary.         This mu, Abstract interface for all discovery backends.     Handles HTTP/Apify/SERP API e, DiscoveryCache (+2 more)
 
 ### Community 85 - "DiscoveryStrategy"
-Cohesion: 0.14
-Nodes (9): DiscoveryStrategy, ABC, Candidate, Unique name for this strategy, e.g. 'website_crawler'., Returns a list of Candidate objects that might contain career/ATS endpoints., Abstract interface for Discovery Strategies.      A strategy's sole job is to re, CareerLinkExpansionStrategy, Candidate (+1 more)
+Cohesion: 0.33
+Nodes (3): CareerLinkExpansionStrategy, Candidate, Replaces the generic BFS crawler. Extracts targeted internal links (About, Caree
 
 ### Community 86 - "chart.tsx"
 Cohesion: 0.12
 Nodes (13): react, useCarousel(), ChartConfig, ChartContainer, ChartContext, ChartContextProps, ChartLegendContent, ChartTooltipContent (+5 more)
-
-### Community 87 - "main.py"
-Cohesion: 0.16
-Nodes (4): table_exists(), get_db(), get_dashboard_summary(), get_discovery_queues()
 
 ### Community 88 - "discovery_providers.py"
 Cohesion: 0.25
 Nodes (9): DiscoveryProvider, DiscoveryRegistry, EndpointCandidatePayload, KnownDatasetDiscoverer, ABC, Any, Generates candidates from known dataset mappings (e.g. from the benchmark CSV)., Generates candidates by guessing common ATS subdomains for the company. (+1 more)
 
 ### Community 89 - "Candidate"
-Cohesion: 0.16
-Nodes (8): Candidate, CSVImportProvider, Any, BaseProvider, Reads candidate companies from a local CSV file.         Format expected: Compan, Candidate, rank_candidate(), Returns a sortable tuple representing the strength of the evidence.     Python s
+Cohesion: 0.28
+Nodes (4): CSVImportProvider, Any, BaseProvider, Reads candidate companies from a local CSV file.         Format expected: Compan
 
 ### Community 90 - "LandingPageResolver"
 Cohesion: 0.16
@@ -737,23 +780,27 @@ Nodes (8): LandingPageResolver, LandingPageResolver — Sprint C1B  Responsibili
 
 ### Community 91 - "ProviderRegistry"
 Cohesion: 0.15
-Nodes (8): ProviderRegistry, BaseProvider, Registers a BaseProvider subclass., Returns instantiated versions of all registered providers., Factory for instantiating Discovery Providers.     Follows the plugin architectu, Candidate, Parses /robots.txt to find Sitemap directives and blocked /jobs paths., RobotsTxtStrategy
+Nodes (10): Candidate, DiscoveryStrategy, ABC, Unique name for this strategy, e.g. 'website_crawler'., Abstract interface for Discovery Strategies.      A strategy's sole job is to re, ProviderRegistry, Factory for instantiating Discovery Providers.     Follows the plugin architectu, Candidate (+2 more)
 
-### Community 94 - "dashboard.tsx"
-Cohesion: 0.19
-Nodes (5): DashboardProvider(), Sidebar(), TopBar(), ServiceRegistry, Route
+### Community 92 - "BaseQueue"
+Cohesion: 0.14
+Nodes (11): Path, audit(), is_production(), main(), parse_args(), # TODO: Implement AST parsing and grep logic, # TODO: Implement API schema and latency checks, # TODO: Implement snapshotting (+3 more)
+
+### Community 93 - "EndpointIdentity"
+Cohesion: 0.29
+Nodes (3): BaseATSProvider, EndpointIdentity, ClientSession
 
 ### Community 95 - "executor.py"
-Cohesion: 0.18
-Nodes (6): EarlyEligibilityScanner, EmailConfirmationChecker, Checks Gmail for a recent confirmation email from an ATS for the given company a, ATSDetector, EligibilityFilter, Determines if a job should be skipped BEFORE launching the browser.         Retu
+Cohesion: 0.14
+Nodes (8): EarlyEligibilityScanner, EmailConfirmationChecker, Checks Gmail for a recent confirmation email from an ATS for the given company a, ApplicationExecutor, ATSDetector, EligibilityFilter, Determines if a job should be skipped BEFORE launching the browser.         Retu, run_validation()
 
 ### Community 96 - "is_postgres"
-Cohesion: 0.09
-Nodes (11): BaseRepository, Override in subclasses to create schema., CareerEndpointRepository, Connection, Updates status, health_status, confidence, failure_reason, and last_verified_at, DiscoveryCandidate, DiscoveryCandidateRepository, JobRepository (+3 more)
+Cohesion: 0.33
+Nodes (4): CareerEndpointRepository, BaseRepository, Connection, Updates status, health_status, confidence, failure_reason, and last_verified_at
 
 ### Community 97 - "AshbyDiscoveryPlugin"
-Cohesion: 0.15
-Nodes (5): AshbyInspector, AshbyParser, AshbyDiscoveryPlugin, Any, Normalize an Ashby URL to the board-level URL.          Input examples:
+Cohesion: 0.18
+Nodes (9): ApplicationResult, BaseAdapter, ABC, Any, Executes the application logic for a specific ATS connector.         Returns an, GreenhouseAdapter, Any, ApplicationDispatcher (+1 more)
 
 ### Community 98 - "form.tsx"
 Cohesion: 0.15
@@ -764,8 +811,12 @@ Cohesion: 0.21
 Nodes (8): GraphBackend, ABC, Any, Executes a raw graph query (e.g., Cypher or custom DSL)., Returns all dependent or adjacent nodes up to a specific depth., Finds all incoming edges (references) to a specific symbol or file., Returns a structural diff of the architecture between two points in time., Abstract Graph Backend Interface.     Allows swapping between Graphiti, Neo4j, o
 
 ### Community 100 - "greenhouse.py"
-Cohesion: 0.15
-Nodes (8): Retrieves an OTP code and detailed forensics.     Returns:         {, retrieve_greenhouse_otp(), QuestionClassifier, Classifies application form questions and determines if they are safe to auto-an, Returns: 'DETERMINISTIC', 'ESCALATE', or 'UNKNOWN', Page, Verifies if an application was successfully submitted using a weighted confidenc, SubmissionVerifier
+Cohesion: 0.12
+Nodes (12): CrawlHistoryRepository, Any, BaseRepository, Any, BaseRepository, SchedulerRepository, get_backoff_time(), handle_failure() (+4 more)
+
+### Community 101 - "NegativeCache"
+Cohesion: 0.11
+Nodes (6): NegativeCache, Any, SearchCache, MetricsRepository, Any, fetch_metrics()
 
 ### Community 102 - "ScanBudgetManager"
 Cohesion: 0.18
@@ -781,7 +832,7 @@ Nodes (12): 1. Design + typography system (`src/styles.css`), 2. Reusable primit
 
 ### Community 105 - "dependencies"
 Cohesion: 0.15
-Nodes (13): clsx, dependencies, clsx, input-otp, @radix-ui/react-checkbox, @radix-ui/react-radio-group, @radix-ui/react-switch, react-day-picker (+5 more)
+Nodes (13): dependencies, @hookform/resolvers, input-otp, lucide-react, @radix-ui/react-accordion, @radix-ui/react-checkbox, react-resizable-panels, @hookform/resolvers (+5 more)
 
 ### Community 106 - "carousel.tsx"
 Cohesion: 0.15
@@ -796,8 +847,8 @@ Cohesion: 0.17
 Nodes (11): 1. System Pipeline & Data Flow, 2. Database Schema, 3. Worker Architecture, 4. Connectors & Registries, 5. API Endpoints (FastAPI), `ats_registry`, CareerAutomated System Architecture, `company_identities` (+3 more)
 
 ### Community 109 - "package.json"
-Cohesion: 0.17
-Nodes (11): author, description, keywords, license, name, scripts, add-or-update-job, build (+3 more)
+Cohesion: 0.12
+Nodes (16): author, description, devDependencies, @types/bun, typescript, typescript, keywords, license (+8 more)
 
 ### Community 110 - "compilerOptions"
 Cohesion: 0.17
@@ -815,9 +866,13 @@ Nodes (6): JobCanonicalizer, Any, Lowercases, strips punctuation, and normalizes
 Cohesion: 0.33
 Nodes (8): init_db(), upsert_contacted_email(), init_registry_db(), Pings ATS providers to find if slug exists., run(), slugify(), verify_ats(), sync_sent_emails()
 
+### Community 114 - "SQLiteReservationRepository"
+Cohesion: 0.14
+Nodes (5): AmazonJSONConnector, BambooHRConnector, OracleJSONConnector, FetchResult, HttpClient
+
 ### Community 115 - "search_engine_provider.py"
-Cohesion: 0.24
-Nodes (7): BingBackend, DuckDuckGoBackend, Abstract search backend. Returns raw URLs from a search engine., Currently rate-limited (202 anti-bot). Kept as dormant fallback., Currently broken (primp impersonation failure). Kept as dormant fallback., SearchBackend, YahooBackend
+Cohesion: 0.13
+Nodes (9): BingBackend, DuckDuckGoBackend, Candidate, Abstract search backend. Returns raw URLs from a search engine., Currently rate-limited (202 anti-bot). Kept as dormant fallback., Currently broken (primp impersonation failure). Kept as dormant fallback., SearchBackend, SearchStrategy (+1 more)
 
 ### Community 117 - "RetryManager"
 Cohesion: 0.21
@@ -835,6 +890,10 @@ Nodes (3): BambooHRSignature, Returns the first matching ATSDetector., Response
 Cohesion: 0.17
 Nodes (11): 1. Start Environment, 2. Attach to Session, 3. Detach from Session, 4. Restart Session, 5. Stop Session, CareerAutomated Development Runtime, Developer Commands, Logging Locations (+3 more)
 
+### Community 121 - "ApplicationExecutor"
+Cohesion: 0.15
+Nodes (20): _categorize(), collect_evidence(), Candidate, rank_candidates(), RankedCandidate, CandidateEvaluator — Sprint C1B  Evidence Collection → Scoring → Ranking → Thres, Assign a coarse category purely from URL structure. No network calls., Collects all available structural evidence for a candidate URL.     This does NO (+12 more)
+
 ### Community 122 - ".evaluate"
 Cohesion: 0.25
 Nodes (6): HardRejectResult, Any, CandidateProfile, Filter a batch of jobs. Returns (passed, rejected, rejection_counts).          r, Extract minimum experience required from:           1. jie column already stored, Evaluate a single job dict against the candidate profile.          Args:
@@ -844,12 +903,12 @@ Cohesion: 0.31
 Nodes (4): JDExtractor, Any, StructuredJob, Requirement
 
 ### Community 125 - "ATSRegistry"
-Cohesion: 0.09
-Nodes (13): ATSRegistry, Connection, VerificationResult, Promotes a VerificationResult to ACTIVE status.         Compares endpoint_hash t, Promotes a batch of endpoints in a single transaction.         Each item in batc, For regression safety: creates a backup of the current ats_registry table., FastPathRegistry, Any (+5 more)
+Cohesion: 0.08
+Nodes (15): ATSRegistry, Connection, VerificationResult, Promotes a VerificationResult to ACTIVE status.         Compares endpoint_hash t, Promotes a batch of endpoints in a single transaction.         Each item in batc, For regression safety: creates a backup of the current ats_registry table., FastPathRegistry, Any (+7 more)
 
 ### Community 126 - "PipelineScheduler"
-Cohesion: 0.29
-Nodes (6): _domain_slug(), _extract_domain(), Push a discovery payload into discovery_queue so Pipeline A will         detect, Extract bare domain from any URL, stripping www., Stable, collision-resistant company_id from a domain., Resolve company_name + apply_url to a company_id.          Returns:
+Cohesion: 0.17
+Nodes (9): BaseDiscoveryProvider, OpportunitySeed, ABC, Interface for all discovery providers.      Every provider must return a list of, CompanyIntelligenceProvider, InternetSearchProvider, QueryGenerator, Returns a list of strategy dictionaries to be executed. (+1 more)
 
 ### Community 127 - "health.tsx"
 Cohesion: 0.20
@@ -858,6 +917,10 @@ Nodes (4): API, HealthDashboard(), Route, useHealth()
 ### Community 129 - "EventBus"
 Cohesion: 0.20
 Nodes (6): EventBus, Any, A lightweight, SQLite-backed event bus for decoupling the Discovery pipeline., Publishes an event to the system_events table., Registers an in-process handler for an event type., Polls the system_events table for PENDING events and executes their registered h
+
+### Community 130 - "SearchStrategy"
+Cohesion: 0.28
+Nodes (17): Queue, cleanup_test_data(), fail(), generate_stats(), get_c(), RepositoryManager, Deletes all records prefixed with __TEST__, run() (+9 more)
 
 ### Community 131 - "InMemoryEventBus"
 Cohesion: 0.24
@@ -868,8 +931,8 @@ Cohesion: 0.24
 Nodes (4): DuckDuckGoSearchProvider, Protocol, SearchProvider, SearchProviderRegistry
 
 ### Community 135 - "ProfileParser"
-Cohesion: 0.27
-Nodes (4): ProfileParser, Extracts content starting from `section_prefix` until the next `## SECTION` or E, Extracts a specific project block from Section 4 based on a keyword.         Exa, Builds the minimal context for template generation.         Includes ONLY the Sp
+Cohesion: 0.20
+Nodes (3): WorkableParser, Any, WorkableDiscoveryPlugin
 
 ### Community 136 - "Company Application Trace Report"
 Cohesion: 0.20
@@ -877,7 +940,7 @@ Nodes (9): Company Application Trace Report, Target Opportunity: Cursor, Target 
 
 ### Community 137 - "jobs.py"
 Cohesion: 0.60
-Nodes (5): get_board_jobs(), get_job(), get_job_repo(), get_jobs(), JobRepository
+Nodes (5): get_board_jobs(), get_job(), get_jobs(), get_sync_history(), RepositoryManager
 
 ### Community 138 - "context-menu.tsx"
 Cohesion: 0.20
@@ -900,20 +963,24 @@ Cohesion: 0.28
 Nodes (4): EligibilityDecision, EligibilityEngine, Deterministic V2 rule-based bouncer.     Determines if an opportunity is ELIGIBL, run_replay()
 
 ### Community 145 - "CompanyIdentityValidator"
-Cohesion: 0.29
-Nodes (3): JobRegistry, Takes a snapshot of crawled jobs and compares them to existing jobs in the regis, Job
+Cohesion: 0.16
+Nodes (4): AshbyParser, AshbyDiscoveryPlugin, Any, Normalize an Ashby URL to the board-level URL.          Input examples:
+
+### Community 146 - "AtsPatternStrategy"
+Cohesion: 0.18
+Nodes (3): AtsPatternStrategy, Candidate, Pulls ACTIVE endpoints from the registry that are due for a job crawl,         c
 
 ### Community 148 - "BaseWorker"
-Cohesion: 0.15
-Nodes (8): BaseQueue, ABC, Acknowledges successful processing, removing the item from the queue., Negative acknowledgment. Returns the item to the queue or pushes to a DLQ/Retry, Abstract interface for queues to allow swapping SQLite for Redis/SQS in producti, BaseWorker, Any, Generic worker loop that continuously pulls tasks from a BaseQueue,     finds th
+Cohesion: 0.28
+Nodes (3): BaseWorker, Any, Generic worker loop that continuously pulls tasks from a BaseQueue,     finds th
 
 ### Community 149 - "MatchEngine"
 Cohesion: 0.19
 Nodes (9): Any, Platform-Agnostic Search Planner.     Generates pure Market Discovery intents ba, Generates canonical Market Searches., SearchPlanner, SearchTask, MatchEngine, MatchResult, Any (+1 more)
 
 ### Community 150 - "JobProvider"
-Cohesion: 0.25
-Nodes (5): JobProvider, ABC, Abstract base class for all job providers., Discover jobs and return a list of job dictionaries.         Expected keys:, CSVProvider
+Cohesion: 0.05
+Nodes (21): analyze_failure(), generate_discovery_failure_report(), Returns (Failure Reason, Next Action), Returns (verification_status, http_status), verify_url(), generate_daily_queue(), Generates the daily application queue by isolating the top 20 HIGH priority jobs, LocationResolver (+13 more)
 
 ### Community 151 - "ranking.py"
 Cohesion: 0.36
@@ -944,8 +1011,8 @@ Cohesion: 0.25
 Nodes (7): 2026 Artificial Intelligence Internship & New Grad Positions, 2026 USA AI Internships :books::eagle:, FAANG+, International Positions :globe_with_meridians:, Other, Quant, USA Positions :eagle:
 
 ### Community 158 - "DefaultInspector"
-Cohesion: 0.20
-Nodes (4): DefaultInspector, ABC, Fallback validator for ATS providers that don't have a dedicated API validator y, Returns the inspector by name, or a DefaultInspector if none is registered.
+Cohesion: 0.19
+Nodes (4): Page, QuestionEngine, Generates and normalizes an answer using Candidate RAG + LLM with Deterministic, ResponseNormalizer
 
 ### Community 159 - "EligibilityRuleProvider"
 Cohesion: 0.36
@@ -1008,8 +1075,8 @@ Cohesion: 0.33
 Nodes (3): adjust_provider_priority(), Historical outcomes automatically adjust provider scan priority.     Providers p, record_application_outcome()
 
 ### Community 174 - "CompatConnection"
-Cohesion: 0.29
-Nodes (5): Pipeline B — Job Board Provider Registry.  The worker calls JobBoardRegistry.loa, # TODO: from src.discovery.providers.wellfound_board_provider import WellfoundBo, # TODO: from src.discovery.providers.indeed_board_provider import IndeedBoardPro, Instantiate all registered providers, skip those that are unavailable         (e, _registered_classes()
+Cohesion: 0.25
+Nodes (3): ProfileManager, Returns the fact value. Uses dynamic JSON if confidence >= 70 or human_verified, Manages the candidate profile used for form automation. Self-Learning V2.
 
 ### Community 175 - "ResumeSelector"
 Cohesion: 0.38
@@ -1020,20 +1087,20 @@ Cohesion: 0.29
 Nodes (4): DiscoveryQueue, Any, Fetches the next batch of companies to scan based on priority and lifecycle., Manages the priority queue for company discovery (P0 -> P1 -> P2 -> P3).     Ens
 
 ### Community 177 - ".get_ranked_candidates"
-Cohesion: 0.29
-Nodes (3): Candidate, Parses /sitemap.xml to find careers, jobs, and external ATS URLs., SitemapStrategy
+Cohesion: 0.15
+Nodes (8): Retrieves an OTP code and detailed forensics.     Returns:         {, retrieve_greenhouse_otp(), QuestionClassifier, Classifies application form questions and determines if they are safe to auto-an, Returns: 'DETERMINISTIC', 'ESCALATE', or 'UNKNOWN', Page, Verifies if an application was successfully submitted using a weighted confidenc, SubmissionVerifier
+
+### Community 178 - "Normalizer"
+Cohesion: 0.20
+Nodes (9): Any, Dual-Backend Queue implementation.     Delegates to Redis (via QueueManager) in, SQLiteQueue, get_connection(), Any, QueueManager, Dequeues an item from a Redis list (blocking pop).         Returns None if queue, Returns the size of the queue. (+1 more)
 
 ### Community 179 - "CareerPageFingerprintStrategy"
 Cohesion: 0.29
-Nodes (3): CareerPageFingerprintStrategy, Candidate, Scans the raw HTML of the company homepage and career pages for embedded     ATS
-
-### Community 180 - "RobotsTxtStrategy"
-Cohesion: 0.50
-Nodes (3): ABC, SearchResult, SearchProvider
+Nodes (4): Any, Pushes an item onto the queue. Returns item ID., Pops an item from the queue, establishing a lock/lease., Pushes multiple items onto the queue. Returns list of item IDs.
 
 ### Community 181 - ".pop"
-Cohesion: 0.29
-Nodes (4): Any, Pushes an item onto the queue. Returns item ID., Pops an item from the queue, establishing a lock/lease., Pushes multiple items onto the queue. Returns list of item IDs.
+Cohesion: 0.17
+Nodes (7): BaseQueue, ABC, Acknowledges successful processing, removing the item from the queue., Negative acknowledgment. Returns the item to the queue or pushes to a DLQ/Retry, Abstract interface for queues to allow swapping SQLite for Redis/SQS in producti, The orchestrator that continuously polls the Company Registry for due crawls, Scheduler
 
 ### Community 183 - "DiscoveryEngine"
 Cohesion: 0.33
@@ -1092,12 +1159,16 @@ Cohesion: 0.33
 Nodes (4): DiscoveryDeduplicator, Any, Groups opportunities by Company and Job Title (or some strong similarity)., Deduplicates Opportunities by merging alternative apply sources rather than dele
 
 ### Community 198 - "ApifyProvider"
-Cohesion: 0.11
-Nodes (9): CredentialFactory, load_generic_credentials(), load_google_credentials(), Pairs GOOGLE_SEARCH_API_KEY_N with GOOGLE_CX_N, Loads keys like PREFIX, PREFIX_1, PREFIX_2, etc., LinkedinConnector, Any, ApifyProvider (+1 more)
+Cohesion: 0.08
+Nodes (17): get_row_dict(), main(), _enqueue_batch(), migrate_existing_companies(), is_postgres(), MigrationRunner, BaseRepository, Override in subclasses to create schema. (+9 more)
 
 ### Community 199 - "CompanyCareersProvider"
-Cohesion: 0.67
-Nodes (3): analyze_failure(), generate_discovery_failure_report(), Returns (Failure Reason, Next Action)
+Cohesion: 0.17
+Nodes (19): complete_onboarding(), EducationItem, ExperienceItem, get_me(), OnboardingPayload, BaseModel, Fetch profile of current authenticated user., Save onboarding profile items and mark onboarding_complete = true. (+11 more)
+
+### Community 200 - ".generate_market_tasks"
+Cohesion: 0.47
+Nodes (3): CompanyPipeline, PipelineResult, Orchestrates the discovery and verification of boards for a single company.
 
 ### Community 202 - "ApplicationPrioritizer"
 Cohesion: 0.33
@@ -1119,6 +1190,10 @@ Nodes (5): API Efficiency & Budget, Conclusion, Discovery Engine V7.2 Baseline R
 Cohesion: 0.33
 Nodes (5): API Efficiency, Company Expansion Metrics, Conclusion, Discovery Engine V6 Validation Report, Opportunity Extraction Metrics
 
+### Community 207 - "ApiJobService"
+Cohesion: 0.33
+Nodes (3): CareerPageFingerprintStrategy, Candidate, Scans the raw HTML of the company homepage and career pages for embedded     ATS
+
 ### Community 208 - "Response Schema Analysis"
 Cohesion: 0.33
 Nodes (5): Auth & Rate Limiting, Critical Metadata Check, Greenhouse API Validation Report, Missing Fields, Response Schema Analysis
@@ -1136,20 +1211,24 @@ Cohesion: 0.40
 Nodes (4): Conclusion, Scope, Sprint B — Reliability Regression Validation, Validation Scenarios
 
 ### Community 212 - "devDependencies"
-Cohesion: 0.40
-Nodes (5): devDependencies, @types/bun, typescript, typescript, @types/bun
+Cohesion: 0.39
+Nodes (3): DashboardRepository, Any, BaseRepository
 
 ### Community 213 - "funnel.py"
-Cohesion: 0.70
-Nodes (4): get_role_counts(), print_apify_analytics(), print_funnel_metrics(), print_source_attribution()
+Cohesion: 0.33
+Nodes (3): Candidate, Parses /robots.txt to find Sitemap directives and blocked /jobs paths., RobotsTxtStrategy
+
+### Community 215 - "BaseATSProvider"
+Cohesion: 0.21
+Nodes (4): ABC, Any, SQLiteReservationRepository, WorkReservationRepository
 
 ### Community 216 - "BaseDiscoverySource"
 Cohesion: 0.40
 Nodes (3): BaseDiscoverySource, Any, Interface for all Opportunity Discovery Sources.     Sources are strictly respon
 
 ### Community 217 - "quality_filter.py"
-Cohesion: 0.50
-Nodes (4): apply_quality_filters(), evaluate_job_quality(), Runs over all jobs in the database and updates their quality score., Evaluates job title for seniority penalties and role boosts.     Returns (qualit
+Cohesion: 0.15
+Nodes (9): Upload resume file to Cloudflare R2 and return the storage key/url., upload_resume(), run_smoke_test(), Retrieves list of active registered workers., Registers or updates a worker with a heartbeat TTL., Releases a distributed lock., Acquires a distributed lock using Redis.         Returns True if acquired, False, StorageService (+1 more)
 
 ### Community 218 - "Benchmark Analysis: Exa Search Pipeline"
 Cohesion: 0.40
@@ -1180,12 +1259,12 @@ Cohesion: 0.50
 Nodes (3): Next Steps, Sprint B Final Validation Report, Verification Metrics
 
 ### Community 225 - "profile_learner.py"
-Cohesion: 0.83
-Nodes (3): load_profile(), run_learner(), save_profile()
+Cohesion: 0.20
+Nodes (4): DiscoveryRepository, Any, BaseRepository, Imports a single seed from CSV and returns True if a new company was inserted.
 
 ### Community 236 - "cto_scraper.py"
-Cohesion: 0.67
-Nodes (3): collect_company_metadata(), Groq, Uses DDG search to attempt to find company domain, employee count, and CTO/Found
+Cohesion: 0.38
+Nodes (10): get_all_tables_ordered(), get_conflict_behavior(), get_pg_conn(), get_pg_pks(), get_sqlite_conn(), get_sqlite_pks(), init_progress_table(), main() (+2 more)
 
 ### Community 238 - "graphify reference: add a URL and watch a folder"
 Cohesion: 0.50
@@ -1235,29 +1314,141 @@ Nodes (3): Match Engine Report, Metrics, Top Matched Candidates
 Cohesion: 0.83
 Nodes (3): auth_headers(), main(), put_record()
 
+### Community 252 - ".validate"
+Cohesion: 0.40
+Nodes (3): BaseProvider, Registers a BaseProvider subclass., Returns instantiated versions of all registered providers.
+
+### Community 253 - "human_review_gate"
+Cohesion: 0.10
+Nodes (14): Board, BoardSyncTask, BoardRepository, BaseRepository, Scheduler, Any, Yields RawJobs incrementally. The connector owns its own pagination., Determines if the payload is fresh enough to skip synchronization. (+6 more)
+
 ### Community 265 - "make_table"
-Cohesion: 0.67
-Nodes (3): Table, make_table(), Create the colorful status table.
+Cohesion: 0.22
+Nodes (3): Any, QueryBuilder, A lightweight query builder that prevents repositories from hardcoding     SQL p
+
+### Community 274 - "settings.py"
+Cohesion: 0.08
+Nodes (7): Settings, Validate critical environment variables are present., Settings, CloudflareR2Adapter, LocalFileStorageAdapter, Fallback local filesystem storage adapter for local testing., StorageAdapter
+
+### Community 277 - "verify_scale.py"
+Cohesion: 0.50
+Nodes (3): Candidate, rank_candidate(), Returns a sortable tuple representing the strength of the evidence.     Python s
+
+### Community 280 - "CacheManager"
+Cohesion: 0.11
+Nodes (10): CleanupRepository, BaseRepository, CacheManager, Sets value in cache with a TTL (default 1 hour)., Checks if key is present in cache., Removes key from cache., Gets value from cache., HeartbeatManager (+2 more)
+
+### Community 287 - "embla-carousel-react"
+Cohesion: 0.24
+Nodes (4): GoogleJobsBoardProvider, Google Jobs Pipeline B provider.  Wraps GoogleJobsProvider using the JobBoardPro, Pipeline B adapter over the existing GoogleJobsProvider., GoogleJobsProvider
+
+### Community 289 - "@hookform/resolvers"
+Cohesion: 0.31
+Nodes (4): IProviderRepository, ProviderRepository, Any, BaseRepository
+
+### Community 290 - "lucide-react"
+Cohesion: 0.33
+Nodes (4): IdentityResult, CompanyIdentityValidator, Fast heuristic check. Returns False if obviously mismatched., Deep multi-signal verification using HTML and Inspector metadata.
+
+### Community 292 - "@radix-ui/react-alert-dialog"
+Cohesion: 0.20
+Nodes (7): JobBoardProvider, ABC, Pipeline B — Job Board Provider base interface.  All Pipeline B providers implem, Abstract base for all Pipeline B providers.      Implementations must:       - R, Unique provider name, e.g. 'linkedin', 'google_jobs'., Returns True only when all required credentials/config are present.         Work, Fetch a batch of jobs from this job board.          Args:             cursor: Op
+
+### Community 295 - "@radix-ui/react-collapsible"
+Cohesion: 0.10
+Nodes (9): CredentialFactory, load_generic_credentials(), load_google_credentials(), Pairs GOOGLE_SEARCH_API_KEY_N with GOOGLE_CX_N, Loads keys like PREFIX, PREFIX_1, PREFIX_2, etc., LinkedinConnector, Any, ApifyProvider (+1 more)
+
+### Community 296 - "@radix-ui/react-context-menu"
+Cohesion: 0.27
+Nodes (4): ProfileParser, Extracts content starting from `section_prefix` until the next `## SECTION` or E, Extracts a specific project block from Section 4 based on a keyword.         Exa, Builds the minimal context for template generation.         Includes ONLY the Sp
+
+### Community 297 - "@radix-ui/react-dialog"
+Cohesion: 0.18
+Nodes (6): ConnectorRepository, Any, RepositoryManager centralizes repository access and transaction handling. It own, Any, BaseRepository, SessionRepository
+
+### Community 303 - "@radix-ui/react-popover"
+Cohesion: 0.25
+Nodes (5): JobProvider, ABC, Abstract base class for all job providers., Discover jobs and return a list of job dictionaries.         Expected keys:, CSVProvider
+
+### Community 304 - "@radix-ui/react-progress"
+Cohesion: 0.43
+Nodes (3): MigrationRepository, Any, BaseRepository
+
+### Community 313 - "@radix-ui/react-tooltip"
+Cohesion: 0.29
+Nodes (6): _domain_slug(), _extract_domain(), Push a discovery payload into discovery_queue so Pipeline A will         detect, Extract bare domain from any URL, stripping www., Stable, collision-resistant company_id from a domain., Resolve company_name + apply_url to a company_id.          Returns:
+
+### Community 325 - "tw-animate-css"
+Cohesion: 0.29
+Nodes (5): Pipeline B — Job Board Provider Registry.  The worker calls JobBoardRegistry.loa, # TODO: from src.discovery.providers.wellfound_board_provider import WellfoundBo, # TODO: from src.discovery.providers.indeed_board_provider import IndeedBoardPro, Instantiate all registered providers, skip those that are unavailable         (e, _registered_classes()
+
+### Community 329 - "zod"
+Cohesion: 0.70
+Nodes (4): get_role_counts(), print_apify_analytics(), print_funnel_metrics(), print_source_attribution()
+
+### Community 378 - "Overall Readiness: ✅ PASS"
+Cohesion: 0.25
+Nodes (7): Connection Status, Latency, Overall Readiness: ✅ PASS, Permissions Matrix, Recommended Next Step, Supabase Readiness, Warnings
+
+### Community 380 - "Status: ✅ PASS"
+Cohesion: 0.29
+Nodes (6): Database Configuration, Environment, Latency, Permissions, PostgreSQL Connection Summary, Status: ✅ PASS
+
+### Community 381 - "ConnectorRepository"
+Cohesion: 0.50
+Nodes (4): apply_quality_filters(), evaluate_job_quality(), Evaluates job title for seniority penalties and role boosts.     Returns (qualit, Runs over all jobs in the database and updates their quality score.
+
+### Community 383 - "Overall Status: ❌ FAIL"
+Cohesion: 0.33
+Nodes (5): Benchmark Highlights (ms, 500 iter), Overall Status: ❌ FAIL, Performance Recommendations, Repositories & Structural Validations, Repository Compatibility & Performance Report
+
+### Community 384 - "Status: ✅ PASS"
+Cohesion: 0.33
+Nodes (5): Details, PostgreSQL Schema Creation Summary, Readiness, Schema Verification, Status: ✅ PASS
+
+### Community 385 - "CareerEndpointRepository"
+Cohesion: 0.83
+Nodes (3): load_profile(), run_learner(), save_profile()
+
+### Community 386 - "DiscoveryCandidateRepository"
+Cohesion: 0.40
+Nodes (3): DiscoveryCandidate, DiscoveryCandidateRepository, BaseRepository
+
+### Community 388 - "get_csv_providers"
+Cohesion: 0.70
+Nodes (3): get_csv_providers(), init_schema(), migrate()
+
+### Community 389 - "system.py"
+Cohesion: 0.40
+Nodes (4): get_repository_health(), get_version(), Return API version and DB details., Check health of all repository instances.
+
+### Community 391 - "Phase 4 Data Migration"
+Cohesion: 0.50
+Nodes (3): Next Step:, Phase 4 Data Migration, UUID Validation Summary
+
+### Community 392 - "Cloudflare R2 Connection Summary"
+Cohesion: 0.50
+Nodes (3): Cloudflare R2 Connection Summary, Integration Checkpoints, R2 Integration Certification
 
 ## Knowledge Gaps
-- **709 isolated node(s):** `name`, `version`, `type`, `description`, `build` (+704 more)
+- **742 isolated node(s):** `name`, `version`, `type`, `description`, `build` (+737 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **124 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **120 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `make_table()` connect `make_table` to `main.py`?**
-  _High betweenness centrality (0.235) - this node is a cross-community bridge._
-- **Why does `Table` connect `make_table` to `table.tsx`?**
-  _High betweenness centrality (0.235) - this node is a cross-community bridge._
-- **Why does `Config` connect `Config` to `EventBus`, `ApifyManager`, `CompanyIntelligenceEngine`, `dotenv`, `ProfileParser`, `get_connection`, `OutreachEngine`, `CompanyIdentityValidator`, `WorkflowState`, `GreenhouseDiscoveryPlugin`, `ranking.py`, `CredentialProvider`, `EnrichmentLayer`, `run_batch.py`, `LLMRouter`, `EligibilityRuleProvider`, `WellfoundScraper`, `add_or_update_lead`, `process_job`, `provider_effectiveness.py`, `ProfileManager`, `DiscoveryQueue`, `main.py`, `RAGClient`, `CompanyCareersProvider`, `SmartRecruitersDiscoveryPlugin`, `DiscoverySession`, `database.py`, `funnel.py`, `quality_filter.py`, `executor.py`, `BreezyDiscoveryPlugin`, `ApplicationExecutor`, `ATSRegistry`?**
-  _High betweenness centrality (0.219) - this node is a cross-community bridge._
-- **Are the 53 inferred relationships involving `Config` (e.g. with `EmailConfirmationChecker` and `AutoapplyEngine`) actually correct?**
-  _`Config` has 53 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `Table` connect `main.py` to `table.tsx`?**
+  _High betweenness centrality (0.193) - this node is a cross-community bridge._
+- **Why does `Config` connect `JobProvider` to `Config`, `EventBus`, `ApifyManager`, `dotenv`, `get_connection`, `OutreachEngine`, `settings.py`, `GreenhouseDiscoveryPlugin`, `ranking.py`, `CredentialProvider`, `EnrichmentLayer`, `run_batch.py`, `DefaultInspector`, `EligibilityRuleProvider`, `embla-carousel-react`, `LLMRouter`, `CuratedRepositoryProvider`, `add_or_update_lead`, `@radix-ui/react-context-menu`, `@radix-ui/react-dropdown-menu`, `process_job`, `provider_effectiveness.py`, `ProfileManager`, `DiscoveryQueue`, `main.py`, `zod`, `DiscoverySession`, `executor.py`, `BreezyDiscoveryPlugin`, `ConnectorRepository`, `ATSRegistry`, `PipelineScheduler`?**
+  _High betweenness centrality (0.170) - this node is a cross-community bridge._
+- **Are the 54 inferred relationships involving `Config` (e.g. with `EmailConfirmationChecker` and `AutoapplyEngine`) actually correct?**
+  _`Config` has 54 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 37 inferred relationships involving `SourceInspector` (e.g. with `AshbyInspector` and `BreezyInspector`) actually correct?**
   _`SourceInspector` has 37 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `name`, `version`, `type` to the rest of the system?**
-  _709 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _742 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Config` be split into smaller, more focused modules?**
-  _Cohesion score 0.043661547726588375 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07087486157253599 - nodes in this community are weakly interconnected._
+- **Should `routeTree.gen.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.03119015047879617 - nodes in this community are weakly interconnected._
