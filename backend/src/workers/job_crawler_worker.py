@@ -86,19 +86,74 @@ def make_board_from_registry_row(row):
 class JobCrawlerWorker(BaseWorker):
     def __init__(self):
         super().__init__("JobCrawlerWorker")
+        
+        # Centralized connector bootstrapping
+        from src.discovery.connectors.bootstrap import bootstrap_connectors
+        self.discovered_count, self.imported_count = bootstrap_connectors()
+        
         self.context_builder = PlanningContextBuilder(
             ats_registry=None,
             connector_registry=ConnectorRegistry
         )
         self.planner = CrawlPlanner()
         self.provider_id = None
+        self.disabled_providers = set()
+        
         if len(sys.argv) > 1 and "--provider" in sys.argv:
             idx = sys.argv.index("--provider")
             if idx + 1 < len(sys.argv):
                 self.provider_id = sys.argv[idx + 1]
 
+    async def _validate_registered_connectors(self):
+        """
+        Validate registered connectors against active providers in the registry.
+        If a provider is missing its connector, we gracefully disable it for this run
+        and mark it disabled in the ats_providers database table to prevent the scheduler
+        from spawning unnecessary workers.
+        """
+        try:
+            with self.repos.company_state.transaction() as conn:
+                cur = conn.execute("SELECT DISTINCT provider_id FROM ats_registry WHERE status = 'ACTIVE'")
+                active_providers = [r[0] if isinstance(r, tuple) else r["provider_id"] for r in cur.fetchall()]
+        except Exception as e:
+            logger.warning(f"Could not read active providers from ats_registry for validation: {e}")
+            active_providers = []
+
+        print("\n========== Connector Validation ==========")
+        print(f"Modules discovered:           {self.discovered_count}")
+        print(f"Modules imported:             {self.imported_count}")
+        print(f"Active providers in registry: {len(active_providers)}")
+        
+        registered_count = 0
+        missing = []
+        
+        for provider in active_providers:
+            if ConnectorRegistry.get(provider) is not None:
+                registered_count += 1
+            else:
+                missing.append(provider)
+                self.disabled_providers.add(provider)
+        
+        print(f"Registered connectors:        {registered_count}")
+        print("\nRegistered providers:")
+        for provider in sorted(ConnectorRegistry._registry.keys()):
+            # Only list if it has a registered strategy
+            if ConnectorRegistry.get(provider) is not None:
+                print(f"  - {provider}")
+
+        if missing:
+            print("\nMissing connectors (automatically disabled):")
+            for m in missing:
+                print(f"  - {m}")
+        else:
+            print("Missing connectors:           none")
+            
+        print("Startup validation:           PASSED\n")
+
     async def run_async(self):
         logger.info(f"JobCrawlerWorker starting as {self.worker_id} for provider {self.provider_id}")
+        await self._validate_registered_connectors()
+        
         while self.running:
             q_item = None
             item_id = None
@@ -132,6 +187,14 @@ class JobCrawlerWorker(BaseWorker):
 
                 company_id = row_data["company_id"]
                 token = row_data.get("reservation_token")
+                provider = (row_data.get("provider_id") or row_data.get("ats_type") or "").lower()
+
+                # Gracefully skip if connector is disabled
+                if provider in self.disabled_providers:
+                    logger.warning(f"Skipping checkout for company {company_id}: connector for provider '{provider}' is disabled.")
+                    with self.repos.company_state.transaction():
+                        self.repos.company_state.mark_failed(company_id, token, settings.retry_schedule)
+                    continue
 
                 # Transition to CRAWL_PENDING
                 from src.discovery.pipeline_state_manager import PipelineStateManager
@@ -284,6 +347,22 @@ class JobCrawlerWorker(BaseWorker):
                         
                         Telemetry.finish_run(run_id, Status.SUCCESS)
                     else:
+                        err_msg = session.stats.get("error_message") or "SYNC_EXECUTION_FAILURE"
+                        exc_type = session.stats.get("exception_type") or "Exception"
+                        stack = session.stats.get("stack_trace") or ""
+                        
+                        # Classify mapped ReasonCode
+                        from src.discovery.pipeline import exceptions as excs
+                        rc = ReasonCode.INSPECTOR_FAILED
+                        if exc_type == excs.ConnectorNotFoundError.__name__:
+                            rc = ReasonCode.UNKNOWN_ATS
+                        elif exc_type == excs.TimeoutError.__name__:
+                            rc = ReasonCode.NETWORK_TIMEOUT
+                        elif exc_type == excs.RateLimitError.__name__:
+                            rc = "RATE_LIMITED"
+                        elif exc_type == excs.DatabaseException.__name__:
+                            rc = "DATABASE_FAILED"
+                        
                         with self.repos.transaction():
                             self.repos.company_state.mark_failed(company_id, token, settings.retry_schedule)
                             self.repos.outbox.save_event(
@@ -293,14 +372,16 @@ class JobCrawlerWorker(BaseWorker):
                                 payload={
                                     "company_id": company_id,
                                     "provider": board.provider,
-                                    "failure_reason": "SYNC_EXECUTION_FAILURE",
+                                    "failure_reason": err_msg,
+                                    "exception_type": exc_type,
+                                    "stack_trace": stack,
                                     "latency_ms": latency,
                                     "worker_id": self.worker_id
                                 }
                             )
                         
                         # Transition to CRAWL_FAILED state
-                        PipelineStateManager.transition(company_id, "CRAWL_FAILED", failure_reason="SYNC_EXECUTION_FAILURE", crawl_status="FAILED")
+                        PipelineStateManager.transition(company_id, "CRAWL_FAILED", failure_reason=err_msg, crawl_status="FAILED")
 
                         self.metrics.update_operational_metric(f"{self.worker_id}:last_failure", time.time())
                         
@@ -312,7 +393,12 @@ class JobCrawlerWorker(BaseWorker):
                             worker_name="JobCrawlerWorker",
                             ats_type=board.provider,
                             latency_ms=latency,
-                            reason_code=ReasonCode.INSPECTOR_FAILED
+                            reason_code=rc,
+                            metadata={
+                                "error_message": err_msg,
+                                "exception_type": exc_type,
+                                "stack_trace": stack
+                            }
                         )
                         Telemetry.finish_run(run_id, Status.SUCCESS)
                 except Exception as ex:

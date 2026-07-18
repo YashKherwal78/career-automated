@@ -36,14 +36,17 @@ class BoardSyncSession:
         }
 
     async def execute(self):
+        from src.discovery.pipeline.exceptions import (
+            ConnectorNotFoundError,
+            TimeoutError,
+            RateLimitError,
+            CrawlerException,
+            DatabaseException
+        )
+        import traceback
+        import sys
+        
         try:
-            # Import all connectors to ensure registration in ConnectorRegistry
-            import src.discovery.connectors.greenhouse
-            import src.discovery.connectors.lever
-            import src.discovery.connectors.workday
-            import src.discovery.connectors.ashby
-            import src.discovery.connectors.smartrecruiters
-            
             from src.discovery.registry.connector_registry import ConnectorRegistry
             from src.discovery.pipeline.http_client import HttpClient
             from src.discovery.models import FetchResult
@@ -51,7 +54,7 @@ class BoardSyncSession:
             # Check if Connector exists
             connector = ConnectorRegistry.get(self.board.provider)
             if not connector:
-                raise ValueError(f"Connector not found for provider {self.board.provider}")
+                raise ConnectorNotFoundError(f"Connector not found for provider {self.board.provider}")
 
             # CONNECTOR PATH
             fetch_start = time.time()
@@ -59,18 +62,27 @@ class BoardSyncSession:
             snapshot_ids = []
             self.stats["bytes_downloaded"] = 0
             
-            async with HttpClient() as client:
-                async for item in connector.sync(self.board, client):
-                    if isinstance(item, FetchResult):
-                        self.stats["bytes_downloaded"] += item.bytes_downloaded
-                        if item.content_hash:
-                            self.board.metadata["content_hash"] = item.content_hash
-                        # Snapshot this page
-                        if item.payload:
-                            sid = self.snapshot_repo.save(self.board.endpoint, item.payload, self.started_at)
-                            snapshot_ids.append(sid)
-                    else:
-                        raw_jobs.append(item)
+            try:
+                async with HttpClient() as client:
+                    async for item in connector.sync(self.board, client):
+                        if isinstance(item, FetchResult):
+                            self.stats["bytes_downloaded"] += item.bytes_downloaded
+                            if item.content_hash:
+                                self.board.metadata["content_hash"] = item.content_hash
+                            # Snapshot this page
+                            if item.payload:
+                                sid = self.snapshot_repo.save(self.board.endpoint, item.payload, self.started_at)
+                                snapshot_ids.append(sid)
+                        else:
+                            raw_jobs.append(item)
+            except Exception as e:
+                err_msg = str(e).lower()
+                if "timeout" in err_msg or "timeouterror" in err_msg:
+                    raise TimeoutError(str(e)) from e
+                elif "429" in err_msg or "rate limit" in err_msg or "rate_limited" in err_msg:
+                    raise RateLimitError(str(e)) from e
+                else:
+                    raise CrawlerException(str(e)) from e
             
             # Use the first snapshot ID or join them
             if snapshot_ids:
@@ -93,7 +105,11 @@ class BoardSyncSession:
 
             # 6. Upsert and Diff
             b_id = f"{self.board.identity.tenant}_{self.board.identity.site}" if hasattr(self.board.identity, 'tenant') else getattr(self.board.identity, 'board_token', 'unknown')
-            inserted, updated, archived, prev_jobs = self.job_repo.upsert_and_diff(valid_jobs, b_id, self.started_at)
+            try:
+                inserted, updated, archived, prev_jobs = self.job_repo.upsert_and_diff(valid_jobs, b_id, self.started_at)
+            except Exception as e:
+                raise DatabaseException(f"Database error during upsert_and_diff: {e}") from e
+
             self.stats["jobs_inserted"] = inserted
             self.stats["jobs_updated"] = updated
             self.stats["jobs_archived"] = archived
@@ -106,7 +122,8 @@ class BoardSyncSession:
         except Exception as e:
             self.stats["success"] = False
             self.stats["error_message"] = str(e)
-            import traceback
+            self.stats["exception_type"] = type(e).__name__
+            self.stats["stack_trace"] = "".join(traceback.format_exception(*sys.exc_info()))
             traceback.print_exc()
             
         finally:

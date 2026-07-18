@@ -42,6 +42,16 @@ class OutboxRepository(BaseRepository):
                 WHERE event_id = %s
             ''', (event_id,))
 
+    def mark_delivered_batch(self, event_ids: List[str], tx: Optional[Any] = None) -> None:
+        if not event_ids:
+            return
+        with self.transaction() as conn:
+            conn.execute('''
+                UPDATE outbox_events
+                SET status = 'DELIVERED', delivered_at = NOW()
+                WHERE event_id = ANY(%s)
+            ''', (event_ids,))
+
     def mark_failed(self, event_id: str, error_message: str, max_retries: int = 10, tx: Optional[Any] = None) -> None:
         with self.transaction() as conn:
             cur = conn.execute("SELECT attempt_count FROM outbox_events WHERE event_id = %s", (event_id,))

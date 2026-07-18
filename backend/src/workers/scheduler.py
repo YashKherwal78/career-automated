@@ -66,6 +66,10 @@ class PipelineScheduler:
         self.is_leader = False
         self.lock_connection = None
         
+        # Centralized connector bootstrapping
+        from src.discovery.connectors.bootstrap import bootstrap_connectors
+        bootstrap_connectors()
+        
         # Run database migrations before starting any workers
         logger.info("Running database migrations...")
         env = os.environ.copy()
@@ -88,20 +92,26 @@ class PipelineScheduler:
     def try_acquire_leadership(self):
         try:
             if not self.lock_connection:
-                from src.api.db import get_connection
-                self.lock_connection = get_connection()
-            # PostgreSQL session-level advisory lock
-            cur = self.lock_connection.execute("SELECT pg_try_advisory_lock(1784300)")
-            row = cur.fetchone()
-            val = (row["pg_try_advisory_lock"] if isinstance(row, dict) or hasattr(row, "keys") else row[0]) if row else False
-            if val:
-                if not self.is_leader:
-                    logger.info("Leadership acquired successfully! Operating as Leader.")
+                from src.api.db import get_connection, is_postgres
+                conn = get_connection()
+                if is_postgres():
+                    # Set autocommit to True for advisory lock queries
+                    conn.autocommit = True
+                    cur = conn.execute("SELECT pg_try_advisory_lock(1784300)")
+                    row = cur.fetchone()
+                    locked = row[0] if row else False
+                    if locked:
+                        self.lock_connection = conn
+                        self.is_leader = True
+                        logger.info("Successfully acquired scheduler leadership advisory lock.")
+                    else:
+                        conn.close()
+                        self.is_leader = False
+                else:
+                    # Sqlite fallback leadership
                     self.is_leader = True
             else:
-                if self.is_leader:
-                    logger.warning("Leadership lost! Running in standby mode.")
-                    self.is_leader = False
+                self.is_leader = True
         except Exception as e:
             logger.error(f"Error during leadership check: {e}")
             self.is_leader = False
@@ -110,6 +120,7 @@ class PipelineScheduler:
         if not self.is_leader:
             return
         try:
+            from src.discovery.registry.connector_registry import ConnectorRegistry
             # 1. Fetch enabled active providers
             with self.repos.company_state.transaction() as conn:
                 cur = conn.execute("SELECT provider_id FROM ats_providers WHERE enabled = TRUE")
@@ -117,22 +128,28 @@ class PipelineScheduler:
 
             # 2. For each provider, count backlog and update provider_scheduler
             for provider in providers:
+                # If connector is missing, force desired_workers and backlog to 0
+                if ConnectorRegistry.get(provider) is None:
+                    desired = 0
+                    backlog = 0
+                else:
+                    with self.repos.company_state.transaction() as conn:
+                        # Count due backlog using safe TIMESTAMPTZ column next_check_at_tz
+                        cur = conn.execute('''
+                            SELECT COUNT(*) FROM ats_registry 
+                            WHERE status = 'ACTIVE' 
+                              AND provider_id = %s 
+                              AND (next_check_at_tz IS NULL OR next_check_at_tz <= NOW())
+                        ''', (provider,))
+                        row = cur.fetchone()
+                        backlog = (row["count"] if isinstance(row, dict) or hasattr(row, "keys") else row[0]) if row else 0
+
+                        # desired_workers calculation: max(1, min(backlog // 20, 5))
+                        desired = 1 if backlog > 0 else 0
+                        if backlog > 20:
+                            desired = min(2 + (backlog // 50), 6)
+
                 with self.repos.company_state.transaction() as conn:
-                    # Count due backlog using safe TIMESTAMPTZ column next_check_at_tz
-                    cur = conn.execute('''
-                        SELECT COUNT(*) FROM ats_registry 
-                        WHERE status = 'ACTIVE' 
-                          AND provider_id = %s 
-                          AND (next_check_at_tz IS NULL OR next_check_at_tz <= NOW())
-                    ''', (provider,))
-                    row = cur.fetchone()
-                    backlog = (row["count"] if isinstance(row, dict) or hasattr(row, "keys") else row[0]) if row else 0
-
-                    # desired_workers calculation: max(1, min(backlog // 20, 5))
-                    desired = 1 if backlog > 0 else 0
-                    if backlog > 20:
-                        desired = min(2 + (backlog // 50), 6)
-
                     # Update provider_scheduler configuration
                     conn.execute('''
                         INSERT INTO provider_scheduler (provider_id, desired_workers, backlog, last_scheduler_run)

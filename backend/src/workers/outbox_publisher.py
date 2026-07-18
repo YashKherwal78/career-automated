@@ -28,6 +28,7 @@ class OutboxPublisherWorker(BaseWorker):
                     await asyncio.sleep(5)
                     continue
 
+                delivered_ids = []
                 for event in events:
                     try:
                         # V1 implementation: Publish directly to logs/stdout (simulate event bus)
@@ -38,16 +39,21 @@ class OutboxPublisherWorker(BaseWorker):
                         logger.info(f"Payload: {event['payload']}")
                         logger.info(f"-----------------------")
                         
-                        # Mark as delivered
-                        self.repos.outbox.mark_delivered(event['event_id'])
+                        delivered_ids.append(event['event_id'])
                     except Exception as ex:
                         logger.error(f"Failed to publish event {event['event_id']}: {ex}")
                         self.repos.outbox.mark_failed(event['event_id'], str(ex))
+                
+                if delivered_ids:
+                    self.repos.outbox.mark_delivered_batch(delivered_ids)
 
                 # Prune delivered events older than 30 days
-                pruned = self.repos.outbox.prune_delivered_events(days_old=30)
-                if pruned > 0:
-                    logger.info(f"Pruned {pruned} delivered outbox events older than 30 days.")
+                # Prune occasionally (e.g. 5% chance) to avoid heavy delete transactions on every single poll
+                import random
+                if random.random() < 0.05:
+                    pruned = self.repos.outbox.prune_delivered_events(days_old=30)
+                    if pruned > 0:
+                        logger.info(f"Pruned {pruned} delivered outbox events older than 30 days.")
 
                 self.heartbeat(jobs_processed=len(events))
                 await asyncio.sleep(2)
