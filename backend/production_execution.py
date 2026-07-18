@@ -14,6 +14,9 @@ from src.workers.job_crawler_worker import make_board_from_registry_row
 from src.discovery.registry.connector_registry import ConnectorRegistry
 from src.discovery.pipeline_state_manager import PipelineStateManager
 from src.discovery.pipeline.telemetry import Telemetry
+from src.discovery.connectors.bootstrap import bootstrap_connectors
+bootstrap_connectors()
+
 
 async def run_production():
     print("Fetching active companies from ats_registry...")
