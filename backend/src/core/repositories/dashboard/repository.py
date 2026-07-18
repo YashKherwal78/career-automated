@@ -46,30 +46,50 @@ class DashboardRepository(BaseRepository):
             else:
                 p = "?"
 
-            # General funnel stats
+            # 1. Company identities count (1 query)
+            companies_discovered = self._q(conn, "SELECT COUNT(*) cnt FROM company_identities")["cnt"]
+
+            # 2. Combined ATS Registry counts (1 query instead of 6)
+            ats_stats = self._q(conn, """
+                SELECT 
+                    COUNT(*) as total,
+                    COUNT(CASE WHEN status = 'ACTIVE' THEN 1 END) as active,
+                    COUNT(CASE WHEN status = 'NEEDS_REVIEW' THEN 1 END) as needs_review,
+                    COUNT(CASE WHEN status = 'RETIRED' THEN 1 END) as retired,
+                    COUNT(CASE WHEN last_successful_crawl IS NOT NULL THEN 1 END) as crawled,
+                    COUNT(CASE WHEN status = 'ACTIVE' AND last_successful_crawl IS NULL THEN 1 END) as never_crawled
+                FROM ats_registry
+            """)
+
+            # 3. Combined Normalized Jobs counts (1 query instead of 7)
+            job_stats = self._q(conn, f"""
+                SELECT
+                    COUNT(*) as total,
+                    COUNT(CASE WHEN status = 'ACTIVE' THEN 1 END) as active,
+                    COUNT(CASE WHEN normalized_at > {p} THEN 1 END) as last_1h,
+                    COUNT(CASE WHEN normalized_at > {p} THEN 1 END) as last_24h,
+                    COUNT(CASE WHEN normalized_at > {p} THEN 1 END) as last_7d,
+                    COUNT(CASE WHEN normalized_at > {p} THEN 1 END) as last_15m,
+                    COUNT(CASE WHEN normalized_at > {p} THEN 1 END) as last_1m
+                FROM normalized_jobs
+            """, [now - 3600, now - 86400, now - 604800, now - 900, now - 60])
+
             funnel = {
-                "companies_discovered": self._q(conn, "SELECT COUNT(*) cnt FROM company_identities")["cnt"],
-                "ats_registry_total": self._q(conn, "SELECT COUNT(*) cnt FROM ats_registry")["cnt"],
-                "ats_registry_active": self._q(conn, "SELECT COUNT(*) cnt FROM ats_registry WHERE status = 'ACTIVE'")["cnt"],
-                "ats_registry_needs_review": self._q(conn, "SELECT COUNT(*) cnt FROM ats_registry WHERE status = 'NEEDS_REVIEW'")["cnt"],
-                "ats_registry_retired": self._q(conn, "SELECT COUNT(*) cnt FROM ats_registry WHERE status = 'RETIRED'")["cnt"],
-                "companies_crawled": self._q(conn, "SELECT COUNT(*) cnt FROM ats_registry WHERE last_successful_crawl IS NOT NULL")["cnt"],
-                "companies_never_crawled": self._q(conn, "SELECT COUNT(*) cnt FROM ats_registry WHERE status = 'ACTIVE' AND last_successful_crawl IS NULL")["cnt"],
-                "jobs_total": self._q(conn, "SELECT COUNT(*) cnt FROM normalized_jobs")["cnt"],
-                "jobs_active": self._q(conn, "SELECT COUNT(*) cnt FROM normalized_jobs WHERE status = 'ACTIVE'")["cnt"],
+                "companies_discovered": companies_discovered,
+                "ats_registry_total": ats_stats.get("total") or 0,
+                "ats_registry_active": ats_stats.get("active") or 0,
+                "ats_registry_needs_review": ats_stats.get("needs_review") or 0,
+                "ats_registry_retired": ats_stats.get("retired") or 0,
+                "companies_crawled": ats_stats.get("crawled") or 0,
+                "companies_never_crawled": ats_stats.get("never_crawled") or 0,
+                "jobs_total": job_stats.get("total") or 0,
+                "jobs_active": job_stats.get("active") or 0,
+                "jobs_last_1h": job_stats.get("last_1h") or 0,
+                "jobs_last_24h": job_stats.get("last_24h") or 0,
+                "jobs_last_7d": job_stats.get("last_7d") or 0,
+                "crawl_rate_jobs_per_minute": round((job_stats.get("last_15m") or 0) / 15.0, 2),
+                "db_writes_per_minute": job_stats.get("last_1m") or 0
             }
-
-            # Discovered time-based stats
-            funnel["jobs_last_1h"] = self._q(conn, f"SELECT COUNT(*) cnt FROM normalized_jobs WHERE normalized_at > {p}", [now - 3600])["cnt"]
-            funnel["jobs_last_24h"] = self._q(conn, f"SELECT COUNT(*) cnt FROM normalized_jobs WHERE normalized_at > {p}", [now - 86400])["cnt"]
-            funnel["jobs_last_7d"] = self._q(conn, f"SELECT COUNT(*) cnt FROM normalized_jobs WHERE normalized_at > {p}", [now - 604800])["cnt"]
-
-            # Crawl throughput rates
-            jobs_15m = self._q(conn, f"SELECT COUNT(*) cnt FROM normalized_jobs WHERE normalized_at > {p}", [now - 900])["cnt"]
-            funnel["crawl_rate_jobs_per_minute"] = round(jobs_15m / 15.0, 2)
-            
-            jobs_1m = self._q(conn, f"SELECT COUNT(*) cnt FROM normalized_jobs WHERE normalized_at > {p}", [now - 60])["cnt"]
-            funnel["db_writes_per_minute"] = jobs_1m
 
             # Worker states
             workers = []
