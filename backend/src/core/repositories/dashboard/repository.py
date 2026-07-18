@@ -149,6 +149,7 @@ class DashboardRepository(BaseRepository):
                 GROUP BY n.company_id, a.provider_id, a.last_successful_crawl,
                          a.failure_count, a.status
                 ORDER BY job_count DESC
+                LIMIT 50
             """)
 
             return {

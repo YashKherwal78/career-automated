@@ -43,7 +43,7 @@ export default function HealthDashboard() {
     return () => clearInterval(t);
   }, []);
 
-  const isLive = !pipeline.error;
+  const isLive = !pipeline.error && !pipeline.loading && pipeline.data !== null;
   const f = pipeline.data?.funnel || {};
   const workers = pipeline.data?.workers || [];
   const connList = connectors.data?.connectors || [];
@@ -94,16 +94,16 @@ export default function HealthDashboard() {
           <div>
             <div style={{ color: "#94a3b8", fontWeight: "bold", marginBottom: "8px" }}>🟢 System Status</div>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div>Backend          ● <span style={{ color: isLive ? "#22c55e" : "#ef4444" }}>{isLive ? "Healthy" : "Offline"}</span></div>
-              <div>Database         ● <span style={{ color: isLive ? "#22c55e" : "#ef4444" }}>Healthy</span></div>
-              <div>Redis            ● <span style={{ color: isLive ? "#22c55e" : "#ef4444" }}>Healthy</span></div>
-              <div>Scheduler        ● <span style={{ color: schedulerActive ? "#22c55e" : "#f59e0b" }}>{schedulerActive ? "Running" : "Idle"}</span></div>
-              <div>Workers          ● <span style={{ color: "#38bdf8" }}>{runningWorkersCount} / 7 Running</span></div>
-              <div>API              ● <span style={{ color: "#38bdf8" }}>{f.avg_crawl_latency_ms || 120} ms</span></div>
+              <div>Backend          ● <span style={{ color: pipeline.loading ? "#f59e0b" : isLive ? "#22c55e" : "#ef4444" }}>{pipeline.loading ? "Connecting…" : isLive ? "Healthy" : "Offline"}</span></div>
+              <div>Database         ● <span style={{ color: isLive ? "#22c55e" : pipeline.loading ? "#f59e0b" : "#ef4444" }}>{isLive ? "Healthy" : pipeline.loading ? "…" : "Offline"}</span></div>
+              <div>Redis            ● <span style={{ color: isLive ? "#22c55e" : pipeline.loading ? "#f59e0b" : "#ef4444" }}>{isLive ? "Healthy" : pipeline.loading ? "…" : "Offline"}</span></div>
+              <div>Scheduler        ● <span style={{ color: pipeline.loading ? "#64748b" : schedulerActive ? "#22c55e" : "#f59e0b" }}>{pipeline.loading ? "…" : schedulerActive ? "Running" : "Idle"}</span></div>
+              <div>Workers          ● <span style={{ color: pipeline.loading ? "#64748b" : "#38bdf8" }}>{pipeline.loading ? "…" : `${runningWorkersCount} / 7 Running`}</span></div>
+              <div>API              ● <span style={{ color: "#38bdf8" }}>{f.avg_crawl_latency_ms ? `${f.avg_crawl_latency_ms} ms` : "…"}</span></div>
             </div>
           </div>
           <div style={{ textAlign: "right", color: "#64748b" }}>
-            <div>Last heartbeat: 4 seconds ago</div>
+            <div>{pipeline.data?.ts ? `Updated ${Math.round(Date.now()/1000 - pipeline.data.ts)}s ago` : "Connecting…"}</div>
             <div style={{ fontVariantNumeric: "tabular-nums", marginTop: "8px", color: "#38bdf8" }}>
               {now.toLocaleTimeString()}
             </div>
