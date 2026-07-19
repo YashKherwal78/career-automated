@@ -28,10 +28,10 @@ class BambooHRConnector(Connector):
         return DefaultFreshnessStrategy()
         
     async def sync(self, board: Board, http_client: HttpClient) -> AsyncIterator[RawJob | FetchResult]:
-        api_url = board.endpoint
-        slug = getattr(board.identity, 'board_token', 'unknown')
-        if "embed2.php" not in api_url:
-            api_url = f"https://{slug}.bamboohr.com/jobs/embed2.php"
+        from urllib.parse import urlparse
+        parsed = urlparse(board.endpoint)
+        slug = parsed.hostname.split('.bamboohr.com')[0] if parsed.hostname else 'unknown'
+        api_url = f"https://{slug}.bamboohr.com/jobs/embed2.php"
             
         headers = {"User-Agent": "Mozilla/5.0"}
         etag = board.metadata.get("etag")
