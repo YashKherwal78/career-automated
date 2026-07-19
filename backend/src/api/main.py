@@ -13,6 +13,7 @@ app.add_middleware(
         "http://localhost:5173",
         "http://localhost:3000"
     ],
+    allow_origin_regex="https://.*\\.vercel\\.app|https://.*\\.careerautomated\\.in|http://localhost:.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
