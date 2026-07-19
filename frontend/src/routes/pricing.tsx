@@ -1,92 +1,55 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
 import { Check, ArrowRight, Sparkles } from "lucide-react";
 import { Section, SectionHeading } from "@/components/primitives/section";
 import { FadeIn, Stagger, StaggerItem } from "@/components/primitives/motion";
-
 import { generateMetadata } from "../lib/seo";
 
 export const Route = createFileRoute("/pricing")({
   head: () => generateMetadata("/pricing", {
     title: "Pricing Plans",
-    description: "Simple pricing. Free plan to start. Upgrade only when it pays for itself in time saved.",
+    description: "Simple pricing. Free plan to start. Upgrade only when you need custom organization limits.",
   }),
   component: Pricing,
 });
 
-
-type Cycle = "monthly" | "yearly";
-
 const PLANS = [
   {
     id: "free",
-    name: "Free",
-    price: { monthly: 0, yearly: 0 },
-    tagline: "Everything you need to try it seriously.",
+    name: "Free Plan",
+    price: "₹0",
+    tagline: "High-agency matching with a robust monthly allocation.",
     features: [
-      "Up to 10 job matches / month",
-      "Manual applications with AI-tailored resume",
-      "Weekly digest of new roles",
-      "Basic application tracker",
+      "500 applications / month",
+      "AI-tailored resumes & profiles",
+      "Real-time opportunity matching",
+      "Distraction-free builder workspace",
     ],
-    cta: "Get started",
-    highlight: false,
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    price: { monthly: 19, yearly: 15 },
-    tagline: "Full workflow. Real-time matches. Unlimited resumes.",
-    features: [
-      "Unlimited job matches, real-time",
-      "AI-tailored resume + cover letter per role",
-      "One-click ATS autofill (Greenhouse, Lever, Ashby, Workday)",
-      "Application CRM with reminders",
-      "Smart follow-up drafts",
-    ],
-    cta: "Start Pro",
+    cta: "Start Free",
     highlight: true,
   },
   {
-    id: "premium",
-    name: "Premium",
-    price: { monthly: 49, yearly: 39 },
-    tagline: "Priority discovery, deeper tailoring, concierge support.",
+    id: "custom",
+    name: "Custom",
+    price: "Custom",
+    tagline: "For career bootcamps, universities, and placement cells.",
     features: [
-      "Everything in Pro",
-      "Priority job discovery (roles surface first)",
-      "Deeper AI tailoring with per-role research",
-      "Interview prep briefs for each application",
-      "Priority human support",
+      "Bulk student onboarding",
+      "Unlimited applications & tailoring",
+      "Admin monitoring dashboards",
+      "Dedicated integration support",
     ],
-    cta: "Go Premium",
+    cta: "Contact Sales",
     highlight: false,
   },
 ];
 
-const COMPARE: { row: string; free: string | boolean; pro: string | boolean; premium: string | boolean }[] = [
-  { row: "Job matches", free: "10 / month", pro: "Unlimited", premium: "Unlimited, priority" },
-  { row: "Match frequency", free: "Weekly digest", pro: "Real-time", premium: "Real-time, priority queue" },
-  { row: "AI resume tailoring", free: "Basic", pro: "Per-role", premium: "Per-role + research" },
-  { row: "Cover letter drafting", free: false, pro: true, premium: true },
-  { row: "ATS autofill", free: false, pro: true, premium: true },
-  { row: "Application tracker", free: "Basic", pro: "Full CRM", premium: "Full CRM" },
-  { row: "Follow-up drafts", free: false, pro: true, premium: true },
-  { row: "Interview prep briefs", free: false, pro: false, premium: true },
-  { row: "Support", free: "Community", pro: "Email", premium: "Priority" },
-];
-
 const FAQ = [
-  { q: "Can I switch plans anytime?", a: "Yes — upgrade, downgrade, or cancel from your dashboard in one click. Downgrades take effect at the end of the current billing period." },
-  { q: "What's included in the free plan?", a: "Enough to see if this works for you: real matching, AI-tailored resumes, and a weekly digest. No credit card required." },
-  { q: "Do you offer a yearly discount?", a: "Yes — yearly billing is about 20% off the monthly price. Toggle above to compare." },
-  { q: "Is there a student or non-profit discount?", a: "Write to us. If you're a student or building non-profit impact, we'll find something that works." },
-  { q: "Do you offer team or enterprise plans?", a: "Yes — for career services teams, bootcamps, and placement cells. Contact us for a quote." },
+  { q: "Is it really free?", a: "Yes — the Free Plan gives you up to 500 applications matched and tailored every single month. No credit card required." },
+  { q: "Do you offer student discounts?", a: "The 500/month plan is already completely free for all users, which is more than enough for most job seekers." },
+  { q: "Do you offer team or enterprise plans?", a: "Yes — for career services teams, bootcamps, and placement cells. Contact us for custom limits." },
 ];
 
 function Pricing() {
-  const [cycle, setCycle] = useState<Cycle>("monthly");
-
   return (
     <>
       {/* Header */}
@@ -96,27 +59,15 @@ function Pricing() {
             align="center"
             eyebrow="Pricing"
             title="Simple pricing. No surprises."
-            description="Start free. Upgrade when the time you save is worth more than the plan costs."
+            description="Start free. Upgrade only when you need custom limits."
           />
-        </FadeIn>
-
-        <FadeIn delay={0.1} className="mt-10">
-          <div className="mx-auto flex w-fit items-center rounded-full border hairline bg-white p-1 text-sm">
-            <ToggleBtn active={cycle === "monthly"} onClick={() => setCycle("monthly")}>
-              Monthly
-            </ToggleBtn>
-            <ToggleBtn active={cycle === "yearly"} onClick={() => setCycle("yearly")}>
-              Yearly <span className="ml-1.5 rounded-full bg-[color:var(--peach-soft)] px-2 py-0.5 text-[10px] font-medium text-ink">Save 20%</span>
-            </ToggleBtn>
-          </div>
         </FadeIn>
       </Section>
 
       {/* Plans */}
       <Section className="py-8">
-        <Stagger className="grid gap-6 lg:grid-cols-3">
+        <Stagger className="grid gap-6 md:grid-cols-2 max-w-4xl mx-auto">
           {PLANS.map((p) => {
-            const price = p.price[cycle];
             return (
               <StaggerItem key={p.id}>
                 <div
@@ -135,9 +86,9 @@ function Pricing() {
                   <div className={`text-sm font-medium ${p.highlight ? "text-white" : "text-ink"}`}>{p.name}</div>
 
                   <div className="mt-4 flex items-baseline gap-1">
-                    <div className="font-display text-5xl tracking-tight">${price}</div>
+                    <div className="font-display text-5xl tracking-tight">{p.price}</div>
                     <div className={`text-sm ${p.highlight ? "text-white/60" : "text-ink-soft"}`}>
-                      {price === 0 ? "forever" : cycle === "monthly" ? "/mo" : "/mo, billed yearly"}
+                      {p.price === "₹0" ? "/month" : ""}
                     </div>
                   </div>
 
@@ -153,7 +104,7 @@ function Pricing() {
                   </ul>
 
                   <Link
-                    to="/signup"
+                    to={p.id === "custom" ? "/contact" : "/signup"}
                     className={`mt-8 flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-medium transition ${
                       p.highlight
                         ? "bg-white text-ink hover:bg-white/90"
@@ -167,51 +118,6 @@ function Pricing() {
             );
           })}
         </Stagger>
-      </Section>
-
-      {/* Comparison */}
-      <Section className="py-20">
-        <SectionHeading align="center" title="Compare plans" />
-        <div className="mt-10 overflow-x-auto rounded-2xl border hairline bg-white">
-          <table className="w-full min-w-[640px] text-sm">
-            <thead className="bg-[color:var(--surface-muted)]">
-              <tr>
-                <th className="px-6 py-4 text-left font-medium text-ink">Feature</th>
-                <th className="px-6 py-4 text-left font-medium text-ink">Free</th>
-                <th className="px-6 py-4 text-left font-medium text-ink">Pro</th>
-                <th className="px-6 py-4 text-left font-medium text-ink">Premium</th>
-              </tr>
-            </thead>
-            <tbody>
-              {COMPARE.map((row, i) => (
-                <tr key={row.row} className={i % 2 ? "bg-secondary/40" : ""}>
-                  <td className="px-6 py-4 font-medium text-ink">{row.row}</td>
-                  <Cell v={row.free} />
-                  <Cell v={row.pro} />
-                  <Cell v={row.premium} />
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Section>
-
-      {/* Enterprise */}
-      <Section className="py-8">
-        <div className="rounded-2xl border hairline bg-white p-8 md:flex md:items-center md:justify-between md:gap-8">
-          <div>
-            <div className="text-sm font-medium text-ink">For teams & institutions</div>
-            <h3 className="mt-2 font-display text-2xl tracking-tight text-ink md:text-3xl">
-              CareerAutomated for career services and bootcamps
-            </h3>
-            <p className="mt-2 max-w-xl text-sm text-ink-soft">
-              Bulk onboarding, admin dashboards, and dedicated support. Bring CareerAutomated to your students or cohort.
-            </p>
-          </div>
-          <Link to="/contact" className="btn-dark mt-6 text-sm md:mt-0">
-            Contact sales <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
       </Section>
 
       {/* FAQ */}
@@ -244,36 +150,4 @@ function Pricing() {
       </Section>
     </>
   );
-}
-
-function ToggleBtn({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`inline-flex items-center gap-1 rounded-full px-4 py-1.5 text-sm font-medium transition ${
-        active ? "bg-ink text-white" : "text-ink-soft hover:text-ink"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-function Cell({ v }: { v: string | boolean }) {
-  if (typeof v === "boolean") {
-    return (
-      <td className="px-6 py-4">
-        {v ? <Check className="h-4 w-4 text-[color:var(--peach-deep)]" /> : <span className="text-ink-soft">—</span>}
-      </td>
-    );
-  }
-  return <td className="px-6 py-4 text-ink-soft">{v}</td>;
 }
