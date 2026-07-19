@@ -1,24 +1,24 @@
-import json
 import logging
+import xml.etree.ElementTree as ET
 from typing import AsyncIterator
 from src.discovery.models import RawJob, ConnectorCapability, Board, FetchResult
 from src.discovery.registry.connector import Connector, FreshnessStrategy, DefaultFreshnessStrategy
 from src.discovery.pipeline.http_client import HttpClient
 from src.discovery.registry.connector_registry import ConnectorRegistry
 
-logger = logging.getLogger("TeamtailorJSONConnector")
+logger = logging.getLogger("TeamtailorConnector")
 
-class TeamtailorJSONConnector(Connector):
+class TeamtailorConnector(Connector):
     def capabilities(self) -> ConnectorCapability:
         return ConnectorCapability(
-            pagination="offset",
+            pagination="none",
             supports_etag=False,
             supports_last_modified=False,
             supports_content_hash=True,
             supports_incremental=False,
             supports_parallel_fetch=False,
             supports_snapshot=True,
-            supports_bulk_fetch=True,
+            supports_bulk_fetch=False,
             supports_location=True,
             supports_departments=True,
         )
@@ -27,28 +27,62 @@ class TeamtailorJSONConnector(Connector):
         return DefaultFreshnessStrategy()
         
     async def sync(self, board: Board, http_client: HttpClient) -> AsyncIterator[RawJob | FetchResult]:
-        # Teamtailor uses the JSONFeed standard at /jobs.json
-        # The /api/v1/jobs endpoint requires an API key and returns 404 publicly.
         base = board.endpoint.rstrip("/")
-        api_url = f"{base}/jobs.json"
+        # Target the universal public RSS feed instead of the brittle jobs.json
+        api_url = f"{base}/jobs.rss"
+        
         result = await http_client.fetch("GET", api_url)
-        
-        # Teamtailor may serve jobs.json with a non-JSON Content-Type,
-        # causing HttpClient to return raw bytes instead of a parsed dict.
-        # Decode bytes to dict manually so the snapshot path doesn't fail.
-        if isinstance(result.payload, (bytes, bytearray)):
-            try:
-                result.payload = json.loads(result.payload.decode("utf-8"))
-            except Exception:
-                # If we can't decode, yield the raw result and bail
-                yield result
-                return
-        
         yield result
-        if result.status_code == 200 and isinstance(result.payload, dict):
-            for item in result.payload.get("items", []):
-                # Prefer the structured _jobposting sub-dict if present
-                job_data = item.get("_jobposting") or item
-                yield RawJob(company_id=board.company_id, provider="teamtailor", board_identity=board.identity, payload=job_data)
+        
+        if result.status_code != 200 or not result.payload:
+            return
+            
+        xml_data = result.payload
+        if isinstance(xml_data, bytes):
+            xml_data = xml_data.decode("utf-8", errors="replace")
+            
+        try:
+            root = ET.fromstring(xml_data)
+        except Exception as e:
+            logger.error(f"Failed to parse Teamtailor RSS XML for {board.company_id}: {e}")
+            return
+            
+        namespaces = {"tt": "https://teamtailor.com/locations"}
+        
+        # Iterate channel items
+        for item in root.findall(".//item"):
+            title = (item.findtext("title") or "").strip()
+            link = (item.findtext("link") or "").strip()
+            guid = (item.findtext("guid") or "").strip()
+            desc = (item.findtext("description") or "").strip()
+            
+            # Extract location details
+            location_str = None
+            loc_el = item.find("tt:locations/tt:location", namespaces)
+            if loc_el is not None:
+                city = (loc_el.findtext("tt:city", namespaces=namespaces) or "").strip()
+                country = (loc_el.findtext("tt:country", namespaces=namespaces) or "").strip()
+                if city and country:
+                    location_str = f"{city}, {country}"
+                elif city or country:
+                    location_str = city or country
+                else:
+                    location_str = (loc_el.findtext("tt:name", namespaces=namespaces) or "").strip()
+            
+            # Map elements into dictionary expected by TeamtailorNormalizer
+            payload = {
+                "id": guid,
+                "title": title,
+                "description": desc,
+                "location": location_str,
+                "url": link
+            }
+            
+            yield RawJob(
+                company_id=board.company_id,
+                provider="teamtailor",
+                board_identity=board.identity,
+                payload=payload
+            )
 
-ConnectorRegistry.register('teamtailor', 'JSON', 100, TeamtailorJSONConnector)
+ConnectorRegistry.register('teamtailor', 'RSS', 100, TeamtailorConnector)
