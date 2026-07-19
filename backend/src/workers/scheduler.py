@@ -99,7 +99,13 @@ class PipelineScheduler:
                     conn.autocommit = True
                     cur = conn.execute("SELECT pg_try_advisory_lock(1784300)")
                     row = cur.fetchone()
-                    locked = row[0] if row else False
+                    if row:
+                        if isinstance(row, dict):
+                            locked = list(row.values())[0]
+                        else:
+                            locked = row[0]
+                    else:
+                        locked = False
                     if locked:
                         self.lock_connection = conn
                         self.is_leader = True
