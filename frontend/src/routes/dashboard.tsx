@@ -16,11 +16,15 @@ import { useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "../lib/auth";
 
+// Set VITE_DEV_AUTH_BYPASS=true in .env to skip auth redirect during development
+const DEV_BYPASS = import.meta.env.VITE_DEV_AUTH_BYPASS === "true";
+
 function DashboardLayout() {
   const { user, profile, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (DEV_BYPASS) return; // Skip auth check in dev bypass mode
     if (!isLoading) {
       if (!user) {
         navigate({ to: "/signup" });
@@ -30,16 +34,18 @@ function DashboardLayout() {
     }
   }, [user, profile, isLoading, navigate]);
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <div className="text-sm font-medium text-slate-500">Loading your profile...</div>
-      </div>
-    );
-  }
+  if (!DEV_BYPASS) {
+    if (isLoading) {
+      return (
+        <div className="flex min-h-screen items-center justify-center bg-slate-50">
+          <div className="text-sm font-medium text-slate-500">Loading your profile...</div>
+        </div>
+      );
+    }
 
-  if (!user) {
-    return null; // Will redirect in useEffect
+    if (!user) {
+      return null; // Will redirect in useEffect
+    }
   }
 
   return (
