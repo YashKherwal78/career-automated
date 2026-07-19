@@ -11,7 +11,8 @@ class Settings:
     ENABLE_LOCAL_FALLBACKS: bool = os.getenv("ENABLE_LOCAL_FALLBACKS", "false").lower() == "true"
 
     # Database
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "").strip("'\"")
+    AUTH_DATABASE_URL: str = os.getenv("AUTH_DATABASE_URL", "").strip("'\"")
+    OPERATIONAL_DATABASE_URL: str = os.getenv("OPERATIONAL_DATABASE_URL", "").strip("'\"")
     
     # Redis
     REDIS_URL: str = os.getenv("REDIS_URL", "").strip("'\"")
@@ -35,7 +36,8 @@ class Settings:
     def validate(cls):
         """Validate critical environment variables are present."""
         missing = []
-        if not cls.DATABASE_URL: missing.append("DATABASE_URL")
+        if not cls.AUTH_DATABASE_URL: missing.append("AUTH_DATABASE_URL")
+        if not cls.OPERATIONAL_DATABASE_URL: missing.append("OPERATIONAL_DATABASE_URL")
         if not cls.REDIS_URL: missing.append("REDIS_URL")
         if not cls.R2_ENDPOINT: missing.append("CLOUDFLARE_R2_ENDPOINT")
         if not cls.R2_ACCESS_KEY_ID: missing.append("CLOUDFLARE_R2_ACCESS_KEY_ID")

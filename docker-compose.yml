@@ -54,3 +54,20 @@ services:
     depends_on:
       - redis
     restart: always
+
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: career_db
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: always
+
+volumes:
+  pgdata:
+

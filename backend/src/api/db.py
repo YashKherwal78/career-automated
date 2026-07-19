@@ -9,7 +9,7 @@ from src.runtime.postgres.connection import (
 from typing import Any
 
 DATABASE_PATH = str(Path(__file__).resolve().parents[2] / "data" / "crm.db")
-DATABASE_URL = Settings.DATABASE_URL
+DATABASE_URL = Settings.OPERATIONAL_DATABASE_URL
 
 # Maintain helpers used by API
 def is_postgres() -> bool:
