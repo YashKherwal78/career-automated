@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import jobs, companies, applications, contacts, analytics, daemons, settings, activities, health, system, scheduler, providers, users
+from .routers import jobs, companies, applications, contacts, analytics, daemons, settings, activities, health, system, scheduler, providers, users, mission_control
 from src.runtime.auth.dependencies import get_current_user
 
 app = FastAPI(title="Career Automated API", version="1.0.0")
@@ -46,6 +46,7 @@ app.include_router(activities.router, prefix="/api/v1/activities", tags=["Activi
 app.include_router(system.router, prefix="/api/v1/system", tags=["System"], dependencies=[Depends(get_current_user)])
 app.include_router(scheduler.router, prefix="/api/v1/scheduler", tags=["Scheduler"], dependencies=[Depends(get_current_user)])
 app.include_router(providers.router, prefix="/api/v1/providers", tags=["Providers"], dependencies=[Depends(get_current_user)])
+app.include_router(mission_control.router, prefix="/api/v1/mission-control")
 
 # Public Routers
 app.include_router(health.router, prefix="/api/v1/health", tags=["Health"])
