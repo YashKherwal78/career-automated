@@ -21,9 +21,9 @@ class SmartRecruitersConnector(Connector):
             supports_parallel_fetch=False,
             supports_snapshot=True,
         )
-        
     async def sync(self, board: Board, http_client) -> AsyncIterator[RawJob]:
-        api_url = f"https://api.smartrecruiters.com/v1/companies/{board.identity.company_identifier}/postings"
+        slug = board.endpoint.rstrip("/").split("/")[-1]
+        api_url = f"https://api.smartrecruiters.com/v1/companies/{slug}/postings"
         
         limit = 100
         offset = 0

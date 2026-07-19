@@ -142,13 +142,19 @@ class SmartRecruitersNormalizer(JobNormalizer):
     def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
         jobs = []
         company_id = raw_job.company_id
-        
-        for job in raw_job.payload.get("jobPostings", []):
+        postings = []
+        if isinstance(raw_job.payload, dict):
+            if "jobPostings" in raw_job.payload:
+                postings = raw_job.payload.get("jobPostings", [])
+            elif "id" in raw_job.payload:
+                postings = [raw_job.payload]
+                
+        for job in postings:
             external_id = str(job.get("id", ""))
             title = job.get("name", "")
             loc_obj = job.get("location", {})
             location = f"{loc_obj.get('city', '')}, {loc_obj.get('region', '')}, {loc_obj.get('country', '')}".strip(', ')
-            remote = "Remote" if job.get("remote") else ""
+            remote = "Remote" if (job.get("remote") or loc_obj.get("remote")) else ""
             dept_name = job.get("department", {}).get("label", "")
             emp_type = job.get("typeOfEmployment", {}).get("label", "")
             
@@ -157,6 +163,8 @@ class SmartRecruitersNormalizer(JobNormalizer):
                 board_id=company_id,
                 external_job_id=external_id
             )
+            
+            board_token = getattr(raw_job.board_identity, "board_token", company_id) or company_id
             
             jobs.append(CanonicalJob(
                 identity=identity,
@@ -173,7 +181,7 @@ class SmartRecruitersNormalizer(JobNormalizer):
                 salary_max=None,
                 salary_currency="",
                 posted_at=job.get("releasedDate", ""),
-                apply_url=f"https://jobs.smartrecruiters.com/{company_id}/{external_id}",
+                apply_url=f"https://jobs.smartrecruiters.com/{board_token}/{external_id}",
                 raw_payload=job,
                 normalized_at=time.time()
             ))
