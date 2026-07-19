@@ -14,7 +14,13 @@ class HttpClient:
         self.replay_cache = replay_cache
         
     async def __aenter__(self):
-        self.session = aiohttp.ClientSession(headers={"User-Agent": self.user_agent}, timeout=self.timeout)
+        # Increase max field and line sizes to support large headers (e.g. Personio CSP/Cookie headers)
+        self.session = aiohttp.ClientSession(
+            headers={"User-Agent": self.user_agent},
+            timeout=self.timeout,
+            max_field_size=32768,
+            max_line_size=32768
+        )
         return self
         
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -39,9 +45,18 @@ class HttpClient:
                 payload_bytes = cached['payload']
                 content_hash = hashlib.sha256(payload_bytes).hexdigest() if payload_bytes else ""
                 
+                # Automatically decode and parse JSON payload if valid to mirror active fetch behavior
+                import json
+                payload = payload_bytes
+                if payload_bytes:
+                    try:
+                        payload = json.loads(payload_bytes.decode('utf-8'))
+                    except Exception:
+                        pass
+
                 res = FetchResult(
                     status_code=cached['status_code'],
-                    payload=payload_bytes,
+                    payload=payload,
                     etag=cached['response_headers'].get("ETag"),
                     last_modified=cached['response_headers'].get("Last-Modified"),
                     content_hash=content_hash,

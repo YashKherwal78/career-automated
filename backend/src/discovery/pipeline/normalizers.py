@@ -492,6 +492,1388 @@ class JoinComNormalizer(JobNormalizer):
         ))
         return jobs
 
+class JazzHRNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        department = job.get("department") or ""
+        apply_url = job.get("url") or ""
+
+        remote = ""
+        if location and "remote" in location.lower():
+            remote = "Remote"
+
+        identity = JobIdentity(
+            provider="jazzhr",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company_id,
+            board_id=company_id,
+            title=title,
+            description="",
+            location=location,
+            remote_type=remote,
+            department=department,
+            employment_type="",
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at="",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class PersonioNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        department = job.get("department") or ""
+        employment_type = job.get("employment_type") or ""
+        apply_url = job.get("url") or ""
+
+        identity = JobIdentity(
+            provider="personio",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company_id,
+            board_id=company_id,
+            title=title,
+            description="",
+            location=location,
+            remote_type="",
+            department=department,
+            employment_type=employment_type,
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at=job.get("created_at") or "",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class RecruiteeNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        department = job.get("department") or ""
+        employment_type = job.get("employment_type") or ""
+        remote = job.get("remote") or ""
+        apply_url = job.get("url") or ""
+
+        identity = JobIdentity(
+            provider="recruitee",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company_id,
+            board_id=company_id,
+            title=title,
+            description=job.get("description") or "",
+            location=location,
+            remote_type=remote,
+            department=department,
+            employment_type=employment_type,
+            seniority="",
+            salary_min=job.get("salary_min"),
+            salary_max=job.get("salary_max"),
+            salary_currency=job.get("salary_currency") or "",
+            posted_at=job.get("created_at") or "",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class BreezyNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        department = job.get("department") or ""
+        employment_type = job.get("employment_type") or ""
+        remote = job.get("remote") or ""
+        apply_url = job.get("url") or ""
+
+        identity = JobIdentity(
+            provider="breezy",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company_id,
+            board_id=company_id,
+            title=title,
+            description="",
+            location=location,
+            remote_type=remote,
+            department=department,
+            employment_type=employment_type,
+            seniority="",
+            salary_min=job.get("salary_min"),
+            salary_max=job.get("salary_max"),
+            salary_currency="",
+            posted_at=job.get("created_at") or "",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class PinpointNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        department = job.get("department") or ""
+        employment_type = job.get("employment_type") or ""
+        remote = job.get("remote") or ""
+        apply_url = job.get("url") or ""
+
+        identity = JobIdentity(
+            provider="pinpoint",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company_id,
+            board_id=company_id,
+            title=title,
+            description="",
+            location=location,
+            remote_type=remote,
+            department=department,
+            employment_type=employment_type,
+            seniority="",
+            salary_min=job.get("salary_min"),
+            salary_max=job.get("salary_max"),
+            salary_currency=job.get("salary_currency") or "",
+            posted_at=job.get("created_at") or "",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class RecruiterboxNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        department = job.get("department") or ""
+        employment_type = job.get("employment_type") or ""
+        remote = job.get("remote") or ""
+        apply_url = job.get("url") or ""
+
+        identity = JobIdentity(
+            provider="recruiterbox",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company_id,
+            board_id=company_id,
+            title=title,
+            description="",
+            location=location,
+            remote_type=remote,
+            department=department,
+            employment_type=employment_type,
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at="",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class RemoteOKNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        company = job.get("company") or ""
+
+        identity = JobIdentity(
+            provider="remoteok",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company or company_id,
+            board_id=company_id,
+            title=title,
+            description="",
+            location=location,
+            remote_type="Remote",
+            department="",
+            employment_type="",
+            seniority="",
+            salary_min=job.get("salary_min"),
+            salary_max=job.get("salary_max"),
+            salary_currency="USD",
+            posted_at=job.get("created_at") or "",
+            apply_url=job.get("url") or "",
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class WellfoundNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        department = job.get("department") or ""
+        employment_type = job.get("employment_type") or ""
+        remote = job.get("remote") or ""
+
+        identity = JobIdentity(
+            provider="wellfound",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company_id,
+            board_id=company_id,
+            title=title,
+            description=job.get("description") or "",
+            location=location,
+            remote_type=remote,
+            department=department,
+            employment_type=employment_type,
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at=job.get("created_at") or "",
+            apply_url=job.get("url") or "",
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class WeWorkRemotelyNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        company = job.get("company") or ""
+
+        identity = JobIdentity(
+            provider="weworkremotely",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company or company_id,
+            board_id=company_id,
+            title=title,
+            description="",
+            location=location,
+            remote_type="Remote",
+            department="",
+            employment_type="",
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at=job.get("created_at") or "",
+            apply_url=job.get("url") or "",
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class TheHubNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        company = job.get("company") or ""
+        department = job.get("department") or ""
+
+        identity = JobIdentity(
+            provider="thehub",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company or company_id,
+            board_id=company_id,
+            title=title,
+            description="",
+            location=location,
+            remote_type="",
+            department=department,
+            employment_type="",
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at=job.get("created_at") or "",
+            apply_url=job.get("url") or "",
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class MercorNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        company = job.get("company") or ""
+
+        identity = JobIdentity(
+            provider="mercor",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company or company_id,
+            board_id=company_id,
+            title=title,
+            description=job.get("description") or "",
+            location=location,
+            remote_type="",
+            department="",
+            employment_type="",
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at=job.get("created_at") or "",
+            apply_url=job.get("url") or "",
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class ManfredNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        company = job.get("company") or ""
+        remote = job.get("remote") or ""
+
+        identity = JobIdentity(
+            provider="manfred",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company or company_id,
+            board_id=company_id,
+            title=title,
+            description="",
+            location=location,
+            remote_type=remote,
+            department="",
+            employment_type="",
+            seniority="",
+            salary_min=job.get("salary_min"),
+            salary_max=job.get("salary_max"),
+            salary_currency=job.get("salary_currency") or "",
+            posted_at=job.get("created_at") or "",
+            apply_url=job.get("url") or "",
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class WantedNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        company = job.get("company") or ""
+
+        identity = JobIdentity(
+            provider="wanted",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company or company_id,
+            board_id=company_id,
+            title=title,
+            description="",
+            location=location,
+            remote_type="",
+            department="",
+            employment_type="",
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at=job.get("created_at") or "",
+            apply_url=job.get("url") or "",
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class SuccessFactorsNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        apply_url = job.get("url") or ""
+
+        identity = JobIdentity(
+            provider="successfactors",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, "", "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company_id,
+            board_id=company_id,
+            title=title,
+            description="",
+            location="",
+            remote_type="",
+            department="",
+            employment_type="",
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at=job.get("created_at") or "",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class GemNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        department = job.get("department") or ""
+        employment_type = job.get("employment_type") or ""
+        apply_url = job.get("url") or ""
+
+        identity = JobIdentity(
+            provider="gem",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company_id,
+            board_id=company_id,
+            title=title,
+            description="",
+            location=location,
+            remote_type="",
+            department=department,
+            employment_type=employment_type,
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at="",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class iCIMSNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        department = job.get("department") or ""
+        apply_url = job.get("url") or ""
+
+        identity = JobIdentity(
+            provider="icims",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company_id,
+            board_id=company_id,
+            title=title,
+            description="",
+            location=location,
+            remote_type="",
+            department=department,
+            employment_type="",
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at="",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class RipplingNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        department = job.get("department") or ""
+        employment_type = job.get("employment_type") or ""
+        apply_url = job.get("url") or ""
+
+        # Map Rippling's employmentType label enum
+        _type_map = {
+            "SALARIED_FT": "FULL_TIME",
+            "SALARIED_PT": "PART_TIME",
+            "HOURLY_FT": "FULL_TIME",
+            "HOURLY_PT": "PART_TIME",
+            "CONTRACTOR": "CONTRACT",
+            "CONTRACT": "CONTRACT",
+            "TEMPORARY": "TEMPORARY",
+            "INTERN": "INTERN",
+            "INTERNSHIP": "INTERN",
+            "FULL_TIME": "FULL_TIME",
+            "PART_TIME": "PART_TIME",
+        }
+        mapped_type = _type_map.get(employment_type, employment_type)
+
+        identity = JobIdentity(
+            provider="rippling",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company_id,
+            board_id=company_id,
+            title=title,
+            description="",
+            location=location,
+            remote_type="",
+            department=department,
+            employment_type=mapped_type,
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at="",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class CornerstoneNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        apply_url = job.get("url") or ""
+
+        identity = JobIdentity(
+            provider="cornerstone",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company_id,
+            board_id=company_id,
+            title=title,
+            description=job.get("description") or "",
+            location=location,
+            remote_type="",
+            department="",
+            employment_type="",
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at="",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class PhenomNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        department = job.get("department") or ""
+        employment_type = job.get("employment_type") or ""
+        remote = job.get("remote") or ""
+        apply_url = job.get("url") or ""
+
+        identity = JobIdentity(
+            provider="phenom",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company_id,
+            board_id=company_id,
+            title=title,
+            description="",
+            location=location,
+            remote_type=remote,
+            department=department,
+            employment_type=employment_type,
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at="",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class AvatureNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        department = job.get("department") or ""
+        apply_url = job.get("url") or ""
+
+        identity = JobIdentity(
+            provider="avature",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company_id,
+            board_id=company_id,
+            title=title,
+            description="",
+            location=location,
+            remote_type="",
+            department=department,
+            employment_type="",
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at="",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class EightfoldNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        department = job.get("department") or ""
+        employment_type = job.get("employment_type") or ""
+        remote = job.get("remote") or ""
+        apply_url = job.get("url") or ""
+
+        identity = JobIdentity(
+            provider="eightfold",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company_id,
+            board_id=company_id,
+            title=title,
+            description="",
+            location=location,
+            remote_type=remote,
+            department=department,
+            employment_type=employment_type,
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at="",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class BuiltInNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        apply_url = job.get("url") or ""
+
+        identity = JobIdentity(
+            provider="builtin",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, "", "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company_id,
+            board_id=company_id,
+            title=title,
+            description=job.get("description") or "",
+            location="",
+            remote_type="",
+            department="",
+            employment_type="",
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at="",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class AppleNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        department = job.get("department") or ""
+        apply_url = job.get("url") or ""
+
+        identity = JobIdentity(
+            provider="apple",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company_id,
+            board_id=company_id,
+            title=title,
+            description=job.get("description") or "",
+            location=location,
+            remote_type="",
+            department=department,
+            employment_type="",
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at="",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class ArbetsformedlingenNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        company = job.get("company") or ""
+        location = job.get("location") or ""
+        apply_url = job.get("url") or ""
+
+        identity = JobIdentity(
+            provider="arbetsformedlingen",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company or company_id,
+            board_id=company_id,
+            title=title,
+            description=job.get("description") or "",
+            location=location,
+            remote_type="",
+            department="",
+            employment_type="",
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at="",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class BundesagenturNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        company = job.get("company") or ""
+        location = job.get("location") or ""
+        apply_url = job.get("url") or ""
+
+        identity = JobIdentity(
+            provider="bundesagentur",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company or company_id,
+            board_id=company_id,
+            title=title,
+            description="",
+            location=location,
+            remote_type="",
+            department="",
+            employment_type="",
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at=job.get("created_at") or "",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class EuresNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        company = job.get("company") or ""
+        location = job.get("location") or ""
+        apply_url = job.get("url") or ""
+
+        identity = JobIdentity(
+            provider="eures",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company or company_id,
+            board_id=company_id,
+            title=title,
+            description=job.get("description") or "",
+            location=location,
+            remote_type="",
+            department="",
+            employment_type="",
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at="",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+class JobsCzNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        company = job.get("company") or ""
+        apply_url = job.get("url") or ""
+        salary_text = job.get("salary") or ""
+
+        # Simple parsing for Czech salary format: "40 000 – 60 000 Kč"
+        salary_min = None
+        salary_max = None
+        salary_currency = ""
+        if "Kč" in salary_text:
+            salary_currency = "CZK"
+            # Extract numbers from format
+            nums = [int(s) for s in re.findall(r"\d[\d\s]*", salary_text.replace(" ", "").replace(" ", "")) if s]
+            if len(nums) == 2:
+                salary_min = float(nums[0])
+                salary_max = float(nums[1])
+            elif len(nums) == 1:
+                salary_min = float(nums[0])
+
+        identity = JobIdentity(
+            provider="jobs_cz",
+            company_id=company_id,
+            external_id=external_id
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            title=title,
+            company=company,
+            location=location,
+            description="",
+            employment_type="",
+            seniority="",
+            salary_min=salary_min,
+            salary_max=salary_max,
+            salary_currency=salary_currency,
+            posted_at="",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class JobsChNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        location = job.get("location") or ""
+        company = job.get("company") or ""
+        apply_url = job.get("url") or ""
+
+        identity = JobIdentity(
+            provider="jobsch",
+            company_id=company_id,
+            external_id=external_id
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            title=title,
+            company=company,
+            location=location,
+            description="",
+            employment_type="",
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at="",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class GoogleNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        apply_url = job.get("url") or ""
+
+        identity = JobIdentity(
+            provider="google",
+            company_id=company_id,
+            external_id=external_id
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            title=title,
+            company="Google",
+            location="Global",
+            description="",
+            employment_type="",
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at="",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class TaleoNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        company = job.get("company") or ""
+        apply_url = job.get("url") or ""
+
+        identity = JobIdentity(
+            provider="taleo",
+            company_id=company_id,
+            external_id=external_id
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            title=title,
+            company=company,
+            location="",
+            description="",
+            employment_type="",
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at="",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class ProgramathorNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        company = job.get("company") or ""
+        apply_url = job.get("url") or ""
+        location = job.get("location") or ""
+        salary_text = job.get("salary") or ""
+
+        # Simple parsing for Programathor BRL salary format: "R$ 3.000 - R$ 5.000"
+        salary_min = None
+        salary_max = None
+        salary_currency = ""
+        if "R$" in salary_text:
+            salary_currency = "BRL"
+            # Extract numbers from format
+            nums = [int(s) for s in re.findall(r"\d[\d\.]*", salary_text.replace(" ", "").replace(".", "")) if s]
+            if len(nums) == 2:
+                salary_min = float(nums[0])
+                salary_max = float(nums[1])
+            elif len(nums) == 1:
+                salary_min = float(nums[0])
+
+        identity = JobIdentity(
+            provider="programathor",
+            company_id=company_id,
+            external_id=external_id
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            title=title,
+            company=company,
+            location=location,
+            description="",
+            employment_type="",
+            seniority="",
+            salary_min=salary_min,
+            salary_max=salary_max,
+            salary_currency=salary_currency,
+            posted_at="",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class TikTokNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        company = job.get("company") or "TikTok"
+        apply_url = job.get("url") or ""
+        location = job.get("location") or ""
+        department = job.get("department") or ""
+
+        identity = JobIdentity(
+            provider="tiktok",
+            company_id=company_id,
+            external_id=external_id
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            title=title,
+            company=company,
+            location=location,
+            description="",
+            employment_type="",
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at="",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class UberNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        company = job.get("company") or "Uber"
+        apply_url = job.get("url") or ""
+        location = job.get("location") or ""
+        department = job.get("department") or ""
+
+        identity = JobIdentity(
+            provider="uber",
+            company_id=company_id,
+            external_id=external_id
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            title=title,
+            company=company,
+            location=location,
+            description="",
+            employment_type="",
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at="",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
+class WelcomeToTheJungleNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        company = job.get("company") or ""
+        apply_url = job.get("url") or ""
+        location = job.get("location") or ""
+
+        identity = JobIdentity(
+            provider="welcometothejungle",
+            company_id=company_id,
+            external_id=external_id
+        )
+
+        jobs.append(CanonicalJob(
+            identity=identity,
+            title=title,
+            company=company,
+            location=location,
+            description="",
+            employment_type="",
+            seniority="",
+            salary_min=None,
+            salary_max=None,
+            salary_currency="",
+            posted_at="",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
 class NormalizerFactory:
     @staticmethod
     def get_normalizer(provider: str) -> JobNormalizer:
@@ -505,7 +1887,41 @@ class NormalizerFactory:
             "workable": WorkableNormalizer(),
             "bamboohr": BambooHRNormalizer(),
             "oracle": OracleNormalizer(),
-            "join_com": JoinComNormalizer()
+            "join_com": JoinComNormalizer(),
+            "jazzhr": JazzHRNormalizer(),
+            "personio": PersonioNormalizer(),
+            "recruitee": RecruiteeNormalizer(),
+            "breezy": BreezyNormalizer(),
+            "pinpoint": PinpointNormalizer(),
+            "recruiterbox": RecruiterboxNormalizer(),
+            "remoteok": RemoteOKNormalizer(),
+            "wellfound": WellfoundNormalizer(),
+            "weworkremotely": WeWorkRemotelyNormalizer(),
+            "thehub": TheHubNormalizer(),
+            "mercor": MercorNormalizer(),
+            "manfred": ManfredNormalizer(),
+            "wanted": WantedNormalizer(),
+            "successfactors": SuccessFactorsNormalizer(),
+            "gem": GemNormalizer(),
+            "icims": iCIMSNormalizer(),
+            "rippling": RipplingNormalizer(),
+            "cornerstone": CornerstoneNormalizer(),
+            "phenom": PhenomNormalizer(),
+            "avature": AvatureNormalizer(),
+            "eightfold": EightfoldNormalizer(),
+            "builtin": BuiltInNormalizer(),
+            "apple": AppleNormalizer(),
+            "arbetsformedlingen": ArbetsformedlingenNormalizer(),
+            "bundesagentur": BundesagenturNormalizer(),
+            "eures": EuresNormalizer(),
+            "jobs_cz": JobsCzNormalizer(),
+            "jobsch": JobsChNormalizer(),
+            "google": GoogleNormalizer(),
+            "taleo": TaleoNormalizer(),
+            "programathor": ProgramathorNormalizer(),
+            "tiktok": TikTokNormalizer(),
+            "uber": UberNormalizer(),
+            "welcometothejungle": WelcomeToTheJungleNormalizer(),
         }
         return normalizers.get(provider)
 
