@@ -96,6 +96,7 @@ def get_connection() -> CompatConnection:
         # Force session out of read-only mode to handle Supabase quota restrictions
         with raw_conn.cursor() as cur:
             cur.execute("SET default_transaction_read_only = off;")
+        raw_conn.commit()
         return CompatConnection(raw_conn, is_sqlite=False)
     
     # SQLite fallback (mostly for tests/local check compat)
