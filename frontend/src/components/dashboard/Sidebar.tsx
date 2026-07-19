@@ -21,11 +21,9 @@ export function Sidebar() {
   const userNavigation = [
     { name: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
     { name: "Jobs", to: "/dashboard/jobs", icon: Briefcase },
-    { name: "Companies", to: "/dashboard/companies", icon: Building2 },
-    { name: "Pipeline", to: "/dashboard/pipeline", icon: GitFork },
     { name: "Resume", to: "/dashboard/resume", icon: FileText },
+    { name: "Resume Tailor", to: "/dashboard/resume-tailor", icon: GitFork },
     { name: "Applications", to: "/dashboard/applications", icon: Send },
-    { name: "Analytics", to: "/dashboard/analytics", icon: BarChart3 },
     { name: "Settings", to: "/dashboard/settings", icon: Settings },
   ];
 
