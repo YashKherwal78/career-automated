@@ -37,8 +37,12 @@ class SnapshotRepository(BaseRepository):
             conn.execute("CREATE INDEX IF NOT EXISTS idx_snapshots_board ON board_snapshots(board_id)")
             conn.commit()
 
-    def save(self, board_id: str, raw_payload: dict, synced_at: float) -> str:
-        payload_bytes = json.dumps(raw_payload).encode('utf-8')
+    def save(self, board_id: str, raw_payload: dict | bytes, synced_at: float) -> str:
+        # If raw_payload is already bytes (e.g. raw HTTP response body), use it directly
+        if isinstance(raw_payload, bytes):
+            payload_bytes = raw_payload
+        else:
+            payload_bytes = json.dumps(raw_payload).encode('utf-8')
         compressed = gzip.compress(payload_bytes)
         content_sha256 = hashlib.sha256(payload_bytes).hexdigest()
         size_bytes = len(payload_bytes)
