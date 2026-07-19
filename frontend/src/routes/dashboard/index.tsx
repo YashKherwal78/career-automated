@@ -102,7 +102,7 @@ function DashboardHome() {
           <span className="text-xs text-red-500 font-semibold">{error}</span>
           <button 
             onClick={() => window.location.reload()}
-            className="btn-dark px-4 py-2 text-xs rounded-xl"
+            className="btn-dark px-6 py-2 text-xs rounded-xl"
           >
             Retry Connection
           </button>
@@ -129,7 +129,7 @@ function DashboardHome() {
                   filteredTopMatches.map((job) => (
                     <div
                       key={job.job_id}
-                      className="snap-start shrink-0 w-[240px] glass-card rounded-3xl p-6 border border-white/60 bg-white/40 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-1 transition-all duration-300"
+                      className="snap-start shrink-0 w-[240px] glass-card rounded-3xl p-6 flex flex-col justify-between hover:shadow-md hover:-translate-y-1 transition-all duration-300"
                     >
                       <div className="space-y-4">
                         <div className="flex items-start justify-between">
@@ -162,7 +162,7 @@ function DashboardHome() {
                           href={job.apply_url} 
                           target="_blank" 
                           rel="noreferrer"
-                          className="btn-dark w-full py-2 text-xs rounded-xl flex items-center justify-center gap-1"
+                          className="btn-dark w-full py-2.5 text-xs rounded-xl flex items-center justify-center gap-1"
                         >
                           Apply Opportunity <ChevronRight className="h-3.5 w-3.5" />
                         </a>
@@ -175,7 +175,7 @@ function DashboardHome() {
           </div>
 
           {/* 3. Filters Section */}
-          <div className="flex flex-wrap items-center justify-between border-t border-b border-white/20 py-4 gap-4">
+          <div className="flex flex-wrap items-center justify-between border-t border-b hairline py-4 gap-4">
             <div className="flex items-center gap-2 text-xs text-ink-soft">
               <Filter className="h-3.5 w-3.5" />
               <span className="font-medium">Filter Engine</span>
@@ -220,7 +220,7 @@ function DashboardHome() {
               Other Pipeline Opportunities
             </h2>
             
-            <div className="glass-card rounded-3xl border border-white/60 bg-white/30 overflow-hidden shadow-sm">
+            <div className="glass-card rounded-3xl border-t border-white/60 bg-white/30 overflow-hidden shadow-sm">
               {filteredRemainingJobs.length === 0 ? (
                 <div className="py-12 text-center">
                   <span className="text-xs text-ink-soft">No remaining jobs match your selection.</span>
