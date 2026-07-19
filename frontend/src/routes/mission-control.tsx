@@ -12,7 +12,7 @@ import { Infrastructure } from '../components/mission-control/infrastructure/Inf
 import { AiOps } from '../components/mission-control/ai/AiOps';
 import { Alerts } from '../components/mission-control/alerts/Alerts';
 import { Deployments } from '../components/mission-control/deployments/Deployments';
-import { LogViewer } from '../components/mission-control/logs/LogViewer';
+import { LogViewer } from '../components/mission-control/log-viewer/LogViewer';
 import { ShieldAlert } from 'lucide-react';
 
 export const Route = createFileRoute('/mission-control')({
