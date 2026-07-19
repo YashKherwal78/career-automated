@@ -31,6 +31,7 @@ import { Route as MissionControlLeakageExplorerRouteImport } from './routes/miss
 import { Route as MissionControlDecisionEngineRouteImport } from './routes/mission-control/decision-engine'
 import { Route as MissionControlCompanyReplayRouteImport } from './routes/mission-control/company-replay'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
+import { Route as DashboardResumeTailorRouteImport } from './routes/dashboard/resume-tailor'
 import { Route as DashboardResumeRouteImport } from './routes/dashboard/resume'
 import { Route as DashboardPipelineRouteImport } from './routes/dashboard/pipeline'
 import { Route as DashboardJobsRouteImport } from './routes/dashboard/jobs'
@@ -154,6 +155,11 @@ const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardResumeTailorRoute = DashboardResumeTailorRouteImport.update({
+  id: '/resume-tailor',
+  path: '/resume-tailor',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardResumeRoute = DashboardResumeRouteImport.update({
   id: '/resume',
   path: '/resume',
@@ -223,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/jobs': typeof DashboardJobsRouteWithChildren
   '/dashboard/pipeline': typeof DashboardPipelineRoute
   '/dashboard/resume': typeof DashboardResumeRoute
+  '/dashboard/resume-tailor': typeof DashboardResumeTailorRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/mission-control/company-replay': typeof MissionControlCompanyReplayRoute
   '/mission-control/decision-engine': typeof MissionControlDecisionEngineRoute
@@ -254,6 +261,7 @@ export interface FileRoutesByTo {
   '/dashboard/jobs': typeof DashboardJobsRouteWithChildren
   '/dashboard/pipeline': typeof DashboardPipelineRoute
   '/dashboard/resume': typeof DashboardResumeRoute
+  '/dashboard/resume-tailor': typeof DashboardResumeTailorRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/mission-control/company-replay': typeof MissionControlCompanyReplayRoute
   '/mission-control/decision-engine': typeof MissionControlDecisionEngineRoute
@@ -288,6 +296,7 @@ export interface FileRoutesById {
   '/dashboard/jobs': typeof DashboardJobsRouteWithChildren
   '/dashboard/pipeline': typeof DashboardPipelineRoute
   '/dashboard/resume': typeof DashboardResumeRoute
+  '/dashboard/resume-tailor': typeof DashboardResumeTailorRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/mission-control/company-replay': typeof MissionControlCompanyReplayRoute
   '/mission-control/decision-engine': typeof MissionControlDecisionEngineRoute
@@ -323,6 +332,7 @@ export interface FileRouteTypes {
     | '/dashboard/jobs'
     | '/dashboard/pipeline'
     | '/dashboard/resume'
+    | '/dashboard/resume-tailor'
     | '/dashboard/settings'
     | '/mission-control/company-replay'
     | '/mission-control/decision-engine'
@@ -354,6 +364,7 @@ export interface FileRouteTypes {
     | '/dashboard/jobs'
     | '/dashboard/pipeline'
     | '/dashboard/resume'
+    | '/dashboard/resume-tailor'
     | '/dashboard/settings'
     | '/mission-control/company-replay'
     | '/mission-control/decision-engine'
@@ -387,6 +398,7 @@ export interface FileRouteTypes {
     | '/dashboard/jobs'
     | '/dashboard/pipeline'
     | '/dashboard/resume'
+    | '/dashboard/resume-tailor'
     | '/dashboard/settings'
     | '/mission-control/company-replay'
     | '/mission-control/decision-engine'
@@ -571,6 +583,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSettingsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/resume-tailor': {
+      id: '/dashboard/resume-tailor'
+      path: '/resume-tailor'
+      fullPath: '/dashboard/resume-tailor'
+      preLoaderRoute: typeof DashboardResumeTailorRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/resume': {
       id: '/dashboard/resume'
       path: '/resume'
@@ -667,6 +686,7 @@ interface DashboardRouteChildren {
   DashboardJobsRoute: typeof DashboardJobsRouteWithChildren
   DashboardPipelineRoute: typeof DashboardPipelineRoute
   DashboardResumeRoute: typeof DashboardResumeRoute
+  DashboardResumeTailorRoute: typeof DashboardResumeTailorRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
@@ -679,6 +699,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardJobsRoute: DashboardJobsRouteWithChildren,
   DashboardPipelineRoute: DashboardPipelineRoute,
   DashboardResumeRoute: DashboardResumeRoute,
+  DashboardResumeTailorRoute: DashboardResumeTailorRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
 }
