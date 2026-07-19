@@ -408,6 +408,82 @@ class OracleNormalizer(JobNormalizer):
         ))
         return jobs
 
+class JoinComNormalizer(JobNormalizer):
+    def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
+        jobs = []
+        company_id = raw_job.company_id
+        job = raw_job.payload
+        
+        title = job.get("title") or ""
+        external_id = str(job.get("id") or "")
+        
+        # Build apply URL using the job's idParam slug
+        slug = job.get("idParam") or ""
+        apply_url = f"https://join.com/companies/{company_id}/{slug}" if slug else ""
+        
+        # Resolve location details
+        location = ""
+        city_obj = job.get("city")
+        if isinstance(city_obj, dict):
+            city_name = city_obj.get("cityName") or ""
+            country_name = city_obj.get("countryName") or ""
+            location = f"{city_name}, {country_name}".strip(", ")
+            
+        # Workplace remote translation
+        remote = ""
+        workplace = job.get("workplaceType")
+        if workplace in ("REMOTE", "HYBRID"):
+            remote = "Remote" if workplace == "REMOTE" else "Hybrid"
+            
+        # Salary details
+        salary_min = None
+        salary_currency = ""
+        salary_obj = job.get("salaryAmountFrom")
+        if isinstance(salary_obj, dict):
+            raw_amount = salary_obj.get("amount")
+            if raw_amount is not None:
+                # amount in join.com payload is stored in cents/multiplied by 100
+                salary_min = float(raw_amount) / 100.0
+            salary_currency = salary_obj.get("currency") or ""
+            
+        emp_type = ""
+        emp_obj = job.get("employmentType")
+        if isinstance(emp_obj, dict):
+            emp_type = emp_obj.get("name") or ""
+            
+        dept = ""
+        cat_obj = job.get("category")
+        if isinstance(cat_obj, dict):
+            dept = cat_obj.get("name") or ""
+
+        identity = JobIdentity(
+            provider="join_com",
+            board_id=company_id,
+            external_job_id=external_id if external_id else None,
+            fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
+        )
+        
+        jobs.append(CanonicalJob(
+            identity=identity,
+            company_id=company_id,
+            board_id=company_id,
+            title=title,
+            description="",  # Listing page doesn't contain description (separately fetched during enrichment)
+            location=location,
+            remote_type=remote,
+            department=dept,
+            employment_type=emp_type,
+            seniority="",
+            salary_min=salary_min,
+            salary_max=None,
+            salary_currency=salary_currency,
+            posted_at=job.get("createdAt") or "",
+            apply_url=apply_url,
+            raw_payload=job,
+            normalized_at=time.time()
+        ))
+        return jobs
+
 class NormalizerFactory:
     @staticmethod
     def get_normalizer(provider: str) -> JobNormalizer:
@@ -420,7 +496,9 @@ class NormalizerFactory:
             "teamtailor": TeamtailorNormalizer(),
             "workable": WorkableNormalizer(),
             "bamboohr": BambooHRNormalizer(),
-            "oracle": OracleNormalizer()
+            "oracle": OracleNormalizer(),
+            "join_com": JoinComNormalizer()
         }
         return normalizers.get(provider)
+
 
