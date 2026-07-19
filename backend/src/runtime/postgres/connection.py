@@ -1,8 +1,13 @@
 import sqlite3
 from typing import Optional, Iterable, Any
+from enum import Enum
 from src.runtime.config.settings import Settings
 
-USE_POSTGRES = Settings.OPERATIONAL_DATABASE_URL.startswith("postgresql://") or Settings.OPERATIONAL_DATABASE_URL.startswith("postgres://")
+class DatabaseRole(str, Enum):
+    AUTH = "auth"
+    OPERATIONAL = "operational"
+
+USE_POSTGRES = Settings.use_postgres(Settings.OPERATIONAL_DATABASE_URL)
 
 try:
     import psycopg
@@ -88,11 +93,13 @@ class CompatConnection:
         return getattr(self._conn, name)
 
 
-def get_connection() -> CompatConnection:
-    if USE_POSTGRES:
+def get_connection(role: DatabaseRole = DatabaseRole.OPERATIONAL) -> CompatConnection:
+    db_url = Settings.OPERATIONAL_DATABASE_URL if role == DatabaseRole.OPERATIONAL else Settings.AUTH_DATABASE_URL
+    
+    if Settings.use_postgres(db_url):
         if psycopg is None:
             raise RuntimeError("psycopg binary is not installed.")
-        raw_conn = psycopg.connect(Settings.OPERATIONAL_DATABASE_URL, autocommit=False, prepare_threshold=None)
+        raw_conn = psycopg.connect(db_url, autocommit=False, prepare_threshold=None)
         # Force session out of read-only mode to handle Supabase quota restrictions
         with raw_conn.cursor() as cur:
             cur.execute("SET default_transaction_read_only = off;")
@@ -100,22 +107,12 @@ def get_connection() -> CompatConnection:
         return CompatConnection(raw_conn, is_sqlite=False)
     
     # SQLite fallback (mostly for tests/local check compat)
-    db_path = Settings.OPERATIONAL_DATABASE_URL.replace("sqlite:///", "")
+    db_path = db_url.replace("sqlite:///", "")
     raw_conn = sqlite3.connect(db_path, check_same_thread=False, timeout=30.0)
     raw_conn.row_factory = sqlite3.Row
     return CompatConnection(raw_conn, is_sqlite=True)
 
 
 def get_auth_connection() -> CompatConnection:
-    is_postgres_auth = Settings.AUTH_DATABASE_URL.startswith("postgresql://") or Settings.AUTH_DATABASE_URL.startswith("postgres://")
-    if is_postgres_auth:
-        if psycopg is None:
-            raise RuntimeError("psycopg binary is not installed.")
-        raw_conn = psycopg.connect(Settings.AUTH_DATABASE_URL, autocommit=False, prepare_threshold=None)
-        with raw_conn.cursor() as cur:
-            cur.execute("SET default_transaction_read_only = off;")
-        raw_conn.commit()
-        return CompatConnection(raw_conn, is_sqlite=False)
-    
-    return get_connection()
+    return get_connection(DatabaseRole.AUTH)
 

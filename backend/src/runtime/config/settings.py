@@ -33,6 +33,10 @@ class Settings:
     GMAIL_APP_PASSWORD: str = os.getenv("GMAIL_APP_PASSWORD", "").strip("'\"")
     
     @classmethod
+    def use_postgres(cls, db_url: str) -> bool:
+        return db_url.startswith("postgresql://") or db_url.startswith("postgres://")
+    
+    @classmethod
     def validate(cls):
         """Validate critical environment variables are present."""
         missing = []
