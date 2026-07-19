@@ -19,8 +19,8 @@ class Settings:
     ENABLE_LOCAL_FALLBACKS: bool = os.getenv("ENABLE_LOCAL_FALLBACKS", "false").lower() == "true"
 
     # Database
-    AUTH_DATABASE_URL: str = os.getenv("AUTH_DATABASE_URL", "").strip("'\"")
-    OPERATIONAL_DATABASE_URL: str = os.getenv("OPERATIONAL_DATABASE_URL", "").strip("'\"")
+    AUTH_DATABASE_URL: str = (os.getenv("AUTH_DATABASE_URL") or os.getenv("DATABASE_URL") or "").strip("'\"")
+    OPERATIONAL_DATABASE_URL: str = (os.getenv("OPERATIONAL_DATABASE_URL") or os.getenv("DATABASE_URL") or "").strip("'\"")
     
     # Redis
     REDIS_URL: str = os.getenv("REDIS_URL", "").strip("'\"")
