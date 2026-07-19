@@ -2,8 +2,16 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-BASE_DIR = Path(__file__).resolve().parents[4]
-load_dotenv(BASE_DIR / ".env")
+# Search upwards for the root .env file starting from this file's folder
+current = Path(__file__).resolve().parent
+while current != current.parent:
+    if (current / ".env").exists():
+        load_dotenv(current / ".env")
+        break
+    current = current.parent
+else:
+    # Fallback to default load
+    load_dotenv(Path(__file__).resolve().parents[4] / ".env")
 
 class Settings:
     # Environment
