@@ -28,7 +28,20 @@ export const Route = createFileRoute("/")({
 });
 
 
+import { useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useAuth } from "../lib/auth";
+
 function Home() {
+  const { user, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoading && user) {
+      navigate({ to: "/dashboard" });
+    }
+  }, [user, isLoading, navigate]);
+
   return (
     <>
       <Hero />
