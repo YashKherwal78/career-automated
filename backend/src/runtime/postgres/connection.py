@@ -116,3 +116,8 @@ def get_connection(role: DatabaseRole = DatabaseRole.OPERATIONAL) -> CompatConne
 def get_auth_connection() -> CompatConnection:
     return get_connection(DatabaseRole.AUTH)
 
+
+def is_postgres(role: DatabaseRole = DatabaseRole.OPERATIONAL) -> bool:
+    db_url = Settings.OPERATIONAL_DATABASE_URL if role == DatabaseRole.OPERATIONAL else Settings.AUTH_DATABASE_URL
+    return Settings.use_postgres(db_url)
+
