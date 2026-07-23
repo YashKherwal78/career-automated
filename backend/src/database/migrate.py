@@ -21,6 +21,7 @@ class MigrationRunner:
                     conn.execute("CREATE EXTENSION IF NOT EXISTS vector;")
                     conn.commit()
                 except Exception as e:
+                    conn.rollback()
                     logger.warning(f"Could not enable pgvector extension (might lack superuser/permissions): {e}")
                 conn.execute('''
                     CREATE TABLE IF NOT EXISTS schema_migrations (
