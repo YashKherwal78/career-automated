@@ -134,7 +134,16 @@ class MigrationRunner:
                             logger.info(f"Column '{column_name}' already exists in table '{table_name}'. Skipping.")
                             continue
                     
-                    conn.execute(cleaned_statement)
+                    try:
+                        conn.execute(cleaned_statement)
+                    except Exception as stmt_err:
+                        err_msg = str(stmt_err).lower()
+                        if "extension" in err_msg or "vector" in err_msg or "hnsw" in err_msg:
+                            conn.rollback()
+                            logger.warning(f"Skipping optional statement in {filename}: {stmt_err}")
+                            continue
+                        else:
+                            raise stmt_err
                 
                 conn.execute("INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)", (version_key, os.path.getmtime(file_path)))
                 conn.commit()
