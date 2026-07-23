@@ -27,4 +27,4 @@ EXPOSE 8000
 
 # The frontend is deployed separately. Runtime data is supplied via a mounted
 # /app/data volume rather than included in this image.
-CMD ["python3", "src/workers/scheduler.py"]
+CMD ["python3", "src/workers/mass_scheduler.py"]
