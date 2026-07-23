@@ -113,6 +113,7 @@ class MigrationRunner:
                         cleaned_statement = re.sub(r'(?i)\bSTRICT\b', '', cleaned_statement)
                         cleaned_statement = re.sub(r'(?i)\bvector\(\d+\)\b', 'TEXT', cleaned_statement)
                         cleaned_statement = re.sub(r'(?i)\bvector\b', 'TEXT', cleaned_statement)
+                        cleaned_statement = re.sub(r'(?i)\bCREATE\s+EXTENSION\b', 'SELECT 1 -- CREATE EXTENSION', cleaned_statement)
                     else:
                         # Skip CREATE EXTENSION statements in SQLite
                         if "CREATE EXTENSION" in cleaned_statement.upper():
