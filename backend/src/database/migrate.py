@@ -25,14 +25,14 @@ class MigrationRunner:
                     logger.warning(f"Could not enable pgvector extension (might lack superuser/permissions): {e}")
                 conn.execute('''
                     CREATE TABLE IF NOT EXISTS schema_migrations (
-                        version INTEGER PRIMARY KEY,
+                        version TEXT PRIMARY KEY,
                         applied_at DOUBLE PRECISION NOT NULL
                     )
                 ''')
             else:
                 conn.execute('''
                     CREATE TABLE IF NOT EXISTS schema_migrations (
-                        version INTEGER PRIMARY KEY,
+                        version TEXT PRIMARY KEY,
                         applied_at REAL NOT NULL
                     )
                 ''')
@@ -45,7 +45,7 @@ class MigrationRunner:
         try:
             cursor = conn.execute("SELECT version FROM schema_migrations")
             rows = cursor.fetchall()
-            return {r[0] if isinstance(r, tuple) else r["version"] for r in rows}
+            return {str(r[0] if isinstance(r, tuple) else r["version"]) for r in rows}
         finally:
             conn.close()
 
@@ -76,11 +76,11 @@ class MigrationRunner:
             if not match:
                 continue
             
-            version = int(match.group(1))
-            if version in applied:
+            version_key = filename
+            if version_key in applied:
                 continue
 
-            logger.info(f"Applying migration: {filename} (Version {version})")
+            logger.info(f"Applying migration: {filename}")
             with open(file_path, "r") as f:
                 sql_content = f.read()
 
@@ -136,9 +136,9 @@ class MigrationRunner:
                     
                     conn.execute(cleaned_statement)
                 
-                conn.execute("INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)", (version, os.path.getmtime(file_path)))
+                conn.execute("INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)", (version_key, os.path.getmtime(file_path)))
                 conn.commit()
-                logger.info(f"Successfully applied migration version {version}")
+                logger.info(f"Successfully applied migration {filename}")
             except Exception as e:
                 logger.error(f"Failed to apply migration {filename}: {e}")
                 raise e
