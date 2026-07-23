@@ -111,6 +111,8 @@ class MigrationRunner:
                         cleaned_statement = re.sub(r'(?i)unixepoch\(\)', 'EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)', cleaned_statement)
                         cleaned_statement = re.sub(r'(?i)WITHOUT\s+ROWID', '', cleaned_statement)
                         cleaned_statement = re.sub(r'(?i)\bSTRICT\b', '', cleaned_statement)
+                        cleaned_statement = re.sub(r'(?i)\bvector\(\d+\)\b', 'TEXT', cleaned_statement)
+                        cleaned_statement = re.sub(r'(?i)\bvector\b', 'TEXT', cleaned_statement)
                     else:
                         # Skip CREATE EXTENSION statements in SQLite
                         if "CREATE EXTENSION" in cleaned_statement.upper():
