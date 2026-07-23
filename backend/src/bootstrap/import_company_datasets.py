@@ -402,14 +402,11 @@ def insert_records(records: list[CompanyRecord], db_path: str, dry_run: bool = F
             log.info(f"  ... and {len(records) - 5} more.")
         return stats
 
-    from src.api.db import get_connection, is_postgres
+    from src.runtime.postgres.connection import get_connection, is_postgres
 
     conn = get_connection()
     try:
-        if is_postgres():
-            existing = {row["domain"] for row in conn.execute("SELECT domain FROM company_identities").fetchall()}
-        else:
-            existing = {row[0] for row in conn.execute("SELECT domain FROM company_identities").fetchall()}
+        existing = {row[0] if isinstance(row, (tuple, list)) else row["domain"] for row in conn.execute("SELECT domain FROM company_identities").fetchall()}
         log.info(f"Existing company_identities rows: {len(existing)}")
 
         # Separate jobhive (IMPORTED_REGISTRY) from other sources
@@ -555,12 +552,12 @@ def insert_records(records: list[CompanyRecord], db_path: str, dry_run: bool = F
 
 def run_verification(db_path: str):
     log.info("\n=== Post-Import Verification ===\n")
-    from src.api.db import get_connection, is_postgres, json_extract
+    from src.runtime.postgres.connection import get_connection, is_postgres
     conn = get_connection()
     try:
         if is_postgres():
-            total = conn.execute("SELECT COUNT(*) cnt FROM company_identities").fetchone()["cnt"]
-            unique_domains = conn.execute("SELECT COUNT(DISTINCT domain) cnt FROM company_identities").fetchone()["cnt"]
+            total = conn.execute("SELECT COUNT(*) cnt FROM company_identities").fetchone()[0]
+            unique_domains = conn.execute("SELECT COUNT(DISTINCT domain) cnt FROM company_identities").fetchone()[0]
         else:
             total = conn.execute("SELECT COUNT(*) FROM company_identities").fetchone()[0]
             unique_domains = conn.execute("SELECT COUNT(DISTINCT domain) FROM company_identities").fetchone()[0]
@@ -647,7 +644,8 @@ def main():
         run_verification(args.db)
         return
 
-    if not os.path.exists(args.db):
+    from src.runtime.postgres.connection import is_postgres
+    if not is_postgres() and not os.path.exists(args.db):
         log.error(f"Database not found: {args.db}. Run python run_pipeline.py first to initialise it.")
         sys.exit(1)
 
