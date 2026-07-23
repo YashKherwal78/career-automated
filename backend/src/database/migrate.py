@@ -45,7 +45,7 @@ class MigrationRunner:
         try:
             cursor = conn.execute("SELECT version FROM schema_migrations")
             rows = cursor.fetchall()
-            return {str(r[0] if isinstance(r, tuple) else r["version"]) for r in rows}
+            return {str(r[0] if isinstance(r, (tuple, list)) else r["version"]) for r in rows}
         finally:
             conn.close()
 
