@@ -120,14 +120,14 @@ import shutil
 import tempfile
 from fastapi import UploadFile, File
 from src.runtime.storage.storage_service import StorageService
-from src.services.resume_parser import ResumeParserService
+from src.services.profile_extractor import ProfileExtractionService
 
-@router.post("/parse_resume")
-def parse_resume_endpoint(
+@router.post("/extract_profile")
+def extract_profile_endpoint(
     file: UploadFile = File(...),
     current_user: CurrentUser = Depends(get_current_user)
 ):
-    """Upload resume, parse text content using AI, and return structured profile data."""
+    """Upload resume or document, extract text, and extract a canonical candidate profile."""
     ext = os.path.splitext(file.filename)[1].lower()
     allowed_extensions = {".pdf", ".docx", ".txt"}
     if ext not in allowed_extensions:
@@ -148,9 +148,9 @@ def parse_resume_endpoint(
             )
 
     try:
-        # Parse resume using ResumeParserService
-        parser = ResumeParserService()
-        parsed_data = parser.parse_resume(tmp_path)
+        # Extract profile using ProfileExtractionService
+        extractor = ProfileExtractionService()
+        parsed_data = extractor.extract_profile(tmp_path)
         
         # Also upload to Cloudflare R2
         key = f"resumes/{current_user.user_id}/{file.filename}"
@@ -177,7 +177,7 @@ def parse_resume_endpoint(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Resume processing failed: {str(e)}"
+            detail=f"Profile extraction failed: {str(e)}"
         )
     finally:
         if os.path.exists(tmp_path):

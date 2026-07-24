@@ -51,6 +51,9 @@ interface ExperienceEntry {
   current_position: boolean;
   bullet_points: string[];
   technologies: string[];
+  achievements: string[];
+  domains: string[];
+  keywords: string[];
 }
 
 interface ProjectEntry {
@@ -59,6 +62,8 @@ interface ProjectEntry {
   technologies: string[];
   github_link: string | null;
   live_link: string | null;
+  skills_demonstrated: string[];
+  domains: string[];
 }
 
 interface SkillsCategorized {
@@ -247,7 +252,7 @@ function OnboardingPage() {
     formData.append("file", uploadedFile);
 
     try {
-      const response = await fetch(`${API_BASE}/users/parse_resume`, {
+      const response = await fetch(`${API_BASE}/users/extract_profile`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${session?.access_token}`,
@@ -257,7 +262,7 @@ function OnboardingPage() {
 
       if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.detail || "Failed to parse resume");
+        throw new Error(err.detail || "Failed to extract profile");
       }
 
       const data = await response.json();
