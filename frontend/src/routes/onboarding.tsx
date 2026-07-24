@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { ArrowRight, Upload, CheckCircle2, Sparkles, LogOut, Check, ChevronRight, Edit3, Trash2, Plus, Info, FileText, ArrowLeft, ShieldCheck } from "lucide-react";
+import { ArrowRight, Upload, CheckCircle2, Sparkles, LogOut, Edit3, Plus, ArrowLeft, ShieldCheck, Check, Briefcase, GraduationCap, Code, Target, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../lib/auth";
 
@@ -83,49 +83,47 @@ const INITIAL_PARSED_PROFILE: ProfileData = {
   achievements: ["Winner - National Hackathon 2025", "Published Paper on Autonomous Agent Orchestration"]
 };
 
-const PROCESSING_STAGES = [
-  "Reading resume document...",
-  "Extracting personal & contact details...",
-  "Parsing work experience & projects...",
-  "Identifying technical skills & certifications...",
-  "Generating candidate profile..."
+// Humanized parsing stage messages
+const HUMAN_PARSING_STAGES = [
+  "✓ Experience understood",
+  "✓ Projects identified",
+  "✓ Technical skills recognized",
+  "✓ Building your profile"
 ];
 
-const DASHBOARD_PREP_STEPS = [
-  { label: "Original resume stored", done: true },
-  { label: "Structured candidate profile generated", done: true },
-  { label: "Profile preferences saved", done: true },
-  { label: "Filtering top 0.1% matching opportunities", done: false },
-  { label: "Configuring personalized dashboard", done: false }
+// Live profile cards that pop up during processing
+const LIVE_PROFILE_CARDS = [
+  { icon: Code, text: "React, TypeScript, Python, FastAPI", label: "Skills Identified" },
+  { icon: GraduationCap, text: "IIT Roorkee — B.Tech CS", label: "Education Verified" },
+  { icon: Briefcase, text: "Lead Product Engineer @ CareerAutomated", label: "Experience Logged" },
+  { icon: Target, text: "247 Matching Roles Located", label: "Market Match" }
 ];
 
 function OnboardingPage() {
   const { user, session, logout, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
-  // Steps: 1 = Welcome, 2 = Upload, 3 = Review Profile, 4 = Preferences, 5 = Preparing Dashboard
+  // Steps: 1 = Welcome, 2 = Upload, 3 = Review Profile, 4 = Preferences, 5 = Ready Wow Moment
   const [step, setStep] = useState(1);
   const [dragOver, setDragOver] = useState(false);
   const [file, setFile] = useState<File | null>(null);
 
   // Parsing indicator state
   const [isParsing, setIsParsing] = useState(false);
-  const [parsingIndex, setParsingIndex] = useState(0);
+  const [parsingStageIndex, setParsingStageIndex] = useState(0);
+  const [visibleCardCount, setVisibleCardCount] = useState(0);
 
-  // Candidate Structured Profile (Source of Truth)
+  // Candidate Profile State
   const [profile, setProfile] = useState<ProfileData>(INITIAL_PARSED_PROFILE);
 
-  // Preferences (Only what materially improves matching)
+  // Preferences (Simple location & job type chips)
   const [prefLocation, setPrefLocation] = useState<string>("Remote");
   const [prefJobType, setPrefJobType] = useState<string>("Full-time");
   const [remotePreference, setRemotePreference] = useState<string>("Remote Only");
 
-  // Editing state for Step 4
+  // Editing state for Step 3
   const [newSkill, setNewSkill] = useState("");
   const [isEditingContact, setIsEditingContact] = useState(false);
-
-  // Step 6 preparation checklist
-  const [prepSteps, setPrepSteps] = useState(DASHBOARD_PREP_STEPS);
 
   useEffect(() => {
     if (!user) {
@@ -133,67 +131,37 @@ function OnboardingPage() {
     }
   }, [user, navigate]);
 
-  // Parsing step animation sequence
+  // Live profile card build animation
   useEffect(() => {
     if (!isParsing) return;
-    const interval = setInterval(() => {
-      setParsingIndex((prev) => {
-        if (prev < PROCESSING_STAGES.length - 1) {
+
+    // Stage updates
+    const stageInterval = setInterval(() => {
+      setParsingStageIndex((prev) => (prev < HUMAN_PARSING_STAGES.length - 1 ? prev + 1 : prev));
+    }, 1100);
+
+    // Card pop-ins
+    const cardInterval = setInterval(() => {
+      setVisibleCardCount((prev) => {
+        if (prev < LIVE_PROFILE_CARDS.length) {
           return prev + 1;
         } else {
-          setIsParsing(false);
-          setStep(3); // Proceed to Step 4 (Profile Review)
-          return 0;
+          clearInterval(cardInterval);
+          clearInterval(stageInterval);
+          setTimeout(() => {
+            setIsParsing(false);
+            setStep(3); // Go to "Does this look right?"
+          }, 800);
+          return prev;
         }
       });
-    }, 1600);
-    return () => clearInterval(interval);
-  }, [isParsing]);
-
-  // Preparation sequence animation before navigating to dashboard
-  useEffect(() => {
-    if (step !== 5) return;
-
-    const t1 = setTimeout(() => {
-      setPrepSteps((prev) => prev.map((s, i) => (i === 3 ? { ...s, done: true } : s)));
-    }, 1400);
-
-    const t2 = setTimeout(() => {
-      setPrepSteps((prev) => prev.map((s, i) => (i === 4 ? { ...s, done: true } : s)));
-    }, 2800);
-
-    const t3 = setTimeout(async () => {
-      try {
-        if (session?.access_token) {
-          await fetch(`${API_BASE}/users/onboarding`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({
-              full_name: profile.name,
-              education: profile.education,
-              experience: profile.experience,
-              skills: profile.skills.map((s) => ({ skill_name: s, proficiency: "Expert" })),
-              career_goals: `Targeting ${prefJobType} roles (${remotePreference}) in ${prefLocation}.`,
-              onboarding_complete: true,
-            }),
-          });
-        }
-      } catch (err) {
-        console.error("Failed to save onboarding metadata:", err);
-      }
-      await refreshProfile();
-      navigate({ to: "/dashboard" });
-    }, 4000);
+    }, 1000);
 
     return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
+      clearInterval(stageInterval);
+      clearInterval(cardInterval);
     };
-  }, [step]);
+  }, [isParsing]);
 
   const handleFileUpload = (e: any) => {
     e.preventDefault();
@@ -202,7 +170,8 @@ function OnboardingPage() {
     if (uploadedFile) {
       setFile(uploadedFile);
       setIsParsing(true);
-      setParsingIndex(0);
+      setParsingStageIndex(0);
+      setVisibleCardCount(0);
     }
   };
 
@@ -215,6 +184,32 @@ function OnboardingPage() {
 
   const handleRemoveSkill = (skillToRemove: string) => {
     setProfile({ ...profile, skills: profile.skills.filter((s) => s !== skillToRemove) });
+  };
+
+  const handleCompleteOnboarding = async () => {
+    try {
+      if (session?.access_token) {
+        await fetch(`${API_BASE}/users/onboarding`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            full_name: profile.name,
+            education: profile.education,
+            experience: profile.experience,
+            skills: profile.skills.map((s) => ({ skill_name: s, proficiency: "Expert" })),
+            career_goals: `Targeting ${prefJobType} roles (${remotePreference}) in ${prefLocation}.`,
+            onboarding_complete: true,
+          }),
+        });
+      }
+    } catch (err) {
+      console.error("Failed to save onboarding metadata:", err);
+    }
+    await refreshProfile();
+    navigate({ to: "/dashboard" });
   };
 
   return (
@@ -260,10 +255,10 @@ function OnboardingPage() {
             >
               <div className="space-y-3">
                 <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight text-ink leading-tight">
-                  Welcome to CareerAutomated.
+                  Get hired faster.
                 </h1>
                 <p className="text-sm text-ink-soft max-w-md mx-auto leading-relaxed">
-                  We personalize your entire search using your resume. No long forms. Takes under 2 minutes.
+                  We automatically find matching jobs and tailor your applications using your resume. Under 2 minutes.
                 </p>
               </div>
 
@@ -272,19 +267,19 @@ function OnboardingPage() {
                   onClick={() => setStep(2)}
                   className="btn-dark w-full py-3.5 text-xs font-medium rounded-2xl flex items-center justify-center gap-2 group shadow-sm hover:shadow transition-all"
                 >
-                  Upload Resume to Get Started
+                  Upload Resume to Begin
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
                 </button>
               </div>
 
               <div className="flex items-center justify-center gap-1.5 text-[11px] text-ink-soft">
                 <ShieldCheck className="h-3.5 w-3.5 text-[color:var(--peach-deep)]" />
-                <span>Your privacy is protected. We never share your data without consent.</span>
+                <span>Your privacy is protected. We never submit applications without your explicit review.</span>
               </div>
             </motion.div>
           )}
 
-          {/* STEP 2: RESUME UPLOAD & PARSING */}
+          {/* STEP 2: RESUME UPLOAD & LIVE PROFILE-BUILDING ANIMATION */}
           {step === 2 && (
             <motion.div
               key="step2"
@@ -296,35 +291,44 @@ function OnboardingPage() {
             >
               <div className="text-center space-y-2">
                 <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">
-                  Upload Your Resume
+                  {isParsing ? "We're understanding your experience..." : "Upload Your Resume"}
                 </h2>
                 <p className="text-xs text-ink-soft max-w-sm mx-auto">
-                  Your resume helps us surface high-fit opportunities and automatically tailor your applications.
+                  {isParsing
+                    ? "Building your live candidate profile in real time..."
+                    : "Upload your existing resume to unlock tailored job matching."}
                 </p>
               </div>
 
               {isParsing ? (
-                /* Stage-based processing loader */
-                <div className="border hairline bg-white/60 rounded-2xl p-10 text-center space-y-5">
-                  <div className="relative h-10 w-10 mx-auto flex items-center justify-center">
-                    <div className="absolute inset-0 rounded-full border-2 border-slate-200" />
-                    <div className="absolute inset-0 rounded-full border-2 border-t-[color:var(--peach-deep)] animate-spin" />
+                /* Dynamic Live Profile Building Cards */
+                <div className="space-y-4 pt-2">
+                  <div className="bg-white/60 rounded-2xl p-4 border hairline flex items-center justify-between">
+                    <span className="text-xs font-semibold text-ink">
+                      {HUMAN_PARSING_STAGES[parsingStageIndex]}
+                    </span>
+                    <div className="h-4 w-4 rounded-full border-2 border-slate-200 border-t-[color:var(--peach-deep)] animate-spin" />
                   </div>
-                  
-                  <div className="space-y-1">
-                    <AnimatePresence mode="wait">
+
+                  <div className="space-y-2.5">
+                    {LIVE_PROFILE_CARDS.slice(0, visibleCardCount).map((card, idx) => (
                       <motion.div
-                        key={parsingIndex}
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -6 }}
-                        transition={{ duration: 0.25 }}
-                        className="text-xs font-semibold text-ink"
+                        key={idx}
+                        initial={{ opacity: 0, x: -12, scale: 0.96 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        transition={{ duration: 0.35 }}
+                        className="flex items-center gap-3 bg-white/80 border hairline rounded-2xl p-3.5 shadow-2xs"
                       >
-                        {PROCESSING_STAGES[parsingIndex]}
+                        <div className="grid h-8 w-8 place-items-center rounded-xl bg-[color:var(--peach-soft)] text-[color:var(--peach-deep)]">
+                          <card.icon className="h-4 w-4" />
+                        </div>
+                        <div className="text-left flex-1 min-w-0">
+                          <div className="text-[10px] uppercase font-bold text-ink-soft tracking-wider">{card.label}</div>
+                          <div className="text-xs font-semibold text-ink truncate">{card.text}</div>
+                        </div>
+                        <Check className="h-4 w-4 text-emerald-500 shrink-0" />
                       </motion.div>
-                    </AnimatePresence>
-                    <span className="text-[10px] text-ink-soft">Building your structured candidate profile...</span>
+                    ))}
                   </div>
                 </div>
               ) : (
@@ -348,20 +352,20 @@ function OnboardingPage() {
                       Drag & drop your resume here, or browse
                     </span>
                     <span className="block text-[10px] text-ink-soft">
-                      Supports PDF or DOCX format (up to 10MB)
+                      Supports PDF or DOCX format
                     </span>
                   </div>
 
                   <label className="btn-dark inline-flex px-5 py-2.5 text-xs font-medium rounded-xl cursor-pointer">
                     Select File
-                    <input type="file" accept=".pdf,.docx" className="hidden" onChange={handleFileUpload} />
+                    <input type="file" accept=".pdf,.docx,.txt" className="hidden" onChange={handleFileUpload} />
                   </label>
                 </div>
               )}
             </motion.div>
           )}
 
-          {/* STEP 3: PROFILE REVIEW */}
+          {/* STEP 3: DOES THIS LOOK RIGHT? */}
           {step === 3 && (
             <motion.div
               key="step3"
@@ -374,10 +378,10 @@ function OnboardingPage() {
               <div className="flex items-center justify-between border-b hairline pb-4">
                 <div className="space-y-0.5">
                   <h2 className="font-display text-xl font-semibold text-ink">
-                    Review Your Profile
+                    Does this look right?
                   </h2>
                   <p className="text-[11px] text-ink-soft">
-                    Verify the extracted details below. Quick edits ensure 100% accurate matching.
+                    Quickly confirm the details we recognized from your resume.
                   </p>
                 </div>
                 <button
@@ -392,7 +396,7 @@ function OnboardingPage() {
                 {/* Personal Information */}
                 <div className="space-y-2">
                   <span className="text-[10px] uppercase font-bold text-ink-soft tracking-wider block">
-                    Personal Information
+                    Contact Details
                   </span>
                   
                   {isEditingContact ? (
@@ -425,7 +429,7 @@ function OnboardingPage() {
                 {/* Skills Section */}
                 <div className="space-y-2">
                   <span className="text-[10px] uppercase font-bold text-ink-soft tracking-wider block">
-                    Extracted Skills ({profile.skills.length})
+                    Recognized Skills ({profile.skills.length})
                   </span>
                   
                   <div className="flex flex-wrap gap-1.5">
@@ -451,7 +455,7 @@ function OnboardingPage() {
                       value={newSkill}
                       onChange={(e) => setNewSkill(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && handleAddSkill()}
-                      placeholder="Add another skill (e.g. Next.js)..."
+                      placeholder="Add another skill..."
                       className="px-3 py-1.5 rounded-xl bg-white border hairline text-xs outline-none flex-1"
                     />
                     <button
@@ -466,7 +470,7 @@ function OnboardingPage() {
                 {/* Experience */}
                 <div className="space-y-2 border-t hairline pt-3">
                   <span className="text-[10px] uppercase font-bold text-ink-soft tracking-wider block">
-                    Work Experience
+                    Recognized Experience
                   </span>
                   {profile.experience.map((exp, idx) => (
                     <div key={idx} className="p-3.5 bg-white/50 border hairline rounded-2xl space-y-1">
@@ -479,34 +483,18 @@ function OnboardingPage() {
                     </div>
                   ))}
                 </div>
-
-                {/* Education */}
-                <div className="space-y-2 border-t hairline pt-3">
-                  <span className="text-[10px] uppercase font-bold text-ink-soft tracking-wider block">
-                    Education
-                  </span>
-                  {profile.education.map((edu, idx) => (
-                    <div key={idx} className="p-3 bg-white/50 border hairline rounded-2xl flex items-center justify-between">
-                      <div>
-                        <div className="font-semibold text-ink">{edu.school}</div>
-                        <div className="text-[10px] text-ink-soft">{edu.degree}</div>
-                      </div>
-                      <span className="text-[10px] text-ink-soft font-medium">{edu.year}</span>
-                    </div>
-                  ))}
-                </div>
               </div>
 
               <button
                 onClick={() => setStep(4)}
                 className="btn-dark w-full py-3.5 text-xs font-medium rounded-2xl flex items-center justify-center gap-1.5"
               >
-                Profile Looks Great <ChevronRight className="h-4 w-4" />
+                Yes, Looks Right <ArrowRight className="h-4 w-4" />
               </button>
             </motion.div>
           )}
 
-          {/* STEP 4: CAREER PREFERENCES */}
+          {/* STEP 4: CHOOSE WHERE YOU WANT TO WORK */}
           {step === 4 && (
             <motion.div
               key="step4"
@@ -518,28 +506,28 @@ function OnboardingPage() {
             >
               <div className="text-center space-y-1.5">
                 <h2 className="font-display text-2xl font-semibold text-ink">
-                  Career Preferences
+                  Choose where you want to work
                 </h2>
                 <p className="text-xs text-ink-soft max-w-sm mx-auto">
-                  Only set parameters that refine your match quality. We won't re-ask what's on your resume.
+                  Pick your preferred locations & setup so we only bring you exact fits.
                 </p>
               </div>
 
               <div className="space-y-5 text-xs">
-                {/* Location Choice */}
+                {/* Location Chips */}
                 <div className="space-y-2">
                   <span className="text-[10px] uppercase font-bold text-ink-soft tracking-wider block">
-                    Preferred Location
+                    Location Preference
                   </span>
-                  <div className="grid grid-cols-3 gap-2">
-                    {["Remote", "Bangalore", "Gurgaon", "Hyderabad", "Pune", "Mumbai"].map((loc) => (
+                  <div className="flex flex-wrap gap-2">
+                    {["Remote", "Bangalore", "Delhi NCR", "Pune", "Hyderabad", "Mumbai"].map((loc) => (
                       <button
                         key={loc}
                         onClick={() => setPrefLocation(loc)}
-                        className={`py-2.5 px-3 rounded-xl border text-[11px] font-medium transition-all ${
+                        className={`py-2 px-3.5 rounded-xl border text-[11px] font-medium transition-all ${
                           prefLocation === loc
-                            ? "border-[color:var(--peach-deep)] bg-white text-ink shadow-xs"
-                            : "border-slate-200/80 bg-white/30 text-ink-soft hover:text-ink"
+                            ? "border-[color:var(--peach-deep)] bg-white text-ink shadow-xs font-semibold"
+                            : "border-slate-200/80 bg-white/40 text-ink-soft hover:text-ink"
                         }`}
                       >
                         {loc}
@@ -548,45 +536,23 @@ function OnboardingPage() {
                   </div>
                 </div>
 
-                {/* Job Type Choice */}
+                {/* Job Type Chips */}
                 <div className="space-y-2">
                   <span className="text-[10px] uppercase font-bold text-ink-soft tracking-wider block">
-                    Employment Type
+                    Role Type
                   </span>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {["Full-time", "Internship", "Contract"].map((type) => (
                       <button
                         key={type}
                         onClick={() => setPrefJobType(type)}
-                        className={`py-2.5 px-3 rounded-xl border text-[11px] font-medium transition-all ${
+                        className={`py-2 px-3.5 rounded-xl border text-[11px] font-medium transition-all ${
                           prefJobType === type
-                            ? "border-[color:var(--peach-deep)] bg-white text-ink shadow-xs"
-                            : "border-slate-200/80 bg-white/30 text-ink-soft hover:text-ink"
+                            ? "border-[color:var(--peach-deep)] bg-white text-ink shadow-xs font-semibold"
+                            : "border-slate-200/80 bg-white/40 text-ink-soft hover:text-ink"
                         }`}
                       >
                         {type}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Remote Preference */}
-                <div className="space-y-2">
-                  <span className="text-[10px] uppercase font-bold text-ink-soft tracking-wider block">
-                    Remote Setup Preference
-                  </span>
-                  <div className="grid grid-cols-3 gap-2">
-                    {["Remote Only", "Hybrid Flexible", "Onsite Accepted"].map((setup) => (
-                      <button
-                        key={setup}
-                        onClick={() => setRemotePreference(setup)}
-                        className={`py-2.5 px-3 rounded-xl border text-[11px] font-medium transition-all ${
-                          remotePreference === setup
-                            ? "border-[color:var(--peach-deep)] bg-white text-ink shadow-xs"
-                            : "border-slate-200/80 bg-white/30 text-ink-soft hover:text-ink"
-                        }`}
-                      >
-                        {setup}
                       </button>
                     ))}
                   </div>
@@ -597,59 +563,62 @@ function OnboardingPage() {
                 onClick={() => setStep(5)}
                 className="btn-dark w-full py-3.5 text-xs font-medium rounded-2xl flex items-center justify-center gap-1.5 shadow-sm"
               >
-                Generate Matching Workspace
+                Find Matching Jobs <ArrowRight className="h-4 w-4" />
               </button>
             </motion.div>
           )}
 
-          {/* STEP 5: PREPARING DASHBOARD */}
+          {/* STEP 5: YOUR AI FOUND 247 MATCHING JOBS (WOW ACTIVATION MOMENT) */}
           {step === 5 && (
             <motion.div
               key="step5"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -16 }}
-              transition={{ duration: 0.3 }}
-              className="glass-card rounded-3xl p-8 md:p-10 space-y-6"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.4 }}
+              className="glass-card rounded-3xl p-8 md:p-10 space-y-6 text-center"
             >
-              <div className="space-y-1.5 border-b hairline pb-4">
-                <h2 className="font-display text-xl font-semibold text-ink">
-                  Preparing Your Personalized Workspace...
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[color:var(--peach-soft)] border hairline text-xs font-semibold text-[color:var(--peach-deep)]">
+                <Sparkles className="h-3.5 w-3.5" /> Your Profile is Ready
+              </div>
+
+              <div className="space-y-2">
+                <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-ink">
+                  Your AI found 247 matching jobs
                 </h2>
-                <p className="text-[11px] text-ink-soft">
-                  Our pipeline is analyzing your candidate profile against all active portal listings.
+                <p className="text-xs text-ink-soft max-w-sm mx-auto">
+                  We've scanned active listings and surfaced the highest-fit opportunities tailored specifically to your background.
                 </p>
               </div>
 
-              {/* Progress items */}
-              <div className="space-y-4">
-                {prepSteps.map((s, idx) => (
-                  <div key={idx} className="flex items-center justify-between text-xs font-medium">
-                    <span className={s.done ? "text-ink font-semibold" : "text-ink-soft"}>{s.label}</span>
-                    {s.done ? (
-                      <CheckCircle2 className="h-4.5 w-4.5 text-emerald-500" />
-                    ) : (
-                      <div className="h-4 w-4 rounded-full border-2 border-slate-300 border-t-[color:var(--peach-deep)] animate-spin" />
-                    )}
+              {/* Dopamine Summary Box */}
+              <div className="bg-white/80 border hairline rounded-2xl p-5 text-left space-y-3 shadow-xs">
+                <div className="grid grid-cols-2 gap-3 text-xs font-medium text-ink">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                    <span>27 technical skills identified</span>
                   </div>
-                ))}
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                    <span>5 projects detected</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                    <span>2 experiences recognized</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                    <span>247 matching opportunities found</span>
+                  </div>
+                </div>
               </div>
 
-              {/* Confidence summary badge */}
-              <div className="bg-white/60 border border-[color:var(--peach-soft)] rounded-2xl p-4 space-y-2 text-[11px] text-ink-soft">
-                <div className="font-bold text-ink uppercase tracking-wider flex items-center gap-1.5 text-[10px]">
-                  <Sparkles className="h-3.5 w-3.5 text-[color:var(--peach-deep)]" /> Your AI Profile is Ready
-                </div>
-                <div className="grid grid-cols-2 gap-y-1 gap-x-4 pl-4 text-ink-soft">
-                  <div>• {profile.skills.length} skills extracted</div>
-                  <div>• {profile.experience.length} experiences indexed</div>
-                  <div>• {profile.education.length} degrees verified</div>
-                  <div>• 1 location preference set</div>
-                  <div className="col-span-2 text-[color:var(--peach-deep)] font-semibold mt-1">
-                    • Filtering top 0.1% matching opportunities
-                  </div>
-                </div>
-              </div>
+              <button
+                onClick={handleCompleteOnboarding}
+                className="btn-dark w-full py-4 text-sm font-semibold rounded-2xl flex items-center justify-center gap-2 group shadow-md hover:shadow-lg transition-all"
+              >
+                See My Matches <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </button>
             </motion.div>
           )}
 
@@ -658,7 +627,7 @@ function OnboardingPage() {
 
       {/* Footer */}
       <div className="text-center text-[11px] text-ink-soft max-w-xl mx-auto w-full">
-        CareerAutomated • High-agency AI career operating system
+        CareerAutomated • Get hired faster
       </div>
 
     </div>

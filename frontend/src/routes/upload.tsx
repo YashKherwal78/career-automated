@@ -109,7 +109,7 @@ function UploadPath({ onDone }: { onDone: (r: { name: string; skills: string[] }
           </div>
           <input
             type="file"
-            accept=".pdf,.docx"
+            accept=".pdf,.docx,.txt"
             className="hidden"
             onChange={(e) => {
               const f = e.target.files?.[0];

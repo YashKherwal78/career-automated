@@ -127,12 +127,18 @@ def upload_resume(
     current_user: CurrentUser = Depends(get_current_user)
 ):
     """Upload resume file to Cloudflare R2 and return the storage key/url."""
-    # Enforce PDF and DOCX formats only
+    # Enforce PDF, DOCX, and TXT formats only
     ext = os.path.splitext(file.filename)[1].lower()
-    if ext not in [".pdf", ".docx"]:
+    allowed_extensions = {".pdf", ".docx", ".txt"}
+    allowed_mime_types = {
+        ".pdf":  "application/pdf",
+        ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ".txt":  "text/plain",
+    }
+    if ext not in allowed_extensions:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only PDF and DOCX formats are supported for resume uploads"
+            detail=f"Only PDF, DOCX, and TXT formats are supported. Got: {ext or 'unknown'}"
         )
         
     # Save UploadFile stream to a temporary file locally
