@@ -2,11 +2,22 @@ from typing import List, Dict, Any
 from src.career_intelligence.interfaces import ComparerInterface
 from src.career_intelligence.models import CandidateProfile, TechnologyComparison
 from src.discovery.jie.models import StructuredJob
-from src.career_intelligence.ontology.registry import CareerOntologyRegistry
+from src.career_intelligence.ontology.interfaces import GraphService
+from src.career_intelligence.ontology.backend import MemoryGraphBackend
+from src.career_intelligence.ontology.service import CareerGraphService
+from src.career_intelligence.ontology.cache import CachedGraphService
+from src.career_intelligence.ontology.loader import OntologyLoader
 
 class TechnologyComparer(ComparerInterface):
-    def __init__(self, ontology: CareerOntologyRegistry = None):
-        self.ontology = ontology or CareerOntologyRegistry()
+    def __init__(self, ontology: GraphService = None):
+        if ontology is None:
+            backend = MemoryGraphBackend()
+            loader = OntologyLoader(backend)
+            loader.load_default_fixtures()
+            raw_service = CareerGraphService(backend)
+            self.ontology = CachedGraphService(raw_service)
+        else:
+            self.ontology = ontology
 
     def compare(self, profile: CandidateProfile, job: StructuredJob) -> TechnologyComparison:
         """Compares technologies required by job description vs candidate profile technologies using Career Ontology."""
@@ -39,7 +50,7 @@ class TechnologyComparer(ComparerInterface):
                 exact_matches.append(req)
                 reasoning.append(f"Matched {req} exactly.")
             else:
-                # Check CareerOntology for semantic similarity mappings (e.g. Next.js matches React)
+                # Check CareerOntology for semantic similarity mappings
                 matched_semantically = False
                 for cand_tech in candidate_techs:
                     sim = self.ontology.check_similarity(cand_tech, req_lower)
@@ -64,8 +75,13 @@ class TechnologyComparer(ComparerInterface):
         # Recommended learning order (technologies they don't have, starting with prerequisites)
         recommended_learning = []
         for m in missing:
-            # Recommend based on simpler prerequisite nodes in the graph if available
-            recommended_learning.append(m)
+            prereqs = self.ontology.get_prerequisites(m)
+            if prereqs:
+                for p in prereqs:
+                    if p.title() not in recommended_learning:
+                        recommended_learning.append(p.title())
+            if m.title() not in recommended_learning:
+                recommended_learning.append(m.title())
 
         return TechnologyComparison(
             score=score,
