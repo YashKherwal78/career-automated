@@ -103,8 +103,9 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
         )
         
     # Query public.user_profiles to load detailed metadata
+    # NOTE: user_profiles lives in Supabase (AUTH_DATABASE_URL) — Google OAuth creates rows there.
     try:
-        with get_connection() as conn:
+        with get_auth_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "SELECT email, full_name, avatar_url, onboarding_complete FROM public.user_profiles WHERE user_id = %s",
