@@ -1,8 +1,7 @@
 import re
 from datetime import datetime
-from typing import Dict, Any
 from src.career_intelligence.interfaces import ComparerInterface
-from src.career_intelligence.models import CandidateProfile
+from src.career_intelligence.models import CandidateProfile, ExperienceComparison
 from src.discovery.jie.models import StructuredJob
 
 class ExperienceComparer(ComparerInterface):
@@ -40,16 +39,44 @@ class ExperienceComparer(ComparerInterface):
         return round(total_years, 1)
 
     @classmethod
-    def compare(cls, profile: CandidateProfile, job: StructuredJob) -> Dict[str, Any]:
+    def compare(cls, profile: CandidateProfile, job: StructuredJob) -> ExperienceComparison:
+        """Compares candidate years of experience vs job requirements returning a strongly-typed ExperienceComparison."""
         candidate_years = cls.calculate_candidate_years(profile)
         required_min = job.experience_min or 0
         
         experience_gap = max(0.0, required_min - candidate_years)
         experience_fit = experience_gap == 0.0
         
-        return {
-            "experience_required": required_min,
-            "experience_candidate": candidate_years,
-            "experience_gap": experience_gap,
-            "experience_fit": experience_fit
-        }
+        score = 1.0 if experience_fit else max(0.0, 1.0 - (experience_gap / 10.0))
+        
+        # Analyze domains and seniority (e.g. checks role keywords in candidate experience list)
+        matched_domains = []
+        leadership_match = False
+        seniority_match = False
+        
+        for exp in profile.experience:
+            role_lower = exp.role.lower()
+            if "lead" in role_lower or "manager" in role_lower or "director" in role_lower:
+                leadership_match = True
+            if "senior" in role_lower or "sr" in role_lower:
+                seniority_match = True
+            
+        reasoning = [
+            f"Candidate has {candidate_years} years of experience vs required {required_min} years.",
+            f"Leadership flag matched: {leadership_match}.",
+            f"Seniority flag matched: {seniority_match}."
+        ]
+        
+        return ExperienceComparison(
+            score=score,
+            required_years=required_min,
+            candidate_years=candidate_years,
+            gap=experience_gap,
+            required_domains=[],
+            matched_domains=matched_domains,
+            leadership_match=leadership_match,
+            seniority_match=seniority_match,
+            ownership_match=False,
+            reasoning=reasoning,
+            confidence=0.9
+        )

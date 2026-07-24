@@ -2,6 +2,7 @@ from typing import Dict, Any, List
 from src.career_intelligence.interfaces import ScorerInterface
 from src.career_intelligence.models import ComparisonResult, MatchScore, ScoreBreakdown
 from src.career_intelligence.matching.config import MatchingConfig
+from src.career_intelligence.quality.engine import QualityEngine
 
 class MatchScoreEngine(ScorerInterface):
     def __init__(self, config: MatchingConfig = None):
@@ -42,18 +43,8 @@ class MatchScoreEngine(ScorerInterface):
 
         overall_score = int(overall / total_weight) if total_weight > 0 else 100
 
-        # Confidence Score calculation
-        # Confidence reflects how complete the profile and parsed data is
-        confidence = 100
-        if not comparison.skills.matched and not comparison.skills.missing:
-            confidence -= 15
-        if not comparison.technologies.matched and not comparison.technologies.missing:
-            confidence -= 15
-            
-        exp_meta = comparison.experience.metadata
-        if exp_meta.get("experience_candidate", 0.0) == 0.0:
-            confidence -= 10
-        confidence = max(50, confidence)
+        # Confidence calculation is delegated to QualityEngine
+        confidence = QualityEngine.calculate_comparison_confidence(comparison)
 
         # Match level & Grade classification
         if overall_score >= 90:
@@ -69,9 +60,7 @@ class MatchScoreEngine(ScorerInterface):
             grade = "D"
             match_level = "Poor"
 
-        # Critical missing elements from metadata and missing tech
-        critical_missing_skills = comparison.skills.metadata.get("critical_missing_skills", [])
-        critical_missing = critical_missing_skills + comparison.technologies.missing[:2]
+        critical_missing = comparison.skills.critical_missing + comparison.technologies.missing[:2]
 
         return MatchScore(
             overall_score=overall_score,

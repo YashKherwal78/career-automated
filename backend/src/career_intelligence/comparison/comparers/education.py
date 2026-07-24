@@ -1,19 +1,13 @@
-from typing import Dict, Any
 from src.career_intelligence.interfaces import ComparerInterface
-from src.career_intelligence.models import CandidateProfile
+from src.career_intelligence.models import CandidateProfile, EducationComparison
 from src.discovery.jie.models import StructuredJob
 
 class EducationComparer(ComparerInterface):
-    def compare(self, profile: CandidateProfile, job: StructuredJob) -> Dict[str, Any]:
-        """Compares candidate academic degrees and fields of study against job specifications."""
+    def compare(self, profile: CandidateProfile, job: StructuredJob) -> EducationComparison:
+        """Compares academic credentials against job requirements returning an EducationComparison."""
         if not job.education:
-            return {
-                "education_fit": True,
-                "matched_degrees": [],
-                "missing_degrees": []
-            }
+            return EducationComparison(score=1.0, fit=True, reasoning=["No education requirements specified by the job."])
 
-        # Candidate degrees and fields
         candidate_degrees = set()
         candidate_fields = set()
         for edu in profile.education:
@@ -24,18 +18,26 @@ class EducationComparer(ComparerInterface):
 
         matched_deg = []
         missing_deg = []
-        
         for req in job.education:
-            # Check overlap against degrees or fields
             if req.lower() in candidate_degrees or req.lower() in candidate_fields:
                 matched_deg.append(req)
             else:
                 missing_deg.append(req)
 
-        # Simple fitness evaluation
-        education_fit = len(matched_deg) > 0
-        return {
-            "education_fit": education_fit,
-            "matched_degrees": matched_deg,
-            "missing_degrees": missing_deg
-        }
+        fit = len(matched_deg) > 0
+        score = 1.0 if fit else 0.0
+        reasoning = [
+            f"Matched degree or field: {', '.join(matched_deg)}" if fit else "Education credentials do not match requirements."
+        ]
+
+        return EducationComparison(
+            score=score,
+            required_degree=job.education,
+            candidate_degree=list(candidate_degrees),
+            missing_degrees=missing_deg,
+            degree_equivalent=fit,
+            field_equivalent=fit,
+            fit=fit,
+            reasoning=reasoning,
+            confidence=0.9
+        )

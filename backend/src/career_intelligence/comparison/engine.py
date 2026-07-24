@@ -1,7 +1,7 @@
 import datetime
 from typing import Dict, Any
 
-from src.career_intelligence.models import CandidateProfile, ComparisonResult, SubComparison
+from src.career_intelligence.models import CandidateProfile, ComparisonResult, ComparisonContext
 from src.discovery.jie.models import StructuredJob
 from src.career_intelligence.comparison.comparers.skills import SkillComparer
 from src.career_intelligence.comparison.comparers.technologies import TechnologyComparer
@@ -29,139 +29,59 @@ class CareerComparisonEngine:
 
     def compare(self, profile: CandidateProfile, job: StructuredJob) -> ComparisonResult:
         """Executes domain comparisons exactly once to return a hierarchical ComparisonResult."""
-        skills_res = self.skill_comparer.compare(profile, job)
-        techs_res = self.tech_comparer.compare(profile, job)
-        exp_res = self.exp_comparer.compare(profile, job)
-        edu_res = self.edu_comparer.compare(profile, job)
-        loc_res = self.loc_comparer.compare(profile, job)
-        emp_res = self.emp_comparer.compare(profile, job)
-        proj_res = self.proj_comparer.compare(profile, job)
-        certs_res = self.cert_comparer.compare(profile, job)
-        resps_res = self.resp_comparer.compare(profile, job)
-        langs_res = self.lang_comparer.compare(profile, job)
+        skills = self.skill_comparer.compare(profile, job)
+        techs = self.tech_comparer.compare(profile, job)
+        exp = self.exp_comparer.compare(profile, job)
+        edu = self.edu_comparer.compare(profile, job)
+        loc = self.loc_comparer.compare(profile, job)
+        emp = self.emp_comparer.compare(profile, job)
+        proj = self.proj_comparer.compare(profile, job)
+        certs = self.cert_comparer.compare(profile, job)
+        resps = self.resp_comparer.compare(profile, job)
+        langs = self.lang_comparer.compare(profile, job)
 
-        # 1. Map to hierarchical SubComparison objects
-        def get_ratio_score(matched, missing):
-            total = len(matched) + len(missing)
-            return len(matched) / total if total > 0 else 1.0
-
-        skills_sub = SubComparison(
-            score=get_ratio_score(skills_res["matched"], skills_res["missing"]),
-            matched=skills_res["matched"],
-            missing=skills_res["missing"],
-            reasoning=f"Matches {len(skills_res['matched'])} out of {len(skills_res['matched']) + len(skills_res['missing'])} skills.",
-            metadata={
-                "extra_skills": skills_res["extra"],
-                "critical_missing_skills": skills_res["critical_missing"],
-                "optional_missing_skills": skills_res["optional_missing"]
-            }
-        )
-
-        techs_sub = SubComparison(
-            score=get_ratio_score(techs_res["matched"], techs_res["missing"]),
-            matched=techs_res["matched"],
-            missing=techs_res["missing"],
-            reasoning=f"Matches {len(techs_res['matched'])} out of {len(techs_res['matched']) + len(techs_res['missing'])} tech skills.",
-            metadata={
-                "extra_technologies": techs_res["extra"],
-                "technology_categories": techs_res["categories"]
-            }
-        )
-
-        exp_gap = exp_res["experience_gap"]
-        exp_sub = SubComparison(
-            score=1.0 if exp_res["experience_fit"] else max(0.0, 1.0 - (exp_gap / 10.0)),
-            matched=[],
-            missing=[f"Missing {round(exp_gap, 1)} years of experience"] if exp_gap > 0 else [],
-            reasoning=f"Candidate experience: {exp_res['experience_candidate']} yrs vs required: {exp_res['experience_required']} yrs.",
-            metadata={
-                "experience_required": exp_res["experience_required"],
-                "experience_candidate": exp_res["experience_candidate"],
-                "experience_gap": exp_gap,
-                "experience_fit": exp_res["experience_fit"]
-            }
-        )
-
-        edu_sub = SubComparison(
-            score=1.0 if edu_res["education_fit"] else 0.0,
-            matched=edu_res["matched_degrees"],
-            missing=edu_res["missing_degrees"],
-            reasoning="Required degree level or field matches candidate credentials." if edu_res["education_fit"] else "Academic qualifications do not match requirements.",
-            metadata={
-                "education_fit": edu_res["education_fit"]
-            }
-        )
-
-        loc_sub = SubComparison(
-            score=1.0 if (loc_res["location_fit"] and loc_res["work_mode_fit"]) else 0.5,
-            reasoning="Location alignment or compatible work mode preferences.",
-            metadata=loc_res
-        )
-
-        emp_sub = SubComparison(
-            score=1.0 if emp_res["employment_type_fit"] else 0.5,
-            reasoning="Employment format (Full-time/Contract) is compatible.",
-            metadata=emp_res
-        )
-
-        proj_sub = SubComparison(
-            score=get_ratio_score(proj_res["matched_projects"], proj_res["irrelevant_projects"]),
-            matched=proj_res["matched_projects"],
-            missing=[],
-            reasoning=f"Candidate possesses {len(proj_res['matched_projects'])} relevant projects matching tech stack.",
-            metadata=proj_res
-        )
-
-        certs_sub = SubComparison(
-            score=get_ratio_score(certs_res["certifications_matched"], certs_res["certifications_missing"]),
-            matched=certs_res["certifications_matched"],
-            missing=certs_res["certifications_missing"],
-            reasoning=f"Certification match evaluation completes with {len(certs_res['certifications_matched'])} matches."
-        )
-
-        resps_sub = SubComparison(
-            score=get_ratio_score(resps_res["responsibility_matches"], resps_res["responsibility_gaps"]),
-            matched=resps_res["responsibility_matches"],
-            missing=resps_res["responsibility_gaps"],
-            reasoning=f"Matches {len(resps_res['responsibility_matches'])} job responsibilities."
-        )
-
-        langs_sub = SubComparison(
-            score=1.0 if langs_res["language_fit"] else 0.0,
-            reasoning="Language proficiency requirements are compatible."
-        )
-
-        # 2. Extract strengths and weaknesses
+        # Build strengths and weaknesses from structured sub-comparisons
         strengths = []
         weaknesses = []
 
-        if techs_sub.score >= 0.8:
+        if techs.score >= 0.8:
             strengths.append("Strong tech stack alignment with core job technologies.")
-        if techs_sub.missing:
-            weaknesses.append(f"Missing technology keywords: {', '.join(techs_sub.missing[:3])}")
+        if techs.missing:
+            weaknesses.append(f"Missing technology keywords: {', '.join(techs.missing[:3])}")
 
-        if exp_sub.score == 1.0:
+        if exp.score == 1.0:
             strengths.append("Meets or exceeds minimum years of experience requirement.")
-        elif exp_gap > 0:
-            weaknesses.append(f"Experience gap of {exp_gap} years.")
+        elif exp.gap > 0:
+            weaknesses.append(f"Experience gap of {exp.gap} years.")
+
+        # Build auditing context metadata
+        context = ComparisonContext(
+            parser_version="2.0.0",
+            ontology_version="1.0.0",
+            weight_profile="Default",
+            comparison_timestamp=datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
+            comparison_algorithm_version="3.0.0",
+            feature_flags={"use_career_ontology": True}
+        )
 
         return ComparisonResult(
             candidate_id=getattr(profile, "candidate_id", None),
             job_id=getattr(job, "job_id", None),
-            generated_at=datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
+            generated_at=context.comparison_timestamp,
             profile_version="2.0.0",
-            job_version="2.0.0",
+            job_version="3.0.0",
             
-            skills=skills_sub,
-            technologies=techs_sub,
-            education=edu_sub,
-            experience=exp_sub,
-            projects=proj_sub,
-            certifications=certs_sub,
-            location=loc_sub,
-            employment=emp_sub,
-            responsibilities=resps_sub,
-            languages=langs_sub,
+            context=context,
+            skills=skills,
+            technologies=techs,
+            education=edu,
+            experience=exp,
+            projects=proj,
+            certifications=certs,
+            location=loc,
+            employment=emp,
+            responsibilities=resps,
+            languages=langs,
             
             strengths=strengths,
             weaknesses=weaknesses,

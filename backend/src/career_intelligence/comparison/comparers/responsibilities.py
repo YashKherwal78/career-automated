@@ -1,10 +1,9 @@
-from typing import Dict, Any, List
 from src.career_intelligence.interfaces import ComparerInterface
-from src.career_intelligence.models import CandidateProfile
+from src.career_intelligence.models import CandidateProfile, ResponsibilityComparison
 from src.discovery.jie.models import StructuredJob
 
 class ResponsibilityComparer(ComparerInterface):
-    def compare(self, profile: CandidateProfile, job: StructuredJob) -> Dict[str, List[str]]:
+    def compare(self, profile: CandidateProfile, job: StructuredJob) -> ResponsibilityComparison:
         """Matches experience bullet points overlap with job responsibilities."""
         cand_bullets = []
         for exp in profile.experience:
@@ -26,7 +25,16 @@ class ResponsibilityComparer(ComparerInterface):
             else:
                 missing.append(resp)
                 
-        return {
-            "responsibility_matches": matched,
-            "responsibility_gaps": missing
-        }
+        total = len(matched) + len(missing)
+        score = len(matched) / total if total > 0 else 1.0
+        reasoning = [
+            f"Candidate matches {len(matched)} out of {total} job responsibilities."
+        ]
+
+        return ResponsibilityComparison(
+            score=score,
+            matched=matched,
+            missing=missing,
+            reasoning=reasoning,
+            confidence=0.8
+        )

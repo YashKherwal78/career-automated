@@ -82,14 +82,102 @@ class CandidateProfile(BaseModel):
     external_links: List[CandidateLink] = Field(default_factory=list)
     location: Dict[str, str] = Field(default_factory=lambda: {"country": "", "state": "", "city": ""})
 
-# Reusable sub-comparison model with score, matched items, and reasoning metadata
-class SubComparison(BaseModel):
+# New Domain-Specific Comparison Models
+class SkillComparison(BaseModel):
     score: float = 0.0
     matched: List[str] = Field(default_factory=list)
     missing: List[str] = Field(default_factory=list)
-    reasoning: str = ""
+    extra_skills: List[str] = Field(default_factory=list)
+    critical_missing: List[str] = Field(default_factory=list)
+    optional_missing: List[str] = Field(default_factory=list)
+    reasoning: List[str] = Field(default_factory=list)
     confidence: float = 1.0
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+class TechnologyComparison(BaseModel):
+    score: float = 0.0
+    matched: List[str] = Field(default_factory=list)
+    missing: List[str] = Field(default_factory=list)
+    exact_matches: List[str] = Field(default_factory=list)
+    semantic_matches: List[str] = Field(default_factory=list)
+    alias_matches: List[str] = Field(default_factory=list)
+    related_matches: List[str] = Field(default_factory=list)
+    recommended_learning_order: List[str] = Field(default_factory=list)
+    reasoning: List[str] = Field(default_factory=list)
+    confidence: float = 1.0
+
+class ExperienceComparison(BaseModel):
+    score: float = 0.0
+    required_years: int = 0
+    candidate_years: float = 0.0
+    gap: float = 0.0
+    required_domains: List[str] = Field(default_factory=list)
+    matched_domains: List[str] = Field(default_factory=list)
+    leadership_match: bool = False
+    seniority_match: bool = False
+    ownership_match: bool = False
+    reasoning: List[str] = Field(default_factory=list)
+    confidence: float = 1.0
+
+class EducationComparison(BaseModel):
+    score: float = 0.0
+    required_degree: List[str] = Field(default_factory=list)
+    candidate_degree: List[str] = Field(default_factory=list)
+    missing_degrees: List[str] = Field(default_factory=list)
+    degree_equivalent: bool = False
+    field_equivalent: bool = False
+    fit: bool = False
+    reasoning: List[str] = Field(default_factory=list)
+    confidence: float = 1.0
+
+class ProjectComparison(BaseModel):
+    score: float = 0.0
+    matched_projects: List[str] = Field(default_factory=list)
+    relevant_projects: List[str] = Field(default_factory=list)
+    irrelevant_projects: List[str] = Field(default_factory=list)
+    reasoning: List[str] = Field(default_factory=list)
+    confidence: float = 1.0
+
+class CertificationComparison(BaseModel):
+    score: float = 0.0
+    matched: List[str] = Field(default_factory=list)
+    missing: List[str] = Field(default_factory=list)
+    reasoning: List[str] = Field(default_factory=list)
+    confidence: float = 1.0
+
+class LocationComparison(BaseModel):
+    score: float = 0.0
+    location_fit: bool = False
+    work_mode_fit: bool = False
+    reasoning: List[str] = Field(default_factory=list)
+    confidence: float = 1.0
+
+class EmploymentComparison(BaseModel):
+    score: float = 0.0
+    employment_type_fit: bool = False
+    reasoning: List[str] = Field(default_factory=list)
+    confidence: float = 1.0
+
+class ResponsibilityComparison(BaseModel):
+    score: float = 0.0
+    matched: List[str] = Field(default_factory=list)
+    missing: List[str] = Field(default_factory=list)
+    reasoning: List[str] = Field(default_factory=list)
+    confidence: float = 1.0
+
+class LanguageComparison(BaseModel):
+    score: float = 0.0
+    language_fit: bool = True
+    reasoning: List[str] = Field(default_factory=list)
+    confidence: float = 1.0
+
+# Context Metadata for Auditing matches
+class ComparisonContext(BaseModel):
+    parser_version: str = "2.0.0"
+    ontology_version: str = "1.0.0"
+    weight_profile: str = "Default"
+    comparison_timestamp: str = ""
+    comparison_algorithm_version: str = "3.0.0"
+    feature_flags: Dict[str, Any] = Field(default_factory=dict)
 
 # Hierarchical Comparison Result Model (Immutable conceptually)
 class ComparisonResult(BaseModel):
@@ -99,16 +187,18 @@ class ComparisonResult(BaseModel):
     profile_version: str = "2.0.0"
     job_version: str = "2.0.0"
 
-    skills: SubComparison = Field(default_factory=SubComparison)
-    technologies: SubComparison = Field(default_factory=SubComparison)
-    education: SubComparison = Field(default_factory=SubComparison)
-    experience: SubComparison = Field(default_factory=SubComparison)
-    projects: SubComparison = Field(default_factory=SubComparison)
-    certifications: SubComparison = Field(default_factory=SubComparison)
-    location: SubComparison = Field(default_factory=SubComparison)
-    employment: SubComparison = Field(default_factory=SubComparison)
-    responsibilities: SubComparison = Field(default_factory=SubComparison)
-    languages: SubComparison = Field(default_factory=SubComparison)
+    context: ComparisonContext = Field(default_factory=ComparisonContext)
+
+    skills: SkillComparison = Field(default_factory=SkillComparison)
+    technologies: TechnologyComparison = Field(default_factory=TechnologyComparison)
+    education: EducationComparison = Field(default_factory=EducationComparison)
+    experience: ExperienceComparison = Field(default_factory=ExperienceComparison)
+    projects: ProjectComparison = Field(default_factory=ProjectComparison)
+    certifications: CertificationComparison = Field(default_factory=CertificationComparison)
+    location: LocationComparison = Field(default_factory=LocationComparison)
+    employment: EmploymentComparison = Field(default_factory=EmploymentComparison)
+    responsibilities: ResponsibilityComparison = Field(default_factory=ResponsibilityComparison)
+    languages: LanguageComparison = Field(default_factory=LanguageComparison)
 
     strengths: List[str] = Field(default_factory=list)
     weaknesses: List[str] = Field(default_factory=list)

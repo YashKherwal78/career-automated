@@ -22,7 +22,7 @@ class ResumeTailoringEngine:
             "project_prioritization": {
                 "suggestions": [
                     f"Move '{proj}' to the top of your projects section because it highlights relevant stack components."
-                    for proj in comparison.projects.matched
+                    for proj in comparison.projects.matched_projects
                 ]
             },
             "experience_alignment": {

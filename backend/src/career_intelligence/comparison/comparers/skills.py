@@ -1,14 +1,14 @@
-from typing import Dict, Any, List
+from typing import List
 from src.career_intelligence.interfaces import ComparerInterface
-from src.career_intelligence.models import CandidateProfile
+from src.career_intelligence.models import CandidateProfile, SkillComparison
 from src.discovery.jie.models import StructuredJob
 
 class SkillComparer(ComparerInterface):
-    def compare(self, profile: CandidateProfile, job: StructuredJob) -> Dict[str, List[str]]:
-        """Compares candidate skills against job requirements."""
+    def compare(self, profile: CandidateProfile, job: StructuredJob) -> SkillComparison:
+        """Compares candidate skills against job requirements returning a strongly-typed SkillComparison."""
         job_skills = {s.lower() for s in job.skills}
         if not job_skills:
-            return {"matched": [], "missing": [], "extra": [], "critical_missing": [], "optional_missing": []}
+            return SkillComparison(score=1.0, reasoning=["No skills specified by the job description."])
 
         # Candidate skills
         candidate_skills = set()
@@ -28,7 +28,6 @@ class SkillComparer(ComparerInterface):
         critical = []
         optional = []
         for s in missing:
-            # Simple heuristic: longer skills or specific keywords are critical
             if len(s) > 10:
                 critical.append(s)
             else:
@@ -39,10 +38,19 @@ class SkillComparer(ComparerInterface):
             if s.lower() not in job_skills:
                 extra.append(s.title())
 
-        return {
-            "matched": matched,
-            "missing": missing,
-            "extra": extra[:15],
-            "critical_missing": critical,
-            "optional_missing": optional
-        }
+        score = len(matched) / len(job_skills)
+        reasoning = [
+            f"Matched exact professional skill keywords: {', '.join(matched[:3])}" if matched else "No exact skill matches.",
+            f"Missing skills: {', '.join(missing[:3])}" if missing else "No missing skills."
+        ]
+
+        return SkillComparison(
+            score=score,
+            matched=matched,
+            missing=missing,
+            extra_skills=extra[:15],
+            critical_missing=critical,
+            optional_missing=optional,
+            reasoning=reasoning,
+            confidence=0.9
+        )

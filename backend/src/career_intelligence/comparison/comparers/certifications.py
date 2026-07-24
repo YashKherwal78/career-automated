@@ -1,10 +1,9 @@
-from typing import Dict, Any, List
 from src.career_intelligence.interfaces import ComparerInterface
-from src.career_intelligence.models import CandidateProfile
+from src.career_intelligence.models import CandidateProfile, CertificationComparison
 from src.discovery.jie.models import StructuredJob
 
 class CertificationComparer(ComparerInterface):
-    def compare(self, profile: CandidateProfile, job: StructuredJob) -> Dict[str, List[str]]:
+    def compare(self, profile: CandidateProfile, job: StructuredJob) -> CertificationComparison:
         """Compares certifications keywords between job description and candidate profile."""
         req_keywords = []
         for req in job.requirements:
@@ -12,7 +11,7 @@ class CertificationComparer(ComparerInterface):
                 req_keywords.append(req.name)
 
         if not req_keywords:
-            return {"certifications_matched": [], "certifications_missing": []}
+            return CertificationComparison(score=1.0, reasoning=["No certification requirements detected in the job description."])
 
         matched = []
         missing = []
@@ -28,7 +27,16 @@ class CertificationComparer(ComparerInterface):
             if not cert_matched:
                 missing.append(kw)
                 
-        return {
-            "certifications_matched": matched,
-            "certifications_missing": missing
-        }
+        total = len(matched) + len(missing)
+        score = len(matched) / total if total > 0 else 1.0
+        reasoning = [
+            f"Matched {len(matched)} certifications: {', '.join(matched[:2])}."
+        ]
+
+        return CertificationComparison(
+            score=score,
+            matched=matched,
+            missing=missing,
+            reasoning=reasoning,
+            confidence=0.9
+        )
