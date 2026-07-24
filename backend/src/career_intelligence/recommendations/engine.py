@@ -1,17 +1,19 @@
 from typing import List, Dict, Any
-from src.career_intelligence.models import CandidateProfile
-from src.discovery.jie.models import StructuredJob
+from src.career_intelligence.models import ComparisonResult
 from src.career_intelligence.matching.engine import MatchScoreEngine
 
 class JobRecommendationEngine:
     def __init__(self):
         self.scorer = MatchScoreEngine()
 
-    def get_recommendations(self, profile: CandidateProfile, jobs: List[StructuredJob]) -> Dict[str, List[Dict[str, Any]]]:
-        """Classifies and recommends jobs based on candidate profile match calculations."""
+    def get_recommendations_from_comparisons(self, comparisons: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
+        """Classifies and recommends jobs based on candidate profile comparison calculations."""
         scored_jobs = []
-        for job in jobs:
-            res = self.scorer.calculate_match(profile, job)
+        for item in comparisons:
+            job = item["job"]
+            comparison = item["comparison"]
+            
+            res = self.scorer.calculate_score_from_comparison(comparison)
             scored_jobs.append({
                 "job": job,
                 "score": res["overall_score"],

@@ -1,14 +1,5 @@
-from typing import Dict, Any, List
-
-from src.career_intelligence.models import CandidateProfile
-from src.discovery.jie.models import StructuredJob
-from src.career_intelligence.comparison.skills import SkillComparer
-from src.career_intelligence.comparison.technologies import TechnologyComparer
-from src.career_intelligence.comparison.experience import ExperienceComparer
-from src.career_intelligence.comparison.education import EducationComparer
-from src.career_intelligence.comparison.location import LocationComparer
-from src.career_intelligence.comparison.employment import EmploymentComparer
-from src.career_intelligence.comparison.projects import ProjectComparer
+from typing import Dict, Any
+from src.career_intelligence.models import ComparisonResult
 
 DEFAULT_WEIGHTS = {
     "skills": 0.20,
@@ -24,29 +15,31 @@ class MatchScoreEngine:
     def __init__(self, weights: Dict[str, float] = None):
         self.weights = weights or DEFAULT_WEIGHTS
 
-    def calculate_match(self, profile: CandidateProfile, job: StructuredJob) -> Dict[str, Any]:
-        """Calculates configurable match scoring, strengths, gaps, and tailoring recommendations."""
-        # 1. Execute individual comparers
-        skills_res = SkillComparer.compare(profile, job)
-        tech_res = TechnologyComparer.compare(profile, job)
-        exp_res = ExperienceComparer.compare(profile, job)
-        edu_res = EducationComparer.compare(profile, job)
-        loc_res = LocationComparer.compare(profile, job)
-        emp_res = EmploymentComparer.compare(profile, job)
-        proj_res = ProjectComparer.compare(profile, job)
+    def calculate_score_from_comparison(self, comparison: ComparisonResult) -> Dict[str, Any]:
+        """Calculates configurable match scoring and recommendations directly from a ComparisonResult."""
+        # Calculate component ratios from matched / total items
+        total_skills = len(comparison.matched_skills) + len(comparison.missing_skills)
+        skills_score = len(comparison.matched_skills) / total_skills if total_skills > 0 else 1.0
 
-        # 2. Extract breakdown scores (scaled 0-100)
+        total_techs = len(comparison.matched_technologies) + len(comparison.missing_technologies)
+        tech_score = len(comparison.matched_technologies) / total_techs if total_techs > 0 else 1.0
+
+        exp_score = 1.0 if comparison.experience_gap is None else max(0.0, 1.0 - (comparison.experience_gap / 10.0))
+        edu_score = 1.0 if comparison.education_fit else 0.0
+        loc_score = 1.0 if (comparison.location_fit or comparison.work_mode_fit) else 0.0
+        
+        # Build breakdown dictionary (scaled 0-100)
         breakdown = {
-            "skills": int(skills_res["score"] * 100),
-            "technologies": int(tech_res["score"] * 100),
-            "experience": int(exp_res["score"] * 100),
-            "education": int(edu_res["score"] * 100),
-            "location": int(loc_res["score"] * 100),
-            "employment_type": int(emp_res["score"] * 100),
-            "projects": int(proj_res["score"] * 100)
+            "skills": int(skills_score * 100),
+            "technologies": int(tech_score * 100),
+            "experience": int(exp_score * 100),
+            "education": int(edu_score * 100),
+            "location": int(loc_score * 100),
+            "employment_type": 100, # Default fit fallback
+            "projects": 100 if comparison.matched_projects else 50
         }
 
-        # 3. Calculate weighted overall score
+        # Calculate weighted overall score
         overall_score = 0.0
         total_weight = 0.0
         for category, score_val in breakdown.items():
@@ -59,41 +52,19 @@ class MatchScoreEngine:
         else:
             overall_score = 100
 
-        # 4. Identify Strengths, Gaps, and Recommendations
-        strengths = []
-        gaps = []
+        # Build list of user suggestions
         recommendations = []
-
-        # Skills & Tech evaluation
-        if breakdown["technologies"] >= 80:
-            strengths.append("Strong tech stack alignment with core job technologies.")
-        else:
-            gaps.append(f"Missing key technologies: {', '.join(tech_res.get('missing', [])[:3])}")
-            recommendations.append(f"Add projects or references showcasing: {', '.join(tech_res.get('missing', [])[:2])}")
-
-        if breakdown["skills"] >= 80:
-            strengths.append("Matches non-tech professional domain requirements.")
-        else:
-            gaps.append("Domain skill gaps detected.")
-            recommendations.append("Incorporate standard methodology phrases (e.g. System Design, Agile) into experience bullets.")
-
-        # Experience evaluation
-        if exp_res["fit"]:
-            strengths.append("Years of experience meets or exceeds job baseline.")
-        else:
-            gaps.append(f"Experience gap: profile shows {exp_res['candidate_years']} yrs vs required {exp_res['required_min']} yrs.")
+        if comparison.missing_technologies:
+            recommendations.append(f"Add projects or references showcasing: {', '.join(comparison.missing_technologies[:2])}")
+        if comparison.missing_skills:
+            recommendations.append(f"Incorporate professional methodologies like: {', '.join(comparison.missing_skills[:2])}")
+        if comparison.experience_gap:
             recommendations.append("Emphasize relevant project scope and leadership to address the experience gap.")
 
-        # Education evaluation
-        if edu_res["fit"]:
-            strengths.append("Education background aligns with requirements.")
-        else:
-            gaps.append("Education mismatch (field of study or degree level).")
-            
         return {
             "overall_score": overall_score,
             "breakdown": breakdown,
-            "strengths": strengths,
-            "gaps": gaps,
+            "strengths": comparison.strengths,
+            "gaps": comparison.weaknesses,
             "recommendations": recommendations
         }

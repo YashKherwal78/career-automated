@@ -3,8 +3,9 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.career_intelligence.models import CandidateProfile, CandidateExperience, CandidateProject, CandidateSkills
+from src.career_intelligence.models import CandidateProfile, CandidateExperience, CandidateProject, CandidateSkills, ComparisonResult
 from src.discovery.jie.models import StructuredJob
+from src.career_intelligence.comparison.engine import CareerComparisonEngine
 from src.career_intelligence.matching.engine import MatchScoreEngine
 from src.career_intelligence.tailoring.engine import ResumeTailoringEngine
 from src.career_intelligence.recommendations.engine import JobRecommendationEngine
@@ -57,27 +58,33 @@ def test_career_intelligence_layer():
         skills=["System Design"]
     )
 
-    # 3. Test MatchScoreEngine
+    # 3. Test CareerComparisonEngine (SINGLE source of truth comparison)
+    comparison = CareerComparisonEngine.compare(profile, job)
+    assert isinstance(comparison, ComparisonResult)
+    assert "Python" in comparison.matched_technologies
+    assert "Docker" in comparison.missing_technologies
+
+    # 4. Test MatchScoreEngine (Consumes only ComparisonResult)
     engine = MatchScoreEngine()
-    match_res = engine.calculate_match(profile, job)
+    match_res = engine.calculate_score_from_comparison(comparison)
     assert match_res["overall_score"] > 0
     assert "technologies" in match_res["breakdown"]
     
-    # 4. Test ResumeTailoringEngine
+    # 5. Test ResumeTailoringEngine (Consumes only ComparisonResult)
     tailor_engine = ResumeTailoringEngine()
-    tailor_plan = tailor_engine.generate_tailoring_plan(profile, job)
+    tailor_plan = tailor_engine.generate_tailoring_plan(comparison)
     assert len(tailor_plan["keyword_optimizations"]) > 0
     # Suggests adding Docker (which candidate is missing)
     missing_techs = [x["canonical_value"] for x in tailor_plan["keyword_optimizations"]]
     assert "Docker" in missing_techs
 
-    # 5. Test JobRecommendationEngine
+    # 6. Test JobRecommendationEngine (Consumes list of comparisons)
     rec_engine = JobRecommendationEngine()
-    recs = rec_engine.get_recommendations(profile, [job])
+    recs = rec_engine.get_recommendations_from_comparisons([{"job": job, "comparison": comparison}])
     assert "best_matching_jobs" in recs
     assert "hidden_opportunities" in recs
 
-    # 6. Test JobFilterEvaluator
+    # 7. Test JobFilterEvaluator
     assert JobFilterEvaluator.match_filters(job, {"work_mode": "Remote"}) is True
     assert JobFilterEvaluator.match_filters(job, {"location": {"city": "Bangalore"}}) is True
     assert JobFilterEvaluator.match_filters(job, {"location": {"city": "Delhi"}}) is False

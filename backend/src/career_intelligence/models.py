@@ -81,3 +81,28 @@ class CandidateProfile(BaseModel):
     languages: List[str] = Field(default_factory=list)
     external_links: List[CandidateLink] = Field(default_factory=list)
     location: Dict[str, str] = Field(default_factory=lambda: {"country": "", "state": "", "city": ""})
+
+class ComparisonResult(BaseModel):
+    matched_skills: List[str] = Field(default_factory=list)
+    missing_skills: List[str] = Field(default_factory=list)
+    
+    matched_technologies: List[str] = Field(default_factory=list)
+    missing_technologies: List[str] = Field(default_factory=list)
+    
+    matched_projects: List[str] = Field(default_factory=list)
+    relevant_projects: List[str] = Field(default_factory=list)
+    
+    missing_experience: List[str] = Field(default_factory=list)
+    experience_gap: Optional[float] = None
+    
+    education_fit: bool = False
+    location_fit: bool = False
+    work_mode_fit: bool = False
+    
+    certifications_matched: List[str] = Field(default_factory=list)
+    certifications_missing: List[str] = Field(default_factory=list)
+    
+    responsibilities_overlap: List[str] = Field(default_factory=list)
+    
+    strengths: List[str] = Field(default_factory=list)
+    weaknesses: List[str] = Field(default_factory=list)
