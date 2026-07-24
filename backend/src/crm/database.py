@@ -525,8 +525,13 @@ def log_llm_usage(workload: str, provider: str, model: str, tokens: int, latency
     conn.commit()
     conn.close()
 
-if __name__ == "__main__":
+# Automatically initialize database tables on import to avoid missing tables (e.g. llm_usage_log)
+try:
     init_db()
+except Exception as _e:
+    logger.error(f"Failed to auto-initialize SQLite database crm.db: {_e}")
+
+if __name__ == "__main__":
     logger.info("Database initialized.")
 
 def insert_discovered_job(data: Dict) -> bool:
