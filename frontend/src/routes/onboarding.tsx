@@ -268,7 +268,7 @@ function OnboardingPage() {
 
       {/* Main Experience Container — full-width for step 2, constrained for other steps */}
       <div className={`w-full my-auto py-6 ${
-        step === 2 ? "max-w-4xl mx-auto" : "max-w-xl mx-auto"
+        step === 2 ? "max-w-[95%] mx-auto" : "max-w-xl mx-auto"
       }`}>
         <AnimatePresence mode="wait">
           
@@ -308,7 +308,7 @@ function OnboardingPage() {
             </motion.div>
           )}
 
-          {/* STEP 2: RESUME UPLOAD — 60/40 SPLIT LAYOUT */}
+          {/* STEP 2: RESUME UPLOAD — 55/45 FULL PAGE LAYOUT */}
           {step === 2 && (
             <motion.div
               key="step2"
@@ -316,24 +316,22 @@ function OnboardingPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.3 }}
-              className="flex flex-col md:flex-row gap-6 md:gap-10 items-stretch"
+              className="flex flex-col md:flex-row gap-10 md:gap-16 items-center justify-between min-h-[550px] w-full"
             >
-              {/* LEFT 60%: Upload card (unchanged) */}
-              <div className="w-full md:w-[60%] glass-card rounded-3xl p-8 md:p-10 space-y-6">
-                <div className="text-center space-y-2">
-                  <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">
-                    {isParsing ? "We're understanding your experience..." : "Upload Your Resume"}
-                  </h2>
-                  <p className="text-xs text-ink-soft max-w-sm mx-auto">
-                    {isParsing
-                      ? "Building your live candidate profile in real time..."
-                      : "Upload your existing resume to unlock tailored job matching."}
-                  </p>
-                </div>
-
+              {/* LEFT 55%: Large Scaled Upload Card */}
+              <div className="w-full md:w-[55%] glass-card rounded-3xl p-10 md:p-14 space-y-8 flex-1">
                 {isParsing ? (
                   /* Dynamic Live Profile Building Cards */
-                  <div className="space-y-4 pt-2">
+                  <div className="space-y-6">
+                    <div className="text-center space-y-2">
+                      <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">
+                        We're understanding your experience...
+                      </h2>
+                      <p className="text-xs text-ink-soft max-w-sm mx-auto">
+                        Building your live candidate profile in real time...
+                      </p>
+                    </div>
+
                     <div className="bg-white/60 rounded-2xl p-4 border hairline flex items-center justify-between">
                       <span className="text-xs font-semibold text-ink">
                         {HUMAN_PARSING_STAGES[parsingStageIndex]}
@@ -363,59 +361,61 @@ function OnboardingPage() {
                     </div>
                   </div>
                 ) : (
-                  /* Drag & Drop canvas */
+                  /* Drag & Drop canvas scaled up to comfortably fill left column */
                   <div
                     onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                     onDragLeave={() => setDragOver(false)}
                     onDrop={handleFileUpload}
-                    className={`border-2 border-dashed rounded-2xl p-10 text-center space-y-4 transition-all ${
+                    className={`border-2 border-dashed rounded-2xl p-16 md:p-20 text-center space-y-6 transition-all ${
                       dragOver
                         ? "border-[color:var(--peach-deep)] bg-[color:var(--peach-soft)]/40 scale-[1.01]"
                         : "border-slate-300/80 bg-white/40 hover:bg-white/60 hover:border-slate-400"
                     }`}
                   >
-                    <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white/80 border hairline text-[color:var(--peach-deep)] mx-auto shadow-xs">
-                      <Upload className="h-6 w-6" />
+                    <div className="grid h-16 w-16 place-items-center rounded-2xl bg-white/80 border hairline text-[color:var(--peach-deep)] mx-auto shadow-xs">
+                      <Upload className="h-8 w-8" />
                     </div>
 
-                    <div className="space-y-1">
-                      <span className="block text-xs font-semibold text-ink">
+                    <div className="space-y-2">
+                      <span className="block text-base font-semibold text-ink">
                         Drag &amp; drop your resume here, or browse
                       </span>
-                      <span className="block text-[10px] text-ink-soft">
+                      <span className="block text-xs text-ink-soft">
                         Supports PDF, DOCX or TXT (up to 10MB)
                       </span>
                     </div>
 
-                    <label className="btn-dark inline-flex px-5 py-2.5 text-xs font-medium rounded-xl cursor-pointer">
-                      Select File
-                      <input type="file" accept=".pdf,.docx,.txt" className="hidden" onChange={handleFileUpload} />
-                    </label>
+                    <div className="pt-2">
+                      <label className="btn-dark inline-flex px-8 py-3 text-xs font-medium rounded-xl cursor-pointer">
+                        Select File
+                        <input type="file" accept=".pdf,.docx,.txt" className="hidden" onChange={handleFileUpload} />
+                      </label>
+                    </div>
                   </div>
                 )}
               </div>
 
-              {/* RIGHT 40%: Rotating message panel */}
-              <div className="hidden md:flex w-full md:w-[40%] flex-col justify-center pl-6 pr-4 border-l hairline">
-                <div className="max-w-[380px] space-y-4">
-                  <div className="h-[140px] flex items-center">
+              {/* RIGHT 45%: Intentionally designed rotating message panel */}
+              <div className="hidden md:flex w-full md:w-[45%] flex-col justify-center pl-10">
+                <div className="max-w-[420px] space-y-6">
+                  <div className="h-[200px] flex items-center">
                     <AnimatePresence mode="wait">
                       <motion.p
                         key={msgIndex}
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: msgVisible ? 1 : 0, y: msgVisible ? 0 : -15 }}
-                        exit={{ opacity: 0, y: -15 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: msgVisible ? 1 : 0, y: msgVisible ? 0 : -20 }}
+                        exit={{ opacity: 0, y: -20 }}
                         transition={{
                           duration: 0.65,
-                          ease: [0.16, 1, 0.3, 1], // Apple-like smooth cubic easing
+                          ease: [0.16, 1, 0.3, 1], // Apple-like easing
                         }}
-                        className="font-display text-[2.25rem] font-medium text-ink leading-[1.2] tracking-tight italic"
+                        className="font-display text-[2.75rem] font-bold text-ink leading-[1.15] tracking-tight text-left"
                       >
-                        "{ROTATING_MESSAGES[msgIndex]}"
+                        {ROTATING_MESSAGES[msgIndex]}
                       </motion.p>
                     </AnimatePresence>
                   </div>
-                  <div className="w-12 h-0.5 bg-peach-deep/30 rounded" />
+                  <div className="w-16 h-1 bg-peach-deep/40 rounded-full" />
                 </div>
               </div>
             </motion.div>
