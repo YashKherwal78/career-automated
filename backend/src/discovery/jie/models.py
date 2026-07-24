@@ -31,15 +31,32 @@ class StructuredJob(BaseModel):
     jie_version: str
     parsed_at: str
     
+    title: str = ""
+    company: str = ""
+    job_url: str = ""
+    job_id: str = ""
+    location: Dict[str, str] = Field(default_factory=lambda: {"country": "", "state": "", "city": ""})
+    work_mode: str = "Unknown"
+    employment_type: str = "Unknown"
+    
     experience_min: Optional[int] = None
     experience_max: Optional[int] = None
-    employment_type: str = "Unknown"
-    work_mode: str = "Unknown"
-    domain: str = "Unknown"
+    fresher_friendly: bool = False
+    
+    salary: Dict[str, Any] = Field(default_factory=lambda: {"currency": "", "minimum": None, "maximum": None, "period": ""})
+    
+    education: List[str] = Field(default_factory=list)
+    technologies: List[str] = Field(default_factory=list)
+    skills: List[str] = Field(default_factory=list)
     
     requirements: List[Requirement] = Field(default_factory=list)
     responsibilities: List[str] = Field(default_factory=list)
     benefits: List[str] = Field(default_factory=list)
     hiring_signals: List[str] = Field(default_factory=list)
+    
+    visa_sponsorship: str = "Unknown"
+    posted_date: Optional[str] = None
+    application_deadline: Optional[str] = None
+    domain: str = "Unknown"
     
     parser_metadata: Dict[str, Any] = Field(default_factory=dict)
