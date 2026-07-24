@@ -91,6 +91,17 @@ const HUMAN_PARSING_STAGES = [
   "✓ Building your profile"
 ];
 
+// Rotating messages for the right panel (upload step)
+const ROTATING_MESSAGES = [
+  "Your dream job deserves more than a generic resume.",
+  "You deserve interviews, not silence.",
+  "Every resume is tailored using Google's XYZ framework.",
+  "The right opportunity is one tailored resume away.",
+  "The best candidates aren't always the best at writing resumes.",
+  "You worked hard for your experience. Let it speak for itself.",
+  "Your next offer letter could start with this upload.",
+];
+
 // Live profile cards that pop up during processing
 const LIVE_PROFILE_CARDS = [
   { icon: Code, text: "React, TypeScript, Python, FastAPI", label: "Skills Identified" },
@@ -107,11 +118,27 @@ function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [dragOver, setDragOver] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-
-  // Parsing indicator state
   const [isParsing, setIsParsing] = useState(false);
   const [parsingStageIndex, setParsingStageIndex] = useState(0);
   const [visibleCardCount, setVisibleCardCount] = useState(0);
+
+  // Rotating message carousel state (randomized start)
+  const [msgIndex, setMsgIndex] = useState(() =>
+    Math.floor(Math.random() * ROTATING_MESSAGES.length)
+  );
+  const [msgVisible, setMsgVisible] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Fade out
+      setMsgVisible(false);
+      setTimeout(() => {
+        setMsgIndex((prev) => (prev + 1) % ROTATING_MESSAGES.length);
+        setMsgVisible(true);
+      }, 600);
+    }, 7000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Candidate Profile State
   const [profile, setProfile] = useState<ProfileData>(INITIAL_PARSED_PROFILE);
@@ -239,8 +266,10 @@ function OnboardingPage() {
         </div>
       </div>
 
-      {/* Main Experience Container */}
-      <div className="max-w-xl mx-auto w-full my-auto py-6">
+      {/* Main Experience Container — full-width for step 2, constrained for other steps */}
+      <div className={`w-full my-auto py-6 ${
+        step === 2 ? "max-w-4xl mx-auto" : "max-w-xl mx-auto"
+      }`}>
         <AnimatePresence mode="wait">
           
           {/* STEP 1: WELCOME */}
@@ -279,7 +308,7 @@ function OnboardingPage() {
             </motion.div>
           )}
 
-          {/* STEP 2: RESUME UPLOAD & LIVE PROFILE-BUILDING ANIMATION */}
+          {/* STEP 2: RESUME UPLOAD — 60/40 SPLIT LAYOUT */}
           {step === 2 && (
             <motion.div
               key="step2"
@@ -287,81 +316,105 @@ function OnboardingPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.3 }}
-              className="glass-card rounded-3xl p-8 md:p-10 space-y-6"
+              className="flex flex-col md:flex-row gap-6 md:gap-10 items-stretch"
             >
-              <div className="text-center space-y-2">
-                <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">
-                  {isParsing ? "We're understanding your experience..." : "Upload Your Resume"}
-                </h2>
-                <p className="text-xs text-ink-soft max-w-sm mx-auto">
-                  {isParsing
-                    ? "Building your live candidate profile in real time..."
-                    : "Upload your existing resume to unlock tailored job matching."}
-                </p>
+              {/* LEFT 60%: Upload card (unchanged) */}
+              <div className="w-full md:w-[60%] glass-card rounded-3xl p-8 md:p-10 space-y-6">
+                <div className="text-center space-y-2">
+                  <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">
+                    {isParsing ? "We're understanding your experience..." : "Upload Your Resume"}
+                  </h2>
+                  <p className="text-xs text-ink-soft max-w-sm mx-auto">
+                    {isParsing
+                      ? "Building your live candidate profile in real time..."
+                      : "Upload your existing resume to unlock tailored job matching."}
+                  </p>
+                </div>
+
+                {isParsing ? (
+                  /* Dynamic Live Profile Building Cards */
+                  <div className="space-y-4 pt-2">
+                    <div className="bg-white/60 rounded-2xl p-4 border hairline flex items-center justify-between">
+                      <span className="text-xs font-semibold text-ink">
+                        {HUMAN_PARSING_STAGES[parsingStageIndex]}
+                      </span>
+                      <div className="h-4 w-4 rounded-full border-2 border-slate-200 border-t-[color:var(--peach-deep)] animate-spin" />
+                    </div>
+
+                    <div className="space-y-2.5">
+                      {LIVE_PROFILE_CARDS.slice(0, visibleCardCount).map((card, idx) => (
+                        <motion.div
+                          key={idx}
+                          initial={{ opacity: 0, x: -12, scale: 0.96 }}
+                          animate={{ opacity: 1, x: 0, scale: 1 }}
+                          transition={{ duration: 0.35 }}
+                          className="flex items-center gap-3 bg-white/80 border hairline rounded-2xl p-3.5 shadow-2xs"
+                        >
+                          <div className="grid h-8 w-8 place-items-center rounded-xl bg-[color:var(--peach-soft)] text-[color:var(--peach-deep)]">
+                            <card.icon className="h-4 w-4" />
+                          </div>
+                          <div className="text-left flex-1 min-w-0">
+                            <div className="text-[10px] uppercase font-bold text-ink-soft tracking-wider">{card.label}</div>
+                            <div className="text-xs font-semibold text-ink truncate">{card.text}</div>
+                          </div>
+                          <Check className="h-4 w-4 text-emerald-500 shrink-0" />
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  /* Drag & Drop canvas */
+                  <div
+                    onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={handleFileUpload}
+                    className={`border-2 border-dashed rounded-2xl p-10 text-center space-y-4 transition-all ${
+                      dragOver
+                        ? "border-[color:var(--peach-deep)] bg-[color:var(--peach-soft)]/40 scale-[1.01]"
+                        : "border-slate-300/80 bg-white/40 hover:bg-white/60 hover:border-slate-400"
+                    }`}
+                  >
+                    <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white/80 border hairline text-[color:var(--peach-deep)] mx-auto shadow-xs">
+                      <Upload className="h-6 w-6" />
+                    </div>
+
+                    <div className="space-y-1">
+                      <span className="block text-xs font-semibold text-ink">
+                        Drag &amp; drop your resume here, or browse
+                      </span>
+                      <span className="block text-[10px] text-ink-soft">
+                        Supports PDF, DOCX or TXT (up to 10MB)
+                      </span>
+                    </div>
+
+                    <label className="btn-dark inline-flex px-5 py-2.5 text-xs font-medium rounded-xl cursor-pointer">
+                      Select File
+                      <input type="file" accept=".pdf,.docx,.txt" className="hidden" onChange={handleFileUpload} />
+                    </label>
+                  </div>
+                )}
               </div>
 
-              {isParsing ? (
-                /* Dynamic Live Profile Building Cards */
-                <div className="space-y-4 pt-2">
-                  <div className="bg-white/60 rounded-2xl p-4 border hairline flex items-center justify-between">
-                    <span className="text-xs font-semibold text-ink">
-                      {HUMAN_PARSING_STAGES[parsingStageIndex]}
-                    </span>
-                    <div className="h-4 w-4 rounded-full border-2 border-slate-200 border-t-[color:var(--peach-deep)] animate-spin" />
-                  </div>
-
-                  <div className="space-y-2.5">
-                    {LIVE_PROFILE_CARDS.slice(0, visibleCardCount).map((card, idx) => (
-                      <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, x: -12, scale: 0.96 }}
-                        animate={{ opacity: 1, x: 0, scale: 1 }}
-                        transition={{ duration: 0.35 }}
-                        className="flex items-center gap-3 bg-white/80 border hairline rounded-2xl p-3.5 shadow-2xs"
-                      >
-                        <div className="grid h-8 w-8 place-items-center rounded-xl bg-[color:var(--peach-soft)] text-[color:var(--peach-deep)]">
-                          <card.icon className="h-4 w-4" />
-                        </div>
-                        <div className="text-left flex-1 min-w-0">
-                          <div className="text-[10px] uppercase font-bold text-ink-soft tracking-wider">{card.label}</div>
-                          <div className="text-xs font-semibold text-ink truncate">{card.text}</div>
-                        </div>
-                        <Check className="h-4 w-4 text-emerald-500 shrink-0" />
-                      </motion.div>
-                    ))}
-                  </div>
+              {/* RIGHT 40%: Rotating message panel */}
+              <div className="hidden md:flex w-full md:w-[40%] flex-col justify-center pl-2 pr-4">
+                <div className="max-w-[380px]">
+                  <AnimatePresence mode="wait">
+                    <motion.p
+                      key={msgIndex}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: msgVisible ? 1 : 0, y: msgVisible ? 0 : -20 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{
+                        duration: 0.55,
+                        ease: [0.25, 0.46, 0.45, 0.94],
+                      }}
+                      className="font-display text-[2rem] md:text-[2.2rem] font-semibold text-ink leading-[1.25] tracking-tight"
+                    >
+                      {ROTATING_MESSAGES[msgIndex]}
+                    </motion.p>
+                  </AnimatePresence>
                 </div>
-              ) : (
-                /* Drag & Drop canvas */
-                <div
-                  onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                  onDragLeave={() => setDragOver(false)}
-                  onDrop={handleFileUpload}
-                  className={`border-2 border-dashed rounded-2xl p-10 text-center space-y-4 transition-all ${
-                    dragOver 
-                      ? "border-[color:var(--peach-deep)] bg-[color:var(--peach-soft)]/40 scale-[1.01]" 
-                      : "border-slate-300/80 bg-white/40 hover:bg-white/60 hover:border-slate-400"
-                  }`}
-                >
-                  <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white/80 border hairline text-[color:var(--peach-deep)] mx-auto shadow-xs">
-                    <Upload className="h-6 w-6" />
-                  </div>
-
-                  <div className="space-y-1">
-                    <span className="block text-xs font-semibold text-ink">
-                      Drag & drop your resume here, or browse
-                    </span>
-                    <span className="block text-[10px] text-ink-soft">
-                      Supports PDF or DOCX format
-                    </span>
-                  </div>
-
-                  <label className="btn-dark inline-flex px-5 py-2.5 text-xs font-medium rounded-xl cursor-pointer">
-                    Select File
-                    <input type="file" accept=".pdf,.docx,.txt" className="hidden" onChange={handleFileUpload} />
-                  </label>
-                </div>
-              )}
+              </div>
             </motion.div>
           )}
 
