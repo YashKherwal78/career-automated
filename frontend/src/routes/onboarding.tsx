@@ -396,23 +396,26 @@ function OnboardingPage() {
               </div>
 
               {/* RIGHT 40%: Rotating message panel */}
-              <div className="hidden md:flex w-full md:w-[40%] flex-col justify-center pl-2 pr-4">
-                <div className="max-w-[380px]">
-                  <AnimatePresence mode="wait">
-                    <motion.p
-                      key={msgIndex}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: msgVisible ? 1 : 0, y: msgVisible ? 0 : -20 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{
-                        duration: 0.55,
-                        ease: [0.25, 0.46, 0.45, 0.94],
-                      }}
-                      className="font-display text-[2rem] md:text-[2.2rem] font-semibold text-ink leading-[1.25] tracking-tight"
-                    >
-                      {ROTATING_MESSAGES[msgIndex]}
-                    </motion.p>
-                  </AnimatePresence>
+              <div className="hidden md:flex w-full md:w-[40%] flex-col justify-center pl-6 pr-4 border-l hairline">
+                <div className="max-w-[380px] space-y-4">
+                  <div className="h-[140px] flex items-center">
+                    <AnimatePresence mode="wait">
+                      <motion.p
+                        key={msgIndex}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: msgVisible ? 1 : 0, y: msgVisible ? 0 : -15 }}
+                        exit={{ opacity: 0, y: -15 }}
+                        transition={{
+                          duration: 0.65,
+                          ease: [0.16, 1, 0.3, 1], // Apple-like smooth cubic easing
+                        }}
+                        className="font-display text-[2.25rem] font-medium text-ink leading-[1.2] tracking-tight italic"
+                      >
+                        "{ROTATING_MESSAGES[msgIndex]}"
+                      </motion.p>
+                    </AnimatePresence>
+                  </div>
+                  <div className="w-12 h-0.5 bg-peach-deep/30 rounded" />
                 </div>
               </div>
             </motion.div>
