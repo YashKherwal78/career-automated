@@ -120,6 +120,69 @@ import shutil
 import tempfile
 from fastapi import UploadFile, File
 from src.runtime.storage.storage_service import StorageService
+from src.services.resume_parser import ResumeParserService
+
+@router.post("/parse_resume")
+def parse_resume_endpoint(
+    file: UploadFile = File(...),
+    current_user: CurrentUser = Depends(get_current_user)
+):
+    """Upload resume, parse text content using AI, and return structured profile data."""
+    ext = os.path.splitext(file.filename)[1].lower()
+    allowed_extensions = {".pdf", ".docx", ".txt"}
+    if ext not in allowed_extensions:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Only PDF, DOCX, and TXT formats are supported. Got: {ext or 'unknown'}"
+        )
+        
+    suffix = ext
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        try:
+            shutil.copyfileobj(file.file, tmp)
+            tmp_path = tmp.name
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to write file stream: {str(e)}"
+            )
+
+    try:
+        # Parse resume using ResumeParserService
+        parser = ResumeParserService()
+        parsed_data = parser.parse_resume(tmp_path)
+        
+        # Also upload to Cloudflare R2
+        key = f"resumes/{current_user.user_id}/{file.filename}"
+        StorageService.upload_file(tmp_path, key)
+        download_url = StorageService.generate_signed_download_url(key, expires_in=604800)
+        
+        # Save resume URL/file metadata to PostgreSQL user_resumes
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM public.user_resumes WHERE user_id = %s", (current_user.user_id,))
+            cursor.execute(
+                """
+                INSERT INTO public.user_resumes (user_id, resume_url, file_name)
+                VALUES (%s, %s, %s)
+                """,
+                (current_user.user_id, download_url, file.filename)
+            )
+            conn.commit()
+
+        parsed_data["resume_url"] = download_url
+        parsed_data["resume_file_name"] = file.filename
+        return parsed_data
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Resume processing failed: {str(e)}"
+        )
+    finally:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+
 
 @router.post("/upload_resume")
 def upload_resume(
