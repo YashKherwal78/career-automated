@@ -1,7 +1,7 @@
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 
-# Match profile schema from ProfileExtractionService
+# Profile Ingestion Schemas
 class PersonalInfo(BaseModel):
     full_name: Optional[str] = None
     email: Optional[str] = None
@@ -82,27 +82,101 @@ class CandidateProfile(BaseModel):
     external_links: List[CandidateLink] = Field(default_factory=list)
     location: Dict[str, str] = Field(default_factory=lambda: {"country": "", "state": "", "city": ""})
 
+# Core Comparison Result Model (Immutable conceptually, fully populated)
 class ComparisonResult(BaseModel):
+    candidate_id: Optional[str] = None
+    job_id: Optional[str] = None
+    generated_at: str = ""
+    profile_version: str = "1.0.0"
+    job_version: str = "1.0.0"
+
     matched_skills: List[str] = Field(default_factory=list)
     missing_skills: List[str] = Field(default_factory=list)
-    
+    extra_skills: List[str] = Field(default_factory=list)
+    critical_missing_skills: List[str] = Field(default_factory=list)
+    optional_missing_skills: List[str] = Field(default_factory=list)
+
     matched_technologies: List[str] = Field(default_factory=list)
     missing_technologies: List[str] = Field(default_factory=list)
-    
+    extra_technologies: List[str] = Field(default_factory=list)
+    technology_categories: Dict[str, str] = Field(default_factory=dict)
+
     matched_projects: List[str] = Field(default_factory=list)
     relevant_projects: List[str] = Field(default_factory=list)
-    
-    missing_experience: List[str] = Field(default_factory=list)
-    experience_gap: Optional[float] = None
-    
+    irrelevant_projects: List[str] = Field(default_factory=list)
+
+    matched_certifications: List[str] = Field(default_factory=list)
+    missing_certifications: List[str] = Field(default_factory=list)
+
     education_fit: bool = False
+    matched_degrees: List[str] = Field(default_factory=list)
+    missing_degrees: List[str] = Field(default_factory=list)
+
+    experience_required: int = 0
+    experience_candidate: float = 0.0
+    experience_gap: float = 0.0
+    experience_fit: bool = False
+
     location_fit: bool = False
     work_mode_fit: bool = False
-    
-    certifications_matched: List[str] = Field(default_factory=list)
-    certifications_missing: List[str] = Field(default_factory=list)
-    
-    responsibilities_overlap: List[str] = Field(default_factory=list)
-    
+    employment_type_fit: bool = False
+    language_fit: bool = False
+
+    responsibility_matches: List[str] = Field(default_factory=list)
+    responsibility_gaps: List[str] = Field(default_factory=list)
+
     strengths: List[str] = Field(default_factory=list)
     weaknesses: List[str] = Field(default_factory=list)
+    warnings: List[str] = Field(default_factory=list)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+    class Config:
+        frozen = True # Enforces immutability after initialization!
+
+# Core Match Score Output Models
+class ScoreBreakdown(BaseModel):
+    skills: int = 0
+    technologies: int = 0
+    experience: int = 0
+    projects: int = 0
+    education: int = 0
+    location: int = 0
+    employment: int = 0
+    certifications: int = 0
+
+class MatchScore(BaseModel):
+    overall_score: int
+    confidence: int
+    grade: str
+    match_level: str
+    breakdown: ScoreBreakdown
+    strengths: List[str] = Field(default_factory=list)
+    weaknesses: List[str] = Field(default_factory=list)
+    critical_missing: List[str] = Field(default_factory=list)
+    summary: str
+
+# Gap Analysis Models
+class Gap(BaseModel):
+    category: str
+    name: str
+    priority: str # Critical, Important, Optional, Nice-to-have
+
+class LearningRecommendation(BaseModel):
+    topic: str
+    resource_type: str # course, certification, project
+    description: str
+
+class GapAnalysis(BaseModel):
+    overall_gap: str # Low, Medium, High
+    critical_gaps: List[Gap] = Field(default_factory=list)
+    important_gaps: List[Gap] = Field(default_factory=list)
+    optional_gaps: List[Gap] = Field(default_factory=list)
+    missing_skills: List[str] = Field(default_factory=list)
+    missing_technologies: List[str] = Field(default_factory=list)
+    missing_certifications: List[str] = Field(default_factory=list)
+    experience_gap: float = 0.0
+    education_gap: Optional[str] = None
+    location_gap: Optional[str] = None
+    strengths: List[str] = Field(default_factory=list)
+    recommendations: List[str] = Field(default_factory=list)
+    learning_paths: List[LearningRecommendation] = Field(default_factory=list)

@@ -8,10 +8,10 @@ class ResumeTailoringEngine:
 
     def generate_tailoring_plan(self, comparison: ComparisonResult) -> Dict[str, Any]:
         """Generates tailored resume suggestions entirely driven by structured ComparisonResult data."""
-        match_result = self.matcher.calculate_score_from_comparison(comparison)
+        match_result = self.matcher.calculate_score(comparison)
         
         return {
-            "overall_match_score": match_result["overall_score"],
+            "overall_match_score": match_result.overall_score,
             "keyword_optimizations": [
                 {
                     "type": "technology",

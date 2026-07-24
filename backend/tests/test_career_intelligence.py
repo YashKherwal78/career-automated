@@ -10,6 +10,7 @@ from src.career_intelligence.matching.engine import MatchScoreEngine
 from src.career_intelligence.tailoring.engine import ResumeTailoringEngine
 from src.career_intelligence.recommendations.engine import JobRecommendationEngine
 from src.career_intelligence.filters.evaluator import JobFilterEvaluator
+from src.career_intelligence.gap_analysis.engine import GapAnalysisEngine
 
 def test_career_intelligence_layer():
     # 1. Create a dummy CandidateProfile matching our onboarding parsed format
@@ -59,16 +60,17 @@ def test_career_intelligence_layer():
     )
 
     # 3. Test CareerComparisonEngine (SINGLE source of truth comparison)
-    comparison = CareerComparisonEngine.compare(profile, job)
+    comparison_engine = CareerComparisonEngine()
+    comparison = comparison_engine.compare(profile, job)
     assert isinstance(comparison, ComparisonResult)
     assert "Python" in comparison.matched_technologies
     assert "Docker" in comparison.missing_technologies
 
-    # 4. Test MatchScoreEngine (Consumes only ComparisonResult)
+    # 4. Test MatchScoreEngine V2 (Consumes only ComparisonResult)
     engine = MatchScoreEngine()
-    match_res = engine.calculate_score_from_comparison(comparison)
-    assert match_res["overall_score"] > 0
-    assert "technologies" in match_res["breakdown"]
+    match_res = engine.calculate_score(comparison)
+    assert match_res.overall_score > 0
+    assert match_res.breakdown.technologies > 0
     
     # 5. Test ResumeTailoringEngine (Consumes only ComparisonResult)
     tailor_engine = ResumeTailoringEngine()
@@ -84,7 +86,13 @@ def test_career_intelligence_layer():
     assert "best_matching_jobs" in recs
     assert "hidden_opportunities" in recs
 
-    # 7. Test JobFilterEvaluator
+    # 7. Test GapAnalysisEngine
+    gap_engine = GapAnalysisEngine()
+    gap_res = gap_engine.analyze_gaps(comparison)
+    assert gap_res.overall_gap in ["Low", "Medium", "High"]
+    assert "Docker" in gap_res.missing_technologies
+
+    # 8. Test JobFilterEvaluator
     assert JobFilterEvaluator.match_filters(job, {"work_mode": "Remote"}) is True
     assert JobFilterEvaluator.match_filters(job, {"location": {"city": "Bangalore"}}) is True
     assert JobFilterEvaluator.match_filters(job, {"location": {"city": "Delhi"}}) is False

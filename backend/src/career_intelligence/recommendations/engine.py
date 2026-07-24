@@ -13,12 +13,12 @@ class JobRecommendationEngine:
             job = item["job"]
             comparison = item["comparison"]
             
-            res = self.scorer.calculate_score_from_comparison(comparison)
+            res = self.scorer.calculate_score(comparison)
             scored_jobs.append({
                 "job": job,
-                "score": res["overall_score"],
-                "breakdown": res["breakdown"],
-                "gaps": res["gaps"]
+                "score": res.overall_score,
+                "breakdown": res.breakdown,
+                "gaps": res.weaknesses
             })
 
         # Sort jobs by overall match score descending
@@ -48,7 +48,7 @@ class JobRecommendationEngine:
                 stretch_opps.append(job_dict)
                 
             # Hidden Opportunity: high technology overlap but lower overall score (e.g. experience gap is large)
-            if item["breakdown"]["technologies"] >= 80 and score < 70:
+            if item["breakdown"].technologies >= 80 and score < 70:
                 hidden_opps.append(job_dict)
 
         return {
