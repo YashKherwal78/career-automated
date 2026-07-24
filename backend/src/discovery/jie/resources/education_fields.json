@@ -1,0 +1,34 @@
+{
+  "Computer Science": [
+    "computer science",
+    "cse",
+    "cs",
+    "computer engineering",
+    "software engineering"
+  ],
+  "Information Technology": [
+    "information technology",
+    "it",
+    "information systems"
+  ],
+  "Electronics & Electrical Engineering": [
+    "electronics",
+    "electrical",
+    "ece",
+    "ee",
+    "electrical engineering"
+  ],
+  "Mechanical Engineering": [
+    "mechanical engineering",
+    "me",
+    "mechanical"
+  ],
+  "Data Science & ML": [
+    "data science",
+    "ds",
+    "machine learning",
+    "ml",
+    "artificial intelligence",
+    "ai"
+  ]
+}

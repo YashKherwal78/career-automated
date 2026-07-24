@@ -1,34 +1,32 @@
-import re
+import json
+import os
 from typing import List
 
-# Skill registry
-SKILL_REGISTRY = {
-    "system design": "System Design",
-    "data structures": "Data Structures", "dsa": "Data Structures",
-    "algorithms": "Algorithms",
-    "machine learning": "Machine Learning", "ml": "Machine Learning",
-    "deep learning": "Deep Learning",
-    "natural language processing": "NLP", "nlp": "NLP",
-    "computer vision": "Computer Vision",
-    "data analytics": "Data Analytics",
-    "a/b testing": "A/B Testing", "ab testing": "A/B Testing",
-    "agile": "Agile Methodology", "scrum": "Agile Methodology",
-    "communication": "Communication",
-    "leadership": "Leadership",
-    "teamwork": "Teamwork", "collaboration": "Teamwork",
-    "problem solving": "Problem Solving",
-    "product management": "Product Management",
-    "project management": "Project Management",
-}
+from src.discovery.jie.extractors.base import BaseExtractor
+from src.discovery.jie.trie_matcher import TrieMatcher
 
-def extract_skills(text: str) -> List[str]:
-    """Extracts professional skills from the text, separating them from technologies."""
-    extracted = set()
-    text_lower = text.lower()
-    
-    for raw, canonical in SKILL_REGISTRY.items():
-        pattern = r'\b' + re.escape(raw) + r'\b'
-        if re.search(pattern, text_lower):
-            extracted.add(canonical)
+class SkillExtractor(BaseExtractor):
+    def __init__(self, resource_dir: str = None):
+        if not resource_dir:
+            resource_dir = os.path.join(os.path.dirname(__file__), "..", "resources")
             
-    return sorted(list(extracted))
+        self.matcher = TrieMatcher()
+        skills_path = os.path.join(resource_dir, "skills.json")
+        try:
+            with open(skills_path, "r") as f:
+                skills_data = json.load(f)
+                for canonical, aliases in skills_data.items():
+                    for alias in aliases:
+                        self.matcher.add_keyword(alias, canonical)
+        except Exception:
+            pass
+
+    def extract(self, text: str, **kwargs) -> List[str]:
+        """Extracts and normalizes skills in O(N) single pass using TrieMatcher."""
+        matches = self.matcher.search_all(text)
+        
+        unique_skills = set()
+        for (_, _, canonical) in matches:
+            unique_skills.add(canonical)
+            
+        return sorted(list(unique_skills))

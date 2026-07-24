@@ -1,0 +1,162 @@
+[
+  {
+    "canonical": "Python",
+    "category": "Programming Languages",
+    "aliases": ["python", "python3", "py"]
+  },
+  {
+    "canonical": "Java",
+    "category": "Programming Languages",
+    "aliases": ["java"]
+  },
+  {
+    "canonical": "C++",
+    "category": "Programming Languages",
+    "aliases": ["c++", "cpp", "c plus plus"]
+  },
+  {
+    "canonical": "C#",
+    "category": "Programming Languages",
+    "aliases": ["c#", "csharp", "c sharp"]
+  },
+  {
+    "canonical": "Go",
+    "category": "Programming Languages",
+    "aliases": ["golang", "go lang", "go"]
+  },
+  {
+    "canonical": "Rust",
+    "category": "Programming Languages",
+    "aliases": ["rust"]
+  },
+  {
+    "canonical": "JavaScript",
+    "category": "Programming Languages",
+    "aliases": ["javascript", "js"]
+  },
+  {
+    "canonical": "TypeScript",
+    "category": "Programming Languages",
+    "aliases": ["typescript", "ts"]
+  },
+  {
+    "canonical": "SQL",
+    "category": "Programming Languages",
+    "aliases": ["sql"]
+  },
+  {
+    "canonical": "React",
+    "category": "Frontend Frameworks",
+    "aliases": ["react", "reactjs", "react.js"]
+  },
+  {
+    "canonical": "Next.js",
+    "category": "Frontend Frameworks",
+    "aliases": ["next.js", "nextjs"]
+  },
+  {
+    "canonical": "Angular",
+    "category": "Frontend Frameworks",
+    "aliases": ["angular", "angularjs"]
+  },
+  {
+    "canonical": "Vue",
+    "category": "Frontend Frameworks",
+    "aliases": ["vue", "vue.js", "vuejs"]
+  },
+  {
+    "canonical": "FastAPI",
+    "category": "Backend Frameworks",
+    "aliases": ["fastapi", "fast api"]
+  },
+  {
+    "canonical": "Django",
+    "category": "Backend Frameworks",
+    "aliases": ["django"]
+  },
+  {
+    "canonical": "Spring Boot",
+    "category": "Backend Frameworks",
+    "aliases": ["spring", "spring boot"]
+  },
+  {
+    "canonical": "PostgreSQL",
+    "category": "Databases",
+    "aliases": ["postgresql", "postgres"]
+  },
+  {
+    "canonical": "MongoDB",
+    "category": "Databases",
+    "aliases": ["mongodb", "mongo"]
+  },
+  {
+    "canonical": "Redis",
+    "category": "Databases",
+    "aliases": ["redis"]
+  },
+  {
+    "canonical": "Docker",
+    "category": "DevOps & Infrastructure",
+    "aliases": ["docker"]
+  },
+  {
+    "canonical": "Kubernetes",
+    "category": "DevOps & Infrastructure",
+    "aliases": ["kubernetes", "k8s"]
+  },
+  {
+    "canonical": "Apache Kafka",
+    "category": "DevOps & Infrastructure",
+    "aliases": ["kafka", "apache kafka"]
+  },
+  {
+    "canonical": "AWS",
+    "category": "Cloud Providers",
+    "aliases": ["aws", "amazon web services"]
+  },
+  {
+    "canonical": "GCP",
+    "category": "Cloud Providers",
+    "aliases": ["gcp", "google cloud", "google cloud platform"]
+  },
+  {
+    "canonical": "Azure",
+    "category": "Cloud Providers",
+    "aliases": ["azure", "microsoft azure"]
+  },
+  {
+    "canonical": "TensorFlow",
+    "category": "AI & ML",
+    "aliases": ["tensorflow", "tf"]
+  },
+  {
+    "canonical": "PyTorch",
+    "category": "AI & ML",
+    "aliases": ["pytorch"]
+  },
+  {
+    "canonical": "LangChain",
+    "category": "AI & ML",
+    "aliases": ["langchain"]
+  },
+  {
+    "canonical": "Pinecone",
+    "category": "AI & ML",
+    "aliases": ["pinecone"]
+  },
+  {
+    "canonical": "Chroma",
+    "category": "AI & ML",
+    "aliases": ["chroma", "chromadb"]
+  },
+  {
+    "canonical": "OpenAI",
+    "category": "AI & ML",
+    "aliases": ["openai"]
+  },
+  {
+    "canonical": "LLMs",
+    "category": "AI & ML",
+    "aliases": ["llm", "llms"]
+  }
+]

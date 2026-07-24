@@ -48,5 +48,47 @@ def test_jie_pipeline():
     
     print("All JIE pipeline tests passed successfully!")
 
+def test_jie_structural_extractors():
+    from src.discovery.jie.extractors.education import EducationExtractor
+    from src.discovery.jie.extractors.experience import ExperienceExtractor
+    from src.discovery.jie.extractors.technologies import TechnologyExtractor
+    from src.discovery.jie.models import EducationInfo, ExperienceInfo
+    
+    # 1. Test EducationExtractor
+    edu_extractor = EducationExtractor()
+    edu_info = edu_extractor.extract("Requires a Bachelor of Technology in CSE and a Master's degree.")
+    assert "Bachelor's" in edu_info.degrees
+    assert "Master's" in edu_info.degrees
+    assert "Computer Science" in edu_info.fields
+    assert isinstance(edu_info, EducationInfo)
+    
+    # 2. Test ExperienceExtractor with word numbers
+    exp_extractor = ExperienceExtractor()
+    exp_info = exp_extractor.extract("Must have three to five years of experience. Fresher friendly.")
+    assert exp_info.experience_min == 3
+    assert exp_info.experience_max == 5
+    assert exp_info.fresher_friendly is False  # Min is 3, overrides entry-level
+    
+    exp_info_fresher = exp_extractor.extract("Graduate Program or recent graduates welcome. No experience required.")
+    assert exp_info_fresher.experience_min == 0
+    assert exp_info_fresher.fresher_friendly is True
+    assert isinstance(exp_info_fresher, ExperienceInfo)
+    
+    # 3. Test TechnologyExtractor with categories
+    tech_extractor = TechnologyExtractor()
+    techs = tech_extractor.extract("Experience with Python3, ReactJS, and postgres.")
+    assert "Python" in techs
+    assert "React" in techs
+    assert "PostgreSQL" in techs
+    
+    techs_with_cat = tech_extractor.extract_with_categories("Docker and AWS.")
+    names = [t["name"] for t in techs_with_cat]
+    categories = [t["category"] for t in techs_with_cat]
+    assert "Docker" in names
+    assert "DevOps & Infrastructure" in categories
+    assert "AWS" in names
+    assert "Cloud Providers" in categories
+
 if __name__ == '__main__':
     test_jie_pipeline()
+    test_jie_structural_extractors()

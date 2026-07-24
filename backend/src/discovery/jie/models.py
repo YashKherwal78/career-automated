@@ -1,6 +1,15 @@
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 
+class EducationInfo(BaseModel):
+    degrees: List[str] = Field(default_factory=list)
+    fields: List[str] = Field(default_factory=list)
+
+class ExperienceInfo(BaseModel):
+    experience_min: Optional[int] = None
+    experience_max: Optional[int] = None
+    fresher_friendly: bool = False
+
 class Requirement(BaseModel):
     type: str # 'skill', 'experience', 'education', 'domain'
     name: str # e.g. 'Python', 'Product Management', '5' (for experience)

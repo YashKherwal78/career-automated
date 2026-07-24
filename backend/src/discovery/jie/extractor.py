@@ -7,21 +7,25 @@ from src.discovery.jie.extractors.preprocessing import preprocess_jd
 from src.discovery.jie.extractors.basic import extract_basic_info
 from src.discovery.jie.extractors.location import extract_location
 from src.discovery.jie.extractors.employment_type import extract_employment_type
-from src.discovery.jie.extractors.experience import extract_experience
+from src.discovery.jie.extractors.experience import ExperienceExtractor
 from src.discovery.jie.extractors.salary import extract_salary
-from src.discovery.jie.extractors.education import extract_education
-from src.discovery.jie.extractors.technologies import extract_technologies
-from src.discovery.jie.extractors.skills import extract_skills
+from src.discovery.jie.extractors.education import EducationExtractor
+from src.discovery.jie.extractors.technologies import TechnologyExtractor
+from src.discovery.jie.extractors.skills import SkillExtractor
 from src.discovery.jie.extractors.responsibilities import extract_responsibilities
 from src.discovery.jie.extractors.requirements import extract_requirements, generate_legacy_requirements
 from src.discovery.jie.extractors.benefits import extract_benefits
 from src.discovery.jie.extractors.dates import extract_dates
 
-JIE_VERSION = "2.0.0"
+JIE_VERSION = "3.0.0"
 
 class JDExtractor:
     def __init__(self):
-        pass
+        # Precompile and cache extractor instances once at startup
+        self.experience_extractor = ExperienceExtractor()
+        self.education_extractor = EducationExtractor()
+        self.technology_extractor = TechnologyExtractor()
+        self.skill_extractor = SkillExtractor()
 
     def _hash_jd(self, jd_text: str) -> str:
         return hashlib.md5(jd_text.encode('utf-8')).hexdigest()
@@ -42,11 +46,14 @@ class JDExtractor:
         basic = extract_basic_info(title, clean_text, metadata)
         loc = extract_location(clean_text, title, metadata)
         emp_type = extract_employment_type(title, clean_text)
-        exp = extract_experience(clean_text)
+        
+        # Extract using the pre-cached modular instances returning Pydantic models
+        exp = self.experience_extractor.extract(clean_text)
+        edu = self.education_extractor.extract(clean_text)
+        techs = self.technology_extractor.extract(clean_text)
+        skills = self.skill_extractor.extract(clean_text)
+        
         sal = extract_salary(clean_text)
-        edu = extract_education(clean_text)
-        techs = extract_technologies(clean_text)
-        skills = extract_skills(clean_text)
         resp = extract_responsibilities(clean_text)
         reqs = extract_requirements(clean_text)
         benefits = extract_benefits(clean_text)
@@ -54,6 +61,9 @@ class JDExtractor:
         
         # 3. Generate Legacy Requirements for backward compatibility checks
         legacy_reqs = generate_legacy_requirements(reqs, techs, skills)
+        
+        # Format education fields output mapping for backward compatibility (merging degrees and fields)
+        edu_list = edu.degrees + edu.fields
         
         return StructuredJob(
             jd_hash=jd_hash,
@@ -66,15 +76,15 @@ class JDExtractor:
             location=loc["location"],
             work_mode=loc["work_mode"],
             employment_type=emp_type,
-            experience_min=exp["experience_min"],
-            experience_max=exp["experience_max"],
-            fresher_friendly=exp["fresher_friendly"],
+            experience_min=exp.experience_min,
+            experience_max=exp.experience_max,
+            fresher_friendly=exp.fresher_friendly,
             salary=sal,
-            education=edu,
+            education=edu_list,
             technologies=techs,
             skills=skills,
-            responsibilities=resp,
             requirements=legacy_reqs, # Keeping model property populated with legacy Requirements
+            responsibilities=resp,
             benefits=benefits,
             posted_date=dates["posted_date"],
             application_deadline=dates["application_deadline"],

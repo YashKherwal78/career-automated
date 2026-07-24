@@ -1,0 +1,40 @@
+{
+  "Bachelor's": [
+    "bachelor",
+    "bachelors",
+    "bachelor's",
+    "b.s.",
+    "bs",
+    "b.e.",
+    "be",
+    "b.tech",
+    "btech",
+    "bachelor of engineering",
+    "bachelor of technology"
+  ],
+  "Master's": [
+    "master",
+    "masters",
+    "master's",
+    "m.s.",
+    "ms",
+    "m.tech",
+    "mtech",
+    "mba",
+    "m.b.a",
+    "master of technology",
+    "master of science"
+  ],
+  "PhD": [
+    "phd",
+    "ph.d.",
+    "doctorate",
+    "doctor of philosophy"
+  ],
+  "Diploma": [
+    "diploma",
+    "associate's",
+    "associates",
+    "associate degree"
+  ]
+}
