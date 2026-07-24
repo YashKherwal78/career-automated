@@ -63,8 +63,8 @@ def test_career_intelligence_layer():
     comparison_engine = CareerComparisonEngine()
     comparison = comparison_engine.compare(profile, job)
     assert isinstance(comparison, ComparisonResult)
-    assert "Python" in comparison.matched_technologies
-    assert "Docker" in comparison.missing_technologies
+    assert "Python" in comparison.technologies.matched
+    assert "Docker" in comparison.technologies.missing
 
     # 4. Test MatchScoreEngine V2 (Consumes only ComparisonResult)
     engine = MatchScoreEngine()

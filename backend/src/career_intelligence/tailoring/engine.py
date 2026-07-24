@@ -17,12 +17,12 @@ class ResumeTailoringEngine:
                     "type": "technology",
                     "suggestion": f"Incorporate '{tech}' into your summary or skills section.",
                     "canonical_value": tech
-                } for tech in comparison.missing_technologies
+                } for tech in comparison.technologies.missing
             ],
             "project_prioritization": {
                 "suggestions": [
                     f"Move '{proj}' to the top of your projects section because it highlights relevant stack components."
-                    for proj in comparison.matched_projects
+                    for proj in comparison.projects.matched
                 ]
             },
             "experience_alignment": {

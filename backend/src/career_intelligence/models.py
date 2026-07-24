@@ -82,48 +82,33 @@ class CandidateProfile(BaseModel):
     external_links: List[CandidateLink] = Field(default_factory=list)
     location: Dict[str, str] = Field(default_factory=lambda: {"country": "", "state": "", "city": ""})
 
-# Core Comparison Result Model (Immutable conceptually, fully populated)
+# Reusable sub-comparison model with score, matched items, and reasoning metadata
+class SubComparison(BaseModel):
+    score: float = 0.0
+    matched: List[str] = Field(default_factory=list)
+    missing: List[str] = Field(default_factory=list)
+    reasoning: str = ""
+    confidence: float = 1.0
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+# Hierarchical Comparison Result Model (Immutable conceptually)
 class ComparisonResult(BaseModel):
     candidate_id: Optional[str] = None
     job_id: Optional[str] = None
     generated_at: str = ""
-    profile_version: str = "1.0.0"
-    job_version: str = "1.0.0"
+    profile_version: str = "2.0.0"
+    job_version: str = "2.0.0"
 
-    matched_skills: List[str] = Field(default_factory=list)
-    missing_skills: List[str] = Field(default_factory=list)
-    extra_skills: List[str] = Field(default_factory=list)
-    critical_missing_skills: List[str] = Field(default_factory=list)
-    optional_missing_skills: List[str] = Field(default_factory=list)
-
-    matched_technologies: List[str] = Field(default_factory=list)
-    missing_technologies: List[str] = Field(default_factory=list)
-    extra_technologies: List[str] = Field(default_factory=list)
-    technology_categories: Dict[str, str] = Field(default_factory=dict)
-
-    matched_projects: List[str] = Field(default_factory=list)
-    relevant_projects: List[str] = Field(default_factory=list)
-    irrelevant_projects: List[str] = Field(default_factory=list)
-
-    matched_certifications: List[str] = Field(default_factory=list)
-    missing_certifications: List[str] = Field(default_factory=list)
-
-    education_fit: bool = False
-    matched_degrees: List[str] = Field(default_factory=list)
-    missing_degrees: List[str] = Field(default_factory=list)
-
-    experience_required: int = 0
-    experience_candidate: float = 0.0
-    experience_gap: float = 0.0
-    experience_fit: bool = False
-
-    location_fit: bool = False
-    work_mode_fit: bool = False
-    employment_type_fit: bool = False
-    language_fit: bool = False
-
-    responsibility_matches: List[str] = Field(default_factory=list)
-    responsibility_gaps: List[str] = Field(default_factory=list)
+    skills: SubComparison = Field(default_factory=SubComparison)
+    technologies: SubComparison = Field(default_factory=SubComparison)
+    education: SubComparison = Field(default_factory=SubComparison)
+    experience: SubComparison = Field(default_factory=SubComparison)
+    projects: SubComparison = Field(default_factory=SubComparison)
+    certifications: SubComparison = Field(default_factory=SubComparison)
+    location: SubComparison = Field(default_factory=SubComparison)
+    employment: SubComparison = Field(default_factory=SubComparison)
+    responsibilities: SubComparison = Field(default_factory=SubComparison)
+    languages: SubComparison = Field(default_factory=SubComparison)
 
     strengths: List[str] = Field(default_factory=list)
     weaknesses: List[str] = Field(default_factory=list)
