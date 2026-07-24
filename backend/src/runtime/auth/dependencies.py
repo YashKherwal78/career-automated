@@ -79,11 +79,12 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
             
         public_key = get_public_key(kid)
         
-        # Verify and decode JWT payload using RS256 algorithm
+        # Use algorithm declared in the JWKS key (Supabase uses ES256, not RS256)
+        key_alg = public_key.get("alg", "RS256")
         payload = jwt.decode(
             token,
             public_key,
-            algorithms=["RS256"],
+            algorithms=["RS256", "ES256"],
             audience="authenticated"
         )
         
