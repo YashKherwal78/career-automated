@@ -42,8 +42,9 @@ services:
     depends_on:
       redis:
         condition: service_started
-      db:
-        condition: service_healthy
+    networks:
+      - default
+      - dokploy-network
     restart: always
 
   scheduler:
@@ -89,4 +90,6 @@ volumes:
   pgdata:
   pgbackups:
 
-
+networks:
+  dokploy-network:
+    external: true
