@@ -58,8 +58,12 @@ class Connector(ABC):
         return CrawlPolicy()
         
     def freshness_strategy(self) -> FreshnessStrategy:
-        """Returns the freshness strategy for this connector. Defaults to content hash fallback."""
+        """Returns the strategy used to determine if a payload needs processing."""
         return DefaultFreshnessStrategy()
+        
+    def should_sync(self, board: Board, fetch_result: FetchResult) -> bool:
+        """Delegate method for freshness_strategy().should_sync(...)"""
+        return self.freshness_strategy().should_sync(board, fetch_result)
         
     @abstractmethod
     async def sync(self, board: Board, http_client: Any) -> AsyncIterator[RawJob | FetchResult]:
