@@ -42,6 +42,24 @@ class ICompanyStateRepository(ABC):
     def update_failure(self, provider: str, company_id: str, updates: Dict[str, Any], tx: Optional[Any] = None) -> None:
         pass
 
+class ICompanySchedulingRepository(ABC):
+    @abstractmethod
+    def reserve_due_company(self, worker_id: str, provider_id: Optional[str] = None, lock_duration: int = 300, tx: Optional[Any] = None) -> Optional[Dict[str, Any]]:
+        pass
+        
+    @abstractmethod
+    def renew_company_lease(self, company_id: str, lease_token: str, duration_seconds: int = 300, tx: Optional[Any] = None) -> bool:
+        pass
+        
+    @abstractmethod
+    def mark_company_completed(self, company_id: str, lease_token: str, interval_seconds: int = 86400, tx: Optional[Any] = None) -> None:
+        pass
+        
+    @abstractmethod
+    def mark_company_failed(self, company_id: str, lease_token: str, backoff_schedule: list, tx: Optional[Any] = None) -> None:
+        pass
+
+
 class ISessionRepository(ABC):
     @abstractmethod
     def create_session(self, session_id: str, provider: str, tx: Optional[Any] = None) -> None:

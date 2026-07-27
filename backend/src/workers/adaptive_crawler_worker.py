@@ -127,6 +127,41 @@ class AdaptiveCrawlerWorker(BaseWorker):
         sub_tasks = [_crawl_single() for _ in range(batch_size)]
         await asyncio.gather(*sub_tasks, return_exceptions=True)
 
+async def execute_crawl_for_scheduler(row_data: dict, db_path: str, stop_event: asyncio.Event) -> dict:
+    """
+    Executes a crawl without knowing anything about the scheduler's leases.
+    Used by mass_scheduler to maintain the Scheduler Contract boundary.
+    """
+    from src.workers.job_crawler_worker import make_board_from_registry_row
+    from src.discovery.pipeline.sync_session import BoardSyncSession
+    from src.discovery.registry.connector_registry import ConnectorRegistry
+    
+    board = make_board_from_registry_row(row_data)
+    session = BoardSyncSession(board, db_path=db_path)
+    
+    sync_task = asyncio.create_task(session.execute())
+    while not sync_task.done():
+        if stop_event.is_set():
+            sync_task.cancel()
+            break
+        await asyncio.sleep(0.5)
+        
+    if not stop_event.is_set():
+        await sync_task
+        
+    stats = session.stats.copy()
+    
+    # Expose connector's recommended interval if possible
+    connector = ConnectorRegistry.get(board.provider)
+    if connector:
+        try:
+            stats["recommended_interval_secs"] = connector.crawl_policy().normal_interval
+        except Exception:
+            pass
+            
+    return stats
+
 if __name__ == "__main__":
     worker = AdaptiveCrawlerWorker()
     worker.run()
+

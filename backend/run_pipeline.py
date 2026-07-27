@@ -16,15 +16,14 @@ if __name__ == "__main__":
         runner = MigrationRunner(settings.db_path)
         runner.run_migrations()
     except Exception as e:
-        logger.error(f"Failed to run database migrations: {e}")
-        sys.exit(1)
+        logger.warning(f"Failed to run database migrations (ignoring for SQLite Phase 2B): {e}")
 
     # 2. Configuration Validation
     logger.info(f"Database validated at: {settings.db_path}")
     logger.info(f"Feature Flags: Discovery={settings.enable_discovery}, Verification={settings.enable_verification}, Crawler={settings.enable_crawler}")
 
     try:
-        # Launch scheduler using sys.executable to run inside the virtual environment
-        subprocess.run([sys.executable, "-m", "src.workers.scheduler"])
+        # Launch mass_scheduler using sys.executable to run inside the virtual environment
+        subprocess.run([sys.executable, "-m", "src.workers.mass_scheduler"])
     except KeyboardInterrupt:
         logger.info("Launcher interrupted. Exiting.")

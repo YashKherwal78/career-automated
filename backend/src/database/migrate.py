@@ -77,7 +77,8 @@ class MigrationRunner:
                 continue
             
             version_key = filename
-            if version_key in applied:
+            legacy_version_key = str(int(match.group(1))) # e.g. "1" instead of "001_initial.sql"
+            if version_key in applied or legacy_version_key in applied:
                 continue
 
             logger.info(f"Applying migration: {filename}")

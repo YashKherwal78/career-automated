@@ -12,8 +12,8 @@ class OutboxRepository(BaseRepository):
         with self.transaction() as conn:
             conn.execute('''
                 INSERT INTO outbox_events (event_id, event_type, aggregate_type, aggregate_id, payload, correlation_id, trace_id)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            ''', (event_id, event_type, aggregate_type, aggregate_id, payload_str, corr_id, tr_id))
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (str(event_id), event_type, aggregate_type, aggregate_id, payload_str, str(corr_id), str(tr_id)))
 
     def claim_pending_events(self, batch_size: int = 50, tx: Optional[Any] = None) -> List[Dict[str, Any]]:
         with self.transaction() as conn:
