@@ -80,14 +80,19 @@ class RipplingConnector(Connector):
     def _extract_slug(self, endpoint: str) -> str:
         from urllib.parse import urlparse
         parsed = urlparse(endpoint)
-        # Endpoint might look like https://ats.rippling.com/board/slug/jobs or similar
         path = parsed.path.strip("/")
         parts = path.split("/")
         if "board" in parts:
             idx = parts.index("board")
             if idx + 1 < len(parts):
                 return parts[idx + 1]
-        return parts[-1] if parts else "unknown"
+        if parts:
+            if parts[-1] == "jobs" and len(parts) >= 2:
+                return parts[-2]
+            return parts[-1]
+        return "unknown"
+
+
 
 
 ConnectorRegistry.register("rippling", "JSON", 10, RipplingConnector)

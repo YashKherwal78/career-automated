@@ -14,11 +14,9 @@ from src.discovery.registry.connector_registry import ConnectorRegistry
 from src.config.settings import settings
 
 # Import all connectors at startup to populate ConnectorRegistry
-import src.discovery.connectors.greenhouse
-import src.discovery.connectors.lever
-import src.discovery.connectors.workday
-import src.discovery.connectors.ashby
-import src.discovery.connectors.smartrecruiters
+from src.discovery.connectors.bootstrap import bootstrap_connectors
+bootstrap_connectors()
+
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("JobCrawlerWorker")
@@ -61,9 +59,14 @@ def make_board_from_registry_row(row):
         token = metadata.get("board_token") or endpoint.split("/")[-1]
         identity = LeverBoardIdentity(ats="lever", board_token=token)
     elif ats_type == "workday":
-        tenant = metadata.get("tenant") or endpoint.split("/")[-2]
-        site = metadata.get("site") or "careers"
-        identity = WorkdayBoardIdentity(ats="workday", tenant=tenant, site=site)
+        from src.discovery.pipeline.parsers import WorkdayParser
+        from src.discovery.models import WorkdayBoardIdentity
+        identity_from_parser, _, _ = WorkdayParser().parse(endpoint)
+        if identity_from_parser and isinstance(identity_from_parser, WorkdayBoardIdentity):
+            identity = identity_from_parser
+        else:
+            identity = WorkdayBoardIdentity(ats="workday", tenant="unknown", site="unknown")
+
     elif ats_type == "smartrecruiters":
         token = metadata.get("company_identifier") or metadata.get("board_token") or endpoint.split("/")[-1]
         identity = StandardBoardIdentity(ats=ats_type, board_token=token)

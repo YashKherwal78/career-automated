@@ -5,6 +5,9 @@ from typing import List, Tuple
 from src.discovery.models import CanonicalJob
 from src.discovery.pipeline.repositories.base import BaseRepository
 
+def is_postgres() -> bool:
+    return False
+
 class JobRepository(BaseRepository):
     def _init_db(self):
         # Use existing normalized_jobs table created by migrations
@@ -25,12 +28,12 @@ class JobRepository(BaseRepository):
         company_id = jobs[0].company_id
 
         # 1. Get all active job hashes for this company
-        from src.api.db import is_postgres
         with self.get_connection() as conn:
-            if not is_postgres():
+            is_sqlite = getattr(conn, "_is_sqlite", isinstance(conn, sqlite3.Connection))
+            if is_sqlite or not is_postgres():
                 conn.row_factory = sqlite3.Row
                 cursor = conn.execute("SELECT job_hash FROM normalized_jobs WHERE company_id = ? AND status = 'ACTIVE'", (company_id,))
-                active_hashes = {row['job_hash'] for row in cursor.fetchall()}
+                active_hashes = {row['job_hash'] if isinstance(row, sqlite3.Row) or isinstance(row, dict) else row[0] for row in cursor.fetchall()}
             else:
                 cursor = conn.execute("SELECT job_hash FROM normalized_jobs WHERE company_id = %s AND status = 'ACTIVE'", (company_id,))
                 active_hashes = {row['job_hash'] if isinstance(row, dict) else row[0] for row in cursor.fetchall()}
@@ -38,6 +41,7 @@ class JobRepository(BaseRepository):
         current_hashes = set()
         
         with self.get_connection() as conn:
+            is_sqlite = getattr(conn, "_is_sqlite", isinstance(conn, sqlite3.Connection))
             for job in jobs:
                 job_hash = job.identity.get_hash()
                 current_hashes.add(job_hash)
@@ -48,7 +52,8 @@ class JobRepository(BaseRepository):
                 else:
                     updated += 1
                     
-                if is_postgres():
+                if not is_sqlite and is_postgres():
+
                     conn.execute("""
                         INSERT INTO normalized_jobs (
                             job_id, provider_job_id, company_id, provider, title, location, 
