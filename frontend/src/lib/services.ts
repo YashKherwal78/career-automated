@@ -180,6 +180,46 @@ export class ApiAnalyticsService implements AnalyticsService {
   }
 }
 
+export interface CreateOrderResponse {
+  order_id: string;
+  amount: number;
+  currency: string;
+  key_id: string;
+}
+
+export interface SubscriptionResponse {
+  tier: "free" | "pro";
+  active_since: string | null;
+}
+
+export class BillingService {
+  async createOrder(): Promise<CreateOrderResponse> {
+    const res = await authFetch(`${API_BASE}/billing/create-order`, { method: "POST" });
+    if (!res.ok) throw new Error("Failed to create Razorpay order");
+    return res.json();
+  }
+
+  async verifyPayment(payload: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+  }): Promise<{ status: string }> {
+    const res = await authFetch(`${API_BASE}/billing/verify-payment`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error("Payment verification failed");
+    return res.json();
+  }
+
+  async getSubscription(): Promise<SubscriptionResponse> {
+    const res = await authFetch(`${API_BASE}/billing/subscription`);
+    if (!res.ok) throw new Error("Failed to fetch subscription status");
+    return res.json();
+  }
+}
+
 export class ApiResumeService implements ResumeService {
   async getResumeInfo(): Promise<{
     score: number;
@@ -302,5 +342,9 @@ export class ServiceRegistry {
 
   static getResumeService(): ResumeService {
     return new ApiResumeService();
+  }
+
+  static getBillingService(): BillingService {
+    return new BillingService();
   }
 }

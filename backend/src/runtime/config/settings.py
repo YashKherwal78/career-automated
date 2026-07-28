@@ -39,6 +39,10 @@ class Settings:
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "").strip("'\"")
     GMAIL_ADDRESS: str = os.getenv("GMAIL_ADDRESS", "").strip("'\"")
     GMAIL_APP_PASSWORD: str = os.getenv("GMAIL_APP_PASSWORD", "").strip("'\"")
+
+    # Razorpay
+    RAZORPAY_KEY_ID: str = os.getenv("RAZORPAY_KEY_ID", "").strip("'\"")
+    RAZORPAY_KEY_SECRET: str = os.getenv("RAZORPAY_KEY_SECRET", "").strip("'\"")
     
     @classmethod
     def use_postgres(cls, db_url: str) -> bool:

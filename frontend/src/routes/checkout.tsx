@@ -1,10 +1,32 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { ServiceRegistry } from "../lib/services";
+import { useAuth } from "../lib/auth";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout — CareerAutomated" }] }),
   component: Checkout,
 });
+
+declare global {
+  interface Window {
+    Razorpay: new (options: Record<string, unknown>) => {
+      open: () => void;
+      on: (event: string, handler: (response: unknown) => void) => void;
+    };
+  }
+}
+
+function loadRazorpayScript(): Promise<void> {
+  if (window.Razorpay) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Failed to load Razorpay checkout script"));
+    document.body.appendChild(script);
+  });
+}
 
 function Spinner() {
   return (
@@ -22,16 +44,61 @@ function Spinner() {
 
 function Checkout() {
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const startPayment = () => {
+  const startPayment = async () => {
     if (processing) return;
     setProcessing(true);
-    // Backend integration point: replace this simulated flow with a real Razorpay Checkout call, e.g.
-    // const rzp = new window.Razorpay({ key, amount, order_id, handler: () => navigate({ to: "/payment-success" }), ... });
-    // rzp.open();
-    // No billing backend exists yet (see plan Phase 7) — this is intentionally simulated.
-    setTimeout(() => navigate({ to: "/payment-success" }), 1500);
+    setError(null);
+
+    try {
+      await loadRazorpayScript();
+      const billing = ServiceRegistry.getBillingService();
+      const order = await billing.createOrder();
+
+      const rzp = new window.Razorpay({
+        key: order.key_id,
+        amount: order.amount,
+        currency: order.currency,
+        order_id: order.order_id,
+        name: "CareerAutomated",
+        description: "CareerAutomated Pro — monthly",
+        prefill: {
+          name: profile?.full_name || undefined,
+          email: profile?.email || undefined,
+        },
+        theme: { color: "#E85D2C" },
+        handler: async (response: unknown) => {
+          try {
+            const r = response as {
+              razorpay_order_id: string;
+              razorpay_payment_id: string;
+              razorpay_signature: string;
+            };
+            await billing.verifyPayment(r);
+            navigate({ to: "/payment-success" });
+          } catch {
+            setProcessing(false);
+            setError(
+              "Payment succeeded but verification failed. Contact support if you were charged.",
+            );
+          }
+        },
+        modal: {
+          ondismiss: () => setProcessing(false),
+        },
+      });
+      rzp.on("payment.failed", () => {
+        setProcessing(false);
+        setError("Payment failed. Please try again.");
+      });
+      rzp.open();
+    } catch {
+      setProcessing(false);
+      setError("Couldn't start checkout. Please try again.");
+    }
   };
 
   return (
@@ -156,6 +223,20 @@ function Checkout() {
             <span>Pay ₹590 with Razorpay</span>
           )}
         </button>
+
+        {error && (
+          <p
+            style={{
+              fontSize: 12.5,
+              color: "var(--ds-accent-danger, #C4432B)",
+              textAlign: "center",
+              marginTop: 12,
+              lineHeight: 1.5,
+            }}
+          >
+            {error}
+          </p>
+        )}
 
         <p
           style={{

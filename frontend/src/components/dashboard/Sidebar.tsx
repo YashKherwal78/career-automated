@@ -1,5 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../lib/auth";
+import { ServiceRegistry } from "../../lib/services";
 
 const NAV_ITEMS = [
   { name: "Dashboard", to: "/dashboard" as const },
@@ -95,6 +97,12 @@ export function Sidebar() {
   const location = useLocation();
   const { profile, logout } = useAuth();
   const initial = (profile?.full_name || "?").charAt(0).toUpperCase();
+  const { data: subscription } = useQuery({
+    queryKey: ["subscription"],
+    queryFn: () => ServiceRegistry.getBillingService().getSubscription(),
+    staleTime: 60_000,
+  });
+  const tierLabel = subscription?.tier === "pro" ? "Pro" : "Free tier";
 
   return (
     <div
@@ -214,7 +222,7 @@ export function Sidebar() {
               className="rounded-full flex-shrink-0"
               style={{ width: 4, height: 4, background: "var(--ds-ink-400)" }}
             />
-            Free tier
+            {tierLabel}
           </div>
         </div>
         <button
