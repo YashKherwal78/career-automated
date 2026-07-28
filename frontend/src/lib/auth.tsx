@@ -21,6 +21,7 @@ interface AuthContextType {
   loginWithGoogle: () => Promise<any>;
   logout: () => Promise<any>;
   refreshProfile: () => Promise<void>;
+  markOnboardingComplete: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -52,6 +53,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const p = await fetchProfile(session.access_token);
       setProfile(p);
     }
+  };
+
+  // Sets onboarding_complete locally without a refetch, so the Dashboard's
+  // redirect guard can't lose a race against a concurrent onAuthStateChange
+  // profile fetch that resolves with a stale (pre-onboarding) snapshot.
+  const markOnboardingComplete = () => {
+    setProfile((prev) => (prev ? { ...prev, onboarding_complete: true } : prev));
   };
 
   useEffect(() => {
@@ -144,6 +152,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loginWithGoogle,
         logout,
         refreshProfile,
+        markOnboardingComplete,
       }}
     >
       {children}

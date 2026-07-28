@@ -117,7 +117,7 @@ function Spinner({ size = 56 }: { size?: number }) {
 }
 
 function OnboardingPage() {
-  const { user, session, refreshProfile } = useAuth();
+  const { user, session, refreshProfile, markOnboardingComplete } = useAuth();
   const navigate = useNavigate();
 
   const [step, setStep] = useState<1 | 2>(1);
@@ -225,7 +225,8 @@ function OnboardingPage() {
       setFinishError("Couldn't save your profile. Please try again.");
       return;
     }
-    await refreshProfile();
+    markOnboardingComplete();
+    refreshProfile();
     navigate({ to: "/dashboard" });
   };
 
