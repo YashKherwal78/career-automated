@@ -56,9 +56,24 @@ class EvidenceRepository(BaseRepository):
         return cctx.compress(payload_bytes)
 
     def _decompress(self, blob: bytes) -> dict:
-        dctx = zstd.ZstdDecompressor()
-        decompressed = dctx.decompress(blob)
-        return json.loads(decompressed.decode('utf-8'))
+        if not blob:
+            return {}
+        try:
+            dctx = zstd.ZstdDecompressor()
+            decompressed = dctx.decompress(blob)
+            return json.loads(decompressed.decode('utf-8'))
+        except Exception:
+            try:
+                # Fallback for uncompressed or string blobs
+                if isinstance(blob, memoryview):
+                    blob = blob.tobytes()
+                if isinstance(blob, bytes):
+                    return json.loads(blob.decode('utf-8'))
+                if isinstance(blob, str):
+                    return json.loads(blob)
+            except Exception:
+                pass
+            return {}
 
     def save_evidence(self, crawl_id: str, board_id: str, provider: str, category: str, reasons: str, score: int, schema_hash: str, endpoint_family: str, expires_at: float, payload: dict | bytes) -> str:
         compressed = self._compress(payload)
