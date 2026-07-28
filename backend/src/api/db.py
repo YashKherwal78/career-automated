@@ -16,6 +16,12 @@ def is_postgres() -> bool:
     return USE_POSTGRES
 
 
+def get_db():
+    """FastAPI dependency yielding an operational DB connection (used by tailor.py)."""
+    with get_connection() as conn:
+        yield conn
+
+
 def json_extract(column: str, path: str) -> str:
     if USE_POSTGRES:
         if path.startswith("$."):
