@@ -162,20 +162,56 @@ def _load_jd_profile(job_id: str, db) -> Dict[str, Any]:
 
 
 def _load_candidate_memory(candidate_id: str, db) -> Dict[str, Any]:
-    """Load candidate memory from DB if available. Returns empty dict if not found."""
+    """
+    Derive candidate memory ("global" facts for summary building, per
+    CandidateMemory's schema) from the real candidate profile.
+
+    There is no dedicated candidate-memory store — nothing in this codebase
+    ever writes one — so this reads the actual populated profile data
+    (public.user_career_profiles, written by candidate.py) and distills it
+    into short facts instead of querying a table nothing ever fills.
+    """
     try:
         cursor = db.cursor()
         cursor.execute(
-            "SELECT memory_json FROM candidate_profiles WHERE candidate_id = %s LIMIT 1",
+            "SELECT profile_data FROM public.user_career_profiles WHERE user_id = %s LIMIT 1",
             (candidate_id,)
         )
         row = cursor.fetchone()
-        if row and row[0]:
+        if not row or not row[0]:
+            return {}
+        profile = row[0]
+        if isinstance(profile, str):
             import json
-            return json.loads(row[0]) if isinstance(row[0], str) else row[0]
+            profile = json.loads(profile)
+
+        facts: list[str] = []
+        experience = profile.get("experience") or []
+        if experience:
+            facts.append(f"{len(experience)} professional role(s) on record.")
+            latest = experience[0]
+            role = latest.get("role") or latest.get("title")
+            company = latest.get("company")
+            if role and company:
+                facts.append(f"Most recent role: {role} at {company}.")
+
+        skills = profile.get("skills") or {}
+        all_skills = [s for group in skills.values() if isinstance(group, list) for s in group]
+        if all_skills:
+            facts.append(f"Core skills: {', '.join(all_skills[:10])}.")
+
+        education = profile.get("education") or []
+        if education:
+            top = education[0]
+            degree = top.get("degree")
+            institution = top.get("institution")
+            if degree and institution:
+                facts.append(f"Education: {degree}, {institution}.")
+
+        return {"global": facts} if facts else {}
     except Exception:
-        pass
-    return {}
+        logger.warning("Candidate memory derivation failed for candidate_id=%s", candidate_id, exc_info=True)
+        return {}
 
 
 # ---------------------------------------------------------------------------
