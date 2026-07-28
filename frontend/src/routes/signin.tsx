@@ -118,7 +118,7 @@ function SignIn() {
       />
       <div className="relative z-10" style={{ width: "100%", maxWidth: 400 }}>
         <Link to="/" className="inline-flex" style={{ marginBottom: 36 }}>
-          <DsLogo />
+          <DsLogo box={33} wordmark={18} weight={600} />
         </Link>
 
         <h2

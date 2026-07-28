@@ -22,7 +22,7 @@ function NotFoundComponent() {
       style={{ fontFamily: "var(--ds-font-body)", color: "var(--ds-text-primary)" }}
     >
       <div className="mb-10">
-        <DsLogo />
+        <DsLogo box={30} wordmark={16} weight={700} />
       </div>
       <div
         className="font-[var(--ds-font-display)] font-bold mb-2"

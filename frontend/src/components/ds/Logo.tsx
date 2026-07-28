@@ -1,46 +1,56 @@
 import * as React from "react";
 
 export interface DsLogoProps {
-  size?: "sm" | "md";
+  /** Mark box size in px — each screen in the handoff uses its own exact size (20/26/30/33/37...). */
+  box?: number;
+  /** Wordmark font size in px. */
+  wordmark?: number;
+  weight?: 500 | 600 | 700;
   withWordmark?: boolean;
   dark?: boolean;
   className?: string;
 }
 
-// Proportions match the design handoff's logo mark exactly (see e.g. Settings.dc.html
-// sidebar: 30x30 square, rx 8.14, ring at 6.47/18.86, punched dot at 5.29/7.71).
-const DIMS = {
-  sm: { box: 26, radius: 7.05, ringSize: 16.34, ringOffset: 5.61, dotSize: 6.68, dotOffset: 4.59 },
-  md: { box: 30, radius: 8.14, ringSize: 18.86, ringOffset: 6.47, dotSize: 7.71, dotOffset: 5.29 },
-};
-
-/** CareerAutomated logo mark — CSS-drawn rounded square with an orange ring and a punched-through center dot. */
-export function DsLogo({ size = "md", withWordmark = true, dark = false, className }: DsLogoProps) {
-  const d = DIMS[size];
+// Fixed ratios confirmed identical across every size the handoff uses (20/26/30/33/37px):
+// radius 0.2714, ring 0.6287, ringOffset 0.2157, dot 0.257, dotOffset 0.1762 of the box size.
+export function DsLogo({
+  box = 30,
+  wordmark = 16,
+  weight = 700,
+  withWordmark = true,
+  dark = false,
+  className,
+}: DsLogoProps) {
   const squareBg = "var(--ds-ink-900)";
+  const radius = box * 0.2714;
+  const ringSize = box * 0.6287;
+  const ringOffset = box * 0.2157;
+  const dotSize = box * 0.257;
+  const dotOffset = box * 0.1762;
+
   return (
     <div className={`flex items-center gap-1.5 ${className ?? ""}`}>
       <div
         className="relative flex-shrink-0"
-        style={{ width: d.box, height: d.box, borderRadius: d.radius, background: squareBg }}
+        style={{ width: box, height: box, borderRadius: radius, background: squareBg }}
       >
         <div
           className="absolute rounded-full"
           style={{
-            top: d.ringOffset,
-            left: d.ringOffset,
-            width: d.ringSize,
-            height: d.ringSize,
+            top: ringOffset,
+            left: ringOffset,
+            width: ringSize,
+            height: ringSize,
             background: "var(--ds-accent-primary)",
           }}
         >
           <div
             className="absolute rounded-full"
             style={{
-              top: d.dotOffset,
-              left: d.dotOffset,
-              width: d.dotSize,
-              height: d.dotSize,
+              top: dotOffset,
+              left: dotOffset,
+              width: dotSize,
+              height: dotSize,
               background: squareBg,
             }}
           />
@@ -48,9 +58,10 @@ export function DsLogo({ size = "md", withWordmark = true, dark = false, classNa
       </div>
       {withWordmark && (
         <span
-          className="font-[var(--ds-font-display)] font-bold tracking-[var(--ds-tracking-snug)]"
+          className="font-[var(--ds-font-display)] tracking-[var(--ds-tracking-snug)]"
           style={{
-            fontSize: size === "sm" ? 16 : 18,
+            fontSize: wordmark,
+            fontWeight: weight,
             color: dark ? "var(--ds-text-on-dark)" : "var(--ds-text-primary)",
           }}
         >

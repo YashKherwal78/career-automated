@@ -165,7 +165,7 @@ function SignUpPage() {
           }}
         />
         <Link to="/" className="relative z-10">
-          <DsLogo />
+          <DsLogo box={33} wordmark={18} weight={600} />
         </Link>
         <div className="relative z-10">
           <h1

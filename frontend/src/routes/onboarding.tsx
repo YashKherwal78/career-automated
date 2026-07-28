@@ -249,7 +249,7 @@ function OnboardingPage() {
       />
       <div className="relative z-10" style={{ width: "100%", maxWidth: 560 }}>
         <div className="flex items-center gap-1.5" style={{ marginBottom: 32 }}>
-          <DsLogo size="sm" />
+          <DsLogo box={30} wordmark={16} weight={600} />
         </div>
 
         {step === 1 ? (

@@ -171,7 +171,7 @@ function Landing() {
         }}
       >
         <Link to="/">
-          <DsLogo size="sm" />
+          <DsLogo box={37} wordmark={27} weight={600} />
         </Link>
         <div className="flex items-center gap-7">
           <DsNavLink href="#pipeline">Product</DsNavLink>
@@ -616,7 +616,7 @@ function Landing() {
       >
         <div style={{ maxWidth: 320 }}>
           <div className="flex items-center gap-2.5" style={{ marginBottom: 12 }}>
-            <DsLogo size="sm" />
+            <DsLogo box={20} wordmark={16} weight={700} />
           </div>
           <div style={{ fontSize: 14, color: "var(--ds-ink-450)" }}>
             So a missed deadline never costs you the right opportunity.

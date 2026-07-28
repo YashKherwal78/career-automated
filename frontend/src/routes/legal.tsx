@@ -22,7 +22,7 @@ function Legal() {
     >
       <div className="mx-auto" style={{ maxWidth: 720, padding: "56px 24px 100px" }}>
         <Link to="/" className="inline-flex" style={{ marginBottom: 40 }}>
-          <DsLogo size="sm" />
+          <DsLogo box={30} wordmark={16} weight={700} />
         </Link>
 
         <h2
