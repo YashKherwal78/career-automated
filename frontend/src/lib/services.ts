@@ -280,11 +280,8 @@ export class MockPipelineService implements PipelineService {
 }
 
 export class ServiceRegistry {
-  private static useMock = false;
-
-  static setUseMock(val: boolean) {
-    this.useMock = val;
-  }
+  // Mock services should only be enabled explicitly in development via environment variable.
+  private static useMock = import.meta.env.VITE_USE_MOCK_SERVICES === "true";
 
   static getJobService(): JobService {
     return this.useMock ? new MockJobService() : new ApiJobService();
@@ -299,7 +296,8 @@ export class ServiceRegistry {
   }
 
   static getAnalyticsService(): AnalyticsService {
-    return this.useMock ? new ApiAnalyticsService() : new ApiAnalyticsService();
+    // Both point to API for now, but mock can be added if needed
+    return new ApiAnalyticsService();
   }
 
   static getResumeService(): ResumeService {
