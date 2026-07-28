@@ -43,5 +43,10 @@ class Settings:
     # Failures backoff schedule
     retry_schedule: list = field(default_factory=lambda: [300, 900, 1800, 3600, 21600, 86400])
 
+    # ── Evidence Forensics ──────────────────────────────────────────────────
+    evidence_compression: str = os.environ.get("EVIDENCE_COMPRESSION", "zstd")
+    evidence_retention_days: int = int(os.environ.get("EVIDENCE_RETENTION_DAYS", "30"))
+    evidence_score_threshold: int = int(os.environ.get("EVIDENCE_SCORE_THRESHOLD", "80"))
+
 # Global Singleton
 settings = Settings()
