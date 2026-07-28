@@ -96,21 +96,48 @@ def _load_base_tex(candidate_id: str, db) -> str:
 
 def _load_jd_profile(job_id: str, db) -> Dict[str, Any]:
     """
-    Load pre-parsed StructuredJobProfile from normalized_jobs.
-    Never re-parses the raw JD — only reads the stored jd_profile_json column.
+    Build a StructuredJobProfile for job_id from normalized_jobs.
+
+    normalized_jobs has no jd_profile_json column (that structured-parse pipeline
+    stage doesn't exist yet), so this parses the job's raw title/description with
+    JobDescriptionParser on every call rather than reading a cached column.
     """
     try:
+        from src.resume_intelligence.job_intelligence.parser import JobDescriptionParser
+        from src.api.db import json_extract
+
         cursor = db.cursor()
+        json_company = json_extract("n.raw_payload_json", "$.company")
         cursor.execute(
-            "SELECT jd_profile_json FROM normalized_jobs WHERE job_id = %s LIMIT 1",
-            (job_id,)
+            f"""
+            SELECT n.title, n.description,
+                   COALESCE(i.canonical_name, {json_company}, n.company_id) AS company_name
+            FROM normalized_jobs n
+            LEFT JOIN company_identities i ON n.company_id = i.company_id
+            WHERE n.job_id = %s
+            LIMIT 1
+            """,
+            (job_id,),
         )
         row = cursor.fetchone()
-        if row and row[0]:
-            import json
-            return json.loads(row[0]) if isinstance(row[0], str) else row[0]
+        # Postgres connections use a dict_row factory (columns by name); sqlite falls
+        # back to plain tuples. Handle both rather than assuming positional access.
+        if row and hasattr(row, "keys"):
+            title, description, company_name = row["title"], row["description"], row["company_name"]
+        elif row:
+            title, description, company_name = row[0], row[1], row[2]
+        else:
+            title = description = company_name = None
+        if description:
+            profile = JobDescriptionParser().parse_job_description(
+                job_id=job_id,
+                company_name=company_name or "Unknown",
+                role_title=title or "Software Engineer",
+                raw_description=description,
+            )
+            return profile.model_dump()
     except Exception as exc:
-        logger.warning("DB jd_profile load failed for job_id=%s: %s", job_id, exc)
+        logger.warning("JD parse failed for job_id=%s: %s", job_id, exc)
 
     # Graceful fallback: return a minimal profile for development/testing
     logger.warning("Using empty jd_profile fallback for job_id=%s", job_id)
