@@ -1,394 +1,788 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { FileText, Upload, Plus, Trash2, ArrowLeft, Save, HelpCircle } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "../../lib/auth";
+import { API_BASE } from "../../lib/api";
+import { DsDropzone } from "../../components/ds/Dropzone";
+import { DsModal } from "../../components/ds/Modal";
 
 export const Route = createFileRoute("/dashboard/resume")({
   component: ResumePage,
 });
 
-interface ResumeData {
-  name: string;
+interface PersonalInfo {
+  full_name: string;
   email: string;
   phone: string;
   location: string;
   linkedin: string;
   github: string;
   portfolio: string;
+}
+
+interface ExperienceEntry {
+  company: string;
+  role: string;
+  start_date: string;
+  end_date: string;
+  description: string;
+}
+
+interface ProjectEntry {
+  name: string;
+  description: string;
+  technologies: string;
+}
+
+interface EducationEntry {
+  institution: string;
+  degree: string;
+  field_of_study: string;
+}
+
+interface ProfileData {
+  personal_info: PersonalInfo;
   summary: string;
-  skills: string[];
-  experience: { company: string; role: string; start: string; end: string; desc: string }[];
-  projects: { name: string; desc: string; tech: string }[];
-  education: { school: string; degree: string; year: string }[];
+  skills: Record<string, string[]>;
+  experience: ExperienceEntry[];
+  projects: ProjectEntry[];
+  education: EducationEntry[];
   certifications: string[];
 }
 
-const INITIAL_RESUME_DATA: ResumeData = {
-  name: "Yash Kherwal",
-  email: "yash.kherwal78@gmail.com",
-  phone: "+91 98765 43210",
-  location: "Roorkee, India",
-  linkedin: "linkedin.com/in/yashkherwal",
-  github: "github.com/yashkherwal",
-  portfolio: "yashkherwal.dev",
-  summary: "High-agency product engineer studying at IIT Roorkee. Passionate about AI systems, vector search indexing, and crafting premium distraction-free interfaces.",
-  skills: ["React", "TypeScript", "FastAPI", "PostgreSQL", "Redis", "Docker", "TailwindCSS"],
-  experience: [
-    { company: "CareerAutomated", role: "Product Engineering Lead", start: "May 2026", end: "Present", desc: "Re-architected the main scraper storage stack to route across Supabase and local Operational DB container partitions. Reduced storage overhead from 1.6 GB to under 50 MB using Cloudflare R2 migrations." }
-  ],
-  projects: [
-    { name: "AI Auto-Apply Engine", desc: "Designed asynchronous worker daemons to run headless browser crawls on Greenhouse/Lever portals.", tech: "Python, Puppeteer, Redis" }
-  ],
-  education: [
-    { school: "Indian Institute of Technology, Roorkee", degree: "B.Tech in Computer Science", year: "2023 - 2027" }
-  ],
-  certifications: ["AWS Certified Solutions Architect", "Google Cloud Associate Engineer"]
+const EMPTY_PROFILE: ProfileData = {
+  personal_info: {
+    full_name: "",
+    email: "",
+    phone: "",
+    location: "",
+    linkedin: "",
+    github: "",
+    portfolio: "",
+  },
+  summary: "",
+  skills: { other: [] },
+  experience: [],
+  projects: [],
+  education: [],
+  certifications: [],
 };
 
+function useCandidateProfile() {
+  const { session } = useAuth();
+  return useQuery({
+    queryKey: ["candidate-profile"],
+    queryFn: async (): Promise<ProfileData> => {
+      const res = await fetch(`${API_BASE}/candidate/profile`, {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (!res.ok) throw new Error("Failed to load profile");
+      const data = await res.json();
+      const p = data.profile_data || {};
+      return {
+        personal_info: { ...EMPTY_PROFILE.personal_info, ...p.personal_info },
+        summary: p.summary || "",
+        skills: p.skills && Object.keys(p.skills).length ? p.skills : { other: [] },
+        experience: p.experience || [],
+        projects: p.projects || [],
+        education: p.education || [],
+        certifications: p.certifications || [],
+      };
+    },
+    enabled: !!session,
+  });
+}
+
 function ResumePage() {
-  const [editorMode, setEditorMode] = useState<"onboarding" | "builder">("onboarding");
-  const [resumeData, setResumeData] = useState<ResumeData>(INITIAL_RESUME_DATA);
-  const [dragOver, setDragOver] = useState(false);
+  const { session } = useAuth();
+  const { data: loadedProfile, isLoading } = useCandidateProfile();
+  const [mode, setMode] = useState<"chooser" | "builder">("chooser");
+  const [profile, setProfile] = useState<ProfileData>(EMPTY_PROFILE);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
-  // Resume builder add/remove helper utilities
-  const addExperience = () => {
-    setResumeData(prev => ({
-      ...prev,
-      experience: [...prev.experience, { company: "", role: "", start: "", end: "", desc: "" }]
-    }));
+  useEffect(() => {
+    if (loadedProfile) {
+      setProfile(loadedProfile);
+      if (loadedProfile.experience.length > 0 || loadedProfile.personal_info.full_name) {
+        setMode("builder");
+      }
+    }
+  }, [loadedProfile]);
+
+  const saveProfile = async () => {
+    setSaveState("saving");
+    try {
+      const res = await fetch(`${API_BASE}/candidate/profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({
+          personal_info: profile.personal_info,
+          skills: profile.skills,
+          experience: profile.experience,
+          projects: profile.projects,
+          education: profile.education,
+          certifications: profile.certifications,
+        }),
+      });
+      if (!res.ok) throw new Error("save failed");
+      setSaveState("saved");
+      setTimeout(() => setSaveState("idle"), 2000);
+    } catch {
+      setSaveState("error");
+    }
   };
 
-  const removeExperience = (index: number) => {
-    setResumeData(prev => ({
-      ...prev,
-      experience: prev.experience.filter((_, i) => i !== index)
-    }));
+  const handleUploaded = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const res = await fetch(`${API_BASE}/users/extract_profile`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+        body: formData,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProfile({
+          personal_info: { ...EMPTY_PROFILE.personal_info, ...data.personal_info },
+          summary: data.summary || "",
+          skills: data.skills && Object.keys(data.skills).length ? data.skills : { other: [] },
+          experience: (data.experience || []).map(
+            (e: {
+              company: string;
+              role: string;
+              start_date: string;
+              end_date: string;
+              bullet_points?: string[];
+            }) => ({
+              company: e.company,
+              role: e.role,
+              start_date: e.start_date,
+              end_date: e.end_date,
+              description: (e.bullet_points || []).join("\n"),
+            }),
+          ),
+          projects: (data.projects || []).map(
+            (p: { name: string; description: string; technologies?: string[] }) => ({
+              name: p.name,
+              description: p.description,
+              technologies: (p.technologies || []).join(", "),
+            }),
+          ),
+          education: (data.education || []).map(
+            (e: { institution: string; degree: string; field_of_study: string }) => ({
+              institution: e.institution,
+              degree: e.degree,
+              field_of_study: e.field_of_study,
+            }),
+          ),
+          certifications: (data.certifications || []).map((c: { name: string }) => c.name),
+        });
+      }
+    } catch (err) {
+      console.error("Resume parse failed:", err);
+    }
+    setShowUploadModal(false);
+    setMode("builder");
   };
 
-  const addProject = () => {
-    setResumeData(prev => ({
-      ...prev,
-      projects: [...prev.projects, { name: "", desc: "", tech: "" }]
-    }));
-  };
+  const flatSkills = Object.values(profile.skills).flat();
 
-  const removeProject = (index: number) => {
-    setResumeData(prev => ({
-      ...prev,
-      projects: prev.projects.filter((_, i) => i !== index)
-    }));
-  };
+  if (isLoading) {
+    return (
+      <div
+        className="flex items-center justify-center"
+        style={{ minHeight: "60vh", color: "var(--ds-ink-450)", fontSize: 13.5 }}
+      >
+        Loading your profile…
+      </div>
+    );
+  }
 
-  const handleFileUpload = (e: any) => {
-    e.preventDefault();
-    setDragOver(false);
-    // Mimic upload success and transition directly to the distraction-free builder editor
-    setEditorMode("builder");
-  };
+  if (mode === "chooser") {
+    return (
+      <div
+        className="flex items-center justify-center"
+        style={{ minHeight: "100vh", padding: "clamp(32px,5vw,72px)" }}
+      >
+        <div
+          className="text-center"
+          style={{
+            width: "100%",
+            maxWidth: 640,
+            background: "rgba(255,255,255,0.4)",
+            backdropFilter: "blur(20px) saturate(160%)",
+            border: "1px solid rgba(255,255,255,0.55)",
+            borderRadius: "var(--ds-radius-2xl)",
+            boxShadow: "var(--ds-shadow-card)",
+            padding: "clamp(28px,4vw,40px)",
+          }}
+        >
+          <div
+            className="uppercase font-bold"
+            style={{
+              fontSize: 13,
+              letterSpacing: "var(--ds-tracking-wide)",
+              color: "var(--ds-brand-orange-text)",
+              marginBottom: 12,
+            }}
+          >
+            Resume creation
+          </div>
+          <h1
+            className="font-[var(--ds-font-display)] font-semibold"
+            style={{ fontSize: "clamp(26px,3vw,34px)", margin: "0 0 12px" }}
+          >
+            Every good resume starts somewhere.
+          </h1>
+          <p
+            style={{
+              fontSize: 14,
+              color: "var(--ds-ink-500)",
+              margin: "0 0 28px",
+              maxWidth: 460,
+              marginInline: "auto",
+            }}
+          >
+            Don't have one ready, or not sure yours says enough? Either way works — pick whichever
+            feels easier.
+          </p>
+          <div
+            className="grid gap-4"
+            style={{ gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))" }}
+          >
+            <button
+              type="button"
+              onClick={() => setShowUploadModal(true)}
+              className="text-left transition-transform active:scale-[0.98]"
+              style={{
+                background: "rgba(255,255,255,0.55)",
+                border: "1px solid rgba(255,255,255,0.6)",
+                borderRadius: "var(--ds-radius-xl)",
+                padding: 28,
+                cursor: "pointer",
+              }}
+            >
+              <div
+                className="flex items-center justify-center"
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: "var(--ds-radius-md)",
+                  background: "var(--ds-brand-orange-tint-10)",
+                  marginBottom: 16,
+                }}
+              >
+                <div
+                  style={{
+                    width: 0,
+                    height: 0,
+                    borderLeft: "6px solid transparent",
+                    borderRight: "6px solid transparent",
+                    borderBottom: "7px solid var(--ds-accent-primary)",
+                  }}
+                />
+              </div>
+              <div
+                className="font-[var(--ds-font-display)] font-semibold"
+                style={{ fontSize: 15.5, marginBottom: 6 }}
+              >
+                Already have a resume?
+              </div>
+              <div style={{ fontSize: 13, color: "var(--ds-ink-500)" }}>
+                Hand it over. We'll read it once and take it from there.
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("builder")}
+              className="text-left transition-transform active:scale-[0.98]"
+              style={{
+                background: "rgba(255,255,255,0.55)",
+                border: "1px solid rgba(255,255,255,0.6)",
+                borderRadius: "var(--ds-radius-xl)",
+                padding: 28,
+                cursor: "pointer",
+              }}
+            >
+              <div
+                className="flex items-center justify-center"
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: "var(--ds-radius-md)",
+                  background: "var(--ds-sage-tint-12)",
+                  marginBottom: 16,
+                }}
+              >
+                <div
+                  style={{
+                    width: 15,
+                    height: 15,
+                    border: "1.5px dashed var(--ds-accent-success)",
+                    borderRadius: 3,
+                  }}
+                />
+              </div>
+              <div
+                className="font-[var(--ds-font-display)] font-semibold"
+                style={{ fontSize: 15.5, marginBottom: 6 }}
+              >
+                Starting fresh?
+              </div>
+              <div style={{ fontSize: 13, color: "var(--ds-ink-500)" }}>
+                A few simple questions about your work is all it takes.
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {showUploadModal && (
+          <DsModal onClose={() => setShowUploadModal(false)} maxWidth={480}>
+            <div style={{ padding: 28 }}>
+              <div className="flex items-center justify-between" style={{ marginBottom: 18 }}>
+                <h2
+                  className="font-[var(--ds-font-display)] font-semibold"
+                  style={{ fontSize: 18, margin: 0 }}
+                >
+                  Upload existing resume
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setShowUploadModal(false)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "var(--ds-ink-400)",
+                    fontSize: 16,
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+              <DsDropzone onFile={handleUploaded} />
+            </div>
+          </DsModal>
+        )}
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-4xl mx-auto px-8 py-12">
-      <AnimatePresence mode="wait">
-        {editorMode === "onboarding" ? (
-          /* 1. INITIAL SPLIT CARD STATE */
-          <motion.div
-            key="onboarding"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            className="space-y-12"
+    <div className="mx-auto" style={{ maxWidth: 720, padding: "48px 24px" }}>
+      <div
+        className="flex items-center justify-between"
+        style={{
+          marginBottom: 32,
+          borderBottom: "1px solid var(--ds-border-default)",
+          paddingBottom: 16,
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => setMode("chooser")}
+          style={{
+            fontSize: 13,
+            color: "var(--ds-ink-450)",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          ← Back
+        </button>
+        <button
+          type="button"
+          onClick={saveProfile}
+          className="font-semibold"
+          style={{
+            padding: "10px 20px",
+            borderRadius: "var(--ds-radius-md)",
+            border: "none",
+            background: "var(--ds-accent-primary)",
+            color: "var(--ds-text-on-brand)",
+            fontSize: 13.5,
+            cursor: "pointer",
+          }}
+        >
+          {saveState === "saving"
+            ? "Saving…"
+            : saveState === "saved"
+              ? "Saved ✓"
+              : saveState === "error"
+                ? "Try again"
+                : "Save profile"}
+        </button>
+      </div>
+
+      <div className="flex flex-col gap-10">
+        <div className="flex flex-col gap-3">
+          <input
+            type="text"
+            value={profile.personal_info.full_name}
+            onChange={(e) =>
+              setProfile({
+                ...profile,
+                personal_info: { ...profile.personal_info, full_name: e.target.value },
+              })
+            }
+            placeholder="Your full name"
+            className="w-full bg-transparent border-none outline-none font-[var(--ds-font-display)] font-bold"
+            style={{ fontSize: 32, color: "var(--ds-text-primary)" }}
+          />
+          <div className="grid grid-cols-2 gap-3" style={{ fontSize: 13 }}>
+            {(["email", "phone", "location", "portfolio"] as const).map((field) => (
+              <input
+                key={field}
+                type="text"
+                value={profile.personal_info[field]}
+                onChange={(e) =>
+                  setProfile({
+                    ...profile,
+                    personal_info: { ...profile.personal_info, [field]: e.target.value },
+                  })
+                }
+                placeholder={field[0].toUpperCase() + field.slice(1)}
+                className="bg-transparent outline-none"
+                style={{
+                  borderBottom: "1px dashed var(--ds-border-medium)",
+                  padding: "4px 0",
+                  color: "var(--ds-text-primary)",
+                }}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <div
+            className="uppercase font-bold"
+            style={{
+              fontSize: 12,
+              letterSpacing: "var(--ds-tracking-wide)",
+              color: "var(--ds-ink-400)",
+            }}
           >
-            <div className="space-y-1">
-              <h1 className="font-display text-3xl font-semibold tracking-tight text-ink">
-                Your Resume
-              </h1>
-              <p className="text-sm text-ink-soft">
-                Upload your document or craft a recruiter-ready version from scratch.
-              </p>
-            </div>
+            Summary
+          </div>
+          <textarea
+            value={profile.summary}
+            onChange={(e) => setProfile({ ...profile, summary: e.target.value })}
+            placeholder="Introduce yourself and specify your target roles…"
+            rows={3}
+            className="w-full bg-transparent border-none outline-none resize-none"
+            style={{ fontSize: 14, lineHeight: 1.6, color: "var(--ds-text-primary)" }}
+          />
+        </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Left Card: Drag & Drop */}
-              <div
-                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={handleFileUpload}
-                className={`glass-card rounded-3xl p-8 border border-white/60 bg-white/40 shadow-sm flex flex-col justify-between items-center text-center space-y-8 min-h-[320px] transition-all duration-300 ${
-                  dragOver ? "border-[color:var(--peach-deep)] bg-white/60 scale-[1.01]" : "hover:shadow-md"
-                }`}
-              >
-                <div className="space-y-4">
-                  <div className="h-12 w-12 rounded-2xl bg-[color:var(--peach-soft)] flex items-center justify-center mx-auto">
-                    <Upload className="h-5 w-5 text-[color:var(--peach-deep)]" />
-                  </div>
-                  <h3 className="font-display text-lg font-semibold text-ink">Upload Resume</h3>
-                  <p className="text-xs text-ink-soft max-w-[240px] mx-auto">
-                    Drag and drop your master PDF/DOCX file here. We will parse your experience automatically.
-                  </p>
-                </div>
-                
-                <label className="btn-dark px-6 py-2.5 text-xs rounded-xl cursor-pointer">
-                  Choose File
-                  <input type="file" className="hidden" onChange={() => setEditorMode("builder")} />
-                </label>
-              </div>
-
-              {/* Right Card: Distraction-free Builder */}
-              <div className="glass-card rounded-3xl p-8 border border-white/60 bg-white/40 shadow-sm flex flex-col justify-between items-center text-center space-y-8 min-h-[320px] hover:shadow-md transition-all duration-300">
-                <div className="space-y-4">
-                  <div className="h-12 w-12 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto">
-                    <FileText className="h-5 w-5 text-slate-500" />
-                  </div>
-                  <h3 className="font-display text-lg font-semibold text-ink">Create Resume</h3>
-                  <p className="text-xs text-ink-soft max-w-[240px] mx-auto">
-                    Create a recruiter-ready resume from scratch. Built using professional XYZ structures.
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => setEditorMode("builder")}
-                  className="btn-dark px-6 py-2.5 text-xs rounded-xl"
-                >
-                  Start Building
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        ) : (
-          /* 2. DISTRACTION-FREE NOTION-LIKE RESUME BUILDER */
-          <motion.div
-            key="builder"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            className="space-y-8"
+        <div className="flex flex-col gap-4">
+          <div
+            className="flex items-center justify-between"
+            style={{ borderBottom: "1px solid var(--ds-border-default)", paddingBottom: 8 }}
           >
-            {/* Action Bar */}
-            <div className="flex items-center justify-between border-b border-white/20 pb-4">
-              <button
-                onClick={() => setEditorMode("onboarding")}
-                className="flex items-center gap-1.5 text-xs text-ink-soft hover:text-ink transition-colors"
-              >
-                <ArrowLeft className="h-3.5 w-3.5" /> Back to Dashboard
-              </button>
-
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-500 flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Auto-saved
-                </span>
-                <button
-                  onClick={() => setEditorMode("onboarding")}
-                  className="btn-dark px-4 py-1.5 text-xs rounded-xl flex items-center gap-1.5"
-                >
-                  <Save className="h-3.5 w-3.5" /> Finish Editing
-                </button>
-              </div>
+            <div
+              className="uppercase font-bold"
+              style={{
+                fontSize: 12,
+                letterSpacing: "var(--ds-tracking-wide)",
+                color: "var(--ds-ink-400)",
+              }}
+            >
+              Experience
             </div>
-
-            {/* Notion Editor canvas */}
-            <div className="space-y-12 py-4">
-              
-              {/* Header / Personal Details */}
-              <div className="space-y-4">
+            <button
+              type="button"
+              onClick={() =>
+                setProfile({
+                  ...profile,
+                  experience: [
+                    ...profile.experience,
+                    { company: "", role: "", start_date: "", end_date: "", description: "" },
+                  ],
+                })
+              }
+              style={{
+                fontSize: 13,
+                color: "var(--ds-accent-primary)",
+                fontWeight: 600,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              + Add experience
+            </button>
+          </div>
+          {profile.experience.map((exp, idx) => (
+            <div key={idx} className="flex flex-col gap-2" style={{ paddingBottom: 12 }}>
+              <div className="flex flex-wrap items-center gap-2">
                 <input
-                  type="text"
-                  value={resumeData.name}
-                  onChange={(e) => setResumeData({ ...resumeData, name: e.target.value })}
-                  placeholder="Your Full Name"
-                  className="w-full bg-transparent font-display text-4xl font-bold tracking-tight text-ink border-none outline-none focus:ring-0 placeholder:text-slate-300"
+                  value={exp.role}
+                  placeholder="Role title"
+                  onChange={(e) => {
+                    const next = [...profile.experience];
+                    next[idx] = { ...next[idx], role: e.target.value };
+                    setProfile({ ...profile, experience: next });
+                  }}
+                  className="bg-transparent outline-none font-semibold"
+                  style={{ fontSize: 14 }}
                 />
-                
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-                  <input
-                    type="email"
-                    value={resumeData.email}
-                    onChange={(e) => setResumeData({ ...resumeData, email: e.target.value })}
-                    placeholder="email@address.com"
-                    className="bg-transparent border-b border-dashed border-slate-300 focus:border-ink py-1 outline-none text-ink"
-                  />
-                  <input
-                    type="text"
-                    value={resumeData.phone}
-                    onChange={(e) => setResumeData({ ...resumeData, phone: e.target.value })}
-                    placeholder="Phone number"
-                    className="bg-transparent border-b border-dashed border-slate-300 focus:border-ink py-1 outline-none text-ink"
-                  />
-                  <input
-                    type="text"
-                    value={resumeData.location}
-                    onChange={(e) => setResumeData({ ...resumeData, location: e.target.value })}
-                    placeholder="Location"
-                    className="bg-transparent border-b border-dashed border-slate-300 focus:border-ink py-1 outline-none text-ink"
-                  />
-                  <input
-                    type="text"
-                    value={resumeData.portfolio}
-                    onChange={(e) => setResumeData({ ...resumeData, portfolio: e.target.value })}
-                    placeholder="portfolio.dev"
-                    className="bg-transparent border-b border-dashed border-slate-300 focus:border-ink py-1 outline-none text-ink"
-                  />
-                </div>
-              </div>
-
-              {/* Professional Summary */}
-              <div className="space-y-2">
-                <h3 className="text-xs uppercase font-bold tracking-widest text-ink-soft">Summary</h3>
-                <textarea
-                  value={resumeData.summary}
-                  onChange={(e) => setResumeData({ ...resumeData, summary: e.target.value })}
-                  placeholder="Introduce yourself and specify your target roles..."
-                  rows={2}
-                  className="w-full bg-transparent text-sm leading-relaxed text-ink border-none outline-none focus:ring-0 resize-none"
+                <span style={{ color: "var(--ds-ink-300)" }}>at</span>
+                <input
+                  value={exp.company}
+                  placeholder="Company"
+                  onChange={(e) => {
+                    const next = [...profile.experience];
+                    next[idx] = { ...next[idx], company: e.target.value };
+                    setProfile({ ...profile, experience: next });
+                  }}
+                  className="bg-transparent outline-none font-semibold"
+                  style={{ fontSize: 14 }}
                 />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setProfile({
+                      ...profile,
+                      experience: profile.experience.filter((_, i) => i !== idx),
+                    })
+                  }
+                  style={{
+                    marginLeft: "auto",
+                    fontSize: 12,
+                    color: "#B4392C",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  Remove
+                </button>
               </div>
-
-              {/* Experience Block */}
-              <div className="space-y-6">
-                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                  <h3 className="text-xs uppercase font-bold tracking-widest text-ink-soft">Experience</h3>
-                  <button
-                    onClick={addExperience}
-                    className="inline-flex items-center gap-1 text-xs text-[color:var(--peach-deep)] hover:underline"
-                  >
-                    <Plus className="h-3 w-3" /> Add Experience
-                  </button>
-                </div>
-
-                <div className="space-y-8">
-                  {resumeData.experience.map((exp, idx) => (
-                    <div key={idx} className="relative group space-y-3">
-                      <div className="flex flex-wrap items-start justify-between gap-2">
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={exp.role}
-                            placeholder="Role Title"
-                            onChange={(e) => {
-                              const expCopy = [...resumeData.experience];
-                              expCopy[idx].role = e.target.value;
-                              setResumeData({ ...resumeData, experience: expCopy });
-                            }}
-                            className="bg-transparent font-medium text-sm text-ink outline-none border-b border-transparent focus:border-slate-300"
-                          />
-                          <span className="text-slate-300">at</span>
-                          <input
-                            type="text"
-                            value={exp.company}
-                            placeholder="Company Name"
-                            onChange={(e) => {
-                              const expCopy = [...resumeData.experience];
-                              expCopy[idx].company = e.target.value;
-                              setResumeData({ ...resumeData, experience: expCopy });
-                            }}
-                            className="bg-transparent font-medium text-sm text-ink outline-none border-b border-transparent focus:border-slate-300"
-                          />
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            value={exp.start}
-                            placeholder="Start date"
-                            className="bg-transparent text-xs text-ink-soft text-right w-20 outline-none"
-                            onChange={(e) => {
-                              const expCopy = [...resumeData.experience];
-                              expCopy[idx].start = e.target.value;
-                              setResumeData({ ...resumeData, experience: expCopy });
-                            }}
-                          />
-                          <span className="text-slate-300">—</span>
-                          <input
-                            type="text"
-                            value={exp.end}
-                            placeholder="End date"
-                            className="bg-transparent text-xs text-ink-soft w-20 outline-none"
-                            onChange={(e) => {
-                              const expCopy = [...resumeData.experience];
-                              expCopy[idx].end = e.target.value;
-                              setResumeData({ ...resumeData, experience: expCopy });
-                            }}
-                          />
-                          
-                          <button
-                            onClick={() => removeExperience(idx)}
-                            className="text-red-400 opacity-0 group-hover:opacity-100 hover:text-red-600 transition-opacity ml-2"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      </div>
-
-                      <textarea
-                        value={exp.desc}
-                        placeholder="Detail your responsibilities and XYZ achievements..."
-                        rows={2}
-                        onChange={(e) => {
-                          const expCopy = [...resumeData.experience];
-                          expCopy[idx].desc = e.target.value;
-                          setResumeData({ ...resumeData, experience: expCopy });
-                        }}
-                        className="w-full bg-transparent text-xs leading-relaxed text-ink-soft border-none outline-none focus:ring-0 resize-none"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Projects Block */}
-              <div className="space-y-6">
-                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                  <h3 className="text-xs uppercase font-bold tracking-widest text-ink-soft">Projects</h3>
-                  <button
-                    onClick={addProject}
-                    className="inline-flex items-center gap-1 text-xs text-[color:var(--peach-deep)] hover:underline"
-                  >
-                    <Plus className="h-3 w-3" /> Add Project
-                  </button>
-                </div>
-
-                <div className="space-y-6">
-                  {resumeData.projects.map((proj, idx) => (
-                    <div key={idx} className="relative group space-y-2">
-                      <div className="flex items-center justify-between">
-                        <input
-                          type="text"
-                          value={proj.name}
-                          placeholder="Project Name"
-                          onChange={(e) => {
-                            const projCopy = [...resumeData.projects];
-                            projCopy[idx].name = e.target.value;
-                            setResumeData({ ...resumeData, projects: projCopy });
-                          }}
-                          className="bg-transparent font-medium text-sm text-ink outline-none border-b border-transparent focus:border-slate-300"
-                        />
-                        <button
-                          onClick={() => removeProject(idx)}
-                          className="text-red-400 opacity-0 group-hover:opacity-100 hover:text-red-600 transition-opacity"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-
-                      <textarea
-                        value={proj.desc}
-                        placeholder="Briefly describe project functions..."
-                        rows={1}
-                        onChange={(e) => {
-                          const projCopy = [...resumeData.projects];
-                          projCopy[idx].desc = e.target.value;
-                          setResumeData({ ...resumeData, projects: projCopy });
-                        }}
-                        className="w-full bg-transparent text-xs text-ink-soft border-none outline-none focus:ring-0 resize-none"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
+              <textarea
+                value={exp.description}
+                placeholder="What did you do here?"
+                rows={2}
+                onChange={(e) => {
+                  const next = [...profile.experience];
+                  next[idx] = { ...next[idx], description: e.target.value };
+                  setProfile({ ...profile, experience: next });
+                }}
+                className="w-full bg-transparent outline-none resize-none"
+                style={{ fontSize: 13, color: "var(--ds-ink-600)", lineHeight: 1.6 }}
+              />
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          ))}
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <div
+            className="flex items-center justify-between"
+            style={{ borderBottom: "1px solid var(--ds-border-default)", paddingBottom: 8 }}
+          >
+            <div
+              className="uppercase font-bold"
+              style={{
+                fontSize: 12,
+                letterSpacing: "var(--ds-tracking-wide)",
+                color: "var(--ds-ink-400)",
+              }}
+            >
+              Education
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                setProfile({
+                  ...profile,
+                  education: [
+                    ...profile.education,
+                    { institution: "", degree: "", field_of_study: "" },
+                  ],
+                })
+              }
+              style={{
+                fontSize: 13,
+                color: "var(--ds-accent-primary)",
+                fontWeight: 600,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              + Add education
+            </button>
+          </div>
+          {profile.education.map((edu, idx) => (
+            <div key={idx} className="flex flex-wrap items-center gap-2">
+              <input
+                value={edu.institution}
+                placeholder="Institution"
+                onChange={(e) => {
+                  const next = [...profile.education];
+                  next[idx] = { ...next[idx], institution: e.target.value };
+                  setProfile({ ...profile, education: next });
+                }}
+                className="bg-transparent outline-none font-semibold"
+                style={{ fontSize: 14 }}
+              />
+              <input
+                value={edu.degree}
+                placeholder="Degree"
+                onChange={(e) => {
+                  const next = [...profile.education];
+                  next[idx] = { ...next[idx], degree: e.target.value };
+                  setProfile({ ...profile, education: next });
+                }}
+                className="bg-transparent outline-none"
+                style={{ fontSize: 13, color: "var(--ds-ink-500)" }}
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setProfile({
+                    ...profile,
+                    education: profile.education.filter((_, i) => i !== idx),
+                  })
+                }
+                style={{
+                  marginLeft: "auto",
+                  fontSize: 12,
+                  color: "#B4392C",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <div
+            className="flex items-center justify-between"
+            style={{ borderBottom: "1px solid var(--ds-border-default)", paddingBottom: 8 }}
+          >
+            <div
+              className="uppercase font-bold"
+              style={{
+                fontSize: 12,
+                letterSpacing: "var(--ds-tracking-wide)",
+                color: "var(--ds-ink-400)",
+              }}
+            >
+              Projects
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                setProfile({
+                  ...profile,
+                  projects: [...profile.projects, { name: "", description: "", technologies: "" }],
+                })
+              }
+              style={{
+                fontSize: 13,
+                color: "var(--ds-accent-primary)",
+                fontWeight: 600,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              + Add project
+            </button>
+          </div>
+          {profile.projects.map((proj, idx) => (
+            <div key={idx} className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <input
+                  value={proj.name}
+                  placeholder="Project name"
+                  onChange={(e) => {
+                    const next = [...profile.projects];
+                    next[idx] = { ...next[idx], name: e.target.value };
+                    setProfile({ ...profile, projects: next });
+                  }}
+                  className="bg-transparent outline-none font-semibold"
+                  style={{ fontSize: 14 }}
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setProfile({
+                      ...profile,
+                      projects: profile.projects.filter((_, i) => i !== idx),
+                    })
+                  }
+                  style={{
+                    marginLeft: "auto",
+                    fontSize: 12,
+                    color: "#B4392C",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  Remove
+                </button>
+              </div>
+              <textarea
+                value={proj.description}
+                placeholder="Briefly describe what it does…"
+                rows={1}
+                onChange={(e) => {
+                  const next = [...profile.projects];
+                  next[idx] = { ...next[idx], description: e.target.value };
+                  setProfile({ ...profile, projects: next });
+                }}
+                className="w-full bg-transparent outline-none resize-none"
+                style={{ fontSize: 13, color: "var(--ds-ink-600)" }}
+              />
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <div
+            className="uppercase font-bold"
+            style={{
+              fontSize: 12,
+              letterSpacing: "var(--ds-tracking-wide)",
+              color: "var(--ds-ink-400)",
+            }}
+          >
+            Skills
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {flatSkills.length === 0 && (
+              <span style={{ fontSize: 13, color: "var(--ds-ink-400)" }}>No skills added yet.</span>
+            )}
+            {flatSkills.map((s) => (
+              <span
+                key={s}
+                className="font-semibold"
+                style={{
+                  fontSize: 12.5,
+                  color: "var(--ds-ink-600)",
+                  background: "var(--ds-surface-tint)",
+                  padding: "5px 11px",
+                  borderRadius: "var(--ds-radius-pill)",
+                }}
+              >
+                {s}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

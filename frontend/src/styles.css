@@ -217,3 +217,173 @@
 @utility animate-float {
   animation: float-slow 6s ease-in-out infinite;
 }
+
+/*
+ * Design-system tokens from the CareerAutomated handoff
+ * (design_handoff_careerautomated/_ds/.../tokens/{colors,typography,spacing,effects}.css).
+ * Namespaced under --ds- so they coexist with the legacy peach/oklch tokens above
+ * without changing how any currently-shipped page renders. New screens/components
+ * built against the handoff design reference these directly; as each existing page
+ * is rebuilt to match the new design (see phased plan), it moves off the legacy
+ * tokens above and onto these instead. General Sans + Inter are already loaded
+ * globally in __root.tsx.
+ */
+:root {
+  --ds-font-display: 'General Sans', sans-serif;
+  --ds-font-body: 'Inter', sans-serif;
+
+  --ds-brand-orange-500: #E85D2C;
+  --ds-brand-orange-600: #D4501F;
+  --ds-brand-orange-700: #C94A1F;
+  --ds-brand-orange-text: #C24E22;
+  --ds-brand-orange-tint-08: rgba(232, 93, 44, 0.08);
+  --ds-brand-orange-tint-10: rgba(232, 93, 44, 0.1);
+  --ds-brand-orange-tint-16: rgba(232, 93, 44, 0.16);
+  --ds-brand-orange-tint-18: rgba(232, 93, 44, 0.18);
+
+  --ds-ink-900: oklch(24% 0.015 50);
+  --ds-ink-800: #241C14;
+  --ds-ink-700: oklch(30% 0.015 50);
+  --ds-ink-600: oklch(38% 0.02 50);
+  --ds-ink-500: oklch(45% 0.02 50);
+  --ds-ink-450: oklch(48% 0.02 50);
+  --ds-ink-400: oklch(52% 0.02 50);
+  --ds-ink-300: oklch(58% 0.015 50);
+  --ds-ink-250: oklch(62% 0.015 50);
+
+  --ds-cream-50: oklch(97.3% 0.012 75);
+  --ds-cream-100: oklch(96.5% 0.012 75);
+  --ds-cream-200: oklch(95% 0.014 75);
+  --ds-cream-300: oklch(93% 0.014 75);
+  --ds-surface-card: #FFFDFA;
+
+  --ds-border-hairline: rgba(36, 28, 20, 0.07);
+  --ds-border-default: rgba(36, 28, 20, 0.08);
+  --ds-border-medium: rgba(36, 28, 20, 0.14);
+  --ds-border-strong: rgba(36, 28, 20, 0.16);
+  --ds-border-emphasis: rgba(36, 28, 20, 0.3);
+
+  --ds-sage-500: #6B8F5E;
+  --ds-sage-text: #4E6E42;
+  --ds-sage-tint-12: rgba(107, 143, 94, 0.12);
+  --ds-sage-tint-16: rgba(107, 143, 94, 0.16);
+  --ds-sage-tint-18: rgba(107, 143, 94, 0.18);
+
+  --ds-lavender-500: #8B7BC0;
+  --ds-lavender-text: #6B5D91;
+  --ds-lavender-tint-14: rgba(184, 169, 217, 0.14);
+  --ds-lavender-tint-30: rgba(184, 169, 217, 0.3);
+
+  --ds-amber-500: #D9A441;
+  --ds-dark-accent: #E8A582;
+
+  --ds-text-primary: var(--ds-ink-900);
+  --ds-text-secondary: var(--ds-ink-500);
+  --ds-text-tertiary: var(--ds-ink-400);
+  --ds-text-faint: var(--ds-ink-300);
+  --ds-text-on-dark: #F3EAE0;
+  --ds-text-on-dark-muted: rgba(243, 234, 224, 0.7);
+  --ds-text-on-brand: #FFF9F4;
+
+  --ds-surface-page: var(--ds-cream-50);
+  --ds-surface-page-alt: var(--ds-cream-200);
+  --ds-surface-tint: var(--ds-cream-200);
+  --ds-surface-dark: var(--ds-ink-800);
+
+  --ds-accent-primary: var(--ds-brand-orange-500);
+  --ds-accent-primary-hover: var(--ds-brand-orange-600);
+  --ds-accent-primary-active: var(--ds-brand-orange-700);
+  --ds-accent-success: var(--ds-sage-500);
+  --ds-accent-info: var(--ds-lavender-500);
+  --ds-accent-warning: var(--ds-amber-500);
+
+  --ds-text-xs: 11px;
+  --ds-text-sm: 12.5px;
+  --ds-text-base: 14px;
+  --ds-text-md: 14.5px;
+  --ds-text-lg: 15.5px;
+  --ds-text-xl: 16px;
+  --ds-text-2xl: 17px;
+  --ds-text-3xl: 19.5px;
+
+  --ds-display-xs: 21px;
+  --ds-display-sm: 24px;
+  --ds-display-md: 26px;
+  --ds-display-lg: 34px;
+  --ds-display-xl: clamp(28px, 3.6vw, 40px);
+  --ds-display-2xl: clamp(44px, 6.4vw, 84px);
+
+  --ds-weight-regular: 400;
+  --ds-weight-medium: 500;
+  --ds-weight-semibold: 600;
+  --ds-weight-bold: 700;
+
+  --ds-tracking-tight: -0.02em;
+  --ds-tracking-snug: -0.01em;
+  --ds-tracking-wide: 0.05em;
+  --ds-tracking-wider: 0.06em;
+
+  --ds-leading-tight: 1.15;
+  --ds-leading-snug: 1.3;
+  --ds-leading-normal: 1.5;
+  --ds-leading-relaxed: 1.6;
+
+  --ds-space-1: 4px;
+  --ds-space-2: 8px;
+  --ds-space-3: 12px;
+  --ds-space-4: 16px;
+  --ds-space-5: 20px;
+  --ds-space-6: 24px;
+  --ds-space-7: 32px;
+  --ds-space-8: 40px;
+  --ds-space-9: 48px;
+  --ds-space-10: 64px;
+  --ds-space-11: 96px;
+
+  --ds-radius-xs: 4px;
+  --ds-radius-sm: 7px;
+  --ds-radius-md: 9px;
+  --ds-radius-lg: 12px;
+  --ds-radius-xl: 16px;
+  --ds-radius-2xl: 20px;
+  --ds-radius-pill: 100px;
+  --ds-radius-circle: 50%;
+
+  --ds-shadow-card: 0 30px 70px -36px rgba(60, 40, 20, 0.25);
+  --ds-shadow-modal: 0 50px 100px -40px rgba(60, 40, 20, 0.3);
+  --ds-shadow-button-glow: 0 10px 24px -8px rgba(232, 93, 44, 0.55);
+  --ds-shadow-button-glow-sm: 0 10px 22px -8px rgba(232, 93, 44, 0.5);
+
+  --ds-ease-standard: ease;
+  --ds-duration-fast: 0.4s;
+  --ds-duration-base: 0.5s;
+  --ds-duration-slow: 0.6s;
+
+  --ds-blur-nav: 12px;
+}
+
+/* Dark-mode overrides, scaffolded but inert (activated only via [data-theme="dark"], which
+   nothing sets today — matches the handoff's own "scaffolded, disabled" dark mode). */
+[data-theme="dark"] {
+  --ds-ink-900: #EDEDEC;
+  --ds-ink-800: #DFE0DE;
+  --ds-ink-700: #C5C6C4;
+  --ds-ink-600: #A7A8A5;
+  --ds-ink-500: #8B8C89;
+  --ds-ink-450: #7A7B78;
+  --ds-ink-400: #6C6D6A;
+  --ds-ink-300: #525350;
+  --ds-ink-250: #454542;
+  --ds-cream-50: #18191B;
+  --ds-cream-100: #1D1E20;
+  --ds-cream-200: #232426;
+  --ds-cream-300: #2B2C2F;
+  --ds-surface-card: #1F2022;
+  --ds-border-hairline: rgba(230, 231, 229, 0.07);
+  --ds-border-default: rgba(230, 231, 229, 0.09);
+  --ds-border-medium: rgba(230, 231, 229, 0.14);
+  --ds-border-strong: rgba(230, 231, 229, 0.18);
+  --ds-border-emphasis: rgba(230, 231, 229, 0.3);
+  --ds-text-on-dark: #1A1B1D;
+  --ds-text-on-dark-muted: rgba(20, 21, 23, 0.65);
+}

@@ -1,51 +1,80 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
-import { z } from "zod";
-import { ArrowRight, Eye, EyeOff, CheckCircle2, Sparkles } from "lucide-react";
-import { Button } from "@/components/primitives/button";
-import { FadeIn } from "@/components/primitives/motion";
-import { useAuth } from "@/lib/auth";
+import { useEffect, useState } from "react";
+import { useAuth } from "../lib/auth";
+import { DsLogo } from "../components/ds/Logo";
+import { DsInput } from "../components/ds/Input";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
     meta: [
-      { title: "Create or Sign In to your account — CareerAutomated" },
-      { name: "description", content: "Sign in or create a CareerAutomated account. Free to start. Two minutes to set up." },
+      { title: "Create your account — CareerAutomated" },
+      {
+        name: "description",
+        content: "Create a CareerAutomated account. Free to start. Two minutes to set up.",
+      },
     ],
   }),
   component: SignUpPage,
 });
 
-const signUpSchema = z
-  .object({
-    email: z.string().trim().email("Enter a valid email"),
-    password: z.string().min(8, "At least 8 characters").max(72, "Too long"),
-    confirm: z.string(),
-  })
-  .refine((v) => v.password === v.confirm, {
-    message: "Passwords don't match",
-    path: ["confirm"],
-  });
+const ROTATING_LINES = [
+  "Finding matching jobs…",
+  "Tailoring your resume…",
+  "Tracking applications…",
+  "Preparing interview-ready resumes…",
+  "Discovering hidden opportunities…",
+  "Saving hours every week…",
+  "Building your career system…",
+];
 
-const signInSchema = z.object({
-  email: z.string().trim().email("Enter a valid email"),
-  password: z.string().min(1, "Password is required"),
-});
+function GoogleIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 18 18">
+      <path
+        fill="#4285F4"
+        d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84c-.21 1.13-.85 2.09-1.81 2.73v2.26h2.92c1.7-1.57 2.69-3.88 2.69-6.63z"
+      />
+      <path
+        fill="#34A853"
+        d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.84.87-3.04.87-2.34 0-4.32-1.58-5.03-3.71H.9v2.33C2.38 15.98 5.44 18 9 18z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M3.97 10.72c-.18-.54-.28-1.11-.28-1.72s.1-1.18.28-1.72V4.95H.9C.33 6.13 0 7.53 0 9s.33 2.87.9 4.05l3.07-2.33z"
+      />
+      <path
+        fill="#EA4335"
+        d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0 5.44 0 2.38 2.02.9 4.95l3.07 2.33C4.68 5.16 6.66 3.58 9 3.58z"
+      />
+    </svg>
+  );
+}
 
-type FieldErrors = Partial<Record<"email" | "password" | "confirm" | "form", string>>;
+function Spinner({ dark = false }: { dark?: boolean }) {
+  return (
+    <div
+      className="animate-spin rounded-full"
+      style={{
+        width: 16,
+        height: 16,
+        border: `2px solid ${dark ? "rgba(36,28,20,0.16)" : "rgba(255,249,244,0.35)"}`,
+        borderTopColor: dark ? "var(--ds-ink-700)" : "#FFF9F4",
+      }}
+    />
+  );
+}
 
 function SignUpPage() {
-  const { user, profile, loginWithEmail, signUpWithEmail, loginWithGoogle } = useAuth();
+  const { user, profile, signUpWithEmail, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
-  const [isSignUp, setIsSignUp] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [showPw, setShowPw] = useState(false);
-  const [errors, setErrors] = useState<FieldErrors>({});
-  const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
+  const [agreed, setAgreed] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [lineIndex, setLineIndex] = useState(0);
 
   useEffect(() => {
     if (user) {
@@ -57,251 +86,246 @@ function SignUpPage() {
     }
   }, [user, profile, navigate]);
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setErrors({});
-    
-    if (isSignUp) {
-      const parsed = signUpSchema.safeParse({ email, password, confirm });
-      if (!parsed.success) {
-        const fe: FieldErrors = {};
-        for (const issue of parsed.error.issues) {
-          const key = issue.path[0] as keyof FieldErrors;
-          if (!fe[key]) fe[key] = issue.message;
-        }
-        setErrors(fe);
-        return;
-      }
-      setLoading(true);
-      try {
-        await signUpWithEmail(email, password);
-        setDone(true);
-      } catch (err: any) {
-        setErrors({ form: err.message || "Failed to create account. Try again." });
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      const parsed = signInSchema.safeParse({ email, password });
-      if (!parsed.success) {
-        const fe: FieldErrors = {};
-        for (const issue of parsed.error.issues) {
-          const key = issue.path[0] as keyof FieldErrors;
-          if (!fe[key]) fe[key] = issue.message;
-        }
-        setErrors(fe);
-        return;
-      }
-      setLoading(true);
-      try {
-        await loginWithEmail(email, password);
-      } catch (err: any) {
-        setErrors({ form: err.message || "Invalid email or password." });
-      } finally {
-        setLoading(false);
-      }
+  useEffect(() => {
+    const t = setInterval(() => setLineIndex((i) => (i + 1) % ROTATING_LINES.length), 6500);
+    return () => clearInterval(t);
+  }, []);
+
+  const handleGoogle = async () => {
+    if (googleLoading) return;
+    setGoogleLoading(true);
+    setErrorMessage("");
+    try {
+      await loginWithGoogle();
+    } catch (e) {
+      setErrorMessage(e instanceof Error ? e.message : "Couldn't sign in with Google.");
+      setGoogleLoading(false);
     }
-  }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (createLoading) return;
+    if (!email || !password) {
+      setErrorMessage("Enter your email and password to continue.");
+      return;
+    }
+    if (password.length < 8) {
+      setErrorMessage("Password should be at least 8 characters.");
+      return;
+    }
+    if (!agreed) {
+      setErrorMessage("Please agree to the Terms and Privacy Policy.");
+      return;
+    }
+    setCreateLoading(true);
+    setErrorMessage("");
+    try {
+      await signUpWithEmail(email, password);
+      navigate({ to: "/onboarding" });
+    } catch (err) {
+      setErrorMessage(
+        err instanceof Error ? err.message : "That didn't go through. Please try again.",
+      );
+    } finally {
+      setCreateLoading(false);
+    }
+  };
 
   return (
-    <div className="grid min-h-[calc(100vh-4rem)] lg:grid-cols-2">
-      {/* Form side */}
-      <div className="flex items-center justify-center px-6 py-16">
-        <FadeIn className="w-full max-w-md">
-          <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-ink-soft">
-            {isSignUp ? "Get started" : "Welcome back"}
-          </div>
-          <h1 className="mt-3 font-display text-4xl leading-[1.05] tracking-tight text-ink md:text-5xl">
-            {isSignUp ? "Create your account" : "Sign in to your account"}
+    <div
+      className="flex"
+      style={{
+        minHeight: "100vh",
+        background: "var(--ds-surface-page)",
+        fontFamily: "var(--ds-font-body)",
+        color: "var(--ds-text-primary)",
+      }}
+    >
+      <div
+        className="hidden md:flex flex-col justify-between relative overflow-hidden"
+        style={{
+          width: "40%",
+          minWidth: 380,
+          padding: 56,
+          background: "var(--ds-surface-page-alt)",
+          borderRight: "1px solid var(--ds-border-default)",
+        }}
+      >
+        <div
+          className="pointer-events-none absolute"
+          style={{
+            top: -140,
+            left: -100,
+            width: 420,
+            height: 420,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(232,93,44,0.14), transparent 70%)",
+            filter: "blur(60px)",
+          }}
+        />
+        <Link to="/" className="relative z-10">
+          <DsLogo />
+        </Link>
+        <div className="relative z-10">
+          <h1
+            className="font-[var(--ds-font-display)] font-semibold"
+            style={{
+              fontSize: "clamp(28px,3vw,36px)",
+              lineHeight: 1.18,
+              margin: "0 0 16px",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            Start your career operating system.
           </h1>
-          <p className="mt-3 text-[15px] text-ink-soft">
-            {isSignUp ? "Already have one? " : "Don't have one? "}
-            <button
-              type="button"
-              onClick={() => {
-                setIsSignUp(!isSignUp);
-                setErrors({});
-              }}
-              className="font-medium text-ink underline underline-offset-4 hover:text-[color:var(--peach-deep)]"
-            >
-              {isSignUp ? "Sign in" : "Sign up"}
-            </button>
+          <p
+            style={{
+              fontSize: 16,
+              color: "var(--ds-ink-500)",
+              lineHeight: 1.6,
+              margin: 0,
+              maxWidth: 380,
+            }}
+          >
+            Spend less time applying. More time preparing for opportunities.
           </p>
-
-          <div className="mt-8">
-            <button
-              type="button"
-              onClick={loginWithGoogle}
-              className="w-full inline-flex h-11 items-center justify-center gap-2 rounded-xl border hairline bg-white text-sm font-medium text-ink transition hover:border-ink/30"
-            >
-              <GoogleIcon />
-              Continue with Google
-            </button>
+        </div>
+        <div className="relative z-10" style={{ height: 22 }}>
+          <div style={{ fontSize: 13.5, color: "var(--ds-ink-450)", fontWeight: 500 }}>
+            {ROTATING_LINES[lineIndex]}
           </div>
-
-          <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-widest text-ink-soft">
-            <div className="h-px flex-1 bg-[color:var(--border)]" />
-            or
-            <div className="h-px flex-1 bg-[color:var(--border)]" />
-          </div>
-
-          {done ? (
-            <div className="rounded-2xl border hairline bg-[color:var(--peach-soft)] p-6">
-              <div className="flex items-center gap-2 text-sm font-medium text-ink">
-                <CheckCircle2 className="h-4 w-4 text-[color:var(--peach-deep)]" />
-                Check your inbox
-              </div>
-              <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                We sent a confirmation link to <span className="font-medium text-ink">{email}</span>. Click it to activate
-                your account.
-              </p>
-            </div>
-          ) : (
-            <form onSubmit={onSubmit} className="space-y-4" noValidate>
-              <Field
-                label="Work email"
-                type="email"
-                value={email}
-                onChange={setEmail}
-                error={errors.email}
-                placeholder="you@company.com"
-                autoComplete="email"
-              />
-              <Field
-                label="Password"
-                type={showPw ? "text" : "password"}
-                value={password}
-                onChange={setPassword}
-                error={errors.password}
-                placeholder={isSignUp ? "At least 8 characters" : "Enter your password"}
-                autoComplete="current-password"
-                trailing={
-                  <button
-                    type="button"
-                    onClick={() => setShowPw((v) => !v)}
-                    className="text-ink-soft transition hover:text-ink"
-                    aria-label={showPw ? "Hide password" : "Show password"}
-                  >
-                    {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                }
-              />
-              {isSignUp && (
-                <Field
-                  label="Confirm password"
-                  type={showPw ? "text" : "password"}
-                  value={confirm}
-                  onChange={setConfirm}
-                  error={errors.confirm}
-                  placeholder="Re-enter your password"
-                  autoComplete="new-password"
-                />
-              )}
-
-              {errors.form ? (
-                <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-                  {errors.form}
-                </div>
-              ) : null}
-
-              <Button type="submit" loading={loading} className="w-full" size="lg" trailing={!loading ? <ArrowRight className="h-4 w-4" /> : undefined}>
-                {loading ? (isSignUp ? "Creating account…" : "Signing in…") : (isSignUp ? "Create account" : "Sign in")}
-              </Button>
-
-              <p className="pt-1 text-xs leading-relaxed text-ink-soft">
-                By continuing, you agree to our{" "}
-                <Link to="/terms" className="underline underline-offset-4 hover:text-ink">Terms</Link> and{" "}
-                <Link to="/privacy" className="underline underline-offset-4 hover:text-ink">Privacy Policy</Link>.
-              </p>
-            </form>
-          )}
-        </FadeIn>
+        </div>
       </div>
 
-      {/* Brand side */}
-      <div className="relative hidden overflow-hidden bg-ink lg:block">
-        <div className="pointer-events-none absolute inset-0 grid-lines opacity-10" />
-        <div className="pointer-events-none absolute -right-24 -top-24 h-[520px] w-[520px] rounded-full peach-gradient opacity-30 blur-3xl" />
-        <div className="relative flex h-full flex-col justify-between p-12 text-white">
-          <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/70 backdrop-blur">
-            <Sparkles className="h-3 w-3 text-[color:var(--peach)]" />
-            AI career operating system
+      <div className="flex-1 flex items-center justify-center" style={{ padding: "40px 24px" }}>
+        <div style={{ width: "100%", maxWidth: 400 }}>
+          <h2
+            className="font-[var(--ds-font-display)] font-semibold"
+            style={{ fontSize: 24, margin: "0 0 28px", letterSpacing: "-0.01em" }}
+          >
+            Create your account
+          </h2>
+
+          <button
+            type="button"
+            onClick={handleGoogle}
+            className="w-full flex items-center justify-center gap-2.5 font-semibold active:scale-[0.98] transition-transform"
+            style={{
+              padding: "12px 16px",
+              borderRadius: "var(--ds-radius-md)",
+              border: "1px solid var(--ds-border-medium)",
+              background: "var(--ds-surface-card)",
+              color: "var(--ds-text-primary)",
+              fontSize: 14,
+            }}
+          >
+            {googleLoading ? <Spinner dark /> : <GoogleIcon />}
+            <span>{googleLoading ? "Signing in…" : "Continue with Google"}</span>
+          </button>
+
+          <div className="flex items-center gap-3" style={{ margin: "22px 0" }}>
+            <div className="flex-1" style={{ height: 1, background: "var(--ds-border-default)" }} />
+            <span style={{ fontSize: 12.5, color: "var(--ds-ink-400)" }}>or</span>
+            <div className="flex-1" style={{ height: 1, background: "var(--ds-border-default)" }} />
           </div>
 
-          <div className="max-w-md">
-            <blockquote className="font-display text-3xl leading-snug tracking-tight text-white md:text-4xl">
-              "Applying stopped feeling like a second job. I opened the dashboard, approved three drafts, and moved on
-              with my day."
-            </blockquote>
-            <div className="mt-6 text-sm text-white/60">— Beta user, Software Engineer</div>
-          </div>
+          <form onSubmit={handleSubmit}>
+            <div style={{ marginBottom: 16 }}>
+              <DsInput
+                label="Email"
+                type="email"
+                placeholder="you@company.com"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setErrorMessage("");
+                }}
+                required
+              />
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <DsInput
+                label="Password"
+                type="password"
+                placeholder="At least 8 characters"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setErrorMessage("");
+                }}
+                required
+              />
+            </div>
 
-          <ul className="grid gap-3 text-sm text-white/80">
-            <li className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-[color:var(--peach)]" />
-              Free plan — no credit card required
-            </li>
-            <li className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-[color:var(--peach)]" />
-              You approve every application before it's sent
-            </li>
-            <li className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-[color:var(--peach)]" />
-              Cancel or downgrade anytime, one click
-            </li>
-          </ul>
+            {errorMessage && (
+              <div
+                style={{
+                  fontSize: 12.5,
+                  color: "var(--ds-ink-600)",
+                  background: "var(--ds-surface-page-alt)",
+                  border: "1px solid var(--ds-border-default)",
+                  borderRadius: 8,
+                  padding: "9px 12px",
+                  marginBottom: 16,
+                }}
+              >
+                {errorMessage}
+              </div>
+            )}
+
+            <div className="flex items-start gap-2" style={{ margin: "16px 0 24px" }}>
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={() => setAgreed((a) => !a)}
+                style={{
+                  marginTop: 2,
+                  width: 15,
+                  height: 15,
+                  accentColor: "#E27448",
+                  cursor: "pointer",
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ fontSize: 12.5, color: "var(--ds-ink-500)", lineHeight: 1.55 }}>
+                I agree to the{" "}
+                <Link to="/legal" hash="terms">
+                  Terms
+                </Link>{" "}
+                and{" "}
+                <Link to="/legal" hash="privacy">
+                  Privacy Policy
+                </Link>
+                .
+              </span>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full flex items-center justify-center font-bold active:scale-[0.98] transition-transform"
+              style={{
+                padding: "13px 16px",
+                borderRadius: "var(--ds-radius-md)",
+                border: "none",
+                background: "#E27448",
+                color: "var(--ds-text-on-brand)",
+                fontSize: 14.5,
+                boxShadow: "0 10px 22px -8px rgba(226,116,72,0.45)",
+              }}
+            >
+              {createLoading ? <Spinner /> : <span>Create account</span>}
+            </button>
+          </form>
+
+          <div
+            className="text-center"
+            style={{ marginTop: 22, fontSize: 13.5, color: "var(--ds-ink-500)" }}
+          >
+            Already have an account? <Link to="/signin">Sign in</Link>
+          </div>
         </div>
       </div>
     </div>
-  );
-}
-
-function Field({
-  label,
-  type,
-  value,
-  onChange,
-  error,
-  placeholder,
-  autoComplete,
-  trailing,
-}: {
-  label: string;
-  type: string;
-  value: string;
-  onChange: (v: string) => void;
-  error?: string;
-  placeholder?: string;
-  autoComplete?: string;
-  trailing?: React.ReactNode;
-}) {
-  return (
-    <label className="block">
-      <div className="mb-1.5 text-[13px] font-medium text-ink">{label}</div>
-      <div
-        className={`flex h-11 items-center gap-2 rounded-xl border bg-white px-3 transition focus-within:border-ink/40 focus-within:ring-2 focus-within:ring-ink/10 ${
-          error ? "border-destructive/50" : "hairline"
-        }`}
-      >
-        <input
-          type={type}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          autoComplete={autoComplete}
-          className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-ink-soft/60"
-        />
-        {trailing}
-      </div>
-      {error ? <div className="mt-1.5 text-xs text-destructive">{error}</div> : null}
-    </label>
-  );
-}
-
-function GoogleIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4">
-      <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.24 1.4-1.7 4.1-5.5 4.1-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.7 3.3 14.6 2.3 12 2.3 6.6 2.3 2.3 6.6 2.3 12s4.3 9.7 9.7 9.7c5.6 0 9.3-3.9 9.3-9.5 0-.6-.1-1.1-.2-1.6H12z" />
-    </svg>
   );
 }

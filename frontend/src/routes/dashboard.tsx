@@ -1,13 +1,10 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { Sidebar } from "../components/dashboard/Sidebar";
-import { TopBar } from "../components/dashboard/TopBar";
 import { DashboardProvider } from "../components/dashboard/DashboardContext";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
-    meta: [
-      { title: "Dashboard — CareerAutomated" },
-    ],
+    meta: [{ title: "Dashboard — CareerAutomated" }],
   }),
   component: DashboardLayout,
 });
@@ -50,14 +47,34 @@ function DashboardLayout() {
 
   return (
     <DashboardProvider>
-      <div className="flex bg-slate-50 min-h-screen text-slate-800 font-sans">
-        <Sidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <TopBar />
-          <main className="flex-1 overflow-y-auto bg-slate-50/50">
-            <Outlet />
-          </main>
+      <div
+        className="flex relative"
+        style={{
+          minHeight: "100vh",
+          background: "var(--ds-surface-page)",
+          fontFamily: "var(--ds-font-body)",
+          color: "var(--ds-text-primary)",
+        }}
+      >
+        <div
+          className="pointer-events-none fixed"
+          style={{
+            top: -120,
+            left: 120,
+            width: 520,
+            height: 520,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(232,93,44,0.12), transparent 70%)",
+            filter: "blur(60px)",
+            zIndex: 0,
+          }}
+        />
+        <div className="relative" style={{ zIndex: 1 }}>
+          <Sidebar />
         </div>
+        <main className="flex-1 min-w-0 relative" style={{ zIndex: 1 }}>
+          <Outlet />
+        </main>
       </div>
     </DashboardProvider>
   );

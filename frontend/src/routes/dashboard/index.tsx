@@ -1,271 +1,446 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { MapPin, Briefcase, Sparkles, Filter, ChevronRight, Loader2, Search, SlidersHorizontal } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ServiceRegistry, Job } from "../../lib/services";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { ServiceRegistry, type Job } from "../../lib/services";
+import { useAuth } from "../../lib/auth";
+import { DsChip } from "../../components/ds/Chip";
+import { DsInput } from "../../components/ds/Input";
+import { DsButton } from "../../components/ds/Button";
+import { JobDetailModal } from "../../components/dashboard/JobDetailModal";
+import { CareerPreferencesModal } from "../../components/dashboard/CareerPreferencesModal";
+import { UpgradeModal } from "../../components/dashboard/UpgradeModal";
 
 export const Route = createFileRoute("/dashboard/")({
   component: DashboardHome,
 });
 
-export function DashboardHome() {
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const LOCATIONS = ["All", "Remote", "Bangalore", "Hyderabad", "Mumbai"];
+const PAGE_SIZE = 10;
+const FREE_TIER_AUTO_APPLY_CAP = 5;
+const AVATAR_COLORS = ["#635BFF", "#2F2A26", "#5E5CE6", "#8B7BC0", "#6B8F5E", "#D9A441"];
 
-  // Filters
-  const [searchQuery, setSearchQuery] = useState("");
+function timeGreeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return "Morning";
+  if (h < 18) return "Afternoon";
+  return "Evening";
+}
+
+function DashboardHome() {
+  const { profile } = useAuth();
+  const firstName = (profile?.full_name || "there").split(" ")[0];
+
+  const {
+    data: jobs = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["jobs", "dashboard"],
+    queryFn: () => ServiceRegistry.getJobService().getJobs({ sort_by: "score" }),
+  });
+
   const [locationFilter, setLocationFilter] = useState("All");
-  const [typeFilter, setTypeFilter] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(0);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
-  // Fetch jobs
-  useEffect(() => {
-    async function loadJobs() {
-      try {
-        setIsLoading(true);
-        const jobService = ServiceRegistry.getJobService();
-        const data = await jobService.getJobs();
-        setJobs(data || []);
-      } catch (err: any) {
-        console.error("Failed to fetch jobs:", err);
-        setError("Unable to load live opportunity matches.");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    loadJobs();
-  }, []);
+  // Auto-apply is frontend-only for this pass — no backend policy/queue endpoints exist yet.
+  const [autoApplyOn, setAutoApplyOn] = useState(false);
+  const [showPreferencesModal, setShowPreferencesModal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [queuedJobIds, setQueuedJobIds] = useState<string[]>([]);
 
-  // Match filtering
-  const filterJobs = (jobList: Job[]) => {
-    return jobList.filter((job) => {
+  const filtered = useMemo(() => {
+    return jobs.filter((job) => {
+      const matchLocation =
+        locationFilter === "All" ||
+        (locationFilter === "Remote"
+          ? (job.location || "").toLowerCase().includes("remote") ||
+            (job.remote || "").toLowerCase().includes("remote")
+          : (job.location || "").toLowerCase().includes(locationFilter.toLowerCase()));
       const matchQuery =
         !searchQuery ||
         (job.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
         (job.canonical_name || "").toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchLoc =
-        locationFilter === "All" ||
-        (locationFilter === "Remote" && (job.location || "").toLowerCase().includes("remote")) ||
-        (locationFilter === "Onsite/Hybrid" && !(job.location || "").toLowerCase().includes("remote"));
-
-      const matchType =
-        typeFilter === "All" ||
-        (typeFilter === "Full-time" && (job.remote || "").toLowerCase().includes("full")) ||
-        (typeFilter === "Hybrid" && (job.remote || "").toLowerCase().includes("hybrid"));
-
-      return matchQuery && matchLoc && matchType;
+      return matchLocation && matchQuery;
     });
+  }, [jobs, locationFilter, searchQuery]);
+
+  const topJobs = jobs.slice(0, 5);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageResults = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+
+  const handleToggleAutoApply = () => {
+    if (!autoApplyOn) {
+      setShowPreferencesModal(true);
+      return;
+    }
+    setAutoApplyOn(false);
   };
 
-  const activeJobs = filterJobs(jobs);
-  // Top 5 match cards
-  const topMatches = activeJobs.slice(0, 5);
-  // Remaining matches
-  const secondaryMatches = activeJobs.slice(5);
+  const handleSavePreferences = () => {
+    // Career preferences are frontend-only for this pass — no backend policy endpoint exists yet.
+    setShowPreferencesModal(false);
+    setAutoApplyOn(true);
+  };
+
+  const handleQueueJob = (jobId: string) => {
+    if (queuedJobIds.includes(jobId)) {
+      setQueuedJobIds((ids) => ids.filter((id) => id !== jobId));
+      return;
+    }
+    if (queuedJobIds.length >= FREE_TIER_AUTO_APPLY_CAP) {
+      setShowUpgradeModal(true);
+      return;
+    }
+    setQueuedJobIds((ids) => [...ids, jobId]);
+  };
 
   return (
-    <div className="max-w-6xl mx-auto px-6 md:px-10 py-10 space-y-10">
-      
-      {/* 1. Header Philosophy Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b hairline pb-6">
-        <div className="space-y-1">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[color:var(--peach-soft)] text-[color:var(--peach-deep)] text-[11px] font-semibold">
-            <Sparkles className="h-3 w-3" /> Pre-Filtered Intelligence
-          </div>
-          <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight text-ink">
-            Top Matches
-          </h1>
-          <p className="text-xs text-ink-soft max-w-md">
-            Your AI candidate profile searched all live listing portals and filtered out non-matching opportunities.
-          </p>
+    <div>
+      <div style={{ padding: "40px clamp(24px,4vw,56px) 8px" }}>
+        <div
+          style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ds-ink-450)", marginBottom: 12 }}
+        >
+          {timeGreeting()}, {firstName}.
         </div>
-
-        {/* Quick Search Bar */}
-        <div className="relative w-full md:w-72">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-ink-soft" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search role or company..."
-            className="w-full pl-9 pr-4 py-2 bg-white/60 border hairline rounded-xl text-xs text-ink placeholder:text-ink-soft focus:outline-none focus:border-[color:var(--peach-deep)] transition-colors"
-          />
-        </div>
+        <h1
+          className="font-[var(--ds-font-display)] font-semibold"
+          style={{ fontSize: "clamp(26px,3.6vw,46px)", margin: "0 0 12px" }}
+        >
+          You're all caught up.
+        </h1>
+        <p style={{ fontSize: 16, color: "var(--ds-ink-500)", margin: 0, maxWidth: 480 }}>
+          We'll let you know when something needs you.
+        </p>
       </div>
 
-      {isLoading ? (
-        <div className="min-h-[360px] flex flex-col items-center justify-center space-y-3">
-          <Loader2 className="h-7 w-7 text-[color:var(--peach-deep)] animate-spin" />
-          <span className="text-xs text-ink-soft font-medium">Fetching top matched opportunities...</span>
-        </div>
-      ) : error ? (
-        <div className="min-h-[220px] flex flex-col items-center justify-center text-center space-y-3 border border-red-100 bg-red-50/50 rounded-3xl p-6">
-          <span className="text-xs text-red-500 font-semibold">{error}</span>
-          <button
-            onClick={() => window.location.reload()}
-            className="btn-dark px-5 py-2 text-xs rounded-xl"
-          >
-            Retry Loading
-          </button>
-        </div>
-      ) : (
-        <>
-          {/* 2. Top Matches Horizontal Grid */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xs uppercase font-bold tracking-widest text-ink-soft flex items-center gap-1.5">
-                Top Recommendation Suite ({topMatches.length})
-              </h2>
-              <span className="text-[10px] text-ink-soft">Highest fit score first</span>
+      <div style={{ padding: "24px clamp(24px,4vw,56px)" }}>
+        <div
+          className="flex items-center justify-between flex-wrap gap-3"
+          style={{ marginBottom: 18 }}
+        >
+          <div className="flex items-center gap-3.5">
+            <div
+              className="uppercase font-bold"
+              style={{
+                fontSize: 13,
+                letterSpacing: "var(--ds-tracking-wide)",
+                color: "var(--ds-ink-400)",
+              }}
+            >
+              Your jobs
             </div>
+            <div
+              className="font-semibold"
+              style={{
+                fontSize: 12,
+                color: "var(--ds-ink-500)",
+                background: "var(--ds-surface-tint)",
+                padding: "4px 10px",
+                borderRadius: "var(--ds-radius-pill)",
+              }}
+            >
+              {queuedJobIds.length}/{FREE_TIER_AUTO_APPLY_CAP} in auto-apply queue
+            </div>
+          </div>
+          {autoApplyOn ? (
+            <div className="flex items-center gap-3">
+              <span
+                className="font-semibold"
+                style={{ fontSize: 14, color: "var(--ds-sage-text)" }}
+              >
+                Auto Apply on ✓
+              </span>
+              <DsButton variant="outline" size="md" onClick={handleToggleAutoApply}>
+                Pause
+              </DsButton>
+            </div>
+          ) : (
+            <DsButton variant="primary" size="md" onClick={handleToggleAutoApply}>
+              Start Auto Apply
+            </DsButton>
+          )}
+        </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {topMatches.length === 0 ? (
-                <div className="col-span-full py-12 text-center glass-card rounded-3xl">
-                  <span className="text-xs text-ink-soft">No matching opportunities found with your criteria.</span>
-                </div>
-              ) : (
-                topMatches.map((job) => (
+        {isLoading ? (
+          <div
+            style={{
+              padding: "40px 0",
+              textAlign: "center",
+              color: "var(--ds-ink-450)",
+              fontSize: 13.5,
+            }}
+          >
+            Loading your matches…
+          </div>
+        ) : error ? (
+          <div
+            style={{
+              padding: "24px 0",
+              textAlign: "center",
+              color: "var(--ds-ink-500)",
+              fontSize: 13.5,
+            }}
+          >
+            Couldn't load your matches right now. Try refreshing in a moment.
+          </div>
+        ) : topJobs.length === 0 ? (
+          <div
+            style={{
+              background: "rgba(255,255,255,0.55)",
+              border: "1px solid rgba(255,255,255,0.6)",
+              borderRadius: "var(--ds-radius-xl)",
+              padding: "32px 28px",
+              textAlign: "center",
+            }}
+          >
+            <div
+              className="font-[var(--ds-font-display)] font-semibold"
+              style={{ fontSize: 17, marginBottom: 8 }}
+            >
+              We're already scanning for you.
+            </div>
+            <p
+              style={{
+                fontSize: 13.5,
+                color: "var(--ds-ink-500)",
+                lineHeight: 1.6,
+                margin: "0 0 18px",
+                maxWidth: 420,
+                marginInline: "auto",
+              }}
+            >
+              CareerAutomated is watching company career pages and job boards right now. As soon as
+              something matches your profile, it'll show up here — ready to review.
+            </p>
+          </div>
+        ) : (
+          <div className="flex gap-3.5 overflow-x-auto pb-2" style={{ scrollbarWidth: "thin" }}>
+            {topJobs.map((job, i) => (
+              <button
+                key={job.job_id}
+                type="button"
+                onClick={() => setSelectedJob(job)}
+                className="text-left flex-shrink-0 transition-transform hover:-translate-y-0.5"
+                style={{
+                  width: 220,
+                  background: "var(--ds-surface-card)",
+                  border: "1px solid var(--ds-border-default)",
+                  borderRadius: "var(--ds-radius-xl)",
+                  padding: 18,
+                }}
+              >
+                <div className="flex items-center gap-2" style={{ marginBottom: 14 }}>
                   <div
-                    key={job.job_id}
-                    className="glass-card rounded-3xl p-6 flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 border hairline bg-white/40"
+                    className="flex items-center justify-center flex-shrink-0 text-white font-bold rounded-[6px]"
+                    style={{
+                      width: 24,
+                      height: 24,
+                      background: AVATAR_COLORS[i % AVATAR_COLORS.length],
+                      fontSize: 11,
+                    }}
                   >
-                    <div className="space-y-4">
-                      <div className="flex items-start justify-between">
-                        <span className="text-[10px] uppercase font-bold text-ink-soft tracking-wider truncate max-w-[130px]">
-                          {job.canonical_name || "Company"}
-                        </span>
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-[10px] font-bold text-emerald-600 border border-emerald-100">
-                          {job.job_score || 92}% Fit
-                        </span>
-                      </div>
+                    {(job.canonical_name || "?").charAt(0).toUpperCase()}
+                  </div>
+                  <div
+                    className="whitespace-nowrap overflow-hidden text-ellipsis"
+                    style={{ fontSize: 12, fontWeight: 600, color: "var(--ds-ink-500)" }}
+                  >
+                    {job.canonical_name}
+                  </div>
+                </div>
+                <div
+                  className="font-[var(--ds-font-display)] font-semibold"
+                  style={{ fontSize: 17, lineHeight: 1.3, marginBottom: 14, minHeight: 44 }}
+                >
+                  {job.title}
+                </div>
+                <div className="flex items-center gap-1.5" style={{ marginBottom: 10 }}>
+                  <span
+                    className="font-bold"
+                    style={{
+                      fontSize: 11,
+                      color: "var(--ds-ink-600)",
+                      background: "var(--ds-surface-tint)",
+                      padding: "2px 7px",
+                      borderRadius: "var(--ds-radius-pill)",
+                    }}
+                  >
+                    {job.job_score}% match
+                  </span>
+                </div>
+                <div style={{ fontSize: 11, color: "var(--ds-ink-400)" }}>{job.location}</div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
-                      <h3 className="font-display text-base font-semibold leading-snug text-ink line-clamp-2">
-                        {job.title}
-                      </h3>
+      <div style={{ padding: "24px clamp(24px,4vw,56px) 56px" }}>
+        <div
+          className="uppercase font-bold"
+          style={{
+            fontSize: 13,
+            letterSpacing: "var(--ds-tracking-wide)",
+            color: "var(--ds-ink-400)",
+            marginBottom: 14,
+          }}
+        >
+          Search jobs
+        </div>
+        <div className="flex flex-wrap gap-2.5" style={{ marginBottom: 16 }}>
+          <div style={{ flex: "1 1 240px" }}>
+            <DsInput
+              placeholder="Search role or company…"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(0);
+              }}
+            />
+          </div>
+          {LOCATIONS.map((l) => (
+            <DsChip
+              key={l}
+              label={l}
+              active={locationFilter === l}
+              onClick={() => {
+                setLocationFilter(l);
+                setPage(0);
+              }}
+            />
+          ))}
+        </div>
+
+        {filtered.length === 0 ? (
+          <div
+            className="flex items-center justify-center text-center"
+            style={{ padding: "40px 24px" }}
+          >
+            <div>
+              <div
+                className="font-[var(--ds-font-display)] font-semibold"
+                style={{ fontSize: 15.5, marginBottom: 6 }}
+              >
+                No matches in this location yet.
+              </div>
+              <p
+                style={{
+                  fontSize: 13,
+                  color: "var(--ds-ink-500)",
+                  margin: "0 0 12px",
+                  maxWidth: 320,
+                }}
+              >
+                Try a broader location, or check back soon — new roles are added continuously.
+              </p>
+              <button
+                type="button"
+                onClick={() => setLocationFilter("All")}
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--ds-accent-primary)",
+                  cursor: "pointer",
+                }}
+              >
+                Show all locations
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div
+              style={{ background: "rgba(255,255,255,0.5)", borderRadius: "var(--ds-radius-lg)" }}
+            >
+              {pageResults.map((job) => (
+                <div
+                  key={job.job_id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setSelectedJob(job)}
+                  onKeyDown={(e) => e.key === "Enter" && setSelectedJob(job)}
+                  className="flex items-center gap-3 cursor-pointer hover:bg-white/50"
+                  style={{ padding: "13px 16px", borderBottom: "1px solid rgba(255,255,255,0.5)" }}
+                >
+                  <div
+                    className="flex items-center justify-center flex-shrink-0 text-white font-semibold"
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 8,
+                      background: "var(--ds-lavender-500)",
+                      fontSize: 13,
+                    }}
+                  >
+                    {(job.canonical_name || "?").charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div
+                      className="whitespace-nowrap overflow-hidden text-ellipsis"
+                      style={{ fontSize: "var(--ds-text-md)", fontWeight: 600 }}
+                    >
+                      {job.title}
                     </div>
-
-                    <div className="mt-6 space-y-4 pt-4 border-t hairline">
-                      <div className="space-y-1.5 text-[11px] text-ink-soft">
-                        <div className="flex items-center gap-1.5">
-                          <MapPin className="h-3 w-3 text-ink-soft" />
-                          <span className="truncate max-w-[180px]">{job.location || "Remote / Onsite"}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <Briefcase className="h-3 w-3 text-ink-soft" />
-                          <span>{job.remote || "Full-time"}</span>
-                        </div>
-                      </div>
-
-                      <a
-                        href={job.apply_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="btn-dark w-full py-2.5 text-xs rounded-xl flex items-center justify-center gap-1 font-medium"
-                      >
-                        Review & Tailor Application <ChevronRight className="h-3.5 w-3.5" />
-                      </a>
+                    <div
+                      style={{ fontSize: "var(--ds-text-base)", color: "var(--ds-text-secondary)" }}
+                    >
+                      {job.canonical_name} · {job.location}
                     </div>
                   </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* 3. Refine Filter Bar */}
-          <div className="flex flex-wrap items-center justify-between border-t border-b hairline py-3.5 gap-4">
-            <div className="flex items-center gap-2 text-xs text-ink-soft">
-              <SlidersHorizontal className="h-3.5 w-3.5" />
-              <span className="font-medium">Refine Preferences</span>
-            </div>
-
-            <div className="flex items-center gap-3">
-              {/* Location Filter */}
-              <div className="flex rounded-xl bg-white/50 border hairline p-0.5 text-[11px]">
-                {["All", "Remote", "Onsite/Hybrid"].map((loc) => (
-                  <button
-                    key={loc}
-                    onClick={() => setLocationFilter(loc)}
-                    className={`px-3 py-1 rounded-lg font-medium transition-colors ${
-                      locationFilter === loc ? "bg-white text-ink shadow-xs" : "text-ink-soft hover:text-ink"
-                    }`}
-                  >
-                    {loc}
-                  </button>
-                ))}
-              </div>
-
-              {/* Type Filter */}
-              <div className="flex rounded-xl bg-white/50 border hairline p-0.5 text-[11px]">
-                {["All", "Full-time", "Hybrid"].map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => setTypeFilter(type)}
-                    className={`px-3 py-1 rounded-lg font-medium transition-colors ${
-                      typeFilter === type ? "bg-white text-ink shadow-xs" : "text-ink-soft hover:text-ink"
-                    }`}
-                  >
-                    {type}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* 4. Secondary Pipeline List */}
-          {secondaryMatches.length > 0 && (
-            <div className="space-y-4">
-              <h2 className="text-xs uppercase font-bold tracking-widest text-ink-soft">
-                Additional Pipeline Matches ({secondaryMatches.length})
-              </h2>
-
-              <div className="glass-card rounded-3xl border hairline bg-white/40 overflow-hidden shadow-xs">
-                <div className="divide-y divide-white/20">
-                  {secondaryMatches.map((job) => (
-                    <div
-                      key={job.job_id}
-                      className="flex items-center justify-between px-6 py-4 hover:bg-white/50 transition-colors group"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="grid h-9 w-9 place-items-center rounded-xl bg-white border hairline text-xs font-semibold text-ink">
-                          {(job.canonical_name || "C").slice(0, 1)}
-                        </div>
-
-                        <div className="space-y-0.5">
-                          <h4 className="text-xs font-semibold text-ink group-hover:text-[color:var(--peach-deep)] transition-colors">
-                            {job.title}
-                          </h4>
-                          <div className="flex items-center gap-2 text-[11px] text-ink-soft">
-                            <span>{job.canonical_name}</span>
-                            <span>•</span>
-                            <span>{job.location}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-4">
-                        <span className="text-xs font-semibold text-emerald-600">
-                          {job.job_score}% fit
-                        </span>
-                        <a
-                          href={job.apply_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="btn-dark px-3.5 py-1.5 text-xs rounded-xl opacity-90 group-hover:opacity-100 transition-opacity"
-                        >
-                          Review
-                        </a>
-                      </div>
+                  <div className="text-right flex-shrink-0">
+                    <div style={{ fontSize: "var(--ds-text-sm)", fontWeight: 700 }}>
+                      {job.job_score}%
                     </div>
-                  ))}
+                  </div>
                 </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-between" style={{ marginTop: 12 }}>
+              <div style={{ fontSize: 13, color: "var(--ds-ink-450)" }}>
+                Page {page + 1} of {totalPages}
+              </div>
+              <div className="flex gap-2.5">
+                <DsButton
+                  variant="outline"
+                  size="md"
+                  disabled={page === 0}
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                >
+                  Previous
+                </DsButton>
+                <DsButton
+                  variant="outline"
+                  size="md"
+                  disabled={page >= totalPages - 1}
+                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                >
+                  Next
+                </DsButton>
               </div>
             </div>
-          )}
-        </>
+          </>
+        )}
+      </div>
+
+      {selectedJob && (
+        <JobDetailModal
+          job={selectedJob}
+          queued={queuedJobIds.includes(selectedJob.job_id)}
+          onToggleQueue={() => handleQueueJob(selectedJob.job_id)}
+          onClose={() => setSelectedJob(null)}
+        />
       )}
 
+      {showPreferencesModal && (
+        <CareerPreferencesModal
+          onSave={handleSavePreferences}
+          onSkip={() => setShowPreferencesModal(false)}
+        />
+      )}
+
+      {showUpgradeModal && <UpgradeModal onClose={() => setShowUpgradeModal(false)} />}
     </div>
   );
 }

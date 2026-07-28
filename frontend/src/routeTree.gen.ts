@@ -9,18 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as UploadRouteImport } from './routes/upload'
+import { Route as UpgradeRouteImport } from './routes/upgrade'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as SigninRouteImport } from './routes/signin'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PaymentSuccessRouteImport } from './routes/payment-success'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MissionControlRouteImport } from './routes/mission-control'
+import { Route as LegalRouteImport } from './routes/legal'
 import { Route as HealthRouteImport } from './routes/health'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MissionControlIndexRouteImport } from './routes/mission-control/index'
@@ -33,18 +38,15 @@ import { Route as MissionControlCompanyReplayRouteImport } from './routes/missio
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
 import { Route as DashboardResumeTailorRouteImport } from './routes/dashboard/resume-tailor'
 import { Route as DashboardResumeRouteImport } from './routes/dashboard/resume'
-import { Route as DashboardPipelineRouteImport } from './routes/dashboard/pipeline'
 import { Route as DashboardJobsRouteImport } from './routes/dashboard/jobs'
-import { Route as DashboardCompaniesRouteImport } from './routes/dashboard/companies'
+import { Route as DashboardCareerProfileRouteImport } from './routes/dashboard/career-profile'
 import { Route as DashboardApplicationsRouteImport } from './routes/dashboard/applications'
-import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard/analytics'
-import { Route as DashboardAdminRouteImport } from './routes/dashboard/admin'
 import { Route as AboutProductRouteImport } from './routes/about/product'
 import { Route as DashboardJobsJobIdRouteImport } from './routes/dashboard/jobs.$jobId'
 
-const UploadRoute = UploadRouteImport.update({
-  id: '/upload',
-  path: '/upload',
+const UpgradeRoute = UpgradeRouteImport.update({
+  id: '/upgrade',
+  path: '/upgrade',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -62,6 +64,11 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SigninRoute = SigninRouteImport.update({
+  id: '/signin',
+  path: '/signin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -70,6 +77,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentSuccessRoute = PaymentSuccessRouteImport.update({
+  id: '/payment-success',
+  path: '/payment-success',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -82,9 +94,19 @@ const MissionControlRoute = MissionControlRouteImport.update({
   path: '/mission-control',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalRoute = LegalRouteImport.update({
+  id: '/legal',
+  path: '/legal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HealthRoute = HealthRouteImport.update({
   id: '/health',
   path: '/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FaqRoute = FaqRouteImport.update({
@@ -100,6 +122,11 @@ const DashboardRoute = DashboardRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -165,34 +192,19 @@ const DashboardResumeRoute = DashboardResumeRouteImport.update({
   path: '/resume',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardPipelineRoute = DashboardPipelineRouteImport.update({
-  id: '/pipeline',
-  path: '/pipeline',
-  getParentRoute: () => DashboardRoute,
-} as any)
 const DashboardJobsRoute = DashboardJobsRouteImport.update({
   id: '/jobs',
   path: '/jobs',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardCompaniesRoute = DashboardCompaniesRouteImport.update({
-  id: '/companies',
-  path: '/companies',
+const DashboardCareerProfileRoute = DashboardCareerProfileRouteImport.update({
+  id: '/career-profile',
+  path: '/career-profile',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardApplicationsRoute = DashboardApplicationsRouteImport.update({
   id: '/applications',
   path: '/applications',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardAnalyticsRoute = DashboardAnalyticsRouteImport.update({
-  id: '/analytics',
-  path: '/analytics',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardAdminRoute = DashboardAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
   getParentRoute: () => DashboardRoute,
 } as any)
 const AboutProductRoute = AboutProductRouteImport.update({
@@ -209,25 +221,27 @@ const DashboardJobsJobIdRoute = DashboardJobsJobIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRouteWithChildren
+  '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/faq': typeof FaqRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/health': typeof HealthRoute
+  '/legal': typeof LegalRoute
   '/mission-control': typeof MissionControlRouteWithChildren
   '/onboarding': typeof OnboardingRoute
+  '/payment-success': typeof PaymentSuccessRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
-  '/upload': typeof UploadRoute
+  '/upgrade': typeof UpgradeRoute
   '/about/product': typeof AboutProductRoute
-  '/dashboard/admin': typeof DashboardAdminRoute
-  '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/applications': typeof DashboardApplicationsRoute
-  '/dashboard/companies': typeof DashboardCompaniesRoute
+  '/dashboard/career-profile': typeof DashboardCareerProfileRoute
   '/dashboard/jobs': typeof DashboardJobsRouteWithChildren
-  '/dashboard/pipeline': typeof DashboardPipelineRoute
   '/dashboard/resume': typeof DashboardResumeRoute
   '/dashboard/resume-tailor': typeof DashboardResumeTailorRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
@@ -243,23 +257,25 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRouteWithChildren
+  '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/health': typeof HealthRoute
+  '/legal': typeof LegalRoute
   '/onboarding': typeof OnboardingRoute
+  '/payment-success': typeof PaymentSuccessRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
-  '/upload': typeof UploadRoute
+  '/upgrade': typeof UpgradeRoute
   '/about/product': typeof AboutProductRoute
-  '/dashboard/admin': typeof DashboardAdminRoute
-  '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/applications': typeof DashboardApplicationsRoute
-  '/dashboard/companies': typeof DashboardCompaniesRoute
+  '/dashboard/career-profile': typeof DashboardCareerProfileRoute
   '/dashboard/jobs': typeof DashboardJobsRouteWithChildren
-  '/dashboard/pipeline': typeof DashboardPipelineRoute
   '/dashboard/resume': typeof DashboardResumeRoute
   '/dashboard/resume-tailor': typeof DashboardResumeTailorRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
@@ -276,25 +292,27 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRouteWithChildren
+  '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/faq': typeof FaqRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/health': typeof HealthRoute
+  '/legal': typeof LegalRoute
   '/mission-control': typeof MissionControlRouteWithChildren
   '/onboarding': typeof OnboardingRoute
+  '/payment-success': typeof PaymentSuccessRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
-  '/upload': typeof UploadRoute
+  '/upgrade': typeof UpgradeRoute
   '/about/product': typeof AboutProductRoute
-  '/dashboard/admin': typeof DashboardAdminRoute
-  '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/applications': typeof DashboardApplicationsRoute
-  '/dashboard/companies': typeof DashboardCompaniesRoute
+  '/dashboard/career-profile': typeof DashboardCareerProfileRoute
   '/dashboard/jobs': typeof DashboardJobsRouteWithChildren
-  '/dashboard/pipeline': typeof DashboardPipelineRoute
   '/dashboard/resume': typeof DashboardResumeRoute
   '/dashboard/resume-tailor': typeof DashboardResumeTailorRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
@@ -312,25 +330,27 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/checkout'
     | '/contact'
     | '/dashboard'
     | '/faq'
+    | '/forgot-password'
     | '/health'
+    | '/legal'
     | '/mission-control'
     | '/onboarding'
+    | '/payment-success'
     | '/pricing'
     | '/privacy'
+    | '/signin'
     | '/signup'
     | '/sitemap.xml'
     | '/terms'
-    | '/upload'
+    | '/upgrade'
     | '/about/product'
-    | '/dashboard/admin'
-    | '/dashboard/analytics'
     | '/dashboard/applications'
-    | '/dashboard/companies'
+    | '/dashboard/career-profile'
     | '/dashboard/jobs'
-    | '/dashboard/pipeline'
     | '/dashboard/resume'
     | '/dashboard/resume-tailor'
     | '/dashboard/settings'
@@ -346,23 +366,25 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/checkout'
     | '/contact'
     | '/faq'
+    | '/forgot-password'
     | '/health'
+    | '/legal'
     | '/onboarding'
+    | '/payment-success'
     | '/pricing'
     | '/privacy'
+    | '/signin'
     | '/signup'
     | '/sitemap.xml'
     | '/terms'
-    | '/upload'
+    | '/upgrade'
     | '/about/product'
-    | '/dashboard/admin'
-    | '/dashboard/analytics'
     | '/dashboard/applications'
-    | '/dashboard/companies'
+    | '/dashboard/career-profile'
     | '/dashboard/jobs'
-    | '/dashboard/pipeline'
     | '/dashboard/resume'
     | '/dashboard/resume-tailor'
     | '/dashboard/settings'
@@ -378,25 +400,27 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
+    | '/checkout'
     | '/contact'
     | '/dashboard'
     | '/faq'
+    | '/forgot-password'
     | '/health'
+    | '/legal'
     | '/mission-control'
     | '/onboarding'
+    | '/payment-success'
     | '/pricing'
     | '/privacy'
+    | '/signin'
     | '/signup'
     | '/sitemap.xml'
     | '/terms'
-    | '/upload'
+    | '/upgrade'
     | '/about/product'
-    | '/dashboard/admin'
-    | '/dashboard/analytics'
     | '/dashboard/applications'
-    | '/dashboard/companies'
+    | '/dashboard/career-profile'
     | '/dashboard/jobs'
-    | '/dashboard/pipeline'
     | '/dashboard/resume'
     | '/dashboard/resume-tailor'
     | '/dashboard/settings'
@@ -413,27 +437,32 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRouteWithChildren
+  CheckoutRoute: typeof CheckoutRoute
   ContactRoute: typeof ContactRoute
   DashboardRoute: typeof DashboardRouteWithChildren
   FaqRoute: typeof FaqRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   HealthRoute: typeof HealthRoute
+  LegalRoute: typeof LegalRoute
   MissionControlRoute: typeof MissionControlRouteWithChildren
   OnboardingRoute: typeof OnboardingRoute
+  PaymentSuccessRoute: typeof PaymentSuccessRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
+  SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
-  UploadRoute: typeof UploadRoute
+  UpgradeRoute: typeof UpgradeRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/upload': {
-      id: '/upload'
-      path: '/upload'
-      fullPath: '/upload'
-      preLoaderRoute: typeof UploadRouteImport
+    '/upgrade': {
+      id: '/upgrade'
+      path: '/upgrade'
+      fullPath: '/upgrade'
+      preLoaderRoute: typeof UpgradeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -457,6 +486,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/signin': {
+      id: '/signin'
+      path: '/signin'
+      fullPath: '/signin'
+      preLoaderRoute: typeof SigninRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
@@ -469,6 +505,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payment-success': {
+      id: '/payment-success'
+      path: '/payment-success'
+      fullPath: '/payment-success'
+      preLoaderRoute: typeof PaymentSuccessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -485,11 +528,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MissionControlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal': {
+      id: '/legal'
+      path: '/legal'
+      fullPath: '/legal'
+      preLoaderRoute: typeof LegalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/health': {
       id: '/health'
       path: '/health'
       fullPath: '/health'
       preLoaderRoute: typeof HealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/faq': {
@@ -511,6 +568,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -597,13 +661,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardResumeRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/pipeline': {
-      id: '/dashboard/pipeline'
-      path: '/pipeline'
-      fullPath: '/dashboard/pipeline'
-      preLoaderRoute: typeof DashboardPipelineRouteImport
-      parentRoute: typeof DashboardRoute
-    }
     '/dashboard/jobs': {
       id: '/dashboard/jobs'
       path: '/jobs'
@@ -611,11 +668,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardJobsRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/companies': {
-      id: '/dashboard/companies'
-      path: '/companies'
-      fullPath: '/dashboard/companies'
-      preLoaderRoute: typeof DashboardCompaniesRouteImport
+    '/dashboard/career-profile': {
+      id: '/dashboard/career-profile'
+      path: '/career-profile'
+      fullPath: '/dashboard/career-profile'
+      preLoaderRoute: typeof DashboardCareerProfileRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/applications': {
@@ -623,20 +680,6 @@ declare module '@tanstack/react-router' {
       path: '/applications'
       fullPath: '/dashboard/applications'
       preLoaderRoute: typeof DashboardApplicationsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/analytics': {
-      id: '/dashboard/analytics'
-      path: '/analytics'
-      fullPath: '/dashboard/analytics'
-      preLoaderRoute: typeof DashboardAnalyticsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/admin': {
-      id: '/dashboard/admin'
-      path: '/admin'
-      fullPath: '/dashboard/admin'
-      preLoaderRoute: typeof DashboardAdminRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/about/product': {
@@ -679,12 +722,9 @@ const DashboardJobsRouteWithChildren = DashboardJobsRoute._addFileChildren(
 )
 
 interface DashboardRouteChildren {
-  DashboardAdminRoute: typeof DashboardAdminRoute
-  DashboardAnalyticsRoute: typeof DashboardAnalyticsRoute
   DashboardApplicationsRoute: typeof DashboardApplicationsRoute
-  DashboardCompaniesRoute: typeof DashboardCompaniesRoute
+  DashboardCareerProfileRoute: typeof DashboardCareerProfileRoute
   DashboardJobsRoute: typeof DashboardJobsRouteWithChildren
-  DashboardPipelineRoute: typeof DashboardPipelineRoute
   DashboardResumeRoute: typeof DashboardResumeRoute
   DashboardResumeTailorRoute: typeof DashboardResumeTailorRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
@@ -692,12 +732,9 @@ interface DashboardRouteChildren {
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
-  DashboardAdminRoute: DashboardAdminRoute,
-  DashboardAnalyticsRoute: DashboardAnalyticsRoute,
   DashboardApplicationsRoute: DashboardApplicationsRoute,
-  DashboardCompaniesRoute: DashboardCompaniesRoute,
+  DashboardCareerProfileRoute: DashboardCareerProfileRoute,
   DashboardJobsRoute: DashboardJobsRouteWithChildren,
-  DashboardPipelineRoute: DashboardPipelineRoute,
   DashboardResumeRoute: DashboardResumeRoute,
   DashboardResumeTailorRoute: DashboardResumeTailorRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
@@ -733,18 +770,23 @@ const MissionControlRouteWithChildren = MissionControlRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRouteWithChildren,
+  CheckoutRoute: CheckoutRoute,
   ContactRoute: ContactRoute,
   DashboardRoute: DashboardRouteWithChildren,
   FaqRoute: FaqRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   HealthRoute: HealthRoute,
+  LegalRoute: LegalRoute,
   MissionControlRoute: MissionControlRouteWithChildren,
   OnboardingRoute: OnboardingRoute,
+  PaymentSuccessRoute: PaymentSuccessRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
+  SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
-  UploadRoute: UploadRoute,
+  UpgradeRoute: UpgradeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

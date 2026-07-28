@@ -26,6 +26,9 @@ services:
         condition: service_started
       db:
         condition: service_healthy
+    networks:
+      - default
+      - dokploy-network
     restart: always
 
   worker:
@@ -63,6 +66,9 @@ services:
         condition: service_started
       db:
         condition: service_healthy
+    networks:
+      - default
+      - dokploy-network
     restart: always
 
   db:

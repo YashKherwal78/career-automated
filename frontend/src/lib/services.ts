@@ -99,11 +99,12 @@ export interface ResumeService {
 }
 
 import { supabase } from "./supabase";
-
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1").replace(/\/$/, "");
+import { API_BASE } from "./api";
 
 async function authFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   const headers = new Headers(init?.headers);
   if (session?.access_token) {
     headers.set("Authorization", `Bearer ${session.access_token}`);
@@ -189,12 +190,22 @@ export class ApiResumeService implements ResumeService {
     // Return mock since resume parsing is client-side uploaded
     return {
       score: 84,
-      skills: ["React", "TypeScript", "Tailwind CSS", "FastAPI", "Python", "SQLite", "Git", "Docker", "REST APIs"],
+      skills: [
+        "React",
+        "TypeScript",
+        "Tailwind CSS",
+        "FastAPI",
+        "Python",
+        "SQLite",
+        "Git",
+        "Docker",
+        "REST APIs",
+      ],
       projectsCount: 4,
       history: [
         { date: "Yesterday", score: 84, changes: "Added FastAPI details" },
-        { date: "3 days ago", score: 78, changes: "Initial upload" }
-      ]
+        { date: "3 days ago", score: 78, changes: "Initial upload" },
+      ],
     };
   }
 }
@@ -215,16 +226,22 @@ export class MockJobService implements JobService {
       score_breakdown: [
         { keyword: "Python", matched: true },
         { keyword: "FastAPI", matched: true },
-        { keyword: "Docker", matched: false }
+        { keyword: "Docker", matched: false },
       ],
       apply_url: "https://stripe.com",
-      description: "We are looking for a Software Engineer to help scale our payment systems."
-    }
+      description: "We are looking for a Software Engineer to help scale our payment systems.",
+    },
   ];
 
-  async getJobs(): Promise<Job[]> { return this.mockJobs; }
-  async getJob(): Promise<Job> { return this.mockJobs[0]; }
-  async getRecentJobs(): Promise<Job[]> { return this.mockJobs; }
+  async getJobs(): Promise<Job[]> {
+    return this.mockJobs;
+  }
+  async getJob(): Promise<Job> {
+    return this.mockJobs[0];
+  }
+  async getRecentJobs(): Promise<Job[]> {
+    return this.mockJobs;
+  }
 }
 
 export class MockCompanyService implements CompanyService {
@@ -238,8 +255,8 @@ export class MockCompanyService implements CompanyService {
         status: "ACTIVE",
         job_count: 14,
         last_checked: Date.now(),
-        crawl_status: "SUCCESS"
-      }
+        crawl_status: "SUCCESS",
+      },
     ];
   }
 }
@@ -256,8 +273,8 @@ export class MockPipelineService implements PipelineService {
         verification: "Running",
         crawler: "Running",
         retry_queue: 3,
-        failures: 1
-      }
+        failures: 1,
+      },
     };
   }
 }
