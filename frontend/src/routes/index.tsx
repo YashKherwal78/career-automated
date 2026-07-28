@@ -485,13 +485,16 @@ function Landing() {
             Why we built this
           </div>
           <h2
-            className="font-[var(--ds-font-display)] mx-auto"
+            className="font-[var(--ds-font-display)]"
             style={{
               fontWeight: 500,
               fontSize: "clamp(21px,2.4vw,26px)",
               lineHeight: 1.55,
               letterSpacing: "-0.005em",
-              margin: 0,
+              marginTop: 0,
+              marginBottom: 0,
+              marginLeft: "auto",
+              marginRight: "auto",
               maxWidth: 600,
             }}
           >

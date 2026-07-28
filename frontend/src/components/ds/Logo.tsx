@@ -7,39 +7,44 @@ export interface DsLogoProps {
   className?: string;
 }
 
+// Proportions match the design handoff's logo mark exactly (see e.g. Settings.dc.html
+// sidebar: 30x30 square, rx 8.14, ring at 6.47/18.86, punched dot at 5.29/7.71).
 const DIMS = {
-  sm: { w: 24, h: 20, bar: 3.5, barH: 14 },
-  md: { w: 26, h: 22, bar: 4, barH: 16 },
+  sm: { box: 26, radius: 7.05, ringSize: 16.34, ringOffset: 5.61, dotSize: 6.68, dotOffset: 4.59 },
+  md: { box: 30, radius: 8.14, ringSize: 18.86, ringOffset: 6.47, dotSize: 7.71, dotOffset: 5.29 },
 };
 
-/** CareerAutomated logo mark — CSS-drawn (rotated bar pair), no image asset. */
+/** CareerAutomated logo mark — CSS-drawn rounded square with an orange ring and a punched-through center dot. */
 export function DsLogo({ size = "md", withWordmark = true, dark = false, className }: DsLogoProps) {
-  const dims = DIMS[size];
+  const d = DIMS[size];
+  const squareBg = "var(--ds-ink-900)";
   return (
-    <div className={`flex items-center gap-2.5 ${className ?? ""}`}>
-      <div className="relative flex-shrink-0" style={{ width: dims.w, height: dims.h }}>
+    <div className={`flex items-center gap-1.5 ${className ?? ""}`}>
+      <div
+        className="relative flex-shrink-0"
+        style={{ width: d.box, height: d.box, borderRadius: d.radius, background: squareBg }}
+      >
         <div
-          className="absolute rounded-[2px] bg-[var(--ds-accent-primary)]"
+          className="absolute rounded-full"
           style={{
-            bottom: 2,
-            left: dims.w / 2 - dims.bar - 1,
-            width: dims.bar,
-            height: dims.barH,
-            transformOrigin: "bottom center",
-            transform: "rotate(28deg)",
+            top: d.ringOffset,
+            left: d.ringOffset,
+            width: d.ringSize,
+            height: d.ringSize,
+            background: "var(--ds-accent-primary)",
           }}
-        />
-        <div
-          className="absolute rounded-[2px] bg-[var(--ds-accent-primary)]"
-          style={{
-            bottom: 2,
-            right: dims.w / 2 - dims.bar - 1,
-            width: dims.bar,
-            height: dims.barH,
-            transformOrigin: "bottom center",
-            transform: "rotate(-28deg)",
-          }}
-        />
+        >
+          <div
+            className="absolute rounded-full"
+            style={{
+              top: d.dotOffset,
+              left: d.dotOffset,
+              width: d.dotSize,
+              height: d.dotSize,
+              background: squareBg,
+            }}
+          />
+        </div>
       </div>
       {withWordmark && (
         <span
