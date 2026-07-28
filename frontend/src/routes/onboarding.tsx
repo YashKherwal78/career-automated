@@ -177,7 +177,10 @@ function OnboardingPage() {
     setStep(2);
   };
 
+  const [finishError, setFinishError] = useState<string | null>(null);
+
   const handleFinish = async () => {
+    setFinishError(null);
     try {
       if (session?.access_token) {
         const allSkillsFlat = Object.values(profile.skills)
@@ -185,7 +188,7 @@ function OnboardingPage() {
           .filter(Boolean)
           .map((s) => ({ skill_name: s, proficiency: "Expert" }));
 
-        await fetch(`${API_BASE}/users/onboarding`, {
+        const res = await fetch(`${API_BASE}/users/onboarding`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -212,9 +215,15 @@ function OnboardingPage() {
             resume_file_name: profile.resume_file_name,
           }),
         });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || "Failed to save onboarding details");
+        }
       }
     } catch (err) {
       console.error("Failed to save onboarding profile:", err);
+      setFinishError("Couldn't save your profile. Please try again.");
+      return;
     }
     await refreshProfile();
     navigate({ to: "/dashboard" });
@@ -668,6 +677,19 @@ function OnboardingPage() {
               We'll use this to find and tailor matches. It stays private until you approve an
               application.
             </p>
+
+            {finishError && (
+              <p
+                style={{
+                  fontSize: 12.5,
+                  color: "var(--ds-accent-danger, #C4432B)",
+                  margin: "0 0 16px",
+                  lineHeight: 1.5,
+                }}
+              >
+                {finishError}
+              </p>
+            )}
 
             <div className="flex items-center justify-between">
               <Link to="/dashboard/career-profile" style={{ fontSize: 13.5, fontWeight: 600 }}>

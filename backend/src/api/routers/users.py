@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from typing import List, Optional
 from src.runtime.auth.dependencies import get_current_user, CurrentUser
-from src.runtime.postgres.connection import get_connection
+from src.runtime.postgres.connection import get_connection, DatabaseRole
 
 router = APIRouter()
 
@@ -26,7 +26,7 @@ class SkillItem(BaseModel):
 
 class OnboardingPayload(BaseModel):
     full_name: str
-    career_goals: str
+    career_goals: Optional[str] = None
     education: List[EducationItem]
     experience: List[ExperienceItem]
     skills: List[SkillItem]
@@ -47,19 +47,24 @@ def complete_onboarding(
 ):
     """Save onboarding profile items and mark onboarding_complete = true."""
     try:
-        with get_connection() as conn:
-            cursor = conn.cursor()
-            
-            # 1. Update public.user_profiles with full_name, career_goals, onboarding_complete = true
-            cursor.execute(
+        # user_profiles (incl. onboarding_complete, read by get_current_user) lives in the
+        # Supabase auth database, not the operational one — see dependencies.py's note.
+        # It has no career_goals column; that's collected elsewhere (Dashboard modal).
+        with get_connection(DatabaseRole.AUTH) as auth_conn:
+            auth_cursor = auth_conn.cursor()
+            auth_cursor.execute(
                 """
-                UPDATE public.user_profiles 
-                SET full_name = %s, career_goals = %s, onboarding_complete = TRUE, updated_at = NOW()
+                UPDATE public.user_profiles
+                SET full_name = %s, onboarding_complete = TRUE, updated_at = NOW()
                 WHERE user_id = %s
                 """,
-                (payload.full_name, payload.career_goals, current_user.user_id)
+                (payload.full_name, current_user.user_id)
             )
-            
+            auth_conn.commit()
+
+        with get_connection() as conn:
+            cursor = conn.cursor()
+
             # Clean up old records for this user to ensure idempotency
             cursor.execute("DELETE FROM public.user_education WHERE user_id = %s", (current_user.user_id,))
             cursor.execute("DELETE FROM public.user_experience WHERE user_id = %s", (current_user.user_id,))
