@@ -17,19 +17,25 @@ from src.discovery.jie.normalizer import Normalizer
 from src.discovery.jie.analyzer import FitAnalyzer
 from src.discovery.jie.analyzer import CandidateProfile as JIECandidateProfile
 from src.discovery.jie.candidate_profile import CandidateProfile
+from src.discovery.text_similarity import cosine_similarity
 
 logger = logging.getLogger("IntentFilter")
 
 
-def _build_jie_profile(profile: CandidateProfile) -> JIECandidateProfile:
+def _build_jie_profile(profile: CandidateProfile, normalizer: Normalizer) -> JIECandidateProfile:
     """
-    Bridge: CandidateProfile (YAML config) → JIE's internal CandidateProfile (pydantic).
-    Only adapts the interface; JIE internals are untouched.
+    Bridge: CandidateProfile (real per-user data) → JIE's internal CandidateProfile
+    (pydantic). Only adapts the interface; JIE internals are untouched.
+
+    Candidate skills are run through the same synonym normalizer applied to
+    JD-extracted skill names (see Normalizer.normalize()) — without this, a
+    resume listing "ReactJS" would never match a JD requirement canonicalized
+    to "React", even though both mean the same thing.
     """
     return JIECandidateProfile(
         role_families=profile.target_roles,
         experience_years=profile.years_experience,
-        skills=profile.skills,
+        skills=normalizer.normalize_skill_list(profile.skills),
         preferred_locations=profile.preferred_locations,
         remote=profile.remote_allowed,
         employment=profile.employment_types,
@@ -81,12 +87,27 @@ class IntentFilter:
             # Step 2: Normalizer → canonicalize skill names
             structured = self._normalizer.normalize(structured)
             # Step 3: FitAnalyzer → CandidateFit
-            jie_profile = _build_jie_profile(profile)
+            jie_profile = _build_jie_profile(profile, self._normalizer)
             analyzer = FitAnalyzer(jie_profile)
             fit = analyzer.analyze(structured)
 
-            # Combine JIE score with role-title signal (60% JIE, 40% title)
-            combined = fit.overall_fit_score * 0.60 + role_score * 0.40
+            # Step 4: Responsibility overlap — deterministic TF-IDF cosine
+            # similarity between the candidate's experience/project text and
+            # the JD's responsibilities. Catches relevant work that skill-list
+            # matching alone misses (no LLM call, no embedding model).
+            responsibilities_text = " ".join(structured.responsibilities)
+            resp_score = (
+                cosine_similarity(profile.experience_text, responsibilities_text)
+                if responsibilities_text and profile.experience_text
+                else None
+            )
+
+            if resp_score is None:
+                # No responsibilities extracted or no candidate experience text
+                # to compare against — fall back to the original 2-signal blend.
+                combined = fit.overall_fit_score * 0.60 + role_score * 0.40
+            else:
+                combined = fit.overall_fit_score * 0.45 + role_score * 0.25 + resp_score * 0.30
 
             # Build score_breakdown for frontend (matches {keyword, matched} contract)
             breakdown = []

@@ -67,6 +67,10 @@ from src.resume_intelligence.tailoring.guardrails import (
     StructuralGuardLock,
 )
 from src.resume_intelligence.tailoring.prompt_builder import PromptBuilder
+from src.resume_intelligence.tailoring.relevance_reorder import (
+    apply_permutation,
+    compute_reorder_permutation,
+)
 from src.resume_intelligence.tailoring.diff_reporter import SemanticDiffReporter
 from src.resume_intelligence.evidence.candidate_memory import CandidateMemory
 
@@ -563,7 +567,24 @@ class TailoringEngineV1:
                         proj_restored[key] = orig_text
                         proj_kept[key] = True
 
-        # Re-apply surgical patch with guarded bullets
+        # ── Phase 10b: Relevance-based bullet reordering ──────────────────────
+        # The evidence behind this engine's whole redesign: recruiters spend
+        # ~7 seconds per resume and attention concentrates on the first
+        # bullets under each role — which bullet leads matters more than how
+        # any single bullet is worded. This permutes already-written,
+        # already-fact-checked text between slots within the same entry; it
+        # never adds/removes/rewrites anything, so it can't trip IntegrityGate.
+        logger.debug("Phase 10b: Relevance-based bullet reordering")
+        exp_perm = compute_reorder_permutation(exp_restored, len(exp_section_entries), inp.jd_profile)
+        proj_perm = compute_reorder_permutation(proj_restored, len(proj_section_entries), inp.jd_profile)
+        exp_restored = apply_permutation(exp_perm, exp_restored)
+        exp_kept = apply_permutation(exp_perm, exp_kept)
+        exp_conf = apply_permutation(exp_perm, exp_conf)
+        proj_restored = apply_permutation(proj_perm, proj_restored)
+        proj_kept = apply_permutation(proj_perm, proj_kept)
+        proj_conf = apply_permutation(proj_perm, proj_conf)
+
+        # Re-apply surgical patch with guarded, reordered bullets
         preview_tex = TailoredTexPatcher.apply(
             inp.base_tex, tree, exp_restored, proj_restored, new_summary
         )

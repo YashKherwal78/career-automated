@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Query
 from typing import Optional
 from src.api.dependencies import get_repos
 from src.core.repositories.manager import RepositoryManager
+from src.runtime.auth.dependencies import get_current_user, CurrentUser
 
 router = APIRouter()
 
@@ -19,7 +20,8 @@ def get_jobs(
     seniority: Optional[str] = None,
     min_salary: Optional[float] = None,
     sort_by: str = "score",
-    repos: RepositoryManager = Depends(get_repos)
+    repos: RepositoryManager = Depends(get_repos),
+    current_user: CurrentUser = Depends(get_current_user),
 ):
     return repos.job.get_jobs(
         page=page,
@@ -34,7 +36,8 @@ def get_jobs(
         employment_type=employment_type,
         seniority=seniority,
         min_salary=min_salary,
-        sort_by=sort_by
+        sort_by=sort_by,
+        user_id=current_user.user_id,
     )
 
 @router.get("/boards")
@@ -51,7 +54,8 @@ def get_board_jobs(
     seniority: Optional[str] = None,
     min_salary: Optional[float] = None,
     sort_by: str = "newest",
-    repos: RepositoryManager = Depends(get_repos)
+    repos: RepositoryManager = Depends(get_repos),
+    current_user: CurrentUser = Depends(get_current_user),
 ):
     return repos.job.get_jobs(
         page=page,
@@ -66,7 +70,8 @@ def get_board_jobs(
         employment_type=employment_type,
         seniority=seniority,
         min_salary=min_salary,
-        sort_by=sort_by
+        sort_by=sort_by,
+        user_id=current_user.user_id,
     )
 
 @router.get("/{job_id}")

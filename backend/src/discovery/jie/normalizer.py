@@ -2,6 +2,7 @@ from src.system.logger import setup_logger
 logger = setup_logger('normalizer')
 import yaml
 import os
+from typing import List
 from src.discovery.jie.models import StructuredJob
 
 class Normalizer:
@@ -29,3 +30,13 @@ class Normalizer:
             if req.type == "skill":
                 req.name = self._normalize_skill(req.name)
         return job
+
+    def normalize_skill_list(self, skills: List[str]) -> List[str]:
+        """
+        Canonicalizes a raw list of candidate-side skill strings (e.g. from a
+        resume/profile) the same way JD-side requirement names are canonicalized
+        by normalize(). Without this, "ReactJS" on a resume would never match
+        "React" extracted from a JD, even though normalize() already canonicalizes
+        the JD side to "React".
+        """
+        return [self._normalize_skill(s) for s in skills if s]

@@ -313,8 +313,8 @@ class HardRejectFilter:
 
         # 3. Regex extraction from description
         if desc or title:
-            exp_data = self._extractor._extract_experience(desc + " " + title)
-            if exp_data.get("min") is not None:
-                return int(exp_data["min"])
+            exp_info = self._extractor.experience_extractor.extract(desc + " " + title)
+            if exp_info.experience_min is not None:
+                return int(exp_info.experience_min)
 
         return None

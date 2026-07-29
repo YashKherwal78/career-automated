@@ -11,16 +11,40 @@ class JobRepository(BaseRepository, IJobRepository):
         # Use existing normalized_jobs table created by migrations
         pass
 
-    @property
-    def _profile(self):
-        if not hasattr(self, "_cached_profile"):
+    def _load_profile(self, conn, user_id: str | None):
+        """
+        Builds the CandidateProfile for hard-reject/intent scoring from the
+        logged-in user's real `user_career_profiles.profile_data`, keyed by
+        user_id — NOT the old static single-tenant YAML config, which scored
+        every candidate against one hardcoded profile.
+        """
+        from src.discovery.jie.candidate_profile import CandidateProfile
+
+        cache = getattr(self, "_profile_cache", None)
+        if cache is None:
+            cache = self._profile_cache = {}
+        if user_id in cache:
+            return cache[user_id]
+
+        profile = CandidateProfile()
+        if user_id:
             try:
-                from src.discovery.jie.candidate_profile import CandidateProfile
-                self._cached_profile = CandidateProfile.from_yaml()
+                p = conn.dialect.placeholder()
+                row = conn.execute(
+                    f"SELECT profile_data FROM public.user_career_profiles WHERE user_id = {p}",
+                    (user_id,),
+                ).fetchone()
+                if row:
+                    raw = row["profile_data"] if hasattr(row, "keys") else row[0]
+                    if isinstance(raw, str):
+                        raw = json.loads(raw)
+                    if raw:
+                        profile = CandidateProfile.from_profile_data(raw)
             except Exception:
-                from src.discovery.jie.candidate_profile import CandidateProfile
-                self._cached_profile = CandidateProfile()
-        return self._cached_profile
+                profile = CandidateProfile()
+
+        cache[user_id] = profile
+        return profile
 
     @property
     def _hard_reject(self):
@@ -36,7 +60,7 @@ class JobRepository(BaseRepository, IJobRepository):
             self._cached_intent_filter = IntentFilter()
         return self._cached_intent_filter
 
-    def get_jobs(self, page: int=1, page_size: int=50, provider: str=None, company: str=None, status: str="ACTIVE", min_score: float=None, pipeline: str="A", location: str=None, remote_type: str=None, employment_type: str=None, seniority: str=None, min_salary: float=None, sort_by: str="newest", tx=None):
+    def get_jobs(self, page: int=1, page_size: int=50, provider: str=None, company: str=None, status: str="ACTIVE", min_score: float=None, pipeline: str="A", location: str=None, remote_type: str=None, employment_type: str=None, seniority: str=None, min_salary: float=None, sort_by: str="newest", user_id: str=None, tx=None):
         from src.api.db import json_extract
         import json
         with self.transaction() as conn:
@@ -95,7 +119,7 @@ class JobRepository(BaseRepository, IJobRepository):
                 except Exception:
                     j["score_breakdown"] = []
 
-            profile = self._profile
+            profile = self._load_profile(conn, user_id)
             passed, rejected, _ = self._hard_reject.filter_batch(raw_jobs, profile)
             scored_jobs, _ = self._intent_filter.score_batch(passed, profile)
 

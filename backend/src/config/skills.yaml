@@ -1,24 +1,25 @@
 Python:
   aliases:
     - python
-    - PYTHON
     - py
 SQL:
   aliases:
     - sql
-    - SQL
-    - Sql
+    - structured query language
+    - t-sql
+    - pl/sql
 Product Management:
   aliases:
     - product management
     - pm
     - product mgr
     - product manager
+    - apm
+    - associate product manager
 FastAPI:
   aliases:
     - fastapi
     - fast api
-    - Fastapi
 LLMs:
   aliases:
     - llm
@@ -26,6 +27,7 @@ LLMs:
     - large language models
     - generative ai
     - gen ai
+    - genai
 A/B Testing:
   aliases:
     - a/b testing
@@ -38,3 +40,269 @@ Product Analytics:
     - data analytics
     - mixpanel
     - amplitude
+JavaScript:
+  aliases:
+    - javascript
+    - js
+    - ecmascript
+    - vanilla js
+TypeScript:
+  aliases:
+    - typescript
+    - ts
+React:
+  aliases:
+    - react
+    - reactjs
+    - react.js
+Next.js:
+  aliases:
+    - next.js
+    - nextjs
+    - next js
+Vue.js:
+  aliases:
+    - vue.js
+    - vuejs
+    - vue
+Angular:
+  aliases:
+    - angular
+    - angularjs
+    - angular.js
+Node.js:
+  aliases:
+    - node.js
+    - nodejs
+    - node js
+    - node
+Django:
+  aliases:
+    - django
+    - django rest framework
+    - drf
+Flask:
+  aliases:
+    - flask
+Java:
+  aliases:
+    - java
+Spring Boot:
+  aliases:
+    - spring boot
+    - spring
+    - springboot
+Go:
+  aliases:
+    - golang
+    - go lang
+C++:
+  aliases:
+    - c++
+    - cpp
+C#:
+  aliases:
+    - c#
+    - csharp
+    - c sharp
+    - .net
+    - dotnet
+Ruby:
+  aliases:
+    - ruby
+    - ruby on rails
+    - rails
+PHP:
+  aliases:
+    - php
+    - laravel
+HTML/CSS:
+  aliases:
+    - html
+    - css
+    - html5
+    - css3
+    - sass
+    - scss
+PostgreSQL:
+  aliases:
+    - postgresql
+    - postgres
+    - psql
+MySQL:
+  aliases:
+    - mysql
+    - mariadb
+MongoDB:
+  aliases:
+    - mongodb
+    - mongo
+    - nosql
+Redis:
+  aliases:
+    - redis
+    - in-memory cache
+Docker:
+  aliases:
+    - docker
+    - containerization
+    - containers
+Kubernetes:
+  aliases:
+    - kubernetes
+    - k8s
+AWS:
+  aliases:
+    - aws
+    - amazon web services
+    - ec2
+    - s3
+    - lambda
+GCP:
+  aliases:
+    - gcp
+    - google cloud
+    - google cloud platform
+Azure:
+  aliases:
+    - azure
+    - microsoft azure
+CI/CD:
+  aliases:
+    - ci/cd
+    - cicd
+    - continuous integration
+    - continuous deployment
+    - continuous delivery
+Terraform:
+  aliases:
+    - terraform
+    - iac
+    - infrastructure as code
+Git:
+  aliases:
+    - git
+    - github
+    - gitlab
+    - version control
+REST APIs:
+  aliases:
+    - rest
+    - restful
+    - rest api
+    - rest apis
+    - restful api
+GraphQL:
+  aliases:
+    - graphql
+    - gql
+Microservices:
+  aliases:
+    - microservices
+    - microservice architecture
+    - service oriented architecture
+    - soa
+Machine Learning:
+  aliases:
+    - machine learning
+    - ml
+Deep Learning:
+  aliases:
+    - deep learning
+    - dl
+    - neural networks
+Artificial Intelligence:
+  aliases:
+    - artificial intelligence
+    - ai
+Natural Language Processing:
+  aliases:
+    - nlp
+    - natural language processing
+Computer Vision:
+  aliases:
+    - computer vision
+    - cv
+    - image recognition
+TensorFlow:
+  aliases:
+    - tensorflow
+    - tf
+PyTorch:
+  aliases:
+    - pytorch
+    - torch
+scikit-learn:
+  aliases:
+    - scikit-learn
+    - sklearn
+    - scikit learn
+Pandas:
+  aliases:
+    - pandas
+NumPy:
+  aliases:
+    - numpy
+Data Science:
+  aliases:
+    - data science
+    - data scientist
+Data Engineering:
+  aliases:
+    - data engineering
+    - data pipelines
+    - etl
+    - elt
+Apache Spark:
+  aliases:
+    - spark
+    - apache spark
+    - pyspark
+Kafka:
+  aliases:
+    - kafka
+    - apache kafka
+    - event streaming
+Agile/Scrum:
+  aliases:
+    - agile
+    - scrum
+    - kanban
+    - sprint planning
+Jira:
+  aliases:
+    - jira
+    - confluence
+Figma:
+  aliases:
+    - figma
+    - ui design
+    - wireframing
+Excel:
+  aliases:
+    - excel
+    - microsoft excel
+    - spreadsheets
+Tableau:
+  aliases:
+    - tableau
+    - data visualization
+Power BI:
+  aliases:
+    - power bi
+    - powerbi
+Salesforce:
+  aliases:
+    - salesforce
+    - crm
+Linux:
+  aliases:
+    - linux
+    - unix
+    - bash
+    - shell scripting
+System Design:
+  aliases:
+    - system design
+    - distributed systems
+    - scalable architecture
