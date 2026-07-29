@@ -37,6 +37,14 @@ interface EducationEntry {
   degree: string;
 }
 
+interface CareerPreferences {
+  desired_role: string;
+  work_type: string;
+  locations: string;
+  min_salary: string;
+  open_to_relocation: boolean;
+}
+
 interface ProfileData {
   personal_info: PersonalInfo;
   skills: Record<string, string[]>;
@@ -44,6 +52,7 @@ interface ProfileData {
   projects: ProjectEntry[];
   education: EducationEntry[];
   certifications: string[];
+  career_preferences: CareerPreferences;
 }
 
 const EMPTY_PROFILE: ProfileData = {
@@ -61,6 +70,13 @@ const EMPTY_PROFILE: ProfileData = {
   projects: [],
   education: [],
   certifications: [],
+  career_preferences: {
+    desired_role: "",
+    work_type: "",
+    locations: "",
+    min_salary: "",
+    open_to_relocation: false,
+  },
 };
 
 const PILL_STYLE = (active: boolean): React.CSSProperties => ({
@@ -83,6 +99,20 @@ function CareerProfilePage() {
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
   const [showReplaceModal, setShowReplaceModal] = useState(false);
 
+  const { data: baseResume } = useQuery({
+    queryKey: ["base-resume"],
+    queryFn: async (): Promise<{ exists: boolean; pdfAvailable: boolean }> => {
+      const res = await fetch(`${API_BASE}/candidate/base-resume`, {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (res.status === 404) return { exists: false, pdfAvailable: false };
+      if (!res.ok) throw new Error("Failed to load base resume");
+      const data = await res.json();
+      return { exists: true, pdfAvailable: !!data.pdf_available };
+    },
+    enabled: !!session,
+  });
+
   const { data: loaded, isLoading } = useQuery({
     queryKey: ["candidate-profile"],
     queryFn: async (): Promise<ProfileData> => {
@@ -99,6 +129,7 @@ function CareerProfilePage() {
         projects: p.projects || [],
         education: p.education || [],
         certifications: p.certifications || [],
+        career_preferences: { ...EMPTY_PROFILE.career_preferences, ...p.career_preferences },
       };
     },
     enabled: !!session,
@@ -131,6 +162,7 @@ function CareerProfilePage() {
           projects: next.projects,
           education: next.education,
           certifications: next.certifications,
+          career_preferences: next.career_preferences,
         }),
       });
       setSaveState("saved");
@@ -230,6 +262,17 @@ function CareerProfilePage() {
               {firstMissing.label} to strengthen it.
             </div>
           </div>
+          <a
+            href={`#section-${firstMissing.id}`}
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              color: "var(--ds-accent-primary)",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Complete profile →
+          </a>
         </div>
       )}
 
@@ -268,29 +311,49 @@ function CareerProfilePage() {
       >
         <div className="flex items-center justify-between">
           <div style={{ fontSize: 13.5, color: "var(--ds-ink-600)" }}>
-            Your most recently uploaded resume.
+            {baseResume?.exists
+              ? "Your generated base resume — used for tailoring."
+              : "No base resume yet. Build one from the Resume page."}
           </div>
-          <button
-            type="button"
-            onClick={() => setShowReplaceModal(true)}
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: "var(--ds-accent-primary)",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            Replace resume
-          </button>
+          <div className="flex items-center gap-3">
+            {baseResume?.pdfAvailable && (
+              <a
+                href={`${API_BASE}/candidate/base-resume/pdf`}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--ds-ink-700)",
+                }}
+              >
+                View resume
+              </a>
+            )}
+            <button
+              type="button"
+              onClick={() => setShowReplaceModal(true)}
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: "var(--ds-accent-primary)",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              Replace resume
+            </button>
+          </div>
         </div>
       </DsAccordionSection>
 
+      <div id="section-personal" />
       <DsAccordionSection
         title="Personal info"
         summary="Name and email are locked; phone and location keep your matches accurate"
         icon="◈"
+        defaultOpen={firstMissing?.id === "personal"}
       >
         <div className="flex flex-col gap-3">
           <div>
@@ -414,10 +477,12 @@ function CareerProfilePage() {
         </div>
       </DsAccordionSection>
 
+      <div id="section-experience" />
       <DsAccordionSection
         title="Experience"
         summary={`${profile.experience.length} role${profile.experience.length === 1 ? "" : "s"} on record`}
         icon="◫"
+        defaultOpen={firstMissing?.id === "experience"}
       >
         <div className="flex flex-col gap-2">
           {profile.experience.length === 0 && (
@@ -428,27 +493,125 @@ function CareerProfilePage() {
           {profile.experience.map((exp, i) => (
             <div
               key={i}
-              className="flex items-center justify-between"
+              className="flex flex-col gap-2"
               style={{ padding: "10px 0", borderBottom: "1px solid var(--ds-border-default)" }}
             >
-              <div>
-                <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ds-ink-800)" }}>
-                  {exp.role}
-                </div>
-                <div style={{ fontSize: 12.5, color: "var(--ds-ink-450)" }}>{exp.company}</div>
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  value={exp.role}
+                  placeholder="Role"
+                  onChange={(e) => {
+                    const next = [...profile.experience];
+                    next[i] = { ...next[i], role: e.target.value };
+                    setProfile({ ...profile, experience: next });
+                  }}
+                  onBlur={() => saveField({ experience: profile.experience })}
+                  className="bg-transparent outline-none font-semibold"
+                  style={{ fontSize: 13.5, color: "var(--ds-ink-800)" }}
+                />
+                <span style={{ color: "var(--ds-ink-300)" }}>at</span>
+                <input
+                  value={exp.company}
+                  placeholder="Company"
+                  onChange={(e) => {
+                    const next = [...profile.experience];
+                    next[i] = { ...next[i], company: e.target.value };
+                    setProfile({ ...profile, experience: next });
+                  }}
+                  onBlur={() => saveField({ experience: profile.experience })}
+                  className="bg-transparent outline-none font-semibold"
+                  style={{ fontSize: 13.5, color: "var(--ds-ink-800)" }}
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    saveField({ experience: profile.experience.filter((_, idx) => idx !== i) })
+                  }
+                  style={{
+                    marginLeft: "auto",
+                    fontSize: 12,
+                    color: "#B4392C",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  Remove
+                </button>
               </div>
-              <div style={{ fontSize: 13, color: "var(--ds-ink-500)" }}>
-                {exp.start_date} — {exp.end_date || "Present"}
+              <div className="flex items-center gap-2">
+                <input
+                  value={exp.start_date}
+                  placeholder="Start"
+                  onChange={(e) => {
+                    const next = [...profile.experience];
+                    next[i] = { ...next[i], start_date: e.target.value };
+                    setProfile({ ...profile, experience: next });
+                  }}
+                  onBlur={() => saveField({ experience: profile.experience })}
+                  className="bg-transparent outline-none"
+                  style={{ fontSize: 13, color: "var(--ds-ink-500)", width: 90 }}
+                />
+                <span style={{ color: "var(--ds-ink-300)" }}>–</span>
+                <input
+                  value={exp.end_date}
+                  placeholder="End"
+                  onChange={(e) => {
+                    const next = [...profile.experience];
+                    next[i] = { ...next[i], end_date: e.target.value };
+                    setProfile({ ...profile, experience: next });
+                  }}
+                  onBlur={() => saveField({ experience: profile.experience })}
+                  className="bg-transparent outline-none"
+                  style={{ fontSize: 13, color: "var(--ds-ink-500)", width: 90 }}
+                />
               </div>
+              <textarea
+                value={exp.description}
+                placeholder="What did you do here?"
+                rows={2}
+                onChange={(e) => {
+                  const next = [...profile.experience];
+                  next[i] = { ...next[i], description: e.target.value };
+                  setProfile({ ...profile, experience: next });
+                }}
+                onBlur={() => saveField({ experience: profile.experience })}
+                className="w-full bg-transparent outline-none resize-none"
+                style={{ fontSize: 13, color: "var(--ds-ink-600)", lineHeight: 1.6 }}
+              />
             </div>
           ))}
+          <button
+            type="button"
+            onClick={() =>
+              saveField({
+                experience: [
+                  ...profile.experience,
+                  { company: "", role: "", start_date: "", end_date: "", description: "" },
+                ],
+              })
+            }
+            style={{
+              fontSize: 13,
+              color: "var(--ds-accent-primary)",
+              fontWeight: 600,
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              alignSelf: "flex-start",
+            }}
+          >
+            + Add experience
+          </button>
         </div>
       </DsAccordionSection>
 
+      <div id="section-education" />
       <DsAccordionSection
         title="Education"
         summary={`${profile.education.length} entr${profile.education.length === 1 ? "y" : "ies"}`}
         icon="◪"
+        defaultOpen={firstMissing?.id === "education"}
       >
         <div className="flex flex-col gap-2">
           {profile.education.length === 0 && (
@@ -457,16 +620,66 @@ function CareerProfilePage() {
             </span>
           )}
           {profile.education.map((edu, i) => (
-            <div
-              key={i}
-              style={{ padding: "10px 0", borderBottom: "1px solid var(--ds-border-default)" }}
-            >
-              <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ds-ink-800)" }}>
-                {edu.degree}
-              </div>
-              <div style={{ fontSize: 12.5, color: "var(--ds-ink-450)" }}>{edu.institution}</div>
+            <div key={i} className="flex flex-wrap items-center gap-2" style={{ padding: "6px 0" }}>
+              <input
+                value={edu.institution}
+                placeholder="Institution"
+                onChange={(e) => {
+                  const next = [...profile.education];
+                  next[i] = { ...next[i], institution: e.target.value };
+                  setProfile({ ...profile, education: next });
+                }}
+                onBlur={() => saveField({ education: profile.education })}
+                className="bg-transparent outline-none font-semibold"
+                style={{ fontSize: 13.5, color: "var(--ds-ink-800)" }}
+              />
+              <input
+                value={edu.degree}
+                placeholder="Degree"
+                onChange={(e) => {
+                  const next = [...profile.education];
+                  next[i] = { ...next[i], degree: e.target.value };
+                  setProfile({ ...profile, education: next });
+                }}
+                onBlur={() => saveField({ education: profile.education })}
+                className="bg-transparent outline-none"
+                style={{ fontSize: 12.5, color: "var(--ds-ink-450)" }}
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  saveField({ education: profile.education.filter((_, idx) => idx !== i) })
+                }
+                style={{
+                  marginLeft: "auto",
+                  fontSize: 12,
+                  color: "#B4392C",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                Remove
+              </button>
             </div>
           ))}
+          <button
+            type="button"
+            onClick={() =>
+              saveField({ education: [...profile.education, { institution: "", degree: "" }] })
+            }
+            style={{
+              fontSize: 13,
+              color: "var(--ds-accent-primary)",
+              fontWeight: 600,
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              alignSelf: "flex-start",
+            }}
+          >
+            + Add education
+          </button>
         </div>
       </DsAccordionSection>
 
@@ -482,21 +695,80 @@ function CareerProfilePage() {
           {profile.projects.map((p, i) => (
             <div
               key={i}
+              className="flex flex-col gap-2"
               style={{ padding: "10px 0", borderBottom: "1px solid var(--ds-border-default)" }}
             >
-              <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ds-ink-800)" }}>
-                {p.name}
+              <div className="flex items-center gap-2">
+                <input
+                  value={p.name}
+                  placeholder="Project name"
+                  onChange={(e) => {
+                    const next = [...profile.projects];
+                    next[i] = { ...next[i], name: e.target.value };
+                    setProfile({ ...profile, projects: next });
+                  }}
+                  onBlur={() => saveField({ projects: profile.projects })}
+                  className="bg-transparent outline-none font-semibold"
+                  style={{ fontSize: 13.5, color: "var(--ds-ink-800)" }}
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    saveField({ projects: profile.projects.filter((_, idx) => idx !== i) })
+                  }
+                  style={{
+                    marginLeft: "auto",
+                    fontSize: 12,
+                    color: "#B4392C",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  Remove
+                </button>
               </div>
-              <div style={{ fontSize: 12.5, color: "var(--ds-ink-500)" }}>{p.description}</div>
+              <textarea
+                value={p.description}
+                placeholder="Briefly describe what it does…"
+                rows={1}
+                onChange={(e) => {
+                  const next = [...profile.projects];
+                  next[i] = { ...next[i], description: e.target.value };
+                  setProfile({ ...profile, projects: next });
+                }}
+                onBlur={() => saveField({ projects: profile.projects })}
+                className="w-full bg-transparent outline-none resize-none"
+                style={{ fontSize: 12.5, color: "var(--ds-ink-500)" }}
+              />
             </div>
           ))}
+          <button
+            type="button"
+            onClick={() =>
+              saveField({ projects: [...profile.projects, { name: "", description: "" }] })
+            }
+            style={{
+              fontSize: 13,
+              color: "var(--ds-accent-primary)",
+              fontWeight: 600,
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              alignSelf: "flex-start",
+            }}
+          >
+            + Add project
+          </button>
         </div>
       </DsAccordionSection>
 
+      <div id="section-skills" />
       <DsAccordionSection
         title="Skills"
         summary={`${flatSkills.length} things you're genuinely good at`}
         icon="✦"
+        defaultOpen={firstMissing?.id === "skills"}
       >
         <textarea
           value={skillsDraft}
@@ -520,14 +792,199 @@ function CareerProfilePage() {
       </DsAccordionSection>
 
       <DsAccordionSection
+        title="Certifications"
+        summary={`${profile.certifications.length} ${profile.certifications.length === 1 ? "entry" : "entries"}`}
+        icon="✓"
+      >
+        <div className="flex flex-col gap-2">
+          {profile.certifications.map((cert, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <input
+                value={cert}
+                placeholder="e.g. AWS Certified Solutions Architect"
+                onChange={(e) => {
+                  const next = [...profile.certifications];
+                  next[i] = e.target.value;
+                  setProfile({ ...profile, certifications: next });
+                }}
+                onBlur={() => saveField({ certifications: profile.certifications })}
+                className="bg-transparent outline-none flex-1"
+                style={{
+                  fontSize: 13.5,
+                  borderBottom: "1px dashed var(--ds-border-medium)",
+                  padding: "4px 0",
+                }}
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  saveField({
+                    certifications: profile.certifications.filter((_, idx) => idx !== i),
+                  })
+                }
+                style={{
+                  fontSize: 12,
+                  color: "#B4392C",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => saveField({ certifications: [...profile.certifications, ""] })}
+            style={{
+              fontSize: 13,
+              color: "var(--ds-accent-primary)",
+              fontWeight: 600,
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              alignSelf: "flex-start",
+            }}
+          >
+            + Add certification
+          </button>
+        </div>
+      </DsAccordionSection>
+
+      <DsAccordionSection title="Links" summary="LinkedIn, GitHub, and portfolio" icon="🔗">
+        <div className="flex flex-col gap-3">
+          {(["linkedin", "github", "portfolio"] as const).map((field) => (
+            <div key={field}>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: "var(--ds-ink-500)",
+                  marginBottom: 5,
+                  textTransform: "capitalize",
+                }}
+              >
+                {field}
+              </label>
+              <input
+                value={profile.personal_info[field]}
+                onChange={(e) =>
+                  setProfile({
+                    ...profile,
+                    personal_info: { ...profile.personal_info, [field]: e.target.value },
+                  })
+                }
+                onBlur={() => saveField({ personal_info: profile.personal_info })}
+                style={{
+                  width: "100%",
+                  boxSizing: "border-box",
+                  padding: "10px 12px",
+                  borderRadius: "var(--ds-radius-md)",
+                  border: "1px solid var(--ds-border-medium)",
+                  fontSize: 13.5,
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      </DsAccordionSection>
+
+      <DsAccordionSection
         title="Career preferences"
-        summary="What counts as a good opportunity, in your words"
+        summary={
+          profile.career_preferences.desired_role
+            ? "Set"
+            : "What counts as a good opportunity, in your words"
+        }
         icon="◆"
       >
-        <p style={{ fontSize: 13, color: "var(--ds-ink-500)", margin: 0 }}>
-          Set your minimum salary, locations, and work mode from the Career Preferences prompt when
-          you enable Auto Apply from the Dashboard.
-        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <input
+            value={profile.career_preferences.desired_role}
+            placeholder="Desired role"
+            onChange={(e) =>
+              setProfile({
+                ...profile,
+                career_preferences: { ...profile.career_preferences, desired_role: e.target.value },
+              })
+            }
+            onBlur={() => saveField({ career_preferences: profile.career_preferences })}
+            style={{
+              padding: "10px 12px",
+              borderRadius: "var(--ds-radius-md)",
+              border: "1px solid var(--ds-border-medium)",
+              fontSize: 13.5,
+            }}
+          />
+          <input
+            value={profile.career_preferences.work_type}
+            placeholder="Work type (Remote / Hybrid / On-site)"
+            onChange={(e) =>
+              setProfile({
+                ...profile,
+                career_preferences: { ...profile.career_preferences, work_type: e.target.value },
+              })
+            }
+            onBlur={() => saveField({ career_preferences: profile.career_preferences })}
+            style={{
+              padding: "10px 12px",
+              borderRadius: "var(--ds-radius-md)",
+              border: "1px solid var(--ds-border-medium)",
+              fontSize: 13.5,
+            }}
+          />
+          <input
+            value={profile.career_preferences.locations}
+            placeholder="Preferred locations"
+            onChange={(e) =>
+              setProfile({
+                ...profile,
+                career_preferences: { ...profile.career_preferences, locations: e.target.value },
+              })
+            }
+            onBlur={() => saveField({ career_preferences: profile.career_preferences })}
+            style={{
+              padding: "10px 12px",
+              borderRadius: "var(--ds-radius-md)",
+              border: "1px solid var(--ds-border-medium)",
+              fontSize: 13.5,
+            }}
+          />
+          <input
+            value={profile.career_preferences.min_salary}
+            placeholder="Minimum salary"
+            onChange={(e) =>
+              setProfile({
+                ...profile,
+                career_preferences: { ...profile.career_preferences, min_salary: e.target.value },
+              })
+            }
+            onBlur={() => saveField({ career_preferences: profile.career_preferences })}
+            style={{
+              padding: "10px 12px",
+              borderRadius: "var(--ds-radius-md)",
+              border: "1px solid var(--ds-border-medium)",
+              fontSize: 13.5,
+            }}
+          />
+        </div>
+        <label className="flex items-center gap-2" style={{ fontSize: 13.5, marginTop: 10 }}>
+          <input
+            type="checkbox"
+            checked={profile.career_preferences.open_to_relocation}
+            onChange={(e) => {
+              const next = {
+                ...profile.career_preferences,
+                open_to_relocation: e.target.checked,
+              };
+              setProfile({ ...profile, career_preferences: next });
+              saveField({ career_preferences: next });
+            }}
+          />
+          Open to relocation
+        </label>
       </DsAccordionSection>
 
       <DsAccordionSection
