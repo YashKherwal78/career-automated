@@ -178,6 +178,35 @@ function OnboardingPage() {
   };
 
   const [finishError, setFinishError] = useState<string | null>(null);
+  const [skipping, setSkipping] = useState(false);
+
+  const handleSkip = async () => {
+    if (skipping) return;
+    setSkipping(true);
+    try {
+      if (session?.access_token) {
+        const res = await fetch(`${API_BASE}/users/onboarding`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            full_name: user?.email?.split("@")[0] || "New Candidate",
+            education: [],
+            experience: [],
+            skills: [],
+          }),
+        });
+        if (!res.ok) throw new Error("Failed to skip onboarding");
+      }
+      markOnboardingComplete();
+      refreshProfile();
+      navigate({ to: "/dashboard" });
+    } catch {
+      setSkipping(false);
+    }
+  };
 
   const handleFinish = async () => {
     setFinishError(null);
@@ -490,9 +519,21 @@ function OnboardingPage() {
             </div>
 
             <div className="flex items-center justify-between" style={{ marginTop: 28 }}>
-              <Link to="/dashboard" style={{ fontSize: 13.5, color: "var(--ds-ink-450)" }}>
-                Skip for now
-              </Link>
+              <button
+                type="button"
+                onClick={handleSkip}
+                disabled={skipping}
+                style={{
+                  fontSize: 13.5,
+                  color: "var(--ds-ink-450)",
+                  background: "none",
+                  border: "none",
+                  cursor: skipping ? "default" : "pointer",
+                  padding: 0,
+                }}
+              >
+                {skipping ? "Skipping…" : "Skip for now"}
+              </button>
               <button
                 type="button"
                 onClick={handleContinue}
