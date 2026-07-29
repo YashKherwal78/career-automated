@@ -94,11 +94,11 @@ class DiscoveryRepository(BaseRepository):
                 # 1. Insert seed to company_identities
                 conn.execute(
                     f"""
-                    INSERT INTO company_identities (company_id, legal_name, canonical_name, website, domain)
-                    VALUES ({p}, {p}, {p}, {p}, {p})
+                    INSERT INTO company_identities (company_id, legal_name, canonical_name, website, domain, country)
+                    VALUES ({p}, {p}, {p}, {p}, {p}, {p})
                     ON CONFLICT (company_id) DO NOTHING
                     """,
-                    (company_id, seed["name"], company_id, seed["website"], domain)
+                    (company_id, seed["name"], company_id, seed["website"], domain, seed.get("country"))
                 )
             
             # 2. Insert metadata to company_discovery_sources

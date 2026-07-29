@@ -50,23 +50,26 @@ class SearchSource(SeedSource):
     async def discover(self) -> List[Dict[str, Any]]:
         logger.info("Discovering company seeds from SearchSource fallback...")
 
+        # (query, country) — country is None for general queries, and set
+        # for queries explicitly targeting Indian cities/companies so
+        # discovered seeds carry real geography instead of nothing at all.
         queries = [
-            "site:greenhouse.io tech startup jobs",
-            "site:lever.co software engineer remote jobs",
-            "site:ashbyhq.com software engineer jobs",
+            ("site:greenhouse.io tech startup jobs", None),
+            ("site:lever.co software engineer remote jobs", None),
+            ("site:ashbyhq.com software engineer jobs", None),
             # India-specific — this product's candidate base is India-heavy
             # while job/company coverage is currently thin there (~2% of
             # active jobs), so these are weighted in explicitly rather than
             # left to chance.
-            "site:greenhouse.io Bangalore India jobs",
-            "site:lever.co Bangalore India jobs",
-            "site:ashbyhq.com India jobs",
-            "site:greenhouse.io Hyderabad OR Pune OR Gurgaon jobs",
+            ("site:greenhouse.io Bangalore India jobs", "India"),
+            ("site:lever.co Bangalore India jobs", "India"),
+            ("site:ashbyhq.com India jobs", "India"),
+            ("site:greenhouse.io Hyderabad OR Pune OR Gurgaon jobs", "India"),
         ]
 
         seen_slugs = set()
         discovered_seeds = []
-        for q in queries:
+        for q, country in queries:
             try:
                 results = await self.search_manager.execute_search(q, limit=10)
                 for r in results:
@@ -79,13 +82,16 @@ class SearchSource(SeedSource):
                     board_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
                     name = self._extract_company_name(r.title, slug)
 
-                    discovered_seeds.append({
+                    seed = {
                         "company_id": slug,
                         "name": name,
                         "website": board_url,
                         "source": "search",
                         "confidence": 0.7,
-                    })
+                    }
+                    if country:
+                        seed["country"] = country
+                    discovered_seeds.append(seed)
             except Exception as e:
                 logger.error(f"SearchSource query '{q}' failed: {e}")
 
