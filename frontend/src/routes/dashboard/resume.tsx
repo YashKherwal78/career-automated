@@ -52,6 +52,33 @@ interface CustomSectionEntry {
   items: CustomSectionItem[];
 }
 
+interface LanguageEntry {
+  language: string;
+  proficiency: string;
+}
+
+interface VolunteerEntry {
+  organization: string;
+  role: string;
+  date: string;
+  description: string;
+}
+
+interface PublicationEntry {
+  title: string;
+  publisher: string;
+  date: string;
+  url: string;
+}
+
+interface CareerPreferences {
+  desired_role: string;
+  work_type: string;
+  locations: string;
+  min_salary: string;
+  open_to_relocation: boolean;
+}
+
 interface ProfileData {
   personal_info: PersonalInfo;
   summary: string;
@@ -60,6 +87,13 @@ interface ProfileData {
   projects: ProjectEntry[];
   education: EducationEntry[];
   certifications: string[];
+  achievements: string[];
+  languages: LanguageEntry[];
+  volunteer: VolunteerEntry[];
+  publications: PublicationEntry[];
+  awards: string[];
+  career_preferences: CareerPreferences;
+  ai_instructions: string;
   custom_sections: CustomSectionEntry[];
 }
 
@@ -79,8 +113,41 @@ const EMPTY_PROFILE: ProfileData = {
   projects: [],
   education: [],
   certifications: [],
+  achievements: [],
+  languages: [],
+  volunteer: [],
+  publications: [],
+  awards: [],
+  career_preferences: {
+    desired_role: "",
+    work_type: "",
+    locations: "",
+    min_salary: "",
+    open_to_relocation: false,
+  },
+  ai_instructions: "",
   custom_sections: [],
 };
+
+function buildSavePayload(profile: ProfileData) {
+  return {
+    personal_info: profile.personal_info,
+    summary: profile.summary,
+    skills: profile.skills,
+    experience: profile.experience,
+    projects: profile.projects,
+    education: profile.education,
+    certifications: profile.certifications,
+    achievements: profile.achievements,
+    languages: profile.languages,
+    volunteer: profile.volunteer,
+    publications: profile.publications,
+    awards: profile.awards,
+    career_preferences: profile.career_preferences,
+    ai_instructions: profile.ai_instructions,
+    custom_sections: profile.custom_sections,
+  };
+}
 
 function useCandidateProfile() {
   const { session } = useAuth();
@@ -101,11 +168,254 @@ function useCandidateProfile() {
         projects: p.projects || [],
         education: p.education || [],
         certifications: p.certifications || [],
+        achievements: p.achievements || [],
+        languages: p.languages || [],
+        volunteer: p.volunteer || [],
+        publications: p.publications || [],
+        awards: p.awards || [],
+        career_preferences: { ...EMPTY_PROFILE.career_preferences, ...p.career_preferences },
+        ai_instructions: p.ai_instructions || "",
         custom_sections: p.custom_sections || [],
       };
     },
     enabled: !!session,
   });
+}
+
+const sectionTitleStyle: React.CSSProperties = {
+  fontSize: 12,
+  letterSpacing: "var(--ds-tracking-wide)",
+  color: "var(--ds-ink-400)",
+};
+
+const addLinkStyle: React.CSSProperties = {
+  fontSize: 13,
+  color: "var(--ds-accent-primary)",
+  fontWeight: 600,
+  background: "none",
+  border: "none",
+  cursor: "pointer",
+};
+
+const removeLinkStyle: React.CSSProperties = {
+  marginLeft: "auto",
+  fontSize: 12,
+  color: "#B4392C",
+  background: "none",
+  border: "none",
+  cursor: "pointer",
+};
+
+/** Collapsible section matching the design handoff's accordion builder cards. */
+function AccordionSection({
+  title,
+  summary,
+  isOpen,
+  onToggle,
+  children,
+  action,
+}: {
+  title: string;
+  summary: string;
+  isOpen: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div
+      style={{
+        border: "1px solid var(--ds-border-default)",
+        borderRadius: "var(--ds-radius-lg)",
+        overflow: "hidden",
+      }}
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full flex items-center justify-between"
+        style={{
+          padding: "14px 18px",
+          background: "var(--ds-surface-tint)",
+          border: "none",
+          cursor: "pointer",
+          textAlign: "left",
+        }}
+      >
+        <div>
+          <div className="font-semibold" style={{ fontSize: 14.5 }}>
+            {title}
+          </div>
+          <div style={{ fontSize: 12, color: "var(--ds-ink-450)" }}>{summary}</div>
+        </div>
+        <div
+          style={{
+            transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 200ms ease",
+            fontSize: 12,
+            color: "var(--ds-ink-400)",
+          }}
+        >
+          ▾
+        </div>
+      </button>
+      {isOpen && (
+        <div className="flex flex-col gap-3" style={{ padding: 18 }}>
+          {children}
+          {action}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Simple editable list of plain strings (Achievements, Awards). */
+function StringListEditor({
+  items,
+  onChange,
+  placeholder,
+}: {
+  items: string[];
+  onChange: (next: string[]) => void;
+  placeholder: string;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      {items.map((item, idx) => (
+        <div key={idx} className="flex items-center gap-2">
+          <input
+            value={item}
+            placeholder={placeholder}
+            onChange={(e) => {
+              const next = [...items];
+              next[idx] = e.target.value;
+              onChange(next);
+            }}
+            className="bg-transparent outline-none flex-1"
+            style={{
+              fontSize: 13.5,
+              borderBottom: "1px dashed var(--ds-border-medium)",
+              padding: "4px 0",
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => onChange(items.filter((_, i) => i !== idx))}
+            style={removeLinkStyle}
+          >
+            Remove
+          </button>
+        </div>
+      ))}
+      <button type="button" onClick={() => onChange([...items, ""])} style={addLinkStyle}>
+        + Add
+      </button>
+    </div>
+  );
+}
+
+function SkillsEditor({
+  skills,
+  onChange,
+}: {
+  skills: Record<string, string[]>;
+  onChange: (next: Record<string, string[]>) => void;
+}) {
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const categories = Object.keys(skills).length ? Object.keys(skills) : ["other"];
+
+  const commitDraft = (category: string) => {
+    const raw = drafts[category] || "";
+    const additions = raw
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (!additions.length) return;
+    onChange({
+      ...skills,
+      [category]: [...(skills[category] || []), ...additions],
+    });
+    setDrafts({ ...drafts, [category]: "" });
+  };
+
+  const removeSkill = (category: string, skill: string) => {
+    onChange({ ...skills, [category]: (skills[category] || []).filter((s) => s !== skill) });
+  };
+
+  return (
+    <div className="flex flex-col gap-4">
+      {categories.map((category) => (
+        <div key={category} className="flex flex-col gap-2">
+          <div
+            className="uppercase font-bold"
+            style={{ fontSize: 11, color: "var(--ds-ink-400)", letterSpacing: "0.5px" }}
+          >
+            {category.replace(/_/g, " ")}
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {(skills[category] || []).map((s) => (
+              <span
+                key={s}
+                className="font-semibold flex items-center gap-1"
+                style={{
+                  fontSize: 12.5,
+                  color: "var(--ds-ink-600)",
+                  background: "var(--ds-surface-tint)",
+                  padding: "5px 8px 5px 11px",
+                  borderRadius: "var(--ds-radius-pill)",
+                }}
+              >
+                {s}
+                <button
+                  type="button"
+                  onClick={() => removeSkill(category, s)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "var(--ds-ink-400)",
+                    fontSize: 12,
+                    lineHeight: 1,
+                    padding: 0,
+                  }}
+                >
+                  ✕
+                </button>
+              </span>
+            ))}
+          </div>
+          <input
+            value={drafts[category] || ""}
+            placeholder="Type skills, comma-separated, then press Enter"
+            onChange={(e) => setDrafts({ ...drafts, [category]: e.target.value })}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                commitDraft(category);
+              }
+            }}
+            onBlur={() => commitDraft(category)}
+            className="bg-transparent outline-none"
+            style={{
+              fontSize: 13,
+              borderBottom: "1px dashed var(--ds-border-medium)",
+              padding: "4px 0",
+            }}
+          />
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={() => {
+          const name = window.prompt("New skill category name (e.g. Tools, Soft Skills)");
+          if (name && !skills[name]) onChange({ ...skills, [name]: [] });
+        }}
+        style={{ ...addLinkStyle, alignSelf: "flex-start" }}
+      >
+        + Add category
+      </button>
+    </div>
+  );
 }
 
 function ResumePage() {
@@ -114,7 +424,11 @@ function ResumePage() {
   const [mode, setMode] = useState<"chooser" | "builder">("chooser");
   const [profile, setProfile] = useState<ProfileData>(EMPTY_PROFILE);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [draftState, setDraftState] = useState<"idle" | "saving" | "saved">("idle");
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    personal: true,
+  });
   const [generateState, setGenerateState] = useState<"idle" | "generating" | "done" | "error">(
     "idle",
   );
@@ -135,6 +449,9 @@ function ResumePage() {
     }
   }, [loadedProfile]);
 
+  const toggleSection = (key: string) =>
+    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
+
   const saveProfile = async () => {
     setSaveState("saving");
     try {
@@ -144,16 +461,7 @@ function ResumePage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session?.access_token}`,
         },
-        body: JSON.stringify({
-          personal_info: profile.personal_info,
-          summary: profile.summary,
-          skills: profile.skills,
-          experience: profile.experience,
-          projects: profile.projects,
-          education: profile.education,
-          certifications: profile.certifications,
-          custom_sections: profile.custom_sections,
-        }),
+        body: JSON.stringify(buildSavePayload(profile)),
       });
       if (!res.ok) throw new Error("save failed");
       setSaveState("saved");
@@ -163,27 +471,36 @@ function ResumePage() {
     }
   };
 
+  const saveDraft = async () => {
+    setDraftState("saving");
+    try {
+      const res = await fetch(`${API_BASE}/candidate/profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify(buildSavePayload(profile)),
+      });
+      if (!res.ok) throw new Error("save failed");
+      setDraftState("saved");
+      setTimeout(() => setDraftState("idle"), 2000);
+    } catch {
+      setDraftState("idle");
+    }
+  };
+
   const generateResume = async () => {
     setGenerateState("generating");
     setGenerateError(null);
     try {
-      // Save first so generation always reflects the latest edits.
       await fetch(`${API_BASE}/candidate/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session?.access_token}`,
         },
-        body: JSON.stringify({
-          personal_info: profile.personal_info,
-          summary: profile.summary,
-          skills: profile.skills,
-          experience: profile.experience,
-          projects: profile.projects,
-          education: profile.education,
-          certifications: profile.certifications,
-          custom_sections: profile.custom_sections,
-        }),
+        body: JSON.stringify(buildSavePayload(profile)),
       });
 
       const res = await fetch(`${API_BASE}/candidate/generate-base-resume`, {
@@ -215,6 +532,7 @@ function ResumePage() {
       if (res.ok) {
         const data = await res.json();
         setProfile({
+          ...EMPTY_PROFILE,
           personal_info: { ...EMPTY_PROFILE.personal_info, ...data.personal_info },
           summary: data.summary || "",
           skills: data.skills && Object.keys(data.skills).length ? data.skills : { other: [] },
@@ -248,7 +566,6 @@ function ResumePage() {
             }),
           ),
           certifications: (data.certifications || []).map((c: { name: string }) => c.name),
-          custom_sections: [],
         });
       }
     } catch (err) {
@@ -345,15 +662,41 @@ function ResumePage() {
                   marginBottom: 16,
                 }}
               >
-                <div
-                  style={{
-                    width: 0,
-                    height: 0,
-                    borderLeft: "6px solid transparent",
-                    borderRight: "6px solid transparent",
-                    borderBottom: "7px solid var(--ds-accent-primary)",
-                  }}
-                />
+                <div className="relative" style={{ width: 12, height: 15 }}>
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: 0,
+                      left: 0,
+                      width: 12,
+                      height: 2,
+                      borderRadius: 1,
+                      background: "var(--ds-accent-primary)",
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: 2,
+                      left: 5,
+                      width: 2,
+                      height: 10,
+                      background: "var(--ds-accent-primary)",
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 1.5,
+                      width: 0,
+                      height: 0,
+                      borderLeft: "4.5px solid transparent",
+                      borderRight: "4.5px solid transparent",
+                      borderBottom: "5px solid var(--ds-accent-primary)",
+                    }}
+                  />
+                </div>
               </div>
               <div
                 className="font-[var(--ds-font-display)] font-semibold"
@@ -388,13 +731,31 @@ function ResumePage() {
                 }}
               >
                 <div
+                  className="relative flex items-center justify-center"
                   style={{
                     width: 15,
                     height: 15,
                     border: "1.5px dashed var(--ds-accent-success)",
                     borderRadius: 3,
                   }}
-                />
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      width: 7,
+                      height: 1.5,
+                      background: "var(--ds-accent-success)",
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      width: 1.5,
+                      height: 7,
+                      background: "var(--ds-accent-success)",
+                    }}
+                  />
+                </div>
               </div>
               <div
                 className="font-[var(--ds-font-display)] font-semibold"
@@ -464,47 +825,69 @@ function ResumePage() {
         >
           ← Back
         </button>
-        <button
-          type="button"
-          onClick={saveProfile}
-          className="font-semibold"
-          style={{
-            padding: "10px 20px",
-            borderRadius: "var(--ds-radius-md)",
-            border: "none",
-            background: "var(--ds-accent-primary)",
-            color: "var(--ds-text-on-brand)",
-            fontSize: 13.5,
-            cursor: "pointer",
-          }}
-        >
-          {saveState === "saving"
-            ? "Saving…"
-            : saveState === "saved"
-              ? "Saved ✓"
-              : saveState === "error"
-                ? "Try again"
-                : "Save profile"}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={saveDraft}
+            className="font-semibold"
+            style={{
+              padding: "10px 16px",
+              borderRadius: "var(--ds-radius-md)",
+              border: "1px solid var(--ds-border-medium)",
+              background: "transparent",
+              color: "var(--ds-ink-700)",
+              fontSize: 13.5,
+              cursor: "pointer",
+            }}
+          >
+            {draftState === "saving"
+              ? "Saving…"
+              : draftState === "saved"
+                ? "Draft saved ✓"
+                : "Save draft"}
+          </button>
+          <button
+            type="button"
+            onClick={saveProfile}
+            className="font-semibold"
+            style={{
+              padding: "10px 20px",
+              borderRadius: "var(--ds-radius-md)",
+              border: "none",
+              background: "var(--ds-accent-primary)",
+              color: "var(--ds-text-on-brand)",
+              fontSize: 13.5,
+              cursor: "pointer",
+            }}
+          >
+            {saveState === "saving"
+              ? "Saving…"
+              : saveState === "saved"
+                ? "Saved ✓"
+                : saveState === "error"
+                  ? "Try again"
+                  : "Save profile"}
+          </button>
+        </div>
       </div>
 
-      <div className="flex flex-col gap-10">
-        <div className="flex flex-col gap-3">
-          <input
-            type="text"
-            value={profile.personal_info.full_name}
-            onChange={(e) =>
-              setProfile({
-                ...profile,
-                personal_info: { ...profile.personal_info, full_name: e.target.value },
-              })
-            }
-            placeholder="Your full name"
-            className="w-full bg-transparent border-none outline-none font-[var(--ds-font-display)] font-bold"
-            style={{ fontSize: 32, color: "var(--ds-text-primary)" }}
-          />
-          <div className="grid grid-cols-2 gap-3" style={{ fontSize: 13 }}>
-            {(["email", "phone", "location", "portfolio"] as const).map((field) => (
+      <div className="flex flex-col gap-3" style={{ marginBottom: 32 }}>
+        <input
+          type="text"
+          value={profile.personal_info.full_name}
+          onChange={(e) =>
+            setProfile({
+              ...profile,
+              personal_info: { ...profile.personal_info, full_name: e.target.value },
+            })
+          }
+          placeholder="Your full name"
+          className="w-full bg-transparent border-none outline-none font-[var(--ds-font-display)] font-bold"
+          style={{ fontSize: 32, color: "var(--ds-text-primary)" }}
+        />
+        <div className="grid grid-cols-2 gap-3" style={{ fontSize: 13 }}>
+          {(["email", "phone", "location", "portfolio", "linkedin", "github"] as const).map(
+            (field) => (
               <input
                 key={field}
                 type="text"
@@ -523,21 +906,18 @@ function ResumePage() {
                   color: "var(--ds-text-primary)",
                 }}
               />
-            ))}
-          </div>
+            ),
+          )}
         </div>
+      </div>
 
-        <div className="flex flex-col gap-2">
-          <div
-            className="uppercase font-bold"
-            style={{
-              fontSize: 12,
-              letterSpacing: "var(--ds-tracking-wide)",
-              color: "var(--ds-ink-400)",
-            }}
-          >
-            Summary
-          </div>
+      <div className="flex flex-col gap-3">
+        <AccordionSection
+          title="Summary"
+          summary={profile.summary ? "Added" : "Not added yet"}
+          isOpen={!!openSections.summary}
+          onToggle={() => toggleSection("summary")}
+        >
           <textarea
             value={profile.summary}
             onChange={(e) => setProfile({ ...profile, summary: e.target.value })}
@@ -546,48 +926,30 @@ function ResumePage() {
             className="w-full bg-transparent border-none outline-none resize-none"
             style={{ fontSize: 14, lineHeight: 1.6, color: "var(--ds-text-primary)" }}
           />
-        </div>
+        </AccordionSection>
 
-        <div className="flex flex-col gap-4">
-          <div
-            className="flex items-center justify-between"
-            style={{ borderBottom: "1px solid var(--ds-border-default)", paddingBottom: 8 }}
-          >
-            <div
-              className="uppercase font-bold"
-              style={{
-                fontSize: 12,
-                letterSpacing: "var(--ds-tracking-wide)",
-                color: "var(--ds-ink-400)",
-              }}
-            >
-              Experience
-            </div>
-            <button
-              type="button"
-              onClick={() =>
-                setProfile({
-                  ...profile,
-                  experience: [
-                    ...profile.experience,
-                    { company: "", role: "", start_date: "", end_date: "", description: "" },
-                  ],
-                })
-              }
-              style={{
-                fontSize: 13,
-                color: "var(--ds-accent-primary)",
-                fontWeight: 600,
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-              }}
-            >
-              + Add experience
-            </button>
-          </div>
+        <AccordionSection
+          title="Experience"
+          summary={
+            profile.experience.length
+              ? `${profile.experience.length} ${profile.experience.length === 1 ? "entry" : "entries"}`
+              : "None added yet"
+          }
+          isOpen={!!openSections.experience}
+          onToggle={() => toggleSection("experience")}
+        >
           {profile.experience.map((exp, idx) => (
-            <div key={idx} className="flex flex-col gap-2" style={{ paddingBottom: 12 }}>
+            <div
+              key={idx}
+              className="flex flex-col gap-2"
+              style={{
+                paddingBottom: 12,
+                borderBottom:
+                  idx < profile.experience.length - 1
+                    ? "1px solid var(--ds-border-default)"
+                    : "none",
+              }}
+            >
               <div className="flex flex-wrap items-center gap-2">
                 <input
                   value={exp.role}
@@ -620,17 +982,35 @@ function ResumePage() {
                       experience: profile.experience.filter((_, i) => i !== idx),
                     })
                   }
-                  style={{
-                    marginLeft: "auto",
-                    fontSize: 12,
-                    color: "#B4392C",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                  }}
+                  style={removeLinkStyle}
                 >
                   Remove
                 </button>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  value={exp.start_date}
+                  placeholder="Start date"
+                  onChange={(e) => {
+                    const next = [...profile.experience];
+                    next[idx] = { ...next[idx], start_date: e.target.value };
+                    setProfile({ ...profile, experience: next });
+                  }}
+                  className="bg-transparent outline-none"
+                  style={{ fontSize: 12.5, color: "var(--ds-ink-500)", width: 110 }}
+                />
+                <span style={{ color: "var(--ds-ink-300)" }}>–</span>
+                <input
+                  value={exp.end_date}
+                  placeholder="End date"
+                  onChange={(e) => {
+                    const next = [...profile.experience];
+                    next[idx] = { ...next[idx], end_date: e.target.value };
+                    setProfile({ ...profile, experience: next });
+                  }}
+                  className="bg-transparent outline-none"
+                  style={{ fontSize: 12.5, color: "var(--ds-ink-500)", width: 110 }}
+                />
               </div>
               <textarea
                 value={exp.description}
@@ -646,46 +1026,33 @@ function ResumePage() {
               />
             </div>
           ))}
-        </div>
-
-        <div className="flex flex-col gap-4">
-          <div
-            className="flex items-center justify-between"
-            style={{ borderBottom: "1px solid var(--ds-border-default)", paddingBottom: 8 }}
+          <button
+            type="button"
+            onClick={() =>
+              setProfile({
+                ...profile,
+                experience: [
+                  ...profile.experience,
+                  { company: "", role: "", start_date: "", end_date: "", description: "" },
+                ],
+              })
+            }
+            style={{ ...addLinkStyle, alignSelf: "flex-start" }}
           >
-            <div
-              className="uppercase font-bold"
-              style={{
-                fontSize: 12,
-                letterSpacing: "var(--ds-tracking-wide)",
-                color: "var(--ds-ink-400)",
-              }}
-            >
-              Education
-            </div>
-            <button
-              type="button"
-              onClick={() =>
-                setProfile({
-                  ...profile,
-                  education: [
-                    ...profile.education,
-                    { institution: "", degree: "", field_of_study: "" },
-                  ],
-                })
-              }
-              style={{
-                fontSize: 13,
-                color: "var(--ds-accent-primary)",
-                fontWeight: 600,
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-              }}
-            >
-              + Add education
-            </button>
-          </div>
+            + Add experience
+          </button>
+        </AccordionSection>
+
+        <AccordionSection
+          title="Education"
+          summary={
+            profile.education.length
+              ? `${profile.education.length} ${profile.education.length === 1 ? "entry" : "entries"}`
+              : "None added yet"
+          }
+          isOpen={!!openSections.education}
+          onToggle={() => toggleSection("education")}
+        >
           {profile.education.map((edu, idx) => (
             <div key={idx} className="flex flex-wrap items-center gap-2">
               <input
@@ -718,56 +1085,39 @@ function ResumePage() {
                     education: profile.education.filter((_, i) => i !== idx),
                   })
                 }
-                style={{
-                  marginLeft: "auto",
-                  fontSize: 12,
-                  color: "#B4392C",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                }}
+                style={removeLinkStyle}
               >
                 Remove
               </button>
             </div>
           ))}
-        </div>
-
-        <div className="flex flex-col gap-4">
-          <div
-            className="flex items-center justify-between"
-            style={{ borderBottom: "1px solid var(--ds-border-default)", paddingBottom: 8 }}
+          <button
+            type="button"
+            onClick={() =>
+              setProfile({
+                ...profile,
+                education: [
+                  ...profile.education,
+                  { institution: "", degree: "", field_of_study: "" },
+                ],
+              })
+            }
+            style={{ ...addLinkStyle, alignSelf: "flex-start" }}
           >
-            <div
-              className="uppercase font-bold"
-              style={{
-                fontSize: 12,
-                letterSpacing: "var(--ds-tracking-wide)",
-                color: "var(--ds-ink-400)",
-              }}
-            >
-              Projects
-            </div>
-            <button
-              type="button"
-              onClick={() =>
-                setProfile({
-                  ...profile,
-                  projects: [...profile.projects, { name: "", description: "", technologies: "" }],
-                })
-              }
-              style={{
-                fontSize: 13,
-                color: "var(--ds-accent-primary)",
-                fontWeight: 600,
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-              }}
-            >
-              + Add project
-            </button>
-          </div>
+            + Add education
+          </button>
+        </AccordionSection>
+
+        <AccordionSection
+          title="Projects"
+          summary={
+            profile.projects.length
+              ? `${profile.projects.length} ${profile.projects.length === 1 ? "entry" : "entries"}`
+              : "None added yet"
+          }
+          isOpen={!!openSections.projects}
+          onToggle={() => toggleSection("projects")}
+        >
           {profile.projects.map((proj, idx) => (
             <div key={idx} className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
@@ -790,18 +1140,22 @@ function ResumePage() {
                       projects: profile.projects.filter((_, i) => i !== idx),
                     })
                   }
-                  style={{
-                    marginLeft: "auto",
-                    fontSize: 12,
-                    color: "#B4392C",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                  }}
+                  style={removeLinkStyle}
                 >
                   Remove
                 </button>
               </div>
+              <input
+                value={proj.technologies}
+                placeholder="Technologies (comma-separated)"
+                onChange={(e) => {
+                  const next = [...profile.projects];
+                  next[idx] = { ...next[idx], technologies: e.target.value };
+                  setProfile({ ...profile, projects: next });
+                }}
+                className="bg-transparent outline-none"
+                style={{ fontSize: 12.5, color: "var(--ds-ink-500)" }}
+              />
               <textarea
                 value={proj.description}
                 placeholder="Briefly describe what it does…"
@@ -816,81 +1170,434 @@ function ResumePage() {
               />
             </div>
           ))}
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <div
-            className="uppercase font-bold"
-            style={{
-              fontSize: 12,
-              letterSpacing: "var(--ds-tracking-wide)",
-              color: "var(--ds-ink-400)",
-            }}
+          <button
+            type="button"
+            onClick={() =>
+              setProfile({
+                ...profile,
+                projects: [...profile.projects, { name: "", description: "", technologies: "" }],
+              })
+            }
+            style={{ ...addLinkStyle, alignSelf: "flex-start" }}
           >
-            Skills
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {flatSkills.length === 0 && (
-              <span style={{ fontSize: 13, color: "var(--ds-ink-400)" }}>No skills added yet.</span>
-            )}
-            {flatSkills.map((s) => (
-              <span
-                key={s}
-                className="font-semibold"
-                style={{
-                  fontSize: 12.5,
-                  color: "var(--ds-ink-600)",
-                  background: "var(--ds-surface-tint)",
-                  padding: "5px 11px",
-                  borderRadius: "var(--ds-radius-pill)",
+            + Add project
+          </button>
+        </AccordionSection>
+
+        <AccordionSection
+          title="Skills"
+          summary={flatSkills.length ? `${flatSkills.length} skills` : "None added yet"}
+          isOpen={!!openSections.skills}
+          onToggle={() => toggleSection("skills")}
+        >
+          <SkillsEditor
+            skills={profile.skills}
+            onChange={(skills) => setProfile({ ...profile, skills })}
+          />
+        </AccordionSection>
+
+        <AccordionSection
+          title="Certifications"
+          summary={
+            profile.certifications.length
+              ? `${profile.certifications.length} entries`
+              : "None added yet"
+          }
+          isOpen={!!openSections.certifications}
+          onToggle={() => toggleSection("certifications")}
+        >
+          <StringListEditor
+            items={profile.certifications}
+            placeholder="e.g. AWS Certified Solutions Architect"
+            onChange={(certifications) => setProfile({ ...profile, certifications })}
+          />
+        </AccordionSection>
+
+        <AccordionSection
+          title="Achievements"
+          summary={
+            profile.achievements.length
+              ? `${profile.achievements.length} entries`
+              : "None added yet"
+          }
+          isOpen={!!openSections.achievements}
+          onToggle={() => toggleSection("achievements")}
+        >
+          <StringListEditor
+            items={profile.achievements}
+            placeholder="e.g. Led a team that shipped X, reducing Y by 40%"
+            onChange={(achievements) => setProfile({ ...profile, achievements })}
+          />
+        </AccordionSection>
+
+        <AccordionSection
+          title="Awards"
+          summary={profile.awards.length ? `${profile.awards.length} entries` : "None added yet"}
+          isOpen={!!openSections.awards}
+          onToggle={() => toggleSection("awards")}
+        >
+          <StringListEditor
+            items={profile.awards}
+            placeholder="e.g. Dean's List, 2023"
+            onChange={(awards) => setProfile({ ...profile, awards })}
+          />
+        </AccordionSection>
+
+        <AccordionSection
+          title="Languages"
+          summary={
+            profile.languages.length ? `${profile.languages.length} entries` : "None added yet"
+          }
+          isOpen={!!openSections.languages}
+          onToggle={() => toggleSection("languages")}
+        >
+          {profile.languages.map((lang, idx) => (
+            <div key={idx} className="flex items-center gap-2">
+              <input
+                value={lang.language}
+                placeholder="Language"
+                onChange={(e) => {
+                  const next = [...profile.languages];
+                  next[idx] = { ...next[idx], language: e.target.value };
+                  setProfile({ ...profile, languages: next });
                 }}
+                className="bg-transparent outline-none font-semibold"
+                style={{ fontSize: 13.5 }}
+              />
+              <input
+                value={lang.proficiency}
+                placeholder="Proficiency (e.g. Fluent)"
+                onChange={(e) => {
+                  const next = [...profile.languages];
+                  next[idx] = { ...next[idx], proficiency: e.target.value };
+                  setProfile({ ...profile, languages: next });
+                }}
+                className="bg-transparent outline-none"
+                style={{ fontSize: 13, color: "var(--ds-ink-500)" }}
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setProfile({
+                    ...profile,
+                    languages: profile.languages.filter((_, i) => i !== idx),
+                  })
+                }
+                style={removeLinkStyle}
               >
-                {s}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-4">
-          <div
-            className="flex items-center justify-between"
-            style={{ borderBottom: "1px solid var(--ds-border-default)", paddingBottom: 8 }}
-          >
-            <div
-              className="uppercase font-bold"
-              style={{
-                fontSize: 12,
-                letterSpacing: "var(--ds-tracking-wide)",
-                color: "var(--ds-ink-400)",
-              }}
-            >
-              Additional sections
+                Remove
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() =>
+          ))}
+          <button
+            type="button"
+            onClick={() =>
+              setProfile({
+                ...profile,
+                languages: [...profile.languages, { language: "", proficiency: "" }],
+              })
+            }
+            style={{ ...addLinkStyle, alignSelf: "flex-start" }}
+          >
+            + Add language
+          </button>
+        </AccordionSection>
+
+        <AccordionSection
+          title="Volunteer experience"
+          summary={
+            profile.volunteer.length ? `${profile.volunteer.length} entries` : "None added yet"
+          }
+          isOpen={!!openSections.volunteer}
+          onToggle={() => toggleSection("volunteer")}
+        >
+          {profile.volunteer.map((v, idx) => (
+            <div key={idx} className="flex flex-col gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  value={v.role}
+                  placeholder="Role"
+                  onChange={(e) => {
+                    const next = [...profile.volunteer];
+                    next[idx] = { ...next[idx], role: e.target.value };
+                    setProfile({ ...profile, volunteer: next });
+                  }}
+                  className="bg-transparent outline-none font-semibold"
+                  style={{ fontSize: 14 }}
+                />
+                <span style={{ color: "var(--ds-ink-300)" }}>at</span>
+                <input
+                  value={v.organization}
+                  placeholder="Organization"
+                  onChange={(e) => {
+                    const next = [...profile.volunteer];
+                    next[idx] = { ...next[idx], organization: e.target.value };
+                    setProfile({ ...profile, volunteer: next });
+                  }}
+                  className="bg-transparent outline-none font-semibold"
+                  style={{ fontSize: 14 }}
+                />
+                <input
+                  value={v.date}
+                  placeholder="Date"
+                  onChange={(e) => {
+                    const next = [...profile.volunteer];
+                    next[idx] = { ...next[idx], date: e.target.value };
+                    setProfile({ ...profile, volunteer: next });
+                  }}
+                  className="bg-transparent outline-none"
+                  style={{ fontSize: 12.5, color: "var(--ds-ink-500)", width: 100 }}
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setProfile({
+                      ...profile,
+                      volunteer: profile.volunteer.filter((_, i) => i !== idx),
+                    })
+                  }
+                  style={removeLinkStyle}
+                >
+                  Remove
+                </button>
+              </div>
+              <textarea
+                value={v.description}
+                placeholder="What did you do?"
+                rows={1}
+                onChange={(e) => {
+                  const next = [...profile.volunteer];
+                  next[idx] = { ...next[idx], description: e.target.value };
+                  setProfile({ ...profile, volunteer: next });
+                }}
+                className="w-full bg-transparent outline-none resize-none"
+                style={{ fontSize: 13, color: "var(--ds-ink-600)" }}
+              />
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() =>
+              setProfile({
+                ...profile,
+                volunteer: [
+                  ...profile.volunteer,
+                  { organization: "", role: "", date: "", description: "" },
+                ],
+              })
+            }
+            style={{ ...addLinkStyle, alignSelf: "flex-start" }}
+          >
+            + Add volunteer experience
+          </button>
+        </AccordionSection>
+
+        <AccordionSection
+          title="Publications"
+          summary={
+            profile.publications.length
+              ? `${profile.publications.length} entries`
+              : "None added yet"
+          }
+          isOpen={!!openSections.publications}
+          onToggle={() => toggleSection("publications")}
+        >
+          {profile.publications.map((pub, idx) => (
+            <div key={idx} className="flex flex-wrap items-center gap-2">
+              <input
+                value={pub.title}
+                placeholder="Title"
+                onChange={(e) => {
+                  const next = [...profile.publications];
+                  next[idx] = { ...next[idx], title: e.target.value };
+                  setProfile({ ...profile, publications: next });
+                }}
+                className="bg-transparent outline-none font-semibold"
+                style={{ fontSize: 14 }}
+              />
+              <input
+                value={pub.publisher}
+                placeholder="Publisher"
+                onChange={(e) => {
+                  const next = [...profile.publications];
+                  next[idx] = { ...next[idx], publisher: e.target.value };
+                  setProfile({ ...profile, publications: next });
+                }}
+                className="bg-transparent outline-none"
+                style={{ fontSize: 13, color: "var(--ds-ink-500)" }}
+              />
+              <input
+                value={pub.date}
+                placeholder="Date"
+                onChange={(e) => {
+                  const next = [...profile.publications];
+                  next[idx] = { ...next[idx], date: e.target.value };
+                  setProfile({ ...profile, publications: next });
+                }}
+                className="bg-transparent outline-none"
+                style={{ fontSize: 12.5, color: "var(--ds-ink-500)", width: 100 }}
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setProfile({
+                    ...profile,
+                    publications: profile.publications.filter((_, i) => i !== idx),
+                  })
+                }
+                style={removeLinkStyle}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() =>
+              setProfile({
+                ...profile,
+                publications: [
+                  ...profile.publications,
+                  { title: "", publisher: "", date: "", url: "" },
+                ],
+              })
+            }
+            style={{ ...addLinkStyle, alignSelf: "flex-start" }}
+          >
+            + Add publication
+          </button>
+        </AccordionSection>
+
+        <AccordionSection
+          title="Career preferences"
+          summary={profile.career_preferences.desired_role ? "Set" : "Not set yet"}
+          isOpen={!!openSections.career_preferences}
+          onToggle={() => toggleSection("career_preferences")}
+        >
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              value={profile.career_preferences.desired_role}
+              placeholder="Desired role"
+              onChange={(e) =>
                 setProfile({
                   ...profile,
-                  custom_sections: [...profile.custom_sections, { section_title: "", items: [] }],
+                  career_preferences: {
+                    ...profile.career_preferences,
+                    desired_role: e.target.value,
+                  },
                 })
               }
+              className="bg-transparent outline-none"
               style={{
-                fontSize: 13,
-                color: "var(--ds-accent-primary)",
-                fontWeight: 600,
-                background: "none",
-                border: "none",
-                cursor: "pointer",
+                fontSize: 13.5,
+                borderBottom: "1px dashed var(--ds-border-medium)",
+                padding: "4px 0",
               }}
-            >
-              + Add section
-            </button>
+            />
+            <input
+              value={profile.career_preferences.work_type}
+              placeholder="Work type (Remote / Hybrid / On-site)"
+              onChange={(e) =>
+                setProfile({
+                  ...profile,
+                  career_preferences: { ...profile.career_preferences, work_type: e.target.value },
+                })
+              }
+              className="bg-transparent outline-none"
+              style={{
+                fontSize: 13.5,
+                borderBottom: "1px dashed var(--ds-border-medium)",
+                padding: "4px 0",
+              }}
+            />
+            <input
+              value={profile.career_preferences.locations}
+              placeholder="Preferred locations"
+              onChange={(e) =>
+                setProfile({
+                  ...profile,
+                  career_preferences: { ...profile.career_preferences, locations: e.target.value },
+                })
+              }
+              className="bg-transparent outline-none"
+              style={{
+                fontSize: 13.5,
+                borderBottom: "1px dashed var(--ds-border-medium)",
+                padding: "4px 0",
+              }}
+            />
+            <input
+              value={profile.career_preferences.min_salary}
+              placeholder="Minimum salary"
+              onChange={(e) =>
+                setProfile({
+                  ...profile,
+                  career_preferences: { ...profile.career_preferences, min_salary: e.target.value },
+                })
+              }
+              className="bg-transparent outline-none"
+              style={{
+                fontSize: 13.5,
+                borderBottom: "1px dashed var(--ds-border-medium)",
+                padding: "4px 0",
+              }}
+            />
           </div>
-          {profile.custom_sections.length === 0 && (
-            <span style={{ fontSize: 13, color: "var(--ds-ink-400)" }}>
-              For things like freelance work, achievements, or anything else that doesn't fit above.
-            </span>
-          )}
+          <label className="flex items-center gap-2" style={{ fontSize: 13.5, marginTop: 4 }}>
+            <input
+              type="checkbox"
+              checked={profile.career_preferences.open_to_relocation}
+              onChange={(e) =>
+                setProfile({
+                  ...profile,
+                  career_preferences: {
+                    ...profile.career_preferences,
+                    open_to_relocation: e.target.checked,
+                  },
+                })
+              }
+            />
+            Open to relocation
+          </label>
+        </AccordionSection>
+
+        <AccordionSection
+          title="AI instructions"
+          summary={profile.ai_instructions ? "Set" : "Not set yet"}
+          isOpen={!!openSections.ai_instructions}
+          onToggle={() => toggleSection("ai_instructions")}
+        >
+          <p style={{ fontSize: 12.5, color: "var(--ds-ink-450)", margin: "0 0 4px" }}>
+            Guidance the tailoring engine follows every time it rewrites your resume — tone,
+            emphasis, anything to always keep in mind.
+          </p>
+          <textarea
+            value={profile.ai_instructions}
+            onChange={(e) => setProfile({ ...profile, ai_instructions: e.target.value })}
+            placeholder="e.g. Always lead with impact metrics. Keep language direct, no buzzwords."
+            rows={3}
+            className="w-full bg-transparent outline-none resize-none"
+            style={{
+              fontSize: 13.5,
+              lineHeight: 1.6,
+              border: "1px solid var(--ds-border-default)",
+              borderRadius: "var(--ds-radius-md)",
+              padding: 10,
+              boxSizing: "border-box",
+            }}
+          />
+        </AccordionSection>
+
+        <AccordionSection
+          title="Additional sections"
+          summary={
+            profile.custom_sections.length
+              ? `${profile.custom_sections.length} sections`
+              : "For freelance work, or anything else"
+          }
+          isOpen={!!openSections.custom}
+          onToggle={() => toggleSection("custom")}
+        >
           {profile.custom_sections.map((sec, secIdx) => (
             <div
               key={secIdx}
@@ -921,14 +1628,7 @@ function ResumePage() {
                       custom_sections: profile.custom_sections.filter((_, i) => i !== secIdx),
                     })
                   }
-                  style={{
-                    marginLeft: "auto",
-                    fontSize: 12,
-                    color: "#B4392C",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                  }}
+                  style={removeLinkStyle}
                 >
                   Remove section
                 </button>
@@ -986,14 +1686,7 @@ function ResumePage() {
                         };
                         setProfile({ ...profile, custom_sections: next });
                       }}
-                      style={{
-                        marginLeft: "auto",
-                        fontSize: 12,
-                        color: "#B4392C",
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                      }}
+                      style={removeLinkStyle}
                     >
                       Remove
                     </button>
@@ -1027,89 +1720,86 @@ function ResumePage() {
                   };
                   setProfile({ ...profile, custom_sections: next });
                 }}
-                style={{
-                  fontSize: 12.5,
-                  color: "var(--ds-accent-primary)",
-                  fontWeight: 600,
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  alignSelf: "flex-start",
-                }}
+                style={{ ...addLinkStyle, alignSelf: "flex-start" }}
               >
                 + Add item
               </button>
             </div>
           ))}
-        </div>
+          <button
+            type="button"
+            onClick={() =>
+              setProfile({
+                ...profile,
+                custom_sections: [...profile.custom_sections, { section_title: "", items: [] }],
+              })
+            }
+            style={{ ...addLinkStyle, alignSelf: "flex-start" }}
+          >
+            + Add section
+          </button>
+        </AccordionSection>
+      </div>
 
-        <div
-          className="flex flex-col gap-3"
-          style={{
-            borderTop: "1px solid var(--ds-border-default)",
-            paddingTop: 24,
-            marginTop: 8,
-          }}
-        >
-          <div
-            className="uppercase font-bold"
+      <div
+        className="flex flex-col gap-3"
+        style={{
+          borderTop: "1px solid var(--ds-border-default)",
+          paddingTop: 24,
+          marginTop: 24,
+        }}
+      >
+        <div style={sectionTitleStyle} className="uppercase font-bold">
+          Base resume
+        </div>
+        <p style={{ fontSize: 13, color: "var(--ds-ink-500)", margin: 0, lineHeight: 1.6 }}>
+          Renders everything above into a 1-page resume (Jake's Resume format), fitted and trimmed
+          automatically if it runs long. This is what gets used for tailoring.
+        </p>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={generateResume}
+            disabled={generateState === "generating"}
+            className="font-semibold"
             style={{
-              fontSize: 12,
-              letterSpacing: "var(--ds-tracking-wide)",
-              color: "var(--ds-ink-400)",
+              padding: "10px 20px",
+              borderRadius: "var(--ds-radius-md)",
+              border: "none",
+              background: "var(--ds-ink-900)",
+              color: "var(--ds-text-on-dark)",
+              fontSize: 13.5,
+              cursor: generateState === "generating" ? "default" : "pointer",
+              opacity: generateState === "generating" ? 0.7 : 1,
             }}
           >
-            Base resume
-          </div>
-          <p style={{ fontSize: 13, color: "var(--ds-ink-500)", margin: 0, lineHeight: 1.6 }}>
-            Renders everything above into a 1-page resume (Jake's Resume format), fitted and trimmed
-            automatically if it runs long. This is what gets used for tailoring.
-          </p>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={generateResume}
-              disabled={generateState === "generating"}
-              className="font-semibold"
-              style={{
-                padding: "10px 20px",
-                borderRadius: "var(--ds-radius-md)",
-                border: "none",
-                background: "var(--ds-ink-900)",
-                color: "var(--ds-text-on-dark)",
-                fontSize: 13.5,
-                cursor: generateState === "generating" ? "default" : "pointer",
-                opacity: generateState === "generating" ? 0.7 : 1,
-              }}
+            {generateState === "generating" ? "Generating…" : "Generate resume"}
+          </button>
+          {generateState === "done" && generateResult?.pdf_available && (
+            <a
+              href={`${API_BASE}/candidate/base-resume/pdf`}
+              target="_blank"
+              rel="noreferrer"
+              style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ds-accent-primary)" }}
             >
-              {generateState === "generating" ? "Generating…" : "Generate resume"}
-            </button>
-            {generateState === "done" && generateResult?.pdf_available && (
-              <a
-                href={`${API_BASE}/candidate/base-resume/pdf`}
-                target="_blank"
-                rel="noreferrer"
-                style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ds-accent-primary)" }}
-              >
-                Download PDF →
-              </a>
-            )}
-          </div>
-          {generateState === "done" && generateResult && (
-            <p style={{ fontSize: 12.5, color: "var(--ds-ink-450)", margin: 0 }}>
-              {generateResult.fit_achieved
-                ? `Fit on ${generateResult.page_count} page${generateResult.page_count === 1 ? "" : "s"}.`
-                : `Still ${generateResult.page_count} pages after trimming — consider shortening some sections.`}
-              {generateResult.passes_applied.length > 0 &&
-                ` Adjustments made: ${generateResult.passes_applied.join(", ")}.`}
-            </p>
-          )}
-          {generateState === "error" && (
-            <p style={{ fontSize: 12.5, color: "var(--ds-accent-danger, #C4432B)", margin: 0 }}>
-              {generateError}
-            </p>
+              Download PDF →
+            </a>
           )}
         </div>
+        {generateState === "done" && generateResult && (
+          <p style={{ fontSize: 12.5, color: "var(--ds-ink-450)", margin: 0 }}>
+            {generateResult.fit_achieved
+              ? `Fit on ${generateResult.page_count} page${generateResult.page_count === 1 ? "" : "s"}.`
+              : `Still ${generateResult.page_count} pages after trimming — consider shortening some sections.`}
+            {generateResult.passes_applied.length > 0 &&
+              ` Adjustments made: ${generateResult.passes_applied.join(", ")}.`}
+          </p>
+        )}
+        {generateState === "error" && (
+          <p style={{ fontSize: 12.5, color: "var(--ds-accent-danger, #C4432B)", margin: 0 }}>
+            {generateError}
+          </p>
+        )}
       </div>
     </div>
   );

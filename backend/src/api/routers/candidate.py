@@ -15,6 +15,13 @@ class ProfileDataPayload(BaseModel):
     projects: List[Dict[str, Any]]
     education: List[Dict[str, Any]]
     certifications: Optional[List[str]] = []
+    achievements: Optional[List[str]] = []
+    languages: Optional[List[Dict[str, Any]]] = []
+    volunteer: Optional[List[Dict[str, Any]]] = []
+    publications: Optional[List[Dict[str, Any]]] = []
+    awards: Optional[List[str]] = []
+    career_preferences: Optional[Dict[str, Any]] = {}
+    ai_instructions: Optional[str] = None
     custom_sections: Optional[List[Dict[str, Any]]] = []
 
 class AnswerQuestionPayload(BaseModel):
