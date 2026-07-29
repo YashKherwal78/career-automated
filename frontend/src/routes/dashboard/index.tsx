@@ -271,7 +271,10 @@ function DashboardHome() {
             </p>
           </div>
         ) : (
-          <div className="flex gap-3.5 overflow-x-auto pb-2" style={{ scrollbarWidth: "thin" }}>
+          <div
+            className="flex gap-3.5 overflow-x-auto pb-2 no-scrollbar"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
             {topJobs.map((job, i) => (
               <button
                 key={job.job_id}

@@ -50,9 +50,10 @@ function DashboardLayout() {
   return (
     <DashboardProvider>
       <div
-        className="flex relative peach-gradient"
+        className="flex relative"
         style={{
           minHeight: "100vh",
+          background: "var(--ds-surface-page)",
           fontFamily: "var(--ds-font-body)",
           color: "var(--ds-text-primary)",
         }}
@@ -65,8 +66,34 @@ function DashboardLayout() {
             width: 520,
             height: 520,
             borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(232,93,44,0.12), transparent 70%)",
+            background: "radial-gradient(circle, rgba(232,93,44,0.18), transparent 70%)",
             filter: "blur(60px)",
+            zIndex: 0,
+          }}
+        />
+        <div
+          className="pointer-events-none fixed"
+          style={{
+            top: 280,
+            right: -140,
+            width: 460,
+            height: 460,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(139,123,192,0.14), transparent 70%)",
+            filter: "blur(60px)",
+            zIndex: 0,
+          }}
+        />
+        <div
+          className="pointer-events-none fixed"
+          style={{
+            bottom: -160,
+            left: "40%",
+            width: 500,
+            height: 500,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(217,164,65,0.12), transparent 70%)",
+            filter: "blur(70px)",
             zIndex: 0,
           }}
         />
