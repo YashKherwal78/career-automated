@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../lib/auth";
 import { ServiceRegistry } from "../../lib/services";
+import { getDisplayName, getInitial } from "../../lib/displayName";
 
 const NAV_ITEMS = [
   { name: "Dashboard", to: "/dashboard" as const },
@@ -24,7 +25,7 @@ function NavIcon({ name, active, pressed }: { name: string; active: boolean; pre
         {[0, 1, 2, 3].map((i) => (
           <div
             key={i}
-            className="rounded-[1px]"
+            className="rounded-[1.5px]"
             style={{
               background: color,
               transform: pressed ? "scale(1.3)" : "scale(1)",
@@ -36,38 +37,74 @@ function NavIcon({ name, active, pressed }: { name: string; active: boolean; pre
     );
   }
   if (name === "Tailoring") {
+    // Two equalizer-style slider tracks, each with a round handle that
+    // slides along the track on press — matches the design's two sliders,
+    // not a plain double-line icon.
+    const handleLeft = [pressed ? 6 : 9, pressed ? 5 : 2];
     return (
-      <div className="flex flex-col gap-1.5" style={{ width: 16 }}>
+      <div className="flex flex-col gap-[5px]" style={{ width: 16 }}>
         {[0, 1].map((i) => (
-          <div
-            key={i}
-            className="rounded-full"
-            style={{
-              height: 2,
-              background: color,
-              transform: pressed ? "translateX(-3px)" : "translateX(0)",
-              transition: `${pressTransition} ${i * 40}ms`,
-            }}
-          />
+          <div key={i} className="relative rounded-[1px]" style={{ height: 2, background: color }}>
+            <div
+              className="absolute rounded-full"
+              style={{
+                top: -3,
+                width: 8,
+                height: 8,
+                background: color,
+                left: handleLeft[i],
+                transition: `left 220ms cubic-bezier(0.4,0,0.2,1) ${i * 20}ms`,
+              }}
+            />
+          </div>
         ))}
       </div>
     );
   }
   if (name === "Resume") {
+    // Document outline with two text lines + a short trailing line, not a
+    // blank rectangle.
     return (
       <div
         className="relative rounded-[2px]"
         style={{
-          width: pressed ? 15.5 : 14,
+          width: 14,
           height: 16,
           border: `2px solid ${color}`,
           transition: "width 160ms cubic-bezier(0.4,0,0.2,1)",
         }}
-      />
+      >
+        <div
+          className="absolute rounded-[1px]"
+          style={{
+            top: 3,
+            left: 2,
+            height: 1.4,
+            background: color,
+            width: pressed ? 9.5 : 8,
+            transition: "width 200ms cubic-bezier(0.4,0,0.2,1)",
+          }}
+        />
+        <div
+          className="absolute rounded-[1px]"
+          style={{
+            top: 6.5,
+            left: 2,
+            height: 1.4,
+            background: color,
+            width: pressed ? 9.5 : 8,
+            transition: "width 200ms cubic-bezier(0.4,0,0.2,1) 40ms",
+          }}
+        />
+        <div
+          className="absolute rounded-[1px]"
+          style={{ top: 10, left: 2, width: 5, height: 1.4, background: color }}
+        />
+      </div>
     );
   }
   if (name === "Applications") {
-    const widths = pressed ? ["40%", "100%", "70%"] : ["100%", "70%", "40%"];
+    const widths = pressed ? [11, 16, 10] : [16, 12, 14];
     return (
       <div className="flex flex-col gap-[3px]" style={{ width: 16 }}>
         {widths.map((w, i) => (
@@ -75,10 +112,10 @@ function NavIcon({ name, active, pressed }: { name: string; active: boolean; pre
             key={i}
             className="rounded-[1px]"
             style={{
-              height: 3,
+              height: 2,
               background: color,
               width: w,
-              transition: "width 180ms cubic-bezier(0.4,0,0.2,1)",
+              transition: `width 200ms cubic-bezier(0.4,0,0.2,1) ${i * 40}ms`,
             }}
           />
         ))}
@@ -146,7 +183,8 @@ export function Sidebar({ isOpen, isNarrow }: SidebarProps) {
   const navigate = useNavigate();
   const { profile, logout } = useAuth();
   const [pressedItem, setPressedItem] = useState<string | null>(null);
-  const initial = (profile?.full_name || "?").charAt(0).toUpperCase();
+  const displayName = getDisplayName(profile?.full_name, profile?.email, "You");
+  const initial = getInitial(profile?.full_name, profile?.email, "?");
   const { data: subscription } = useQuery({
     queryKey: ["subscription"],
     queryFn: () => ServiceRegistry.getBillingService().getSubscription(),
@@ -175,6 +213,10 @@ export function Sidebar({ isOpen, isNarrow }: SidebarProps) {
     alignSelf: "flex-start",
     width: isOpen ? 248 : 0,
     minHeight: "100vh",
+    background: "var(--ds-glass-65, rgba(255,255,255,0.5))",
+    backdropFilter: "blur(20px) saturate(160%)",
+    WebkitBackdropFilter: "blur(20px) saturate(160%)",
+    borderRight: "1px solid rgba(255,255,255,0.6)",
     overflow: "hidden",
     transition: "width 0.4s cubic-bezier(0.4,0,0.2,1), padding 0.4s cubic-bezier(0.4,0,0.2,1)",
     padding: isOpen ? "74px 18px 26px" : "74px 0 26px",
@@ -295,7 +337,7 @@ export function Sidebar({ isOpen, isNarrow }: SidebarProps) {
         </div>
         <div className="min-w-0 flex-1">
           <div className="font-semibold" style={{ fontSize: 14, color: "var(--ds-ink-900)" }}>
-            {profile?.full_name || "You"}
+            {displayName}
           </div>
           <div
             className="flex items-center gap-1"

@@ -2,6 +2,7 @@ export interface Job {
   job_id: string;
   title: string;
   canonical_name: string;
+  company_domain?: string | null;
   location: string;
   salary_min: number | null;
   salary_max: number | null;

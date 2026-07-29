@@ -4,12 +4,14 @@ import { useQuery } from "@tanstack/react-query";
 import { ServiceRegistry, type Job } from "../../lib/services";
 import { useAuth } from "../../lib/auth";
 import { API_BASE } from "../../lib/api";
+import { getDisplayName } from "../../lib/displayName";
 import { DsChip } from "../../components/ds/Chip";
 import { DsInput } from "../../components/ds/Input";
 import { DsButton } from "../../components/ds/Button";
 import { JobDetailModal } from "../../components/dashboard/JobDetailModal";
 import { CareerPreferencesModal } from "../../components/dashboard/CareerPreferencesModal";
 import { UpgradeModal } from "../../components/dashboard/UpgradeModal";
+import { CompanyLogo } from "../../components/dashboard/CompanyLogo";
 
 export const Route = createFileRoute("/dashboard/")({
   component: DashboardHome,
@@ -18,7 +20,6 @@ export const Route = createFileRoute("/dashboard/")({
 const LOCATIONS = ["All", "Remote", "Bangalore", "Hyderabad", "Mumbai"];
 const PAGE_SIZE = 10;
 const FREE_TIER_AUTO_APPLY_CAP = 5;
-const AVATAR_COLORS = ["#635BFF", "#2F2A26", "#5E5CE6", "#8B7BC0", "#6B8F5E", "#D9A441"];
 
 function timeGreeting(): string {
   const h = new Date().getHours();
@@ -29,7 +30,7 @@ function timeGreeting(): string {
 
 function DashboardHome() {
   const { profile, session } = useAuth();
-  const firstName = (profile?.full_name || "there").split(" ")[0];
+  const firstName = getDisplayName(profile?.full_name, profile?.email, "there").split(" ")[0];
 
   const {
     data: jobs = [],
@@ -276,27 +277,15 @@ function DashboardHome() {
                 key={job.job_id}
                 type="button"
                 onClick={() => setSelectedJob(job)}
-                className="text-left flex-shrink-0 transition-transform hover:-translate-y-0.5"
+                className="text-left flex-shrink-0 transition-transform hover:-translate-y-0.5 glass-card"
                 style={{
                   width: 220,
-                  background: "var(--ds-surface-card)",
-                  border: "1px solid var(--ds-border-default)",
                   borderRadius: "var(--ds-radius-xl)",
                   padding: 18,
                 }}
               >
                 <div className="flex items-center gap-2" style={{ marginBottom: 14 }}>
-                  <div
-                    className="flex items-center justify-center flex-shrink-0 text-white font-bold rounded-[6px]"
-                    style={{
-                      width: 24,
-                      height: 24,
-                      background: AVATAR_COLORS[i % AVATAR_COLORS.length],
-                      fontSize: 11,
-                    }}
-                  >
-                    {(job.canonical_name || "?").charAt(0).toUpperCase()}
-                  </div>
+                  <CompanyLogo name={job.canonical_name} domain={job.company_domain} size={24} radius={6} />
                   <div
                     className="whitespace-nowrap overflow-hidden text-ellipsis"
                     style={{ fontSize: 12, fontWeight: 600, color: "var(--ds-ink-500)" }}
@@ -321,7 +310,7 @@ function DashboardHome() {
                       borderRadius: "var(--ds-radius-pill)",
                     }}
                   >
-                    {job.job_score}% match
+                    {showResumeNudge ? "Top pick" : `${job.job_score}% match`}
                   </span>
                 </div>
                 <div style={{ fontSize: 11, color: "var(--ds-ink-400)" }}>{job.location}</div>
@@ -405,9 +394,7 @@ function DashboardHome() {
           </div>
         ) : (
           <>
-            <div
-              style={{ background: "rgba(255,255,255,0.5)", borderRadius: "var(--ds-radius-lg)" }}
-            >
+            <div className="glass-card" style={{ borderRadius: "var(--ds-radius-lg)" }}>
               {pageResults.map((job) => (
                 <div
                   key={job.job_id}
@@ -418,18 +405,7 @@ function DashboardHome() {
                   className="flex items-center gap-3 cursor-pointer hover:bg-white/50"
                   style={{ padding: "13px 16px", borderBottom: "1px solid rgba(255,255,255,0.5)" }}
                 >
-                  <div
-                    className="flex items-center justify-center flex-shrink-0 text-white font-semibold"
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 8,
-                      background: "var(--ds-lavender-500)",
-                      fontSize: 13,
-                    }}
-                  >
-                    {(job.canonical_name || "?").charAt(0).toUpperCase()}
-                  </div>
+                  <CompanyLogo name={job.canonical_name} domain={job.company_domain} size={32} radius={8} fontSize={13} />
                   <div className="flex-1 min-w-0">
                     <div
                       className="whitespace-nowrap overflow-hidden text-ellipsis"
@@ -443,11 +419,13 @@ function DashboardHome() {
                       {job.canonical_name} · {job.location}
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <div style={{ fontSize: "var(--ds-text-sm)", fontWeight: 700 }}>
-                      {job.job_score}%
+                  {!showResumeNudge && (
+                    <div className="text-right flex-shrink-0">
+                      <div style={{ fontSize: "var(--ds-text-sm)", fontWeight: 700 }}>
+                        {job.job_score}%
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -484,6 +462,7 @@ function DashboardHome() {
           queued={queuedJobIds.includes(selectedJob.job_id)}
           onToggleQueue={() => handleQueueJob(selectedJob.job_id)}
           onClose={() => setSelectedJob(null)}
+          showMatch={!showResumeNudge}
         />
       )}
 

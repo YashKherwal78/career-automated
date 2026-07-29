@@ -50,10 +50,9 @@ function DashboardLayout() {
   return (
     <DashboardProvider>
       <div
-        className="flex relative"
+        className="flex relative peach-gradient"
         style={{
           minHeight: "100vh",
-          background: "var(--ds-surface-page)",
           fontFamily: "var(--ds-font-body)",
           color: "var(--ds-text-primary)",
         }}

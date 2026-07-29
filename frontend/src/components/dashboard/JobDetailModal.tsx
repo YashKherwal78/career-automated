@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import type { Job } from "../../lib/services";
 import { DsModal, DsModalCloseButton } from "../ds/Modal";
+import { CompanyLogo } from "./CompanyLogo";
 
 interface AccordionSectionProps {
   title: string;
@@ -60,11 +61,13 @@ export function JobDetailModal({
   queued,
   onToggleQueue,
   onClose,
+  showMatch = true,
 }: {
   job: Job;
   queued: boolean;
   onToggleQueue: () => void;
   onClose: () => void;
+  showMatch?: boolean;
 }) {
   const salary = formatSalary(job);
   const breakdown = job.score_breakdown || [];
@@ -96,18 +99,7 @@ export function JobDetailModal({
           Mission
         </div>
         <div className="flex items-center gap-3.5" style={{ marginBottom: 20 }}>
-          <div
-            className="flex items-center justify-center flex-shrink-0 text-white font-bold"
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 12,
-              background: "var(--ds-lavender-500)",
-              fontSize: 18,
-            }}
-          >
-            {(job.canonical_name || "?").charAt(0).toUpperCase()}
-          </div>
+          <CompanyLogo name={job.canonical_name} domain={job.company_domain} size={48} radius={12} fontSize={18} />
           <div className="min-w-0">
             <div
               className="font-[var(--ds-font-display)] font-bold"
@@ -130,17 +122,19 @@ export function JobDetailModal({
             </div>
             <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ds-ink-800)" }}>Ready</div>
           </div>
-          <div>
-            <div
-              className="uppercase font-bold"
-              style={{ fontSize: 11, color: "var(--ds-ink-400)", marginBottom: 4 }}
-            >
-              Match
+          {showMatch && (
+            <div>
+              <div
+                className="uppercase font-bold"
+                style={{ fontSize: 11, color: "var(--ds-ink-400)", marginBottom: 4 }}
+              >
+                Match
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ds-ink-800)" }}>
+                {job.job_score}%
+              </div>
             </div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ds-ink-800)" }}>
-              {job.job_score}%
-            </div>
-          </div>
+          )}
           {salary && (
             <div>
               <div

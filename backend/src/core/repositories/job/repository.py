@@ -68,6 +68,7 @@ class JobRepository(BaseRepository, IJobRepository):
             json_company = json_extract('n.raw_payload_json', '$.company')
             base_query = f"""
                 SELECT COALESCE(i.canonical_name, {json_company}, n.company_id) AS canonical_name,
+                       i.domain AS company_domain,
                        n.job_id, n.title, n.provider,
                        n.location, n.remote_type as remote, n.employment_type,
                        n.salary_min, n.salary_max, n.posted_at, n.apply_url,
@@ -113,7 +114,7 @@ class JobRepository(BaseRepository, IJobRepository):
             # or scoring ever runs, so every visible result is the same company.
             per_company_cap = 5
             query = f"""
-                SELECT canonical_name, job_id, title, 0 as job_score, provider,
+                SELECT canonical_name, company_domain, job_id, title, 0 as job_score, provider,
                        '{{}}' as score_breakdown, 0.0 as match_score, 0.0 as priority_score,
                        0.0 as scoring_confidence, '' as recommendation_reason,
                        'NEW' as application_status,
@@ -128,7 +129,11 @@ class JobRepository(BaseRepository, IJobRepository):
                 WHERE company_rank <= {per_company_cap}
             """
             limit = conn.dialect.create_limit(2000)
-            query += f" ORDER BY posted_at DESC {limit}"
+            # company_rank first so the fetch itself is interleaved across
+            # companies (rank-1 job from every company, then rank-2, ...) —
+            # otherwise a stable sort on tied intent_scores later would still
+            # let one company's jobs cluster together in the visible results.
+            query += f" ORDER BY company_rank ASC, posted_at DESC {limit}"
             c = conn.execute(query, tuple(params))
             raw_jobs = [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
 
@@ -141,6 +146,13 @@ class JobRepository(BaseRepository, IJobRepository):
             profile = self._load_profile(conn, user_id)
             passed, rejected, _ = self._hard_reject.filter_batch(raw_jobs, profile)
             scored_jobs, _ = self._intent_filter.score_batch(passed, profile)
+
+            # job_score was a hardcoded 0 placeholder in the SQL — populate it
+            # for real from the computed intent_score so every consumer of
+            # this API (not just the one screen that happened to prefer
+            # intent_score client-side) shows an actual match percentage.
+            for j in scored_jobs:
+                j["job_score"] = round(j.get("intent_score", 0.0) * 100)
 
             if min_score is not None:
                 scored_jobs = [j for j in scored_jobs if j.get("intent_score", 0.0) >= min_score / 100.0]
@@ -161,6 +173,7 @@ class JobRepository(BaseRepository, IJobRepository):
             json_company = json_extract('n.raw_payload_json', '$.company')
             query = f"""
                 SELECT COALESCE(i.canonical_name, {json_company}, n.company_id) AS canonical_name,
+                       i.domain AS company_domain,
                        n.job_id, n.title, 0 as job_score, n.provider, '{{}}' as score_breakdown,
                        0.0 as match_score, 0.0 as priority_score, 0.0 as scoring_confidence,
                        '' as recommendation_reason, 'NEW' as application_status,
