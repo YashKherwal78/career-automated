@@ -150,7 +150,13 @@ class CompanyDiscoveryWorker(BaseWorker):
                 from src.discovery.pipeline.discovery_orchestrator import DiscoveryOrchestrator
                 
                 # Setup orchestrator
-                sources = [HeadProbeSource(), StaticLandingPageSource(), ExternalSearchSource(), HeuristicTokenSource()]
+                # Free (zero-API-call) sources first — HeadProbe/StaticLandingPage
+                # check the company's own site directly, HeuristicToken guesses
+                # known ATS URL templates and verifies via a plain HTTP request.
+                # ExternalSearchSource (paid) goes last and is skipped entirely
+                # by the orchestrator once a free source already finds a
+                # plugin-recognized match (see discovery_orchestrator.py).
+                sources = [HeadProbeSource(), StaticLandingPageSource(), HeuristicTokenSource(), ExternalSearchSource()]
                 plugins = [
                     GreenhouseDiscoveryPlugin(), LeverDiscoveryPlugin(), WorkdayDiscoveryPlugin(), 
                     AshbyDiscoveryPlugin(), WorkableDiscoveryPlugin(), SmartRecruitersDiscoveryPlugin(), 

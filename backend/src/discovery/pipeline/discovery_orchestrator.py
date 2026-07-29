@@ -15,6 +15,11 @@ from src.discovery.pipeline.candidate_evaluator import rank_candidates
 from src.discovery.pipeline.landing_page_resolver import LandingPageResolver
 import hashlib
 
+# Sources whose discover() makes a real paid/quota-limited API call (currently
+# just search) — skipped once free HTTP-probing sources already found a
+# plugin-recognized candidate, since there's nothing left to verify for free.
+_PAID_SOURCE_NAMES = {"ExternalSearchSource"}
+
 logger = logging.getLogger("DiscoveryOrchestrator")
 
 class DiscoveryContext:
@@ -132,7 +137,19 @@ class DiscoveryOrchestrator:
             )
             
             # 1. Candidate Generation
+            has_plugin_match = False
             for source in self.sources:
+                # Free HTTP-probing sources (HeadProbe/StaticLandingPage/
+                # HeuristicToken) already found a real, plugin-recognized ATS
+                # URL — there's nothing left for a paid search call to verify,
+                # so skip it rather than spending quota for no reason.
+                if has_plugin_match and source.__class__.__name__ in _PAID_SOURCE_NAMES:
+                    logger.debug(
+                        f"Skipping {source.__class__.__name__} for {company} — "
+                        f"already have a plugin-recognized candidate from a free source."
+                    )
+                    continue
+
                 context.candidate_pool = list(candidate_pool.values())
 
                 try:
@@ -151,6 +168,7 @@ class DiscoveryOrchestrator:
                             identity, _conf, _reason = plugin.parse_candidate(canonical_url)
                             if identity:
                                 canonical_url = plugin.canonicalize(canonical_url)
+                                has_plugin_match = True
                                 break
 
                         if canonical_url not in candidate_pool:
