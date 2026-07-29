@@ -387,33 +387,33 @@ class OracleNormalizer(JobNormalizer):
         company_id = raw_job.company_id
         job = raw_job.payload
         
-        title = job.get("Title") or job.get("title") or ""
-        external_id = str(job.get("RequisitionNumber") or job.get("Id") or "")
-        location = job.get("PrimaryLocation") or job.get("Location") or ""
-        
+        title = job.get("title") or job.get("Title") or ""
+        external_id = str(job.get("id") or job.get("RequisitionNumber") or job.get("Id") or "")
+        location = job.get("location") or job.get("PrimaryLocation") or job.get("Location") or ""
+
         identity = JobIdentity(
             provider="oracle",
             board_id=company_id,
             external_job_id=external_id if external_id else None,
             fingerprint=self._generate_fingerprint(company_id, title, location, "") if not external_id else None
         )
-        
+
         jobs.append(CanonicalJob(
             identity=identity,
             company_id=company_id,
             board_id=company_id,
             title=title,
-            description=job.get("Description") or "",
+            description=job.get("description") or job.get("Description") or "",
             location=location,
             remote_type="",
-            department=job.get("Organization") or "",
-            employment_type="",
+            department=job.get("department") or job.get("Organization") or "",
+            employment_type=job.get("employment_type") or "",
             seniority="",
             salary_min=None,
             salary_max=None,
             salary_currency="",
-            posted_at=job.get("PostedDate") or "",
-            apply_url=job.get("ApplyUrl") or "",
+            posted_at=job.get("posted_date") or job.get("PostedDate") or "",
+            apply_url=job.get("url") or job.get("ApplyUrl") or "",
             raw_payload=job,
             normalized_at=time.time()
         ))

@@ -43,21 +43,31 @@ class RipplingConnector(Connector):
         for job in result.payload:
             if not isinstance(job, dict):
                 continue
-            ats_id = str(job.get("id") or "")
+            # Real response uses "uuid" as the identifier, not "id" — the old
+            # code always read an empty string here, silently skipping every
+            # job (verified against live data: api.rippling.com/.../jobs
+            # returns real results, the connector just misread the shape).
+            ats_id = str(job.get("uuid") or "")
             if not ats_id or ats_id in seen:
                 continue
             seen.add(ats_id)
 
-            title = job.get("title") or ""
+            # Real response uses "name" as the title field, not "title".
+            title = job.get("name") or ""
             if not title:
                 continue
 
-            department = job.get("department") or ""
-            location = job.get("workLocation") or ""
+            dept_obj = job.get("department") or {}
+            department = dept_obj.get("label") or "" if isinstance(dept_obj, dict) else str(dept_obj)
+
+            loc_obj = job.get("workLocation") or {}
+            location = loc_obj.get("label") or "" if isinstance(loc_obj, dict) else str(loc_obj)
 
             # Check if there is an employment type dict
             emp_type_obj = job.get("employmentType") or {}
             emp_type = emp_type_obj.get("label") or "" if isinstance(emp_type_obj, dict) else str(emp_type_obj)
+
+            job_url = job.get("url") or f"https://ats.rippling.com/{slug}/jobs/{ats_id}"
 
             payload = {
                 "id": ats_id,
@@ -65,7 +75,7 @@ class RipplingConnector(Connector):
                 "department": department,
                 "location": location,
                 "employment_type": emp_type,
-                "url": f"https://ats.rippling.com/board/{slug}/job/{ats_id}",
+                "url": job_url,
             }
 
             yield RawJob(

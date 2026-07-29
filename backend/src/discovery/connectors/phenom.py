@@ -9,7 +9,7 @@ from src.discovery.registry.connector_registry import ConnectorRegistry
 
 logger = logging.getLogger("PhenomConnector")
 
-_CSRF_RE = re.compile(r'csrfToken\s*:\s*["\']([^"\']+)["\']')
+_CSRF_RE = re.compile(r'csrfToken["\']?\s*:\s*["\']([^"\']+)["\']')
 
 
 class PhenomConnector(Connector):
@@ -139,7 +139,7 @@ class PhenomConnector(Connector):
                 cntry = item.get("country") or ""
                 location = ", ".join(p for p in [city, state, cntry] if p)
 
-                job_url = item.get("jobUrl") or item.get("url") or ""
+                job_url = item.get("applyUrl") or item.get("jobUrl") or item.get("url") or ""
                 if job_url and not job_url.startswith("http"):
                     job_url = f"{base_url}{job_url if job_url.startswith('/') else '/' + job_url}"
 
