@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
 import { API_BASE } from "./api";
@@ -32,6 +32,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Once true, onboarding_complete can never be set back to false on this
+  // profile for the rest of the session — it's a one-way transition in
+  // reality, and stale/out-of-order profile fetches (e.g. Supabase's own
+  // onAuthStateChange listener firing independently of an explicit
+  // refreshProfile() call) must not be able to undo a completed onboarding
+  // just because they resolve later with an older snapshot.
+  const onboardingCompletedRef = useRef(false);
+
+  const applyProfile = (p: UserProfile | null) => {
+    if (p && onboardingCompletedRef.current) {
+      p = { ...p, onboarding_complete: true };
+    }
+    setProfile(p);
+  };
+
   const fetchProfile = async (token: string): Promise<UserProfile | null> => {
     try {
       const response = await fetch(`${API_BASE}/users/me`, {
@@ -51,7 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshProfile = async () => {
     if (session?.access_token) {
       const p = await fetchProfile(session.access_token);
-      setProfile(p);
+      applyProfile(p);
     }
   };
 
@@ -59,6 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // redirect guard can't lose a race against a concurrent onAuthStateChange
   // profile fetch that resolves with a stale (pre-onboarding) snapshot.
   const markOnboardingComplete = () => {
+    onboardingCompletedRef.current = true;
     setProfile((prev) => (prev ? { ...prev, onboarding_complete: true } : prev));
   };
 
@@ -69,7 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(initialSession?.user ?? null);
       if (initialSession?.access_token) {
         const p = await fetchProfile(initialSession.access_token);
-        setProfile(p);
+        applyProfile(p);
       }
       setIsLoading(false);
     });
@@ -82,7 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(currentSession?.user ?? null);
       if (currentSession?.access_token) {
         const p = await fetchProfile(currentSession.access_token);
-        setProfile(p);
+        applyProfile(p);
       } else {
         setProfile(null);
       }
