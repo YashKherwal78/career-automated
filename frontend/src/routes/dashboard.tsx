@@ -12,6 +12,7 @@ export const Route = createFileRoute("/dashboard")({
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "../lib/auth";
+import { useSidebarState } from "../lib/useSidebarState";
 
 // Set VITE_DEV_AUTH_BYPASS=true in .env to skip auth redirect during development
 const DEV_BYPASS = import.meta.env.VITE_DEV_AUTH_BYPASS === "true";
@@ -19,6 +20,7 @@ const DEV_BYPASS = import.meta.env.VITE_DEV_AUTH_BYPASS === "true";
 function DashboardLayout() {
   const { user, profile, isLoading } = useAuth();
   const navigate = useNavigate();
+  const { sidebarOpen, isNarrow, toggleSidebar, closeSidebarOverlay } = useSidebarState();
 
   useEffect(() => {
     if (DEV_BYPASS) return; // Skip auth check in dev bypass mode
@@ -69,10 +71,84 @@ function DashboardLayout() {
             zIndex: 0,
           }}
         />
-        <div className="relative" style={{ zIndex: 1 }}>
-          <Sidebar />
+        <div
+          onClick={toggleSidebar}
+          role="button"
+          tabIndex={0}
+          aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+          style={{
+            position: "fixed",
+            top: 20,
+            left: 20,
+            width: 44,
+            height: 44,
+            borderRadius: 12,
+            zIndex: 90,
+            background: "rgba(255,255,255,0.65)",
+            backdropFilter: "blur(16px) saturate(160%)",
+            WebkitBackdropFilter: "blur(16px) saturate(160%)",
+            border: "1px solid rgba(255,255,255,0.6)",
+            cursor: "pointer",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              left: 12,
+              top: sidebarOpen ? 21 : 15,
+              width: 20,
+              height: 2,
+              background: "var(--ds-ink-800)",
+              borderRadius: 2,
+              transform: sidebarOpen ? "rotate(45deg)" : "none",
+              transition: "top 0.25s ease, transform 0.25s ease",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              left: 12,
+              top: 21,
+              width: 20,
+              height: 2,
+              background: "var(--ds-ink-800)",
+              borderRadius: 2,
+              opacity: sidebarOpen ? 0 : 1,
+              transition: "opacity 0.2s ease",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              left: 12,
+              top: sidebarOpen ? 21 : 27,
+              width: 20,
+              height: 2,
+              background: "var(--ds-ink-800)",
+              borderRadius: 2,
+              transform: sidebarOpen ? "rotate(-45deg)" : "none",
+              transition: "top 0.25s ease, transform 0.25s ease",
+            }}
+          />
         </div>
-        <main className="flex-1 min-w-0 relative" style={{ zIndex: 1 }}>
+        {isNarrow && sidebarOpen && (
+          <div
+            onClick={closeSidebarOverlay}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 75,
+              background: "rgba(30,20,12,0.32)",
+            }}
+          />
+        )}
+        <div className="relative" style={{ zIndex: 1 }}>
+          <Sidebar isOpen={sidebarOpen} isNarrow={isNarrow} />
+        </div>
+        <main
+          className="flex-1 min-w-0 relative"
+          style={{ zIndex: 1, paddingTop: isNarrow ? 76 : undefined }}
+        >
           <Outlet />
         </main>
       </div>

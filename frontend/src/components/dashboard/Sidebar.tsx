@@ -1,3 +1,4 @@
+import { useState, type CSSProperties } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../lib/auth";
@@ -11,8 +12,9 @@ const NAV_ITEMS = [
   { name: "Settings", to: "/dashboard/settings" as const },
 ];
 
-function NavIcon({ name, active }: { name: string; active: boolean }) {
+function NavIcon({ name, active, pressed }: { name: string; active: boolean; pressed: boolean }) {
   const color = active ? "var(--ds-accent-primary)" : "var(--ds-ink-700)";
+  const pressTransition = "transform 160ms cubic-bezier(0.4,0,0.2,1)";
   if (name === "Dashboard") {
     return (
       <div
@@ -20,7 +22,15 @@ function NavIcon({ name, active }: { name: string; active: boolean }) {
         style={{ gridTemplateColumns: "6px 6px", gridTemplateRows: "6px 6px" }}
       >
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="rounded-[1px]" style={{ background: color }} />
+          <div
+            key={i}
+            className="rounded-[1px]"
+            style={{
+              background: color,
+              transform: pressed ? "scale(1.3)" : "scale(1)",
+              transition: `${pressTransition} ${i * 30}ms`,
+            }}
+          />
         ))}
       </div>
     );
@@ -28,8 +38,18 @@ function NavIcon({ name, active }: { name: string; active: boolean }) {
   if (name === "Tailoring") {
     return (
       <div className="flex flex-col gap-1.5" style={{ width: 16 }}>
-        <div className="rounded-full" style={{ height: 2, background: color }} />
-        <div className="rounded-full" style={{ height: 2, background: color }} />
+        {[0, 1].map((i) => (
+          <div
+            key={i}
+            className="rounded-full"
+            style={{
+              height: 2,
+              background: color,
+              transform: pressed ? "translateX(-3px)" : "translateX(0)",
+              transition: `${pressTransition} ${i * 40}ms`,
+            }}
+          />
+        ))}
       </div>
     );
   }
@@ -37,22 +57,45 @@ function NavIcon({ name, active }: { name: string; active: boolean }) {
     return (
       <div
         className="relative rounded-[2px]"
-        style={{ width: 14, height: 16, border: `2px solid ${color}` }}
+        style={{
+          width: pressed ? 15.5 : 14,
+          height: 16,
+          border: `2px solid ${color}`,
+          transition: "width 160ms cubic-bezier(0.4,0,0.2,1)",
+        }}
       />
     );
   }
   if (name === "Applications") {
+    const widths = pressed ? ["40%", "100%", "70%"] : ["100%", "70%", "40%"];
     return (
       <div className="flex flex-col gap-[3px]" style={{ width: 16 }}>
-        <div className="rounded-[1px]" style={{ height: 3, background: color }} />
-        <div className="rounded-[1px]" style={{ height: 3, background: color, width: "70%" }} />
-        <div className="rounded-[1px]" style={{ height: 3, background: color, width: "40%" }} />
+        {widths.map((w, i) => (
+          <div
+            key={i}
+            className="rounded-[1px]"
+            style={{
+              height: 3,
+              background: color,
+              width: w,
+              transition: "width 180ms cubic-bezier(0.4,0,0.2,1)",
+            }}
+          />
+        ))}
       </div>
     );
   }
   // Settings gear
   return (
-    <div className="relative" style={{ width: 20, height: 20 }}>
+    <div
+      className="relative"
+      style={{
+        width: 20,
+        height: 20,
+        transform: pressed ? "rotate(35deg)" : "rotate(0deg)",
+        transition: "transform 220ms cubic-bezier(0.4,0,0.2,1)",
+      }}
+    >
       {[0, 60, 120, 180, 240, 300].map((deg) => (
         <div
           key={deg}
@@ -93,9 +136,15 @@ function NavIcon({ name, active }: { name: string; active: boolean }) {
   );
 }
 
-export function Sidebar() {
+export interface SidebarProps {
+  isOpen: boolean;
+  isNarrow: boolean;
+}
+
+export function Sidebar({ isOpen, isNarrow }: SidebarProps) {
   const location = useLocation();
   const { profile, logout } = useAuth();
+  const [pressedItem, setPressedItem] = useState<string | null>(null);
   const initial = (profile?.full_name || "?").charAt(0).toUpperCase();
   const { data: subscription } = useQuery({
     queryKey: ["subscription"],
@@ -104,10 +153,39 @@ export function Sidebar() {
   });
   const tierLabel = subscription?.tier === "pro" ? "Pro" : "Free tier";
 
+  const narrowStyle: CSSProperties = {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    bottom: 0,
+    width: "min(248px, 78vw)",
+    zIndex: 80,
+    background: "var(--ds-glass-65, rgba(255,255,255,0.65))",
+    backdropFilter: "blur(20px) saturate(160%)",
+    WebkitBackdropFilter: "blur(20px) saturate(160%)",
+    transform: isOpen ? "translateX(0)" : "translateX(-100%)",
+    transition: "transform 0.35s cubic-bezier(0.4,0,0.2,1)",
+    overflow: "hidden",
+    padding: "74px 18px 26px",
+  };
+  const wideStyle: CSSProperties = {
+    position: "sticky",
+    top: 0,
+    alignSelf: "flex-start",
+    width: isOpen ? 248 : 0,
+    minHeight: "100vh",
+    overflow: "hidden",
+    transition: "width 0.4s cubic-bezier(0.4,0,0.2,1), padding 0.4s cubic-bezier(0.4,0,0.2,1)",
+    padding: isOpen ? "74px 18px 26px" : "74px 0 26px",
+  };
+
   return (
     <div
       className="flex flex-col"
-      style={{ width: 232, flexShrink: 0, padding: "24px 16px", minHeight: "100vh" }}
+      style={{
+        ...(isNarrow ? narrowStyle : wideStyle),
+        flexShrink: 0,
+      }}
     >
       <Link to="/" className="whitespace-nowrap" style={{ padding: "0 10px", marginBottom: 40 }}>
         <div className="flex items-center gap-1.5">
@@ -153,6 +231,7 @@ export function Sidebar() {
       <nav className="flex flex-col gap-1.5 whitespace-nowrap">
         {NAV_ITEMS.map((item) => {
           const active = location.pathname === item.to;
+          const isPressed = pressedItem === item.name;
           return (
             <Link
               key={item.name}
@@ -166,6 +245,9 @@ export function Sidebar() {
                 fontSize: 15,
                 background: active ? "var(--ds-brand-orange-tint-08)" : "transparent",
               }}
+              onMouseDown={() => setPressedItem(item.name)}
+              onMouseUp={() => setPressedItem(null)}
+              onMouseLeave={() => setPressedItem(null)}
             >
               <div
                 className="flex items-center justify-center flex-shrink-0"
@@ -177,7 +259,7 @@ export function Sidebar() {
                   border: "1px solid rgba(255,255,255,0.6)",
                 }}
               >
-                <NavIcon name={item.name} active={active} />
+                <NavIcon name={item.name} active={active} pressed={isPressed} />
               </div>
               {item.name}
             </Link>

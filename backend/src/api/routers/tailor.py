@@ -35,7 +35,12 @@ router = APIRouter(prefix="/resume", tags=["Resume Tailoring"])
 
 class TailorRequest(BaseModel):
     candidate_id: str
-    job_id: str
+    # Either job_id (tailor against an already-tracked job) or job_description
+    # (paste-your-own JD, parsed ad hoc) must be provided — see _resolve_jd_profile.
+    job_id: Optional[str] = None
+    job_description: Optional[str] = None
+    company_name: Optional[str] = None
+    role_title: Optional[str] = None
     confidence_threshold: float = Field(default=0.70, ge=0.0, le=1.0)
     llm_provider: str = "groq"
     llm_model: str = "llama3-70b-8192"
@@ -161,6 +166,56 @@ def _load_jd_profile(job_id: str, db) -> Dict[str, Any]:
     }
 
 
+def _resolve_jd_profile(request: "TailorRequest", db) -> tuple[str, Dict[str, Any]]:
+    """
+    Resolves (effective_job_id, jd_profile) from either an existing tracked
+    job_id (DB lookup, never re-parses) or a pasted job_description (parsed
+    ad hoc, no DB involved) — the free-text path a candidate uses when the
+    job isn't one CareerAutomated has already discovered.
+    """
+    if request.job_id:
+        return request.job_id, _load_jd_profile(request.job_id, db)
+
+    if request.job_description:
+        import uuid
+        from src.resume_intelligence.job_intelligence.parser import JobDescriptionParser
+
+        adhoc_id = f"adhoc-{uuid.uuid4().hex[:12]}"
+        try:
+            profile = JobDescriptionParser().parse_job_description(
+                job_id=adhoc_id,
+                company_name=request.company_name or "Unknown",
+                role_title=request.role_title or "Software Engineer",
+                raw_description=request.job_description,
+            )
+            return adhoc_id, profile.model_dump()
+        except Exception as exc:
+            logger.warning("Ad-hoc JD parse failed: %s", exc)
+            return adhoc_id, {
+                "job_id": adhoc_id,
+                "company_name": request.company_name or "Unknown",
+                "role_title": request.role_title or "Software Engineer",
+                "ats_keywords": [],
+                "required_skills": [],
+                "technologies": [],
+                "responsibilities": [],
+                "strategy_signals": {
+                    "role_type": "Software Engineer",
+                    "primary_domain": "Tech",
+                    "summary_strategy": "Calibrate narrative towards the role.",
+                    "bullet_strategy": "Emphasize system design and technical impact.",
+                    "preferred_ownership_style": "OWNER",
+                    "priority_keywords": [],
+                    "priority_project_types": [],
+                },
+            }
+
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Provide either job_id or job_description.",
+    )
+
+
 def _load_candidate_memory(candidate_id: str, db) -> Dict[str, Any]:
     """
     Derive candidate memory ("global" facts for summary building, per
@@ -227,10 +282,10 @@ def tailor_resume(request: TailorRequest, db=Depends(get_db)):
     Runs TailoringEngineV1 and returns the ephemeral tailored .tex.
     Result is never written to DB.
     """
-    logger.info("POST /resume/tailor — candidate=%s, job=%s", request.candidate_id, request.job_id)
+    logger.info("POST /resume/tailor — candidate=%s, job=%s", request.candidate_id, request.job_id or "(pasted JD)")
 
     base_tex = _load_base_tex(request.candidate_id, db)
-    jd_profile = _load_jd_profile(request.job_id, db)
+    effective_job_id, jd_profile = _resolve_jd_profile(request, db)
     candidate_memory = _load_candidate_memory(request.candidate_id, db)
 
     engine = TailoringEngineV1()
@@ -241,13 +296,13 @@ def tailor_resume(request: TailorRequest, db=Depends(get_db)):
         confidence_threshold=request.confidence_threshold,
         llm_provider=request.llm_provider,
         llm_model=request.llm_model,
-        job_id=request.job_id,
+        job_id=effective_job_id,
     )
 
     try:
         result: TailoringResult = engine.tailor(inp)
     except HardBlockError as exc:
-        logger.error("HardBlockError for job=%s: %s", request.job_id, exc.violations)
+        logger.error("HardBlockError for job=%s: %s", effective_job_id, exc.violations)
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail={
@@ -256,7 +311,7 @@ def tailor_resume(request: TailorRequest, db=Depends(get_db)):
             },
         )
     except Exception as exc:
-        logger.exception("Unexpected tailoring error for job=%s", request.job_id)
+        logger.exception("Unexpected tailoring error for job=%s", effective_job_id)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Tailoring engine error: {str(exc)}",
@@ -293,10 +348,10 @@ def preview_tailor(request: TailorRequest, db=Depends(get_db)):
     Preview what the tailoring engine would change — without returning the full .tex.
     Used by the dashboard diff view.
     """
-    logger.info("POST /resume/tailor/preview — candidate=%s, job=%s", request.candidate_id, request.job_id)
+    logger.info("POST /resume/tailor/preview — candidate=%s, job=%s", request.candidate_id, request.job_id or "(pasted JD)")
 
     base_tex = _load_base_tex(request.candidate_id, db)
-    jd_profile = _load_jd_profile(request.job_id, db)
+    effective_job_id, jd_profile = _resolve_jd_profile(request, db)
     candidate_memory = _load_candidate_memory(request.candidate_id, db)
 
     engine = TailoringEngineV1()
@@ -307,7 +362,7 @@ def preview_tailor(request: TailorRequest, db=Depends(get_db)):
         confidence_threshold=request.confidence_threshold,
         llm_provider=request.llm_provider,
         llm_model=request.llm_model,
-        job_id=request.job_id,
+        job_id=effective_job_id,
     )
 
     try:
