@@ -127,10 +127,12 @@ function DashboardHome() {
           className="font-[var(--ds-font-display)] font-semibold"
           style={{ fontSize: "clamp(26px,3.6vw,46px)", margin: "0 0 12px" }}
         >
-          You're all caught up.
+          {showResumeNudge ? "Let's get you matched." : "You're all caught up."}
         </h1>
         <p style={{ fontSize: 16, color: "var(--ds-ink-500)", margin: 0, maxWidth: 480 }}>
-          We'll let you know when something needs you.
+          {showResumeNudge
+            ? "Add your resume — takes about two minutes — and we'll start finding roles that actually fit you."
+            : "We'll let you know when something needs you."}
         </p>
       </div>
 
@@ -201,8 +203,7 @@ function DashboardHome() {
                 Start your journey
               </div>
               <p style={{ fontSize: 13.5, color: "var(--ds-ink-500)", margin: 0, maxWidth: 440 }}>
-                These are top jobs across the platform. Upload your resume or build one from
-                scratch to get personalized matches ranked to your skills and experience.
+                These are top jobs on the platform — not personalized yet.
               </p>
             </div>
             <div className="flex gap-2.5 flex-shrink-0">
