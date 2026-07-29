@@ -21,8 +21,16 @@ class DiscoveryRepository(BaseRepository):
             # %% is the escaped literal percent sign in psycopg-formatted queries.
             cursor = conn.execute(
                 f"SELECT id, company_id, canonical_name, domain, website, aliases "
-                f"FROM company_identities "
+                f"FROM company_identities ci "
                 f"WHERE id > {p} AND id %% {p} = {p} "
+                # Skip companies that already have a working, actively-crawled
+                # endpoint — re-running full discovery (up to 20 HTTP requests +
+                # 2 paid search-API queries each) on companies we already have
+                # working data for would be pure wasted cost at scale (61k+ rows).
+                f"AND NOT EXISTS ("
+                f"  SELECT 1 FROM ats_registry ar "
+                f"  WHERE ar.company_id = ci.company_id AND ar.status = 'ACTIVE'"
+                f") "
                 f"ORDER BY id ASC {limit_clause}",
                 (last_id, num_shards, shard_id)
             )
