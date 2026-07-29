@@ -7,6 +7,10 @@ WORKDIR /app
 # actual \usepackage list (latexsym, fullpage, titlesec, enumitem, hyperref,
 # fancyhdr, babel, tabularx, xcolor) — not texlive-full, to keep the image
 # reasonably sized and the build fast.
+# DEBIAN_FRONTEND=noninteractive + TZ avoid tzdata (pulled in transitively by
+# texlive) blocking the build on an interactive timezone prompt.
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
 RUN apt-get update && apt-get install -y \
     sqlite3 \
     texlive-latex-base \
