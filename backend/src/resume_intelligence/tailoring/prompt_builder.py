@@ -117,6 +117,30 @@ HARD CONSTRAINTS (non-negotiable):
 - If confidence < 0.70 for any bullet, set replace_with to the ORIGINAL text exactly
 """)
 
+# Candidate-chosen style knobs (Settings > AI Preferences) — these only ever
+# shape prompt wording/voice, never the hard constraints above. Tone and
+# aggressiveness are deliberately independent axes (a "Bold" rewrite is still
+# just as "Warm" or "Professional" as requested).
+_TONE_INSTRUCTIONS: Dict[str, str] = {
+    "Professional": "clear, professional, measured language",
+    "Confident": "bold, confident language that foregrounds ownership and impact",
+    "Warm": "warm, personable language that still reads as professional",
+}
+
+_AGGRESSIVENESS_INSTRUCTIONS: Dict[str, str] = {
+    "Conservative": "Make minimal wording changes — stay close to the original phrasing and structure, adjusting only what's needed for relevance.",
+    "Balanced": "Rewrite naturally for this role, balancing fidelity to the original with improved clarity and relevance.",
+    "Bold": "Rewrite assertively for maximum impact and relevance to this specific role — restructure sentences freely for stronger framing.",
+}
+
+
+def build_style_instruction(writing_tone: str, tailoring_aggressiveness: str) -> str:
+    tone = _TONE_INSTRUCTIONS.get(writing_tone, _TONE_INSTRUCTIONS["Professional"])
+    aggressiveness = _AGGRESSIVENESS_INSTRUCTIONS.get(
+        tailoring_aggressiveness, _AGGRESSIVENESS_INSTRUCTIONS["Balanced"]
+    )
+    return f"STYLE: Use {tone}. {aggressiveness}"
+
 
 # ---------------------------------------------------------------------------
 # Summary Prompt Builder
@@ -131,6 +155,7 @@ class SummaryPromptBuilder:
         candidate_memory_evidence: List[str],
         summary_rules: Dict[str, Any],
         current_summary: Optional[str] = None,
+        style_instruction: str = "",
     ) -> str:
         """
         Builds the summary rewrite prompt.
@@ -156,6 +181,7 @@ class SummaryPromptBuilder:
 
         prompt = dedent(f"""\
 You are a professional resume editor. Rewrite the candidate summary for this specific role.
+{style_instruction}
 
 TARGET ROLE: {role_type} at {company}
 DOMAIN: {domain}
@@ -194,6 +220,7 @@ class ExperienceBatchPromptBuilder:
         candidate_memory: Dict[str, Any],
         bullet_rules: Dict[str, Any],
         action_verbs: Dict[str, Any],
+        style_instruction: str = "",
     ) -> str:
         """
         Builds a single prompt for ALL experience entries.
@@ -231,6 +258,7 @@ class ExperienceBatchPromptBuilder:
 
         prompt = dedent(f"""\
 You are a professional resume editor. Rewrite the experience section bullets for this specific role.
+{style_instruction}
 
 TARGET ROLE: {role_type}
 BULLET STRATEGY: {bullet_strategy}
@@ -271,6 +299,7 @@ class ProjectsBatchPromptBuilder:
         entries: List[ParsedEntry],
         jd_profile: Dict[str, Any],
         bullet_rules: Dict[str, Any],
+        style_instruction: str = "",
     ) -> str:
         """
         Builds a single prompt for ALL project entries.
@@ -293,6 +322,7 @@ class ProjectsBatchPromptBuilder:
 
         prompt = dedent(f"""\
 You are a professional resume editor. Rewrite the project section bullets for this specific role.
+{style_instruction}
 
 TARGET ROLE: {role_type}
 RELEVANT PROJECT TYPES: {proj_types_block}
@@ -325,9 +355,15 @@ class PromptBuilder:
     Facade: loads rules once and exposes build_* methods.
     """
 
-    def __init__(self, kb_path: str):
+    def __init__(
+        self,
+        kb_path: str,
+        writing_tone: str = "Professional",
+        tailoring_aggressiveness: str = "Balanced",
+    ):
         self.kb_path = kb_path
         self._rules = _load_rules(kb_path)
+        self._style_instruction = build_style_instruction(writing_tone, tailoring_aggressiveness)
 
     def build_summary_prompt(
         self,
@@ -342,6 +378,7 @@ class PromptBuilder:
             candidate_memory_evidence=candidate_memory_evidence,
             summary_rules=self._rules.get("summary_rules.yaml", {}),
             current_summary=current_summary,
+            style_instruction=self._style_instruction,
         )
 
     def build_experience_prompt(
@@ -356,6 +393,7 @@ class PromptBuilder:
             candidate_memory=candidate_memory,
             bullet_rules=self._rules.get("bullet_rules.yaml", {}),
             action_verbs=self._rules.get("action_verbs.yaml", {}),
+            style_instruction=self._style_instruction,
         )
 
     def build_projects_prompt(
@@ -367,4 +405,5 @@ class PromptBuilder:
             entries=entries,
             jd_profile=jd_profile,
             bullet_rules=self._rules.get("bullet_rules.yaml", {}),
+            style_instruction=self._style_instruction,
         )

@@ -145,6 +145,16 @@ class TailoringInput(BaseModel):
     job_id: str = ""
     mutation_budget: MutationBudget = Field(default_factory=MutationBudget)
 
+    writing_tone: str = "Professional"
+    """One of Professional / Confident / Warm — from the candidate's saved
+    Settings > AI Preferences. Shapes the LLM prompt's voice, nothing else."""
+
+    tailoring_aggressiveness: str = "Balanced"
+    """One of Conservative / Balanced / Bold — from Settings > AI Preferences.
+    Shapes how much latitude the prompt gives the LLM to restructure bullet
+    wording (not a change to guardrail/integrity constraints — those stay
+    fixed regardless of style preference)."""
+
 
 # ---------------------------------------------------------------------------
 # LLM output — JSON patch operations (change #8)

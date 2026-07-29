@@ -269,6 +269,36 @@ def _load_candidate_memory(candidate_id: str, db) -> Dict[str, Any]:
         return {}
 
 
+def _load_ai_preferences(candidate_id: str, db) -> tuple[str, str]:
+    """
+    Reads the candidate's saved Settings > AI Preferences (writing tone,
+    tailoring aggressiveness) from the same profile_data blob Settings
+    persists to (see useSettingsPersistence in settings.tsx — these were
+    previously saved but never read anywhere, including here).
+    """
+    try:
+        cursor = db.cursor()
+        cursor.execute(
+            "SELECT profile_data FROM public.user_career_profiles WHERE user_id = %s LIMIT 1",
+            (candidate_id,)
+        )
+        row = cursor.fetchone()
+        if not row or not row[0]:
+            return "Professional", "Balanced"
+        profile = row[0]
+        if isinstance(profile, str):
+            import json
+            profile = json.loads(profile)
+        ai_settings = (profile.get("settings") or {}).get("ai") or {}
+        return (
+            ai_settings.get("writingTone") or "Professional",
+            ai_settings.get("tailoringAggro") or "Balanced",
+        )
+    except Exception:
+        logger.warning("AI preference lookup failed for candidate_id=%s", candidate_id, exc_info=True)
+        return "Professional", "Balanced"
+
+
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
@@ -287,6 +317,7 @@ def tailor_resume(request: TailorRequest, db=Depends(get_db)):
     base_tex = _load_base_tex(request.candidate_id, db)
     effective_job_id, jd_profile = _resolve_jd_profile(request, db)
     candidate_memory = _load_candidate_memory(request.candidate_id, db)
+    writing_tone, tailoring_aggressiveness = _load_ai_preferences(request.candidate_id, db)
 
     engine = TailoringEngineV1()
     inp = TailoringInput(
@@ -297,6 +328,8 @@ def tailor_resume(request: TailorRequest, db=Depends(get_db)):
         llm_provider=request.llm_provider,
         llm_model=request.llm_model,
         job_id=effective_job_id,
+        writing_tone=writing_tone,
+        tailoring_aggressiveness=tailoring_aggressiveness,
     )
 
     try:
@@ -353,6 +386,7 @@ def preview_tailor(request: TailorRequest, db=Depends(get_db)):
     base_tex = _load_base_tex(request.candidate_id, db)
     effective_job_id, jd_profile = _resolve_jd_profile(request, db)
     candidate_memory = _load_candidate_memory(request.candidate_id, db)
+    writing_tone, tailoring_aggressiveness = _load_ai_preferences(request.candidate_id, db)
 
     engine = TailoringEngineV1()
     inp = TailoringInput(
@@ -363,6 +397,8 @@ def preview_tailor(request: TailorRequest, db=Depends(get_db)):
         llm_provider=request.llm_provider,
         llm_model=request.llm_model,
         job_id=effective_job_id,
+        writing_tone=writing_tone,
+        tailoring_aggressiveness=tailoring_aggressiveness,
     )
 
     try:

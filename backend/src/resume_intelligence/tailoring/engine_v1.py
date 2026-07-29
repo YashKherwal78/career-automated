@@ -385,7 +385,11 @@ class TailoringEngineV1:
 
         llm = LLMCaller(inp.llm_provider, inp.llm_model)
         memory = CandidateMemory(inp.candidate_memory)
-        prompt_builder = PromptBuilder(inp.resume_knowledge2_path)
+        prompt_builder = PromptBuilder(
+            inp.resume_knowledge2_path,
+            writing_tone=inp.writing_tone,
+            tailoring_aggressiveness=inp.tailoring_aggressiveness,
+        )
 
         # ── Phase 1: Parse ──────────────────────────────────────────────────
         logger.debug("Phase 1: Parsing .tex")
