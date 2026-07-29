@@ -37,7 +37,7 @@ function DashboardHome() {
     error,
   } = useQuery({
     queryKey: ["jobs", "dashboard"],
-    queryFn: () => ServiceRegistry.getJobService().getJobs({ sort_by: "score" }),
+    queryFn: () => ServiceRegistry.getJobService().getJobs({ sort_by: "score", page_size: 100 }),
   });
 
   const { data: hasProfileData } = useQuery({
@@ -85,7 +85,7 @@ function DashboardHome() {
     });
   }, [jobs, locationFilter, searchQuery]);
 
-  const topJobs = jobs.slice(0, 5);
+  const topJobs = jobs.slice(0, 15);
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageResults = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
 

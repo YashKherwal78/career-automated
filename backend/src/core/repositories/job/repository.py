@@ -66,11 +66,9 @@ class JobRepository(BaseRepository, IJobRepository):
         with self.transaction() as conn:
             p = conn.dialect.placeholder()
             json_company = json_extract('n.raw_payload_json', '$.company')
-            query = f"""
+            base_query = f"""
                 SELECT COALESCE(i.canonical_name, {json_company}, n.company_id) AS canonical_name,
-                       n.job_id, n.title, 0 as job_score, n.provider, '{{}}' as score_breakdown,
-                       0.0 as match_score, 0.0 as priority_score, 0.0 as scoring_confidence,
-                       '' as recommendation_reason, 'NEW' as application_status,
+                       n.job_id, n.title, n.provider,
                        n.location, n.remote_type as remote, n.employment_type,
                        n.salary_min, n.salary_max, n.posted_at, n.apply_url,
                        n.description, n.status
@@ -83,33 +81,54 @@ class JobRepository(BaseRepository, IJobRepository):
             job_board_providers = ["linkedin", "google_jobs", "wellfound", "indeed"]
             provider_placeholders = ",".join([p] * len(job_board_providers))
             if pipeline == "B":
-                query += f" AND n.provider IN ({provider_placeholders})"
+                base_query += f" AND n.provider IN ({provider_placeholders})"
                 params.extend(job_board_providers)
             else:
-                query += f" AND n.provider NOT IN ({provider_placeholders})"
+                base_query += f" AND n.provider NOT IN ({provider_placeholders})"
                 params.extend(job_board_providers)
 
             if provider:
-                query += f" AND n.provider = {p}"
+                base_query += f" AND n.provider = {p}"
                 params.append(provider)
             if company:
-                query += f" AND (n.company_id LIKE {p} OR COALESCE(i.canonical_name, {json_company}, '') LIKE {p})"
+                base_query += f" AND (n.company_id LIKE {p} OR COALESCE(i.canonical_name, {json_company}, '') LIKE {p})"
                 params.extend([f"%{company}%", f"%{company}%"])
             if location:
-                query += f" AND n.location LIKE {p}"
+                base_query += f" AND n.location LIKE {p}"
                 params.append(f"%{location}%")
             if remote_type:
-                query += f" AND n.remote_type = {p}"
+                base_query += f" AND n.remote_type = {p}"
                 params.append(remote_type)
             if employment_type:
-                query += f" AND n.employment_type = {p}"
+                base_query += f" AND n.employment_type = {p}"
                 params.append(employment_type)
             if min_salary is not None:
-                query += f" AND (n.salary_max >= {p} OR n.salary_min >= {p})"
+                base_query += f" AND (n.salary_max >= {p} OR n.salary_min >= {p})"
                 params.extend([min_salary, min_salary])
 
+            # Cap how many of the initial fetch can come from any one company.
+            # Without this, a franchise/retail poster that bulk-syncs thousands
+            # of store-level listings (e.g. 24k+ active jobs from one chain)
+            # dominates the ORDER BY posted_at DESC window before hard-reject
+            # or scoring ever runs, so every visible result is the same company.
+            per_company_cap = 5
+            query = f"""
+                SELECT canonical_name, job_id, title, 0 as job_score, provider,
+                       '{{}}' as score_breakdown, 0.0 as match_score, 0.0 as priority_score,
+                       0.0 as scoring_confidence, '' as recommendation_reason,
+                       'NEW' as application_status,
+                       location, remote, employment_type, salary_min, salary_max,
+                       posted_at, apply_url, description, status
+                FROM (
+                    SELECT b.*, ROW_NUMBER() OVER (
+                        PARTITION BY b.canonical_name ORDER BY b.posted_at DESC
+                    ) AS company_rank
+                    FROM ({base_query}) b
+                ) ranked
+                WHERE company_rank <= {per_company_cap}
+            """
             limit = conn.dialect.create_limit(2000)
-            query += f" ORDER BY n.posted_at DESC {limit}"
+            query += f" ORDER BY posted_at DESC {limit}"
             c = conn.execute(query, tuple(params))
             raw_jobs = [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
 

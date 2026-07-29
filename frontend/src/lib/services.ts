@@ -64,6 +64,7 @@ export interface JobService {
     seniority?: string;
     min_salary?: number;
     sort_by?: string;
+    page_size?: number;
   }): Promise<Job[]>;
   getBoardJobs(filters?: {
     company?: string;
@@ -76,6 +77,7 @@ export interface JobService {
     seniority?: string;
     min_salary?: number;
     sort_by?: string;
+    page_size?: number;
   }): Promise<Job[]>;
   getJob(jobId: string): Promise<Job>;
   getRecentJobs(): Promise<Job[]>;
@@ -125,7 +127,7 @@ export class ApiJobService implements JobService {
     if (filters?.seniority) params.append("seniority", filters.seniority);
     if (filters?.min_salary) params.append("min_salary", String(filters.min_salary));
     if (filters?.sort_by) params.append("sort_by", filters.sort_by);
-    params.append("page_size", "50");
+    params.append("page_size", String(filters?.page_size || 100));
     return params;
   }
 
