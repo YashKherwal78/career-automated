@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import { DsInput } from "../../components/ds/Input";
 import { DsModal, DsModalCloseButton } from "../../components/ds/Modal";
 
@@ -365,9 +365,52 @@ function ApplicationDetailModal({ app, onClose }: { app: ApplicationRecord; onCl
   );
 }
 
+function SkeletonRow() {
+  return (
+    <div
+      className="flex items-center gap-3.5 animate-pulse"
+      style={{
+        padding: "16px 18px",
+        background: "var(--ds-surface-card)",
+        border: "1px solid var(--ds-border-default)",
+        borderRadius: "var(--ds-radius-lg)",
+      }}
+    >
+      <div
+        className="flex-shrink-0"
+        style={{ width: 38, height: 38, borderRadius: 10, background: "var(--ds-surface-tint)" }}
+      />
+      <div className="flex-1 min-w-0 flex flex-col gap-2">
+        <div
+          style={{
+            height: 12,
+            width: "50%",
+            borderRadius: 4,
+            background: "var(--ds-surface-tint)",
+          }}
+        />
+        <div
+          style={{
+            height: 10,
+            width: "70%",
+            borderRadius: 4,
+            background: "var(--ds-surface-tint)",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 function ApplicationsPage() {
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoaded(true), 300);
+    return () => clearTimeout(t);
+  }, []);
 
   const filtered = useMemo(() => {
     if (!search) return APPLICATIONS;
@@ -409,7 +452,31 @@ function ApplicationsPage() {
         />
       </div>
 
-      {waitingItems.length === 0 && finishedItems.length === 0 ? (
+      {!loaded ? (
+        <div className="flex flex-col gap-2.5">
+          {[0, 1, 2].map((i) => (
+            <SkeletonRow key={i} />
+          ))}
+        </div>
+      ) : APPLICATIONS.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "70px 24px" }}>
+          <div
+            className="font-[var(--ds-font-display)] font-semibold"
+            style={{ fontSize: 16.5, marginBottom: 8 }}
+          >
+            Your applications will show up here.
+          </div>
+          <p style={{ fontSize: 13.5, color: "var(--ds-ink-500)", margin: "0 0 12px" }}>
+            Once you apply or we apply for you, you'll be able to track everything from here.
+          </p>
+          <Link
+            to="/dashboard"
+            style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ds-accent-primary)" }}
+          >
+            See matching jobs →
+          </Link>
+        </div>
+      ) : waitingItems.length === 0 && finishedItems.length === 0 ? (
         <div style={{ textAlign: "center", padding: "70px 24px" }}>
           <div
             className="font-[var(--ds-font-display)] font-semibold"

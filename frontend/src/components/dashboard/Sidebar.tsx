@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from "react";
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../lib/auth";
 import { ServiceRegistry } from "../../lib/services";
@@ -143,6 +143,7 @@ export interface SidebarProps {
 
 export function Sidebar({ isOpen, isNarrow }: SidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { profile, logout } = useAuth();
   const [pressedItem, setPressedItem] = useState<string | null>(null);
   const initial = (profile?.full_name || "?").charAt(0).toUpperCase();
@@ -304,7 +305,29 @@ export function Sidebar({ isOpen, isNarrow }: SidebarProps) {
               className="rounded-full flex-shrink-0"
               style={{ width: 4, height: 4, background: "var(--ds-ink-400)" }}
             />
-            {tierLabel}
+            {tierLabel === "Free tier" ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate({ to: "/upgrade" });
+                }}
+                style={{
+                  fontSize: 11.5,
+                  color: "var(--ds-accent-primary)",
+                  fontWeight: 600,
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                }}
+              >
+                Free tier — Upgrade
+              </button>
+            ) : (
+              tierLabel
+            )}
           </div>
         </div>
         <button
