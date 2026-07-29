@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ServiceRegistry, type Job } from "../../lib/services";
 import { useAuth } from "../../lib/auth";
+import { API_BASE } from "../../lib/api";
 import { DsChip } from "../../components/ds/Chip";
 import { DsInput } from "../../components/ds/Input";
 import { DsButton } from "../../components/ds/Button";
@@ -27,7 +28,7 @@ function timeGreeting(): string {
 }
 
 function DashboardHome() {
-  const { profile } = useAuth();
+  const { profile, session } = useAuth();
   const firstName = (profile?.full_name || "there").split(" ")[0];
 
   const {
@@ -38,6 +39,24 @@ function DashboardHome() {
     queryKey: ["jobs", "dashboard"],
     queryFn: () => ServiceRegistry.getJobService().getJobs({ sort_by: "score" }),
   });
+
+  const { data: hasProfileData } = useQuery({
+    queryKey: ["candidate-profile-completeness"],
+    queryFn: async (): Promise<boolean> => {
+      const res = await fetch(`${API_BASE}/candidate/profile`, {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (!res.ok) return false;
+      const data = await res.json();
+      const p = data.profile_data || {};
+      const hasSkills = Object.values(p.skills || {}).some(
+        (arr: any) => Array.isArray(arr) && arr.length > 0
+      );
+      return (p.experience || []).length > 0 || hasSkills;
+    },
+    enabled: !!session,
+  });
+  const showResumeNudge = hasProfileData === false;
 
   const [locationFilter, setLocationFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -162,6 +181,40 @@ function DashboardHome() {
             </DsButton>
           )}
         </div>
+
+        {showResumeNudge && (
+          <div
+            className="flex items-center justify-between flex-wrap gap-4"
+            style={{
+              background: "var(--ds-brand-orange-tint-08)",
+              border: "1px solid rgba(255,255,255,0.6)",
+              borderRadius: "var(--ds-radius-xl)",
+              padding: "20px 24px",
+              marginBottom: 18,
+            }}
+          >
+            <div>
+              <div
+                className="font-[var(--ds-font-display)] font-semibold"
+                style={{ fontSize: 16, marginBottom: 4 }}
+              >
+                Start your journey
+              </div>
+              <p style={{ fontSize: 13.5, color: "var(--ds-ink-500)", margin: 0, maxWidth: 440 }}>
+                These are top jobs across the platform. Upload your resume or build one from
+                scratch to get personalized matches ranked to your skills and experience.
+              </p>
+            </div>
+            <div className="flex gap-2.5 flex-shrink-0">
+              <DsButton asChild variant="primary" size="md">
+                <Link to="/dashboard/resume">Upload resume</Link>
+              </DsButton>
+              <DsButton asChild variant="outline" size="md">
+                <Link to="/dashboard/resume">Create new resume</Link>
+              </DsButton>
+            </div>
+          </div>
+        )}
 
         {isLoading ? (
           <div
