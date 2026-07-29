@@ -1,6 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useAuth } from "../../lib/auth";
+import { supabase } from "../../lib/supabase";
+import { API_BASE } from "../../lib/api";
 import { DsModal } from "../../components/ds/Modal";
 import { DsDropzone } from "../../components/ds/Dropzone";
 
@@ -88,6 +90,26 @@ function CycleValue({
   );
 }
 
+function TextValue({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <input
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="bg-transparent outline-none text-right"
+      style={{ fontSize: 13.5, color: "var(--ds-ink-600)", flexShrink: 0, width: 160 }}
+    />
+  );
+}
+
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 36 }}>
@@ -117,7 +139,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function SettingsPage() {
-  const { profile, logout } = useAuth();
+  const { profile, user, session, logout } = useAuth();
+  const navigate = useNavigate();
 
   const [preferredRole, setPreferredRole] = useState("Software Engineer");
   const [experienceLevel, setExperienceLevel] = useState("Mid-level");
@@ -134,9 +157,83 @@ function SettingsPage() {
   const [weeklySummary, setWeeklySummary] = useState(true);
   const [interviewReminders, setInterviewReminders] = useState(true);
 
+  const [replaceFile, setReplaceFile] = useState<File | null>(null);
   const [showReplaceModal, setShowReplaceModal] = useState(false);
+  const [replaceState, setReplaceState] = useState<"idle" | "uploading">("idle");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteTyped, setDeleteTyped] = useState("");
+  const [deleteState, setDeleteState] = useState<"idle" | "deleting" | "error">("idle");
+
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [passwordState, setPasswordState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [passwordError, setPasswordError] = useState("");
+
+  const [signOutAllState, setSignOutAllState] = useState<"idle" | "working" | "done">("idle");
+
+  const provider = user?.app_metadata?.provider === "google" ? "Google" : "Email & password";
+
+  const changePassword = async () => {
+    if (newPassword.length < 8) {
+      setPasswordError("Password should be at least 8 characters.");
+      setPasswordState("error");
+      return;
+    }
+    setPasswordState("saving");
+    setPasswordError("");
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) {
+      setPasswordError(error.message);
+      setPasswordState("error");
+      return;
+    }
+    setPasswordState("saved");
+    setNewPassword("");
+    setTimeout(() => {
+      setPasswordState("idle");
+      setShowPasswordModal(false);
+    }, 1200);
+  };
+
+  const signOutEverywhere = async () => {
+    setSignOutAllState("working");
+    await supabase.auth.signOut({ scope: "global" });
+    setSignOutAllState("done");
+  };
+
+  const confirmReplace = async () => {
+    if (!replaceFile) return;
+    setReplaceState("uploading");
+    const formData = new FormData();
+    formData.append("file", replaceFile);
+    try {
+      await fetch(`${API_BASE}/users/upload_resume`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+        body: formData,
+      });
+    } catch (err) {
+      console.error("Resume upload failed:", err);
+    }
+    setReplaceState("idle");
+    setReplaceFile(null);
+    setShowReplaceModal(false);
+  };
+
+  const deleteAccount = async () => {
+    setDeleteState("deleting");
+    try {
+      const res = await fetch(`${API_BASE}/candidate/account`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (!res.ok) throw new Error("Failed to delete account");
+      await logout();
+      navigate({ to: "/" });
+    } catch {
+      setDeleteState("error");
+    }
+  };
 
   return (
     <div style={{ padding: "40px clamp(24px,4vw,56px)", maxWidth: 720 }}>
@@ -183,6 +280,7 @@ function SettingsPage() {
           <RowLabel label="Password" sub="Change your account password" />
           <button
             type="button"
+            onClick={() => setShowPasswordModal(true)}
             style={{
               fontSize: 13,
               fontWeight: 600,
@@ -197,46 +295,69 @@ function SettingsPage() {
         </Row>
       </Section>
 
+      <Section title="Security">
+        <Row>
+          <RowLabel
+            label="Sign-in method"
+            sub={provider === "Google" ? "Connected via Google" : undefined}
+          />
+          <span style={{ fontSize: 13.5, color: "var(--ds-ink-450)" }}>{provider}</span>
+        </Row>
+        <Row>
+          <RowLabel
+            label="Sign out everywhere"
+            sub="Ends every active session, including this one"
+          />
+          <button
+            type="button"
+            onClick={signOutEverywhere}
+            disabled={signOutAllState === "working"}
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              color: "var(--ds-accent-primary)",
+              background: "none",
+              border: "none",
+              cursor: signOutAllState === "working" ? "default" : "pointer",
+            }}
+          >
+            {signOutAllState === "working"
+              ? "Signing out…"
+              : signOutAllState === "done"
+                ? "Done ✓"
+                : "Sign out everywhere"}
+          </button>
+        </Row>
+      </Section>
+
       <Section title="Career">
         <Row>
           <RowLabel label="Preferred role" />
-          <CycleValue
+          <TextValue
             value={preferredRole}
-            options={["Software Engineer", "Product Manager", "Designer", "Data Scientist"]}
             onChange={setPreferredRole}
+            placeholder="e.g. Software Engineer"
           />
         </Row>
         <Row>
           <RowLabel label="Experience level" />
-          <CycleValue
+          <TextValue
             value={experienceLevel}
-            options={["Entry-level", "Mid-level", "Senior", "Lead"]}
             onChange={setExperienceLevel}
+            placeholder="e.g. Mid-level"
           />
         </Row>
         <Row>
           <RowLabel label="Location" />
-          <CycleValue
-            value={location}
-            options={["Remote", "Bangalore", "Hyderabad", "Mumbai"]}
-            onChange={setLocation}
-          />
+          <TextValue value={location} onChange={setLocation} placeholder="e.g. Remote" />
         </Row>
         <Row>
           <RowLabel label="Salary expectation" />
-          <CycleValue
-            value={salary}
-            options={["₹5L+", "₹10L+", "₹15L+", "₹25L+"]}
-            onChange={setSalary}
-          />
+          <TextValue value={salary} onChange={setSalary} placeholder="e.g. ₹15L+" />
         </Row>
         <Row>
           <RowLabel label="Work authorization" />
-          <CycleValue
-            value={workAuth}
-            options={["Indian citizen", "Need sponsorship", "No preference"]}
-            onChange={setWorkAuth}
-          />
+          <TextValue value={workAuth} onChange={setWorkAuth} placeholder="e.g. Indian citizen" />
         </Row>
       </Section>
 
@@ -380,7 +501,13 @@ function SettingsPage() {
       </Section>
 
       {showReplaceModal && (
-        <DsModal onClose={() => setShowReplaceModal(false)} maxWidth={480}>
+        <DsModal
+          onClose={() => {
+            setShowReplaceModal(false);
+            setReplaceFile(null);
+          }}
+          maxWidth={480}
+        >
           <div style={{ padding: 28 }}>
             <div className="flex items-center justify-between" style={{ marginBottom: 18 }}>
               <h2
@@ -391,7 +518,10 @@ function SettingsPage() {
               </h2>
               <button
                 type="button"
-                onClick={() => setShowReplaceModal(false)}
+                onClick={() => {
+                  setShowReplaceModal(false);
+                  setReplaceFile(null);
+                }}
                 style={{
                   background: "none",
                   border: "none",
@@ -403,7 +533,124 @@ function SettingsPage() {
                 ✕
               </button>
             </div>
-            <DsDropzone onFile={() => setShowReplaceModal(false)} />
+            {replaceFile ? (
+              <div>
+                <div
+                  className="flex items-center justify-between"
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: "var(--ds-radius-md)",
+                    background: "var(--ds-surface-tint)",
+                    marginBottom: 16,
+                  }}
+                >
+                  <span style={{ fontSize: 13.5, fontWeight: 600 }}>{replaceFile.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => setReplaceFile(null)}
+                    style={{
+                      fontSize: 12,
+                      color: "#B4392C",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Remove
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={confirmReplace}
+                  disabled={replaceState === "uploading"}
+                  className="w-full font-semibold"
+                  style={{
+                    padding: 13,
+                    borderRadius: "var(--ds-radius-md)",
+                    border: "none",
+                    background: "var(--ds-accent-primary)",
+                    color: "var(--ds-text-on-brand)",
+                    fontSize: 14,
+                    cursor: replaceState === "uploading" ? "default" : "pointer",
+                  }}
+                >
+                  {replaceState === "uploading" ? "Uploading…" : "Upload"}
+                </button>
+              </div>
+            ) : (
+              <DsDropzone onFile={(file) => setReplaceFile(file)} />
+            )}
+          </div>
+        </DsModal>
+      )}
+
+      {showPasswordModal && (
+        <DsModal
+          onClose={() => {
+            setShowPasswordModal(false);
+            setNewPassword("");
+            setPasswordState("idle");
+          }}
+          maxWidth={400}
+        >
+          <div style={{ padding: 28 }}>
+            <h2
+              className="font-[var(--ds-font-display)] font-semibold"
+              style={{ fontSize: 18, margin: "0 0 16px" }}
+            >
+              Change password
+            </h2>
+            <label
+              style={{
+                display: "block",
+                fontSize: 12,
+                fontWeight: 600,
+                color: "var(--ds-ink-600)",
+                marginBottom: 6,
+              }}
+            >
+              New password
+            </label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="At least 8 characters"
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                padding: "10px 12px",
+                borderRadius: "var(--ds-radius-md)",
+                border: "1px solid var(--ds-border-medium)",
+                fontSize: 13.5,
+              }}
+            />
+            {passwordState === "error" && (
+              <p style={{ fontSize: 12.5, color: "#B4392C", margin: "8px 0 0" }}>{passwordError}</p>
+            )}
+            <button
+              type="button"
+              onClick={changePassword}
+              disabled={passwordState === "saving"}
+              className="w-full font-semibold"
+              style={{
+                marginTop: 16,
+                padding: 13,
+                borderRadius: "var(--ds-radius-md)",
+                border: "none",
+                background:
+                  passwordState === "saved" ? "var(--ds-sage-text)" : "var(--ds-accent-primary)",
+                color: "var(--ds-text-on-brand)",
+                fontSize: 14,
+                cursor: passwordState === "saving" ? "default" : "pointer",
+              }}
+            >
+              {passwordState === "saving"
+                ? "Saving…"
+                : passwordState === "saved"
+                  ? "Saved ✓"
+                  : "Save new password"}
+            </button>
           </div>
         </DsModal>
       )}
@@ -484,8 +731,8 @@ function SettingsPage() {
               </button>
               <button
                 type="button"
-                disabled={deleteTyped !== "DELETE"}
-                onClick={() => logout()}
+                disabled={deleteTyped !== "DELETE" || deleteState === "deleting"}
+                onClick={deleteAccount}
                 className="flex-1 font-semibold"
                 style={{
                   padding: 12,
@@ -497,9 +744,14 @@ function SettingsPage() {
                   cursor: deleteTyped === "DELETE" ? "pointer" : "default",
                 }}
               >
-                Delete
+                {deleteState === "deleting" ? "Deleting…" : "Delete"}
               </button>
             </div>
+            {deleteState === "error" && (
+              <p style={{ fontSize: 12.5, color: "#B4392C", margin: "12px 0 0" }}>
+                Something went wrong. Please try again.
+              </p>
+            )}
           </div>
         </DsModal>
       )}

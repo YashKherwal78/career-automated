@@ -3,7 +3,8 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 from src.runtime.auth.dependencies import get_current_user, CurrentUser
-from src.runtime.postgres.connection import get_connection
+from src.runtime.postgres.connection import get_connection, DatabaseRole
+from src.runtime.config.settings import Settings
 
 router = APIRouter()
 
@@ -171,6 +172,62 @@ def download_base_resume_pdf(current_user: CurrentUser = Depends(get_current_use
     if not os.path.exists(pdf_path):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No base resume PDF available.")
     return FileResponse(pdf_path, media_type="application/pdf", filename="base_resume.pdf")
+
+
+@router.delete("/account")
+def delete_account(current_user: CurrentUser = Depends(get_current_user)):
+    """
+    Permanently deletes the candidate's data and their Supabase auth account.
+    Irreversible — matches the confirmation copy shown in Settings' delete
+    account modal, which previously just logged the user out without
+    actually deleting anything.
+    """
+    import requests
+
+    user_id = current_user.user_id
+
+    try:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            for table in (
+                "user_career_profiles",
+                "user_resumes",
+                "user_subscriptions",
+                "user_education",
+                "user_experience",
+                "user_skills",
+            ):
+                cursor.execute(f"DELETE FROM public.{table} WHERE user_id = %s", (user_id,))
+            conn.commit()
+
+        with get_connection(DatabaseRole.AUTH) as auth_conn:
+            auth_cursor = auth_conn.cursor()
+            auth_cursor.execute("DELETE FROM public.user_profiles WHERE user_id = %s", (user_id,))
+            auth_conn.commit()
+
+        if Settings.SUPABASE_URL and Settings.SUPABASE_SERVICE_ROLE_KEY:
+            resp = requests.delete(
+                f"{Settings.SUPABASE_URL.rstrip('/')}/auth/v1/admin/users/{user_id}",
+                headers={
+                    "apikey": Settings.SUPABASE_SERVICE_ROLE_KEY,
+                    "Authorization": f"Bearer {Settings.SUPABASE_SERVICE_ROLE_KEY}",
+                },
+                timeout=15,
+            )
+            if resp.status_code >= 400 and resp.status_code != 404:
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail=f"Data deleted, but failed to remove the auth account: {resp.text}",
+                )
+
+        return {"status": "deleted"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Account deletion failed: {str(e)}"
+        )
 
 
 @router.post("/answer-question")
