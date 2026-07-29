@@ -49,17 +49,31 @@ class SuccessFactorsConnector(Connector):
         items = re.findall(r"<item>(.*?)</item>", xml_text, re.DOTALL)
         seen = set()
 
+        from src.discovery.html_text import strip_html
+
         for item_xml in items:
             title_match = re.search(r"<title><!\[CDATA\[(.*?)\]\]></title>|<title>(.*?)</title>", item_xml, re.DOTALL)
             link_match = re.search(r"<link>(.*?)</link>", item_xml)
             guid_match = re.search(r"<guid[^>]*>(.*?)</guid>", item_xml)
             pubdate_match = re.search(r"<pubDate>(.*?)</pubDate>", item_xml)
+            # SuccessFactors' sitemal.xml is an SEO/aggregator feed — these
+            # conventionally include the full JD inline so third parties
+            # don't need a second request. The connector never looked for it.
+            desc_match = re.search(
+                r"<description><!\[CDATA\[(.*?)\]\]></description>|<description>(.*?)</description>",
+                item_xml,
+                re.DOTALL,
+            )
 
             title = ""
             if title_match:
                 title = title_match.group(1) or title_match.group(2) or ""
             import html as html_lib
             title = html_lib.unescape(title.strip())
+
+            description = ""
+            if desc_match:
+                description = strip_html(desc_match.group(1) or desc_match.group(2) or "")
 
             link = link_match.group(1).strip() if link_match else ""
             guid = guid_match.group(1).strip() if guid_match else link
@@ -72,6 +86,7 @@ class SuccessFactorsConnector(Connector):
                 "id": guid,
                 "title": title,
                 "url": link,
+                "description": description,
                 "created_at": pubdate_match.group(1).strip() if pubdate_match else "",
             }
 

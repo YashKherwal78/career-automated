@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import time
 from typing import List, Dict, Any
 from src.discovery.models import RawJob, CanonicalJob, JobIdentity
+from src.discovery.html_text import strip_html
 import hashlib
 
 class JobNormalizer(ABC):
@@ -41,7 +42,7 @@ class GreenhouseNormalizer(JobNormalizer):
                 company_id=company_id,
                 board_id=company_id,
                 title=title,
-                description="",
+                description=strip_html(job.get("content", "")),
                 location=location,
                 remote_type=remote,
                 department=dept_name,
@@ -218,11 +219,12 @@ class WorkdayNormalizer(JobNormalizer):
                 fingerprint=self._generate_fingerprint(tenant, title, location, emp_type) if not external_id else None
             )
             
-            apply_url = f"https://{tenant}.wd1.myworkdayjobs.com/en-US/{site}{external_path}" if external_path else ""
+            domain = tenant if ".myworkdayjobs.com" in tenant else f"{tenant}.wd1.myworkdayjobs.com"
+            apply_url = f"https://{domain}/en-US/{site}{external_path}" if external_path else ""
             
             jobs.append(CanonicalJob(
                 identity=identity,
-                company_id=tenant,
+                company_id=raw_job.company_id,
                 board_id=board_id,
                 title=title,
                 description="",
@@ -240,6 +242,7 @@ class WorkdayNormalizer(JobNormalizer):
                 normalized_at=time.time()
             ))
         return jobs
+
 
 class TeamtailorNormalizer(JobNormalizer):
     def normalize(self, raw_job: RawJob) -> List[CanonicalJob]:
@@ -1044,7 +1047,7 @@ class SuccessFactorsNormalizer(JobNormalizer):
             company_id=company_id,
             board_id=company_id,
             title=title,
-            description="",
+            description=job.get("description") or "",
             location="",
             remote_type="",
             department="",
@@ -1577,6 +1580,8 @@ class JobsCzNormalizer(JobNormalizer):
         if "Kč" in salary_text:
             salary_currency = "CZK"
             # Extract numbers from format
+            # Extract numbers from format
+            import re
             nums = [int(s) for s in re.findall(r"\d[\d\s]*", salary_text.replace(" ", "").replace(" ", "")) if s]
             if len(nums) == 2:
                 salary_min = float(nums[0])
@@ -1586,16 +1591,19 @@ class JobsCzNormalizer(JobNormalizer):
 
         identity = JobIdentity(
             provider="jobs_cz",
-            company_id=company_id,
-            external_id=external_id
+            board_id=company_id,
+            external_job_id=external_id
         )
 
         jobs.append(CanonicalJob(
             identity=identity,
+            company_id=company_id,
+            board_id=company_id,
             title=title,
-            company=company,
-            location=location,
             description="",
+            location=location,
+            remote_type="",
+            department="",
             employment_type="",
             seniority="",
             salary_min=salary_min,
@@ -1622,16 +1630,19 @@ class JobsChNormalizer(JobNormalizer):
 
         identity = JobIdentity(
             provider="jobsch",
-            company_id=company_id,
-            external_id=external_id
+            board_id=company_id,
+            external_job_id=external_id
         )
 
         jobs.append(CanonicalJob(
             identity=identity,
+            company_id=company_id,
+            board_id=company_id,
             title=title,
-            company=company,
-            location=location,
             description="",
+            location=location,
+            remote_type="",
+            department="",
             employment_type="",
             seniority="",
             salary_min=None,
@@ -1656,16 +1667,19 @@ class GoogleNormalizer(JobNormalizer):
 
         identity = JobIdentity(
             provider="google",
-            company_id=company_id,
-            external_id=external_id
+            board_id=company_id,
+            external_job_id=external_id
         )
 
         jobs.append(CanonicalJob(
             identity=identity,
+            company_id=company_id,
+            board_id=company_id,
             title=title,
-            company="Google",
-            location="Global",
             description="",
+            location="Global",
+            remote_type="",
+            department="",
             employment_type="",
             seniority="",
             salary_min=None,
@@ -1691,16 +1705,19 @@ class TaleoNormalizer(JobNormalizer):
 
         identity = JobIdentity(
             provider="taleo",
-            company_id=company_id,
-            external_id=external_id
+            board_id=company_id,
+            external_job_id=external_id
         )
 
         jobs.append(CanonicalJob(
             identity=identity,
+            company_id=company_id,
+            board_id=company_id,
             title=title,
-            company=company,
-            location="",
             description="",
+            location="",
+            remote_type="",
+            department="",
             employment_type="",
             seniority="",
             salary_min=None,
