@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 from src.runtime.auth.dependencies import get_current_user, CurrentUser
@@ -8,11 +9,13 @@ router = APIRouter()
 
 class ProfileDataPayload(BaseModel):
     personal_info: Dict[str, Any]
+    summary: Optional[str] = None
     skills: Dict[str, List[str]]
     experience: List[Dict[str, Any]]
     projects: List[Dict[str, Any]]
     education: List[Dict[str, Any]]
     certifications: Optional[List[str]] = []
+    custom_sections: Optional[List[Dict[str, Any]]] = []
 
 class AnswerQuestionPayload(BaseModel):
     question: str
@@ -86,6 +89,82 @@ def update_career_profile(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update candidate profile: {str(e)}"
         )
+
+@router.post("/generate-base-resume")
+def generate_base_resume_endpoint(current_user: CurrentUser = Depends(get_current_user)):
+    """
+    Renders the candidate's saved profile into a 1-page Jake's-Resume-format
+    base_resume.tex (+ PDF if pdflatex is available), stored at the path
+    tailor.py's tailoring engine already reads from. Deterministic templating
+    and rule-based page-fit trimming only — zero LLM calls.
+    """
+    try:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT profile_data FROM public.user_career_profiles WHERE user_id = %s",
+                (current_user.user_id,)
+            )
+            row = cursor.fetchone()
+            if not row or not row[0]:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="No candidate profile found. Save your profile before generating a resume.",
+                )
+            profile_data = row[0]
+
+        from src.resume_intelligence.base_resume.generator import generate_base_resume
+
+        _tex_content, pdf_path, report = generate_base_resume(current_user.user_id, profile_data)
+
+        return {
+            "status": "success",
+            "page_count": report.final_page_count,
+            "fit_achieved": report.fit_achieved,
+            "passes_applied": report.passes_applied,
+            "reason": report.reason,
+            "pdf_available": pdf_path is not None,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Base resume generation failed: {str(e)}"
+        )
+
+
+@router.get("/base-resume")
+def get_base_resume(current_user: CurrentUser = Depends(get_current_user)):
+    """Returns the candidate's most recently generated base resume, if any."""
+    import os
+
+    out_dir = os.path.join("artifacts", "stored_base_resumes_json", current_user.user_id)
+    tex_path = os.path.join(out_dir, "base_resume.tex")
+    pdf_path = os.path.join(out_dir, "base_resume.pdf")
+
+    if not os.path.exists(tex_path):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No base resume generated yet.")
+
+    with open(tex_path, "r", encoding="utf-8") as f:
+        tex_content = f.read()
+
+    return {
+        "tex": tex_content,
+        "pdf_available": os.path.exists(pdf_path),
+    }
+
+
+@router.get("/base-resume/pdf")
+def download_base_resume_pdf(current_user: CurrentUser = Depends(get_current_user)):
+    """Downloads the candidate's most recently generated base resume PDF."""
+    import os
+
+    pdf_path = os.path.join("artifacts", "stored_base_resumes_json", current_user.user_id, "base_resume.pdf")
+    if not os.path.exists(pdf_path):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No base resume PDF available.")
+    return FileResponse(pdf_path, media_type="application/pdf", filename="base_resume.pdf")
+
 
 @router.post("/answer-question")
 def answer_screening_question(
