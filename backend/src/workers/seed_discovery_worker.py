@@ -25,12 +25,25 @@ class SeedDiscoveryWorker(BaseWorker):
         
         pass
         
+    # Hosts where many different companies share the same domain (their own
+    # ATS-hosted board) — company_identities.domain has a UNIQUE constraint,
+    # so using the bare host here would collide every company on the same
+    # ATS platform onto one "domain" and silently drop all but the first.
+    _MULTI_TENANT_HOSTS = (
+        "greenhouse.io", "lever.co", "ashbyhq.com", "workable.com",
+        "bamboohr.com", "breezy.hr", "recruitee.com", "teamtailor.com",
+    )
+
     def _normalize_domain(self, website: str) -> str:
         if not website:
             return ""
         parsed = urlparse(website.lower() if website.startswith("http") else f"https://{website.lower()}")
         domain = parsed.netloc or parsed.path
         domain = domain.replace("www.", "").strip("/")
+        if any(host in domain for host in self._MULTI_TENANT_HOSTS):
+            slug = parsed.path.strip("/").split("/")[0]
+            if slug:
+                return f"{domain}/{slug}"
         return domain
 
     def _company_exists(self, domain: str) -> bool:

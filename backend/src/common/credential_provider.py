@@ -402,9 +402,14 @@ PROVIDERS = {
         credential_loader=lambda: load_generic_credentials("GROQ", "GROQ_API_KEY")
     ),
     "FIRECRAWL": ProviderDefinition(
-        name="FIRECRAWL", 
-        backend=InMemoryCredentialProvider, 
+        name="FIRECRAWL",
+        backend=InMemoryCredentialProvider,
         credential_loader=lambda: load_generic_credentials("FIRECRAWL", "FIRECRAWL_API_KEY")
+    ),
+    "BRAVE": ProviderDefinition(
+        name="BRAVE",
+        backend=InMemoryCredentialProvider,
+        credential_loader=lambda: load_generic_credentials("BRAVE", "BRAVE_API_KEY")
     ),
     "JINA": ProviderDefinition(
         name="JINA", 
