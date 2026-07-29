@@ -32,6 +32,18 @@ def _split_bullets(description: str) -> List[str]:
     return [line.strip("-• \t") for line in description.split("\n") if line.strip()]
 
 
+def _entry_bullets(entry: Dict[str, Any]) -> List[str]:
+    """
+    Experience entries from ProfileExtractionService carry bullets as a list
+    under "bullet_points", not a "description" string — prefer that shape and
+    fall back to splitting "description" for any other producer of profile_data.
+    """
+    bullet_points = entry.get("bullet_points")
+    if bullet_points:
+        return [b.strip() for b in bullet_points if isinstance(b, str) and b.strip()]
+    return _split_bullets(entry.get("description") or "")
+
+
 def build_structured_resume(profile_data: Dict[str, Any]) -> ExtendedStructuredResume:
     personal_info = profile_data.get("personal_info") or {}
     contact = StructuredContact(
@@ -64,7 +76,7 @@ def build_structured_resume(profile_data: Dict[str, Any]) -> ExtendedStructuredR
             location=e.get("location") or "",
             start_date=e.get("start_date") or "",
             end_date=e.get("end_date") or "",
-            bullets=_split_bullets(e.get("description") or ""),
+            bullets=_entry_bullets(e),
             technologies=e.get("technologies") or [],
         )
         for e in (profile_data.get("experience") or [])
@@ -80,7 +92,7 @@ def build_structured_resume(profile_data: Dict[str, Any]) -> ExtendedStructuredR
                 else (p.get("technologies") or [])
             ),
             date=p.get("date") or "",
-            bullets=_split_bullets(p.get("description") or ""),
+            bullets=_entry_bullets(p),
             url=p.get("url") or None,
         )
         for p in (profile_data.get("projects") or [])

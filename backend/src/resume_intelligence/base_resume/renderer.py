@@ -113,11 +113,13 @@ JAKE_LATEX_TEMPLATE = r"""
   \resumeSubheading
     { {{ exp.title }} }{ {{ exp.start_date }} -- {{ exp.end_date }} }
     { {{ exp.company }} }{ {{ exp.location }} }
+  {% if exp.bullets %}
   \resumeItemListStart
     {% for b in exp.bullets %}
     \resumeItem{ {{ b }} }
     {% endfor %}
   \resumeItemListEnd
+  {% endif %}
 {% endfor %}
 \resumeSubHeadingListEnd
 {% elif sec == 'projects' and resume.projects %}
@@ -126,11 +128,13 @@ JAKE_LATEX_TEMPLATE = r"""
 {% for proj in resume.projects %}
   \resumeProjectHeading
     {\textbf{ {{ proj.title }} }{% if proj.technologies %} $|$ \emph{ {{ proj.technologies | join(' $\\bullet$ ') }} }{% endif %}}{ {{ proj.date }} }
+  {% if proj.bullets %}
   \resumeItemListStart
     {% for b in proj.bullets %}
     \resumeItem{ {{ b }} }
     {% endfor %}
   \resumeItemListEnd
+  {% endif %}
 {% endfor %}
 \resumeSubHeadingListEnd
 {% elif sec == 'skills' and resume.skill_categories %}

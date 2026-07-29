@@ -87,6 +87,7 @@ class ProfileExtractionService:
                 "    {\n"
                 '      "name": string,\n'
                 '      "description": string or null,\n'
+                '      "bullet_points": [string] (one entry per bullet/achievement line describing this project — mirror the source document\'s own bullets verbatim rather than summarizing them into skills_demonstrated),\n'
                 '      "technologies": [string],\n'
                 '      "github_link": string or null,\n'
                 '      "live_link": string or null,\n'

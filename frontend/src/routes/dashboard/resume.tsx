@@ -552,9 +552,16 @@ function ResumePage() {
             }),
           ),
           projects: (data.projects || []).map(
-            (p: { name: string; description: string; technologies?: string[] }) => ({
+            (p: {
+              name: string;
+              description: string;
+              bullet_points?: string[];
+              technologies?: string[];
+            }) => ({
               name: p.name,
-              description: p.description,
+              description: p.bullet_points?.length
+                ? p.bullet_points.join("\n")
+                : p.description || "",
               technologies: (p.technologies || []).join(", "),
             }),
           ),
