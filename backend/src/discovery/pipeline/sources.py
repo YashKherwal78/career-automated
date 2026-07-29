@@ -1,4 +1,3 @@
-from typing import List
 import time
 from urllib.parse import urlparse, urljoin
 from src.discovery.pipeline.fallback_models import DiscoverySource, Candidate, Evidence, SourceResult, StageTrace, ProbeResult
@@ -338,39 +337,99 @@ class ExternalSearchSource(DiscoverySource):
             bytes_downloaded=0
         )
 import urllib.parse
-from typing import List, Dict, Any
-from src.discovery.pipeline.fallback_models import Candidate, Evidence, DiscoveryBudget
+from src.discovery.pipeline.fallback_models import Candidate, Evidence
 from src.discovery.pipeline.sources import DiscoverySource
 
 class HeuristicTokenSource(DiscoverySource):
-    """Generates fallback candidates based on the domain name."""
-    
-    async def fetch_evidence(self, company: str, website: str, budget: DiscoveryBudget, **kwargs) -> List[Candidate]:
+    """
+    Guesses known ATS URL templates from the company's domain token and
+    verifies each with a plain HTTP HEAD request — zero search-API calls.
+
+    This previously only defined fetch_evidence(), never discover() (the
+    method the orchestrator actually calls), so every invocation silently
+    raised NotImplementedError and was swallowed by the orchestrator's
+    per-source try/except — this source has never produced a single
+    candidate in production until this fix.
+    """
+
+    async def discover(self, context: DiscoveryContext) -> SourceResult:
+        start_time = time.time()
         candidates = []
-        try:
-            parsed = urllib.parse.urlparse(website)
-            domain = parsed.netloc.replace('www.', '')
-            token = domain.split('.')[0]
-            
-            # Known ATS url templates
-            ats_templates = [
-                ("greenhouse", f"https://boards.greenhouse.io/{token}"),
-                ("lever", f"https://jobs.lever.co/{token}"),
-                ("ashby", f"https://jobs.ashbyhq.com/{token}"),
-                ("workday", f"https://{token}.myworkdayjobs.com/en-US/careers"),
-                ("workable", f"https://apply.workable.com/{token}"),
-                ("smartrecruiters", f"https://careers.smartrecruiters.com/{token}"),
-                ("teamtailor", f"https://careers.{token}.com"),
-                ("breezy", f"https://{token}.breezy.hr")
-            ]
-            
-            for provider_id, url in ats_templates:
-                candidates.append(Candidate(
-                    url=url,
-                    evidence=[Evidence(source="HeuristicTokenSource", weight=1, description="Generated from domain heuristic")]
-                ))
-                
-        except Exception:
-            pass
-            
-        return candidates
+        probe_results = []
+
+        parsed = urllib.parse.urlparse(context.website)
+        domain = parsed.netloc.replace('www.', '')
+        token = domain.split('.')[0] if domain else ''
+
+        ats_templates = [
+            ("greenhouse", f"https://boards.greenhouse.io/{token}"),
+            ("lever", f"https://jobs.lever.co/{token}"),
+            ("ashby", f"https://jobs.ashbyhq.com/{token}"),
+            ("workday", f"https://{token}.myworkdayjobs.com/en-US/careers"),
+            ("workable", f"https://apply.workable.com/{token}"),
+            ("smartrecruiters", f"https://careers.smartrecruiters.com/{token}"),
+            ("teamtailor", f"https://careers.{token}.com"),
+            ("breezy", f"https://{token}.breezy.hr"),
+        ]
+
+        if not token:
+            return SourceResult(candidates=[], trace=StageTrace(
+                stage="heuristic_token", success=True, duration_ms=0,
+                requests=context.requests_used, candidates_found=0,
+                evidence=[], urls=[], probe_results=[], redirect_chains=[],
+            ), requests_used=context.requests_used, bytes_downloaded=context.bytes_downloaded)
+
+        sem = asyncio.Semaphore(5)
+
+        async def verify(provider_id: str, url: str):
+            async with sem:
+                probe_start = time.time()
+                try:
+                    import aiohttp
+                    res = await context.head(url, timeout=aiohttp.ClientTimeout(total=3.0))
+                    duration = int((time.time() - probe_start) * 1000)
+                    probe_res = ProbeResult(
+                        path=url, status=res.status_code, final_url=res.final_url,
+                        latency_ms=duration, redirect_count=0, success=res.status_code < 400,
+                    )
+                    candidate = None
+                    if res.status_code < 400:
+                        candidate = Candidate(
+                            url=res.final_url or url,
+                            evidence=[Evidence(
+                                source="HeuristicTokenSource", weight=25,
+                                description=f"Known {provider_id} URL template responded {res.status_code}",
+                            )],
+                        )
+                    return probe_res, candidate
+                except Exception:
+                    duration = int((time.time() - probe_start) * 1000)
+                    return ProbeResult(
+                        path=url, status=0, final_url="", latency_ms=duration,
+                        redirect_count=0, success=False,
+                    ), None
+
+        results = await asyncio.gather(*(verify(pid, u) for pid, u in ats_templates))
+        for p_res, candidate in results:
+            probe_results.append(p_res)
+            if candidate:
+                candidates.append(candidate)
+
+        trace = StageTrace(
+            stage="heuristic_token",
+            success=True,
+            duration_ms=int((time.time() - start_time) * 1000),
+            requests=context.requests_used,
+            candidates_found=len(candidates),
+            evidence=[],
+            urls=[c.url for c in candidates],
+            probe_results=probe_results,
+            redirect_chains=[],
+        )
+
+        return SourceResult(
+            candidates=candidates,
+            trace=trace,
+            requests_used=context.requests_used,
+            bytes_downloaded=context.bytes_downloaded,
+        )
