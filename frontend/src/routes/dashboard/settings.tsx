@@ -1,10 +1,156 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../lib/auth";
 import { supabase } from "../../lib/supabase";
 import { API_BASE } from "../../lib/api";
+import { ServiceRegistry } from "../../lib/services";
 import { DsModal } from "../../components/ds/Modal";
 import { DsDropzone } from "../../components/ds/Dropzone";
+
+interface SettingsValues {
+  preferredRole: string;
+  experienceLevel: string;
+  location: string;
+  salary: string;
+  workAuth: string;
+  resumeStyle: string;
+  tailoringAggro: string;
+  writingTone: string;
+  autoFill: boolean;
+  emailNotif: boolean;
+  weeklySummary: boolean;
+  interviewReminders: boolean;
+}
+
+const DEFAULT_SETTINGS: SettingsValues = {
+  preferredRole: "Software Engineer",
+  experienceLevel: "Mid-level",
+  location: "Remote",
+  salary: "₹15L+",
+  workAuth: "Indian citizen",
+  resumeStyle: "Modern",
+  tailoringAggro: "Balanced",
+  writingTone: "Professional",
+  autoFill: false,
+  emailNotif: true,
+  weeklySummary: true,
+  interviewReminders: true,
+};
+
+/**
+ * These settings live inside the same flexible user_career_profiles.profile_data
+ * blob as everything else (a `settings` sub-key), not a separate table — PUT
+ * there overwrites the whole blob, so every save must round-trip the rest of
+ * the profile (resume data) exactly as fetched, not just the settings diff.
+ */
+function useSettingsPersistence(session: { access_token?: string } | null | undefined) {
+  const [settings, setSettings] = useState<SettingsValues>(DEFAULT_SETTINGS);
+  const [loaded, setLoaded] = useState(false);
+  const rawProfileRef = useRef<Record<string, any>>({});
+
+  useEffect(() => {
+    if (!session?.access_token) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/candidate/profile`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const p = data.profile_data || {};
+        if (cancelled) return;
+        rawProfileRef.current = p;
+        const s = p.settings || {};
+        setSettings({
+          preferredRole: s.career?.preferredRole ?? DEFAULT_SETTINGS.preferredRole,
+          experienceLevel: s.career?.experienceLevel ?? DEFAULT_SETTINGS.experienceLevel,
+          location: s.career?.location ?? DEFAULT_SETTINGS.location,
+          salary: s.career?.salary ?? DEFAULT_SETTINGS.salary,
+          workAuth: s.career?.workAuth ?? DEFAULT_SETTINGS.workAuth,
+          resumeStyle: s.ai?.resumeStyle ?? DEFAULT_SETTINGS.resumeStyle,
+          tailoringAggro: s.ai?.tailoringAggro ?? DEFAULT_SETTINGS.tailoringAggro,
+          writingTone: s.ai?.writingTone ?? DEFAULT_SETTINGS.writingTone,
+          autoFill: s.ai?.autoFill ?? DEFAULT_SETTINGS.autoFill,
+          emailNotif: s.notifications?.emailNotif ?? DEFAULT_SETTINGS.emailNotif,
+          weeklySummary: s.notifications?.weeklySummary ?? DEFAULT_SETTINGS.weeklySummary,
+          interviewReminders:
+            s.notifications?.interviewReminders ?? DEFAULT_SETTINGS.interviewReminders,
+        });
+      } finally {
+        if (!cancelled) setLoaded(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.access_token]);
+
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const persist = (next: SettingsValues) => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(async () => {
+      const base = rawProfileRef.current || {};
+      const payload = {
+        personal_info: base.personal_info || {},
+        summary: base.summary || "",
+        skills: base.skills && Object.keys(base.skills).length ? base.skills : { other: [] },
+        experience: base.experience || [],
+        projects: base.projects || [],
+        education: base.education || [],
+        certifications: base.certifications || [],
+        achievements: base.achievements || [],
+        languages: base.languages || [],
+        volunteer: base.volunteer || [],
+        publications: base.publications || [],
+        awards: base.awards || [],
+        career_preferences: base.career_preferences || {},
+        ai_instructions: base.ai_instructions || "",
+        custom_sections: base.custom_sections || [],
+        settings: {
+          career: {
+            preferredRole: next.preferredRole,
+            experienceLevel: next.experienceLevel,
+            location: next.location,
+            salary: next.salary,
+            workAuth: next.workAuth,
+          },
+          ai: {
+            resumeStyle: next.resumeStyle,
+            tailoringAggro: next.tailoringAggro,
+            writingTone: next.writingTone,
+            autoFill: next.autoFill,
+          },
+          notifications: {
+            emailNotif: next.emailNotif,
+            weeklySummary: next.weeklySummary,
+            interviewReminders: next.interviewReminders,
+          },
+        },
+      };
+      await fetch(`${API_BASE}/candidate/profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+    }, 500);
+  };
+
+  const update = (patch: Partial<SettingsValues>) => {
+    setSettings((prev) => {
+      const next = { ...prev, ...patch };
+      persist(next);
+      return next;
+    });
+  };
+
+  return { settings, update, loaded };
+}
 
 export const Route = createFileRoute("/dashboard/settings")({
   component: SettingsPage,
@@ -142,20 +288,26 @@ function SettingsPage() {
   const { profile, user, session, logout } = useAuth();
   const navigate = useNavigate();
 
-  const [preferredRole, setPreferredRole] = useState("Software Engineer");
-  const [experienceLevel, setExperienceLevel] = useState("Mid-level");
-  const [location, setLocation] = useState("Remote");
-  const [salary, setSalary] = useState("₹15L+");
-  const [workAuth, setWorkAuth] = useState("Indian citizen");
-
-  const [resumeStyle, setResumeStyle] = useState("Modern");
-  const [tailoringAggro, setTailoringAggro] = useState("Balanced");
-  const [writingTone, setWritingTone] = useState("Professional");
-  const [autoFill, setAutoFill] = useState(false);
-
-  const [emailNotif, setEmailNotif] = useState(true);
-  const [weeklySummary, setWeeklySummary] = useState(true);
-  const [interviewReminders, setInterviewReminders] = useState(true);
+  const { settings, update: updateSetting } = useSettingsPersistence(session);
+  const { data: subscription } = useQuery({
+    queryKey: ["subscription"],
+    queryFn: () => ServiceRegistry.getBillingService().getSubscription(),
+    staleTime: 60_000,
+  });
+  const {
+    preferredRole,
+    experienceLevel,
+    location,
+    salary,
+    workAuth,
+    resumeStyle,
+    tailoringAggro,
+    writingTone,
+    autoFill,
+    emailNotif,
+    weeklySummary,
+    interviewReminders,
+  } = settings;
 
   const [replaceFile, setReplaceFile] = useState<File | null>(null);
   const [showReplaceModal, setShowReplaceModal] = useState(false);
@@ -335,7 +487,7 @@ function SettingsPage() {
           <RowLabel label="Preferred role" />
           <TextValue
             value={preferredRole}
-            onChange={setPreferredRole}
+            onChange={(v) => updateSetting({ preferredRole: v })}
             placeholder="e.g. Software Engineer"
           />
         </Row>
@@ -343,21 +495,33 @@ function SettingsPage() {
           <RowLabel label="Experience level" />
           <TextValue
             value={experienceLevel}
-            onChange={setExperienceLevel}
+            onChange={(v) => updateSetting({ experienceLevel: v })}
             placeholder="e.g. Mid-level"
           />
         </Row>
         <Row>
           <RowLabel label="Location" />
-          <TextValue value={location} onChange={setLocation} placeholder="e.g. Remote" />
+          <TextValue
+            value={location}
+            onChange={(v) => updateSetting({ location: v })}
+            placeholder="e.g. Remote"
+          />
         </Row>
         <Row>
           <RowLabel label="Salary expectation" />
-          <TextValue value={salary} onChange={setSalary} placeholder="e.g. ₹15L+" />
+          <TextValue
+            value={salary}
+            onChange={(v) => updateSetting({ salary: v })}
+            placeholder="e.g. ₹15L+"
+          />
         </Row>
         <Row>
           <RowLabel label="Work authorization" />
-          <TextValue value={workAuth} onChange={setWorkAuth} placeholder="e.g. Indian citizen" />
+          <TextValue
+            value={workAuth}
+            onChange={(v) => updateSetting({ workAuth: v })}
+            placeholder="e.g. Indian citizen"
+          />
         </Row>
       </Section>
 
@@ -397,7 +561,7 @@ function SettingsPage() {
           <CycleValue
             value={resumeStyle}
             options={["Modern", "Classic", "Minimal"]}
-            onChange={setResumeStyle}
+            onChange={(v) => updateSetting({ resumeStyle: v })}
           />
         </Row>
         <Row>
@@ -405,7 +569,7 @@ function SettingsPage() {
           <CycleValue
             value={tailoringAggro}
             options={["Conservative", "Balanced", "Bold"]}
-            onChange={setTailoringAggro}
+            onChange={(v) => updateSetting({ tailoringAggro: v })}
           />
         </Row>
         <Row>
@@ -413,27 +577,33 @@ function SettingsPage() {
           <CycleValue
             value={writingTone}
             options={["Professional", "Confident", "Warm"]}
-            onChange={setWritingTone}
+            onChange={(v) => updateSetting({ writingTone: v })}
           />
         </Row>
         <Row>
           <RowLabel label="Auto-fill applications" sub="Fill forms automatically when matched" />
-          <Toggle on={autoFill} onClick={() => setAutoFill((v) => !v)} />
+          <Toggle on={autoFill} onClick={() => updateSetting({ autoFill: !autoFill })} />
         </Row>
       </Section>
 
       <Section title="Notifications">
         <Row>
           <RowLabel label="Email notifications" />
-          <Toggle on={emailNotif} onClick={() => setEmailNotif((v) => !v)} />
+          <Toggle on={emailNotif} onClick={() => updateSetting({ emailNotif: !emailNotif })} />
         </Row>
         <Row>
           <RowLabel label="Weekly summary" />
-          <Toggle on={weeklySummary} onClick={() => setWeeklySummary((v) => !v)} />
+          <Toggle
+            on={weeklySummary}
+            onClick={() => updateSetting({ weeklySummary: !weeklySummary })}
+          />
         </Row>
         <Row>
           <RowLabel label="Interview reminders" />
-          <Toggle on={interviewReminders} onClick={() => setInterviewReminders((v) => !v)} />
+          <Toggle
+            on={interviewReminders}
+            onClick={() => updateSetting({ interviewReminders: !interviewReminders })}
+          />
         </Row>
       </Section>
 
@@ -458,7 +628,11 @@ function SettingsPage() {
       <Section title="Billing">
         <Row>
           <RowLabel label="Current plan" />
-          <span style={{ fontSize: 13.5, color: "var(--ds-ink-450)" }}>Free tier</span>
+          <span style={{ fontSize: 13.5, color: "var(--ds-ink-450)" }}>
+            {subscription?.tier === "pro" ? "Pro" : "Free tier"}
+            {subscription?.active_since &&
+              ` · since ${new Date(subscription.active_since).toLocaleDateString()}`}
+          </span>
         </Row>
         <Row>
           <RowLabel label="Upgrade" />

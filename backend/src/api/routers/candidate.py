@@ -24,6 +24,7 @@ class ProfileDataPayload(BaseModel):
     career_preferences: Optional[Dict[str, Any]] = {}
     ai_instructions: Optional[str] = None
     custom_sections: Optional[List[Dict[str, Any]]] = []
+    settings: Optional[Dict[str, Any]] = {}
 
 class AnswerQuestionPayload(BaseModel):
     question: str
