@@ -227,7 +227,7 @@ class WorkdayNormalizer(JobNormalizer):
                 company_id=raw_job.company_id,
                 board_id=board_id,
                 title=title,
-                description="",
+                description=job.get("description") or "",
                 location=location,
                 remote_type="",
                 department="",
