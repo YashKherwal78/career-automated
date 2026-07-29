@@ -1,9 +1,18 @@
+import json
 import logging
-from typing import AsyncIterator
+import re
+from typing import AsyncIterator, Optional
 from src.discovery.models import RawJob, ConnectorCapability, Board, FetchResult
 from src.discovery.registry.connector import Connector, FreshnessStrategy, DefaultFreshnessStrategy
 from src.discovery.pipeline.http_client import HttpClient
 from src.discovery.registry.connector_registry import ConnectorRegistry
+from src.discovery.detail_fetch import DetailFetchThrottle, get_cached_description, cache_description
+from src.discovery.html_text import strip_html
+
+_JSONLD_RE = re.compile(
+    r'<script[^>]*type="application/ld\+json"[^>]*>(?P<json>.*?)</script>',
+    re.DOTALL | re.IGNORECASE,
+)
 
 logger = logging.getLogger("BreezyHRConnector")
 
@@ -29,10 +38,60 @@ class BreezyHRConnector(Connector):
     def freshness_strategy(self) -> FreshnessStrategy:
         return DefaultFreshnessStrategy()
 
+    async def _fetch_description(
+        self, job_url: str, http_client: HttpClient, throttle: DetailFetchThrottle
+    ) -> Optional[str]:
+        """
+        The /json positions list never includes the JD body. The guessed
+        /p/{id}.json detail endpoint doesn't actually return JSON (it falls
+        back to the SPA's index HTML) — verified against a live posting. The
+        real, reliable source is the schema.org JobPosting JSON-LD block
+        already embedded in the job's own HTML page (there are multiple
+        ld+json blocks on the page; only one has @type == "JobPosting").
+        """
+        if not job_url:
+            return None
+
+        cached = get_cached_description("breezy", job_url)
+        if cached is not None:
+            return cached
+
+        await throttle.wait()
+        try:
+            result = await http_client.fetch(
+                "GET", job_url, headers={"User-Agent": "Mozilla/5.0 (compatible; CareerAutomated/1.0)"}
+            )
+        except Exception as e:
+            logger.debug("BreezyHRConnector: detail fetch failed for %s: %s", job_url, e)
+            return None
+
+        if result.status_code != 200:
+            return None
+
+        html_text = result.payload
+        if isinstance(html_text, bytes):
+            html_text = html_text.decode("utf-8", errors="replace")
+        if not isinstance(html_text, str):
+            return None
+
+        description = ""
+        for match in _JSONLD_RE.finditer(html_text):
+            try:
+                data = json.loads(match.group("json"))
+            except Exception:
+                continue
+            if isinstance(data, dict) and data.get("@type") == "JobPosting":
+                description = strip_html(data.get("description", ""))
+                break
+
+        cache_description("breezy", job_url, description)
+        return description
+
     async def sync(self, board: Board, http_client: HttpClient) -> AsyncIterator[RawJob | FetchResult]:
         slug = self._extract_slug(board.endpoint)
         api_url = f"https://{slug}.breezy.hr/json"
         headers = {"Accept": "application/json", "User-Agent": "Mozilla/5.0 (compatible; CareerAutomated/1.0)"}
+        throttle = DetailFetchThrottle(requests_per_second=5.0)
 
         result = await http_client.fetch("GET", api_url, headers=headers)
         should_sync = self.freshness_strategy().should_sync(board, result)
@@ -99,6 +158,7 @@ class BreezyHRConnector(Connector):
                 salary_max = salary_obj.get("max")
 
             job_url = pos.get("url") or f"https://{slug}.breezy.hr/p/{ats_id}"
+            description = await self._fetch_description(job_url, http_client, throttle) or ""
 
             payload = {
                 "id": ats_id,
@@ -111,6 +171,7 @@ class BreezyHRConnector(Connector):
                 "salary_max": salary_max,
                 "url": job_url,
                 "created_at": pos.get("published_date") or pos.get("creation_date") or "",
+                "description": description,
             }
 
             yield RawJob(
@@ -126,9 +187,13 @@ class BreezyHRConnector(Connector):
         from urllib.parse import urlparse
         parsed = urlparse(endpoint)
         hostname = parsed.hostname or ""
-        if ".breezy.hr" in hostname:
-            return hostname.split(".breezy.hr")[0]
-        return hostname or "unknown"
+        if hostname.endswith(".breezy.hr") and hostname != "breezy.hr":
+            return hostname.replace(".breezy.hr", "")
+        parts = [p for p in parsed.path.strip("/").split("/") if p and p != "careers"]
+        if parts:
+            return parts[0]
+        return hostname.replace(".breezy.hr", "") or "unknown"
+
 
 
 ConnectorRegistry.register("breezy", "JSON", 10, BreezyHRConnector)

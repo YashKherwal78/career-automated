@@ -1,11 +1,14 @@
+import json
 import logging
 import re
 import html as html_lib
-from typing import AsyncIterator
+from typing import AsyncIterator, Optional
 from src.discovery.models import RawJob, ConnectorCapability, Board, FetchResult
 from src.discovery.registry.connector import Connector, FreshnessStrategy, DefaultFreshnessStrategy
 from src.discovery.pipeline.http_client import HttpClient
 from src.discovery.registry.connector_registry import ConnectorRegistry
+from src.discovery.detail_fetch import DetailFetchThrottle, get_cached_description, cache_description
+from src.discovery.html_text import strip_html
 
 logger = logging.getLogger("iCIMSConnector")
 
@@ -30,8 +33,8 @@ _HEADER_TAG_RE = re.compile(
     r'\s*<dd[^>]*>\s*<span[^>]*>(?P<value>.*?)</span>',
     re.DOTALL | re.IGNORECASE,
 )
-_DESC_RE = re.compile(
-    r'<div[^>]+class="[^"]*col-xs-12[^"]*description[^"]*"[^>]*>(?P<desc>.*?)</div>',
+_JSONLD_RE = re.compile(
+    r'<script[^>]*type="application/ld\+json"[^>]*>(?P<json>.*?)</script>',
     re.DOTALL | re.IGNORECASE,
 )
 _TAG_RE = re.compile(r"<[^>]+>")
@@ -62,10 +65,56 @@ class iCIMSConnector(Connector):
     def freshness_strategy(self) -> FreshnessStrategy:
         return DefaultFreshnessStrategy()
 
+    async def _fetch_description(
+        self, job_url: str, http_client: HttpClient, throttle: DetailFetchThrottle
+    ) -> Optional[str]:
+        """
+        The search-results cards never carry JD text — it lives on the per-job
+        page. Rather than a brittle CSS-class regex (the previous _DESC_RE
+        didn't match real page structure at all — verified against a live
+        page), extract it from the standard schema.org JobPosting JSON-LD
+        block iCIMS pages include for SEO, which is far more stable.
+        """
+        if not job_url:
+            return None
+
+        cached = get_cached_description("icims", job_url)
+        if cached is not None:
+            return cached
+
+        await throttle.wait()
+        try:
+            result = await http_client.fetch("GET", job_url, headers={"User-Agent": "Mozilla/5.0"})
+        except Exception as e:
+            logger.debug("iCIMSConnector: detail fetch failed for %s: %s", job_url, e)
+            return None
+
+        if result.status_code != 200:
+            return None
+
+        html_text = result.payload
+        if isinstance(html_text, bytes):
+            html_text = html_text.decode("utf-8", errors="replace")
+        if not isinstance(html_text, str):
+            return None
+
+        match = _JSONLD_RE.search(html_text)
+        if not match:
+            return None
+        try:
+            data = json.loads(match.group("json"))
+        except Exception:
+            return None
+
+        description = strip_html(data.get("description", "") if isinstance(data, dict) else "")
+        cache_description("icims", job_url, description)
+        return description
+
     async def sync(self, board: Board, http_client: HttpClient) -> AsyncIterator[RawJob | FetchResult]:
         base_url = self._resolve_base_url(board.endpoint)
         headers = {"User-Agent": "Mozilla/5.0"}
-        
+        throttle = DetailFetchThrottle(requests_per_second=5.0)
+
         page = 0
         max_pages = 50
         seen = set()
@@ -120,6 +169,7 @@ class iCIMSConnector(Connector):
                         break
 
                 job_url = html_lib.unescape(anchor.group("href"))
+                description = await self._fetch_description(job_url, http_client, throttle) or ""
 
                 payload = {
                     "id": ats_id,
@@ -127,6 +177,7 @@ class iCIMSConnector(Connector):
                     "location": location,
                     "department": department,
                     "url": job_url,
+                    "description": description,
                 }
 
                 yield RawJob(

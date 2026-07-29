@@ -33,7 +33,13 @@ class WorkableJSONConnector(Connector):
         # We always want to fetch from the widget API
         if "api/v1/widget/accounts" not in api_url:
             api_url = f"https://apply.workable.com/api/v1/widget/accounts/{slug}"
-            
+
+        # ?details=true embeds the full JD in each list item's "description"
+        # field — verified against live data, no second per-job request needed.
+        if "details=" not in api_url:
+            api_url += "&details=true" if "?" in api_url else "?details=true"
+
+
         headers = {
             "User-Agent": "Mozilla/5.0 (compatible; jobhive/1.0)",
             "Accept": "application/json"
