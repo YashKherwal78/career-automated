@@ -118,26 +118,41 @@ function DashboardHome() {
 
   return (
     <div>
-      <div style={{ padding: "40px clamp(24px,4vw,56px) 8px" }}>
+      <div style={{ padding: "clamp(32px,4vw,64px) clamp(32px,4vw,64px) 0" }}>
         <div
-          style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ds-ink-450)", marginBottom: 12 }}
+          style={{
+            display: "block",
+            width: "100%",
+            boxSizing: "border-box",
+            background: "rgba(255,255,255,0.4)",
+            backdropFilter: "blur(20px) saturate(160%)",
+            WebkitBackdropFilter: "blur(20px) saturate(160%)",
+            border: "1px solid rgba(255,255,255,0.55)",
+            borderRadius: "var(--ds-radius-2xl, 20px)",
+            boxShadow: "0 30px 70px -36px rgba(60,40,20,0.25)",
+            padding: "28px 32px",
+          }}
         >
-          {timeGreeting()}, {firstName}.
+          <div
+            style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ds-ink-450)", marginBottom: 16 }}
+          >
+            {timeGreeting()}, {firstName}.
+          </div>
+          <h1
+            className="font-[var(--ds-font-display)] font-semibold"
+            style={{ fontSize: "clamp(26px,3.6vw,46px)", margin: "0 0 18px", lineHeight: "var(--ds-leading-tight)" }}
+          >
+            {showResumeNudge ? "Let's get you matched." : "You're all caught up."}
+          </h1>
+          <p style={{ fontSize: 16, color: "var(--ds-ink-500)", margin: 0, maxWidth: 480, lineHeight: "var(--ds-leading-relaxed)" }}>
+            {showResumeNudge
+              ? "Add your resume — takes about two minutes — and we'll start finding roles that actually fit you."
+              : "We'll let you know when something needs you."}
+          </p>
         </div>
-        <h1
-          className="font-[var(--ds-font-display)] font-semibold"
-          style={{ fontSize: "clamp(26px,3.6vw,46px)", margin: "0 0 12px" }}
-        >
-          {showResumeNudge ? "Let's get you matched." : "You're all caught up."}
-        </h1>
-        <p style={{ fontSize: 16, color: "var(--ds-ink-500)", margin: 0, maxWidth: 480 }}>
-          {showResumeNudge
-            ? "Add your resume — takes about two minutes — and we'll start finding roles that actually fit you."
-            : "We'll let you know when something needs you."}
-        </p>
       </div>
 
-      <div style={{ padding: "24px clamp(24px,4vw,56px)" }}>
+      <div style={{ padding: "clamp(28px,3.4vw,44px) clamp(32px,4vw,64px) 36px" }}>
         <div
           className="flex items-center justify-between flex-wrap gap-3"
           style={{ marginBottom: 18 }}
@@ -272,17 +287,23 @@ function DashboardHome() {
           </div>
         ) : (
           <div
-            className="flex gap-3.5 overflow-x-auto pb-2 no-scrollbar"
-            style={{ WebkitOverflowScrolling: "touch" }}
+            className="flex overflow-x-auto pb-2 no-scrollbar"
+            style={{ WebkitOverflowScrolling: "touch", gap: 20 }}
           >
             {topJobs.map((job, i) => (
               <button
                 key={job.job_id}
                 type="button"
                 onClick={() => setSelectedJob(job)}
-                className="text-left flex-shrink-0 transition-transform hover:-translate-y-0.5 glass-card"
+                className="text-left flex-shrink-0 transition-transform hover:-translate-y-0.5"
                 style={{
                   width: 220,
+                  boxSizing: "border-box",
+                  background: "rgba(255,255,255,0.55)",
+                  border: "1px solid rgba(255,255,255,0.6)",
+                  backdropFilter: "blur(16px)",
+                  WebkitBackdropFilter: "blur(16px)",
+                  boxShadow: "0 10px 26px -14px rgba(60,40,20,0.22)",
                   borderRadius: "var(--ds-radius-xl)",
                   padding: 18,
                 }}
@@ -323,7 +344,7 @@ function DashboardHome() {
         )}
       </div>
 
-      <div style={{ padding: "24px clamp(24px,4vw,56px) 56px" }}>
+      <div style={{ padding: "0 clamp(32px,4vw,64px) 56px" }}>
         <div
           className="uppercase font-bold"
           style={{
@@ -397,7 +418,16 @@ function DashboardHome() {
           </div>
         ) : (
           <>
-            <div className="glass-card" style={{ borderRadius: "var(--ds-radius-lg)" }}>
+            <div
+              style={{
+                background: "rgba(255,255,255,0.4)",
+                backdropFilter: "blur(20px) saturate(160%)",
+                WebkitBackdropFilter: "blur(20px) saturate(160%)",
+                border: "1px solid rgba(255,255,255,0.55)",
+                borderRadius: "var(--ds-radius-lg)",
+                boxShadow: "0 30px 70px -36px rgba(60,40,20,0.25)",
+              }}
+            >
               {pageResults.map((job) => (
                 <div
                   key={job.job_id}

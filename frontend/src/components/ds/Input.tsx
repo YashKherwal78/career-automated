@@ -28,7 +28,7 @@ export const DsInput = React.forwardRef<HTMLInputElement, DsInputProps>(
         <input
           ref={ref}
           className={cn(
-            "w-full px-3.5 py-3 rounded-[var(--ds-radius-md)] border border-[var(--ds-border-medium)] text-[length:var(--ds-text-md)] font-[var(--ds-font-body)] bg-[var(--ds-surface-card)] text-[var(--ds-text-primary)] outline-none focus:border-[var(--ds-accent-primary)] focus:ring-[3px] focus:ring-[var(--ds-brand-orange-tint-16)]",
+            "w-full h-11 px-3.5 rounded-[var(--ds-radius-md)] border border-[var(--ds-border-medium)] text-[length:var(--ds-text-md)] font-[var(--ds-font-body)] bg-[var(--ds-surface-card)] text-[var(--ds-text-primary)] outline-none focus:border-[var(--ds-accent-primary)] focus:ring-[3px] focus:ring-[var(--ds-brand-orange-tint-16)]",
             className,
           )}
           {...props}

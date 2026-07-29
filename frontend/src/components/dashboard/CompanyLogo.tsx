@@ -32,7 +32,7 @@ export function CompanyLogo({
   if (domain && !failed) {
     return (
       <img
-        src={`https://logo.clearbit.com/${domain}?size=128`}
+        src={`https://unavatar.io/${domain}?fallback=false`}
         alt=""
         onError={() => setFailed(true)}
         className="flex-shrink-0 object-cover"

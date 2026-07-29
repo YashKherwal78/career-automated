@@ -12,7 +12,7 @@ export function DsChip({ label, active = false, onClick, className }: DsChipProp
     <button
       type="button"
       onClick={onClick}
-      className={`cursor-pointer px-4 py-[11px] rounded-[var(--ds-radius-md)] text-[13.5px] font-semibold active:scale-[0.97] transition-transform ${className ?? ""}`}
+      className={`cursor-pointer h-10 px-4 inline-flex items-center rounded-[var(--ds-radius-md)] text-[13.5px] font-semibold active:scale-[0.97] transition-transform ${className ?? ""}`}
       style={{
         background: active ? "var(--ds-ink-800)" : "var(--ds-surface-tint)",
         color: active ? "var(--ds-text-on-dark)" : "var(--ds-ink-700)",

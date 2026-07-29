@@ -281,7 +281,7 @@ export function Sidebar({ isOpen, isNarrow }: SidebarProps) {
               to={item.to}
               className="flex items-center gap-3 transition-colors"
               style={{
-                padding: "9px 12px",
+                padding: "10px 14px",
                 borderRadius: 12,
                 color: active ? "var(--ds-brand-orange-text)" : "var(--ds-ink-600)",
                 fontWeight: 600,
