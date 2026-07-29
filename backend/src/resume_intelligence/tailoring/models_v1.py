@@ -141,7 +141,7 @@ class TailoringInput(BaseModel):
 
     confidence_threshold: float = DEFAULT_CONFIDENCE_THRESHOLD
     llm_provider: str = "groq"
-    llm_model: str = "llama3-70b-8192"
+    llm_model: str = "llama-3.3-70b-versatile"
     job_id: str = ""
     mutation_budget: MutationBudget = Field(default_factory=MutationBudget)
 
