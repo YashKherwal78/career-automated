@@ -31,148 +31,11 @@ interface WorkingItem {
   stage: string;
 }
 
-// Frontend-only mock data — real Applications tracking API is a stub today (see plan Phase 5).
-const WORKING: WorkingItem[] = [
-  { company: "Figma", role: "Product Designer", stage: "Tailoring your resume for this role…" },
-  { company: "Vercel", role: "Platform Engineer", stage: "Filling out the application…" },
-];
+// Real Applications tracking is being built after auto-apply ships — until
+// then this stays an honest empty state rather than mock data.
+const WORKING: WorkingItem[] = [];
 
-const APPLICATIONS: ApplicationRecord[] = [
-  {
-    id: "stripe",
-    company: "Stripe",
-    role: "Senior Product Designer",
-    location: "Remote",
-    initial: "S",
-    avatarBg: "#5A4FCF",
-    status: "Interview",
-    date: "Jul 21",
-    group: "waiting",
-    needsAction: true,
-    statusLine: "Interview scheduled for Jul 25 — confirm when you can.",
-    description:
-      "Leading design for Stripe's core payments dashboard, working closely with engineering and PM.",
-    responsibilities: [
-      "Own end-to-end design for key merchant flows",
-      "Partner with research to validate concepts",
-      "Maintain design system consistency",
-    ],
-  },
-  {
-    id: "notion",
-    company: "Notion",
-    role: "Staff Frontend Engineer",
-    location: "Remote",
-    initial: "N",
-    avatarBg: "#2E2E2E",
-    status: "Resume Viewed",
-    date: "Jul 19",
-    group: "waiting",
-    needsAction: false,
-    statusLine: "Recruiter opened your resume 2 days ago.",
-    description: "Building performant, delightful editing experiences used by millions daily.",
-    responsibilities: [
-      "Ship high-quality UI for the core editor",
-      "Improve web performance and accessibility",
-      "Mentor junior engineers",
-    ],
-  },
-  {
-    id: "razorpay",
-    company: "Razorpay",
-    role: "Senior Backend Engineer",
-    location: "Bengaluru",
-    initial: "R",
-    avatarBg: "#0A6BFF",
-    status: "Applied",
-    date: "Jul 18",
-    group: "waiting",
-    needsAction: false,
-    statusLine: "Applied 3 days ago — most replies take 1–2 weeks.",
-    description: "Scaling payment infrastructure serving millions of transactions daily.",
-    responsibilities: [
-      "Design and build scalable backend services",
-      "Own reliability of critical payment paths",
-      "Collaborate with cross-functional teams",
-    ],
-  },
-  {
-    id: "zoho",
-    company: "Zoho",
-    role: "Product Manager",
-    location: "Chennai",
-    initial: "Z",
-    avatarBg: "#C8202E",
-    status: "Assessment",
-    date: "Jul 17",
-    group: "waiting",
-    needsAction: true,
-    statusLine: "A short assessment is waiting — due in 3 days.",
-    description: "Owning product strategy for a core Zoho suite product.",
-    responsibilities: [
-      "Define product roadmap",
-      "Work with engineering on execution",
-      "Analyze usage data to prioritize",
-    ],
-  },
-  {
-    id: "freshworks",
-    company: "Freshworks",
-    role: "UX Researcher",
-    location: "Chennai",
-    initial: "F",
-    avatarBg: "#3D9E6B",
-    status: "Applied",
-    date: "Jul 16",
-    group: "waiting",
-    needsAction: false,
-    statusLine: "Applied 4 days ago — sit tight.",
-    description: "Leading qualitative and quantitative research across the product suite.",
-    responsibilities: [
-      "Plan and run user research studies",
-      "Synthesize insights for product teams",
-      "Build a research repository",
-    ],
-  },
-  {
-    id: "cred",
-    company: "CRED",
-    role: "Design Systems Lead",
-    location: "Bengaluru",
-    initial: "C",
-    avatarBg: "#1B1B1B",
-    status: "Offer",
-    date: "Jul 14",
-    group: "finished",
-    needsAction: true,
-    statusLine: "An offer is waiting for your response.",
-    description: "Owning the design system powering CRED's product suite.",
-    responsibilities: [
-      "Define and evolve the design system",
-      "Partner with engineering on componentry",
-      "Drive adoption across teams",
-    ],
-  },
-  {
-    id: "swiggy",
-    company: "Swiggy",
-    role: "Growth Product Manager",
-    location: "Bengaluru",
-    initial: "S",
-    avatarBg: "#FC8019",
-    status: "Rejected",
-    date: "Jul 12",
-    group: "finished",
-    needsAction: false,
-    statusLine: "Didn't move forward this time — on to the next one.",
-    description: "Driving growth initiatives across Swiggy's core ordering experience.",
-    responsibilities: [
-      "Own growth experimentation roadmap",
-      "Partner with data science on modeling",
-      "Report on key growth metrics",
-    ],
-  },
-];
+const APPLICATIONS: ApplicationRecord[] = [];
 
 const TIMELINE_STAGES: AppStatus[] = ["Applied", "Resume Viewed", "Interview", "Offer"];
 
@@ -430,7 +293,7 @@ function ApplicationsPage() {
         className="font-[var(--ds-font-display)] font-semibold"
         style={{ fontSize: "clamp(24px,2.8vw,34px)", margin: "0 0 8px" }}
       >
-        Everything is moving.
+        {APPLICATIONS.length === 0 ? "No applications yet." : "Everything is moving."}
       </h1>
       <p
         style={{
@@ -441,7 +304,9 @@ function ApplicationsPage() {
           lineHeight: 1.6,
         }}
       >
-        You don't need to check in on any of this — we'll tell you the moment something needs you.
+        {APPLICATIONS.length === 0
+          ? "Applications you send — or we send for you — will show up here."
+          : "You don't need to check in on any of this — we'll tell you the moment something needs you."}
       </p>
 
       <div style={{ maxWidth: 340, marginBottom: 32 }}>
