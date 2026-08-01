@@ -101,6 +101,7 @@ function CareerProfilePage() {
 
   const { data: baseResume } = useQuery({
     queryKey: ["base-resume"],
+    meta: { persist: true },
     queryFn: async (): Promise<{ exists: boolean; pdfAvailable: boolean }> => {
       const res = await fetch(`${API_BASE}/candidate/base-resume`, {
         headers: { Authorization: `Bearer ${session?.access_token}` },
@@ -115,6 +116,7 @@ function CareerProfilePage() {
 
   const { data: loaded, isLoading } = useQuery({
     queryKey: ["candidate-profile"],
+    meta: { persist: true },
     queryFn: async (): Promise<ProfileData> => {
       const res = await fetch(`${API_BASE}/candidate/profile`, {
         headers: { Authorization: `Bearer ${session?.access_token}` },

@@ -1,4 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import {
   Outlet,
   Link,
@@ -7,13 +9,48 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteNav } from "../components/site-nav";
 import { SiteFooter } from "../components/site-footer";
 import { DsLogo } from "../components/ds/Logo";
+
+// Persists the query cache to localStorage so a reload (or returning to a
+// previously-visited screen) can paint from cache immediately instead of a
+// blank/loading state, then revalidate in the background. SSR has no
+// localStorage, so the server render falls back to a plain, unpersisted
+// QueryClientProvider — persistence only kicks in once mounted client-side.
+function AppQueryProvider({ queryClient, children }: { queryClient: QueryClient; children: ReactNode }) {
+  const [persister] = useState(() =>
+    typeof window === "undefined"
+      ? null
+      : createSyncStoragePersister({ storage: window.localStorage, key: "careerautomated-query-cache" })
+  );
+
+  if (!persister) {
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  }
+
+  return (
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{
+        persister,
+        maxAge: 24 * 60 * 60_000, // discard anything older than 24h
+        // Only rehydrate/persist data explicitly marked cacheable — avoids
+        // writing sensitive or highly volatile queries (e.g. billing) to
+        // localStorage by default.
+        dehydrateOptions: {
+          shouldDehydrateQuery: (query) => query.meta?.persist === true,
+        },
+      }}
+    >
+      {children}
+    </PersistQueryClientProvider>
+  );
+}
 
 function NotFoundComponent() {
   return (
@@ -203,16 +240,16 @@ function RootComponent() {
   if (isDashboard || isFullBleed) {
     return (
       <AuthProvider>
-        <QueryClientProvider client={queryClient}>
+        <AppQueryProvider queryClient={queryClient}>
           <Outlet />
-        </QueryClientProvider>
+        </AppQueryProvider>
       </AuthProvider>
     );
   }
 
   return (
     <AuthProvider>
-      <QueryClientProvider client={queryClient}>
+      <AppQueryProvider queryClient={queryClient}>
         <div className="flex min-h-screen flex-col">
           <SiteNav />
           <main className="flex-1">
@@ -220,7 +257,7 @@ function RootComponent() {
           </main>
           <SiteFooter />
         </div>
-      </QueryClientProvider>
+      </AppQueryProvider>
     </AuthProvider>
   );
 }

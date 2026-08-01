@@ -39,10 +39,12 @@ function DashboardHome() {
   } = useQuery({
     queryKey: ["jobs", "dashboard"],
     queryFn: () => ServiceRegistry.getJobService().getJobs({ sort_by: "score", page_size: 100 }),
+    meta: { persist: true },
   });
 
   const { data: hasProfileData } = useQuery({
     queryKey: ["candidate-profile-completeness"],
+    meta: { persist: true },
     queryFn: async (): Promise<boolean> => {
       const res = await fetch(`${API_BASE}/candidate/profile`, {
         headers: { Authorization: `Bearer ${session?.access_token}` },

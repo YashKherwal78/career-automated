@@ -153,6 +153,7 @@ function useCandidateProfile() {
   const { session } = useAuth();
   return useQuery({
     queryKey: ["candidate-profile"],
+    meta: { persist: true },
     queryFn: async (): Promise<ProfileData> => {
       const res = await fetch(`${API_BASE}/candidate/profile`, {
         headers: { Authorization: `Bearer ${session?.access_token}` },

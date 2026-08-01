@@ -43,6 +43,7 @@ function useBaseResume() {
   const { session } = useAuth();
   return useQuery({
     queryKey: ["base-resume"],
+    meta: { persist: true },
     queryFn: async (): Promise<{ exists: boolean; pdfAvailable: boolean }> => {
       const res = await fetch(`${API_BASE}/candidate/base-resume`, {
         headers: { Authorization: `Bearer ${session?.access_token}` },
@@ -67,6 +68,7 @@ function ResumeTailorPage() {
 
   const { data: job } = useQuery({
     queryKey: ["job", jobId],
+    meta: { persist: true },
     queryFn: () => ServiceRegistry.getJobService().getJob(jobId as string),
     enabled: !!jobId,
   });
