@@ -19,12 +19,21 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
 from src.api.db import get_db
+from src.runtime.auth.dependencies import get_current_user, CurrentUser
 from src.resume_intelligence.tailoring.engine_v1 import TailoringEngineV1
 from src.resume_intelligence.tailoring.models_v1 import (
     HardBlockError,
     TailoringInput,
     TailoringResult,
 )
+from src.resume_intelligence.cover_letter.generator import CoverLetterGenerator
+from src.resume_intelligence.cover_letter.models import CoverLetterInput
+
+# Cover letter generation is a paid-tier feature — it's an extra LLM call
+# on top of the (already-paid-tier-gateable) tailoring flow, so it costs
+# real money per use unlike the deterministic, zero-LLM base resume
+# generator. The product owner's own account is exempt.
+FREE_ACCESS_EMAILS = {"yash.kherwal78@gmail.com"}
 
 logger = logging.getLogger("TailoringRouter")
 router = APIRouter(prefix="/resume", tags=["Resume Tailoring"])
@@ -58,6 +67,22 @@ class TailorResponse(BaseModel):
     diff_summary: Dict[str, Any] = Field(default_factory=dict)
     version_metadata: Dict[str, str] = Field(default_factory=dict)
     is_persisted: bool = False
+
+
+class CoverLetterRequest(BaseModel):
+    candidate_id: str
+    job_id: Optional[str] = None
+    job_description: Optional[str] = None
+    company_name: Optional[str] = None
+    role_title: Optional[str] = None
+
+
+class CoverLetterResponse(BaseModel):
+    job_id: str
+    candidate_id: str
+    cover_letter_text: str
+    word_count: int
+    llm_calls_made: int
 
 
 class TailorPreviewResponse(BaseModel):
@@ -299,6 +324,28 @@ def _load_ai_preferences(candidate_id: str, db) -> tuple[str, str]:
         return "Professional", "Balanced"
 
 
+def _has_cover_letter_access(current_user: "CurrentUser", db) -> bool:
+    """Pro-tier gate, same 'paid' check billing.py's GET /subscription
+    uses — kept as a local query rather than an HTTP call to that router
+    to avoid a service-to-service round trip for a single boolean."""
+    if current_user.email in FREE_ACCESS_EMAILS:
+        return True
+    try:
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            SELECT 1 FROM public.user_subscriptions
+            WHERE user_id = %s AND status = 'paid'
+            ORDER BY paid_at DESC LIMIT 1
+            """,
+            (current_user.user_id,),
+        )
+        return cursor.fetchone() is not None
+    except Exception:
+        logger.warning("Subscription lookup failed for user_id=%s", current_user.user_id, exc_info=True)
+        return False
+
+
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
@@ -416,4 +463,67 @@ def preview_tailor(request: TailorRequest, db=Depends(get_db)):
         keyword_coverage=result.keyword_coverage,
         diff_log=[d.model_dump() for d in result.diff_log],
         policy_warnings=result.policy_report.warnings,
+    )
+
+
+@router.post("/cover-letter", response_model=CoverLetterResponse, status_code=status.HTTP_200_OK)
+def generate_cover_letter(
+    request: CoverLetterRequest,
+    db=Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    """
+    Generate a short, tailored, Problem-Solution-format cover letter for a
+    specific job. Pro-tier feature — costs a real LLM call per use, unlike
+    the deterministic zero-LLM base resume generator.
+    """
+    if not _has_cover_letter_access(current_user, db):
+        raise HTTPException(
+            status_code=status.HTTP_402_PAYMENT_REQUIRED,
+            detail="Cover letter generation is a Pro feature. Upgrade to generate one.",
+        )
+
+    logger.info("POST /resume/cover-letter — candidate=%s, job=%s", request.candidate_id, request.job_id or "(pasted JD)")
+
+    # Reuse the exact same JD-resolution and candidate-facts helpers /tailor
+    # already relies on — no separate JD parse, no separate profile query.
+    tailor_request = TailorRequest(
+        candidate_id=request.candidate_id,
+        job_id=request.job_id,
+        job_description=request.job_description,
+        company_name=request.company_name,
+        role_title=request.role_title,
+    )
+    effective_job_id, jd_profile = _resolve_jd_profile(tailor_request, db)
+    candidate_memory = _load_candidate_memory(request.candidate_id, db)
+    writing_tone, _ = _load_ai_preferences(request.candidate_id, db)
+    resume_facts = candidate_memory.get("global", [])
+
+    company_name = request.company_name or jd_profile.get("company_name") or "the company"
+    role_title = request.role_title or jd_profile.get("role_title") or "the role"
+
+    generator = CoverLetterGenerator()
+    inp = CoverLetterInput(
+        candidate_name=current_user.email.split("@")[0],
+        candidate_email=current_user.email,
+        jd_profile=jd_profile,
+        resume_facts=resume_facts,
+        company_name=company_name,
+        role_title=role_title,
+        writing_tone=writing_tone,
+    )
+    result = generator.generate(inp)
+
+    if result.is_fallback:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Cover letter generation failed — either no resume facts are on file yet (save your profile first) or the LLM call failed. Nothing was charged.",
+        )
+
+    return CoverLetterResponse(
+        job_id=effective_job_id,
+        candidate_id=request.candidate_id,
+        cover_letter_text=result.cover_letter_text,
+        word_count=result.word_count,
+        llm_calls_made=result.llm_calls_made,
     )

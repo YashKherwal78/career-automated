@@ -29,9 +29,13 @@ class ProfileManager:
             "first_name": "Yash",
             "last_name": "Kherwal",
             "email": "yash.kherwal78@gmail.com",
-            "phone": "+91 9891148156",
+            # No "+91 " prefix: Greenhouse's phone field pairs with a separate
+            # country-code selector (already defaults to India) — the input
+            # itself should just be the local number, not the full E.164 form.
+            "phone": "9891148156",
             "linkedin": "https://www.linkedin.com/in/yash-kherwal-944497254/",
-            "location": "Roorkee, India",
+            "github": "https://github.com/YashKherwal78",
+            "location": "Ghaziabad, India",
             # Location
             "address": "Niti Khand 3, Indirapuram",
             "city": "Ghaziabad",
@@ -113,6 +117,12 @@ class ProfileManager:
             "veteran_status": "No",
             "disability_status": "No",
             "hispanic_latino": "No",
+            "transgender_status": "No",
+            # Standard Greenhouse EEO template wording — this survey is
+            # voluntary and explicitly doesn't affect the hiring decision,
+            # so decline rather than guess an inaccurate category.
+            "race": "Decline to Self Identify",
+            "has_criminal_record": False,
             
             # V2.1 COMPENSATION
             "expected_full_time_ctc": "15,00,000 INR",

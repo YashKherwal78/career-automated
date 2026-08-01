@@ -1,20 +1,20 @@
 from src.system.logger import setup_logger
-logger = setup_logger('greenhouse_adapter')
+logger = setup_logger('ashby_adapter')
 import os
 from typing import Dict, Any
 
 from src.applications.adapters.base_adapter import BaseAdapter, ApplicationResult
 from src.applications.browser_launcher import LaunchedBrowser
-from src.applications.handlers.greenhouse import GreenhouseHandler
+from src.applications.handlers.ashby import AshbyHandler
 
-class GreenhouseAdapter(BaseAdapter):
+class AshbyAdapter(BaseAdapter):
     def __init__(self, profile_manager=None, rag_client=None, llm_router=None):
         self.profile_manager = profile_manager
         self.rag_client = rag_client
         self.llm_router = llm_router
 
     def apply(self, job: Dict[str, Any], resume_path: str, profile_manager: Any, test_mode: bool = False) -> ApplicationResult:
-        logger.info(f"[GreenhouseAdapter] Launching browser for Job: {job.get('id')} - {job.get('company_name')}")
+        logger.info(f"[AshbyAdapter] Launching browser for Job: {job.get('id')} - {job.get('company_name')}")
 
         execution_dir = f"executions/job_{job.get('id')}"
         os.makedirs(execution_dir, exist_ok=True)
@@ -24,7 +24,7 @@ class GreenhouseAdapter(BaseAdapter):
             try:
                 page.goto(job.get("apply_url") or job.get("job_url"), timeout=30000)
 
-                handler = GreenhouseHandler(
+                handler = AshbyHandler(
                     page=page,
                     job_title=job.get("job_title", ""),
                     company_name=job.get("company_name", ""),
@@ -59,7 +59,7 @@ class GreenhouseAdapter(BaseAdapter):
                 )
 
             except Exception as e:
-                logger.info(f"[GreenhouseAdapter] Exception: {e}")
+                logger.info(f"[AshbyAdapter] Exception: {e}")
                 screenshot_path = os.path.join(execution_dir, "error_state.png")
                 try:
                     page.screenshot(path=screenshot_path)

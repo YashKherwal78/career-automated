@@ -61,7 +61,15 @@ class SubmissionVerifier:
                 "your application has been received",
                 "successfully submitted",
                 "application complete",
-                "submission received"
+                "submission received",
+                "thanks for applying",
+                "thank you for your application",
+                "your application was submitted",
+                "we have received your application",
+                "application has been submitted",
+                "your application is complete",
+                "we appreciate your interest",
+                "your submission was successful",
             ]
             
             for phrase in success_phrases:
@@ -98,21 +106,36 @@ class SubmissionVerifier:
             return {"status": "FAILED_RECOVERABLE", "proof": proof, "confidence": 90}
             
         confidence = 0
-        
+
         # URL / Title heuristics (Outer page)
         if "confirmation" in url.lower() or "success" in url.lower() or "thanks" in url.lower():
             confidence += 40
         if "thank you" in title_lower or "success" in title_lower or "application received" in title_lower:
             confidence += 40
-            
+
         # Body text heuristics
         if signals["success"]:
             confidence += 60
             proof["success_text"] = signals["success"][0]
-            
+
         if ats_type == "GREENHOUSE" and signals["success"]:
             confidence += 30
-            
+
+        # Structural fallback: the phrase list above can never be exhaustive
+        # (every ATS/company words its confirmation differently). If the
+        # submit form/button is simply gone from the page and there are no
+        # failure signals, that's real evidence of a successful navigation
+        # away from the application form, not just absence of a known phrase.
+        try:
+            form_gone = (
+                page.locator('button[type="submit"], #submit_app, input[type="submit"]').count() == 0
+            )
+        except Exception:
+            form_gone = False
+        proof["form_gone"] = form_gone
+        if form_gone and not signals["failure"]:
+            confidence += 35
+
         confidence = min(confidence, 100)
         
         if confidence >= 80:
@@ -123,16 +146,6 @@ class SubmissionVerifier:
         else:
             status = "FAILED_RECOVERABLE"
             proof["error_text"] = "No success signals detected after clicking submit."
-
-        try:
-            page.screenshot(path="/Users/yashkherwal/.gemini/antigravity/brain/85072219-ca5f-4b8a-911f-47be32349a8b/images/submission_proof.png")
-        except Exception:
-            pass
-
-        try:
-            page.screenshot(path="/Users/yashkherwal/.gemini/antigravity/brain/85072219-ca5f-4b8a-911f-47be32349a8b/images/submission_proof.png")
-        except Exception:
-            pass
 
         return {
             "status": status,

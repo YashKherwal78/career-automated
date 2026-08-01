@@ -4,12 +4,33 @@ class QuestionClassifier:
     using profile data or LLM, or if they must be escalated to REVIEW_REQUIRED.
     """
     
+    # Kept in sync with question_engine.py's own canonical-field keyword
+    # checks (QuestionEngine.answer()'s TYPE 1 block) — a keyword missing
+    # here gets escalated by this classifier before ever reaching that
+    # resolution logic, even though question_engine.py already knows how to
+    # answer it (this exact gap caused "Current company"/"Number of years
+    # of experience" to be wrongly escalated on real Lever/Ashby forms).
     DETERMINISTIC_FIELDS = [
-        "first name", "last name", "email", "phone", "linkedin", "github", 
-        "portfolio", "website", "current city", "location", "address",
+        "first name", "last name", "email", "phone", "linkedin", "github",
+        "portfolio", "website", "current city", "city", "location", "address",
+        "country", "nationality", "based in", "reside",
         "work authorization", "sponsorship", "visa", "notice period",
-        "graduation year", "degree", "university", "school", "college",
-        "gender", "race", "veteran", "disability", "pronouns"
+        "graduation year", "degree", "qualification", "education",
+        "university", "school", "college",
+        "gender", "race", "veteran", "disability", "pronouns",
+        "transgender", "hispanic", "latino", "criminal", "felony",
+        "convicted", "conviction", "conflict of interest", "privacy",
+        "acknowledg",
+        "current company", "current employer", "current organization",
+        "previous employer", "former employer", "employer", "organization",
+        "preferred location", "office preference", "work location",
+        "which office",
+        "language", "speak", "proficienc",
+        "start date", "earliest start", "latest start", "when can you start",
+        "available to start", "graduation date", "passout",
+        "expected graduation", "end date",
+        "years of experience", "how many years",
+        "hear about", "source", "how did you find out",
     ]
     
     ESCALATION_KEYWORDS = [

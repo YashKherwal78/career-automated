@@ -117,7 +117,7 @@ class QuestionClassifier:
             return "KNOCKOUT"
             
         # 2. LEGAL
-        legal_keywords = ["veteran", "disability", "gender", "sex", "race", "hispanic", "latino", "criminal", "felony", "background", "bgv", "consent", "identify as"]
+        legal_keywords = ["veteran", "disability", "gender", "sex", "race", "hispanic", "latino", "criminal", "felony", "convicted", "conviction", "background", "bgv", "consent", "identify as", "privacy", "acknowledg", "conflict of interest"]
         if any(kw in q_lower for kw in legal_keywords):
             return "LEGAL"
             
@@ -155,7 +155,7 @@ class ResponseNormalizer:
     def _semantic_rule_match(ans_lower: str, options: list) -> str:
         # Rule definitions based on intent -> option
         rules = {
-            "yes": ["agree", "accept", "consent", "authorized", "eligible to work", "relocate", "open to relocation", "yes", "true", "y", "1"],
+            "yes": ["agree", "accept", "consent", "acknowledge", "authorized", "eligible to work", "relocate", "open to relocation", "yes", "true", "y", "1"],
             "no": ["not authorized", "require sponsorship", "disagree", "no", "false", "n", "0"]
         }
         
@@ -252,6 +252,19 @@ Example: {{"selected_option": "Yes", "confidence": 95, "reasoning": "Intent expl
         ans = str(raw_answer).strip()
         hints = (placeholder + " " + label_text).lower()
 
+        # React-select widgets (Greenhouse) render their real option list
+        # only once opened, so the DOM extractor can't see it ahead of time
+        # and `options` comes through empty even for a plain Yes/No question.
+        # The RAG/LLM path then answers in full-sentence form (e.g. "No, I
+        # have not worked at DoorDash.") instead of a bare option value,
+        # which the widget interaction can't match against a real "Yes"/"No"
+        # option. If it's an unresolved dropdown and the answer opens with
+        # Yes/No, use just that word.
+        if field_type == "dropdown" and not options:
+            leading_yn = re.match(r"^(yes|no)\b", ans, re.IGNORECASE)
+            if leading_yn:
+                return leading_yn.group(1).capitalize()
+
         # 1. Dropdowns
         if options and isinstance(options, list) and len(options) > 0:
             ans_lower = ans.lower()
@@ -267,7 +280,48 @@ Example: {{"selected_option": "Yes", "confidence": 95, "reasoning": "Intent expl
                 if ans_lower == str(opt).lower().strip():
                     ResponseNormalizer._dropdown_cache[cache_key] = opt
                     return opt
-                    
+
+            # Phase A2: Containment match — for a compound answer like
+            # "Ghaziabad, Uttar Pradesh, India" against a bare country
+            # list, Phase A's exact-equality check never fires (the full
+            # string isn't equal to any single option). Before falling to
+            # a fuzzy LLM guess (which can genuinely mis-pick an unrelated
+            # option, e.g. once returned "Lebanon" for an Indian city/state/
+            # country string), check whether an option name appears in the
+            # answer as a whole word — a free, deterministic, and far safer
+            # signal for exactly this shape of question.
+            # A second variant — just the last comma-separated segment
+            # (typically the country, e.g. "india" from "Ghaziabad, Uttar
+            # Pradesh, India") — catches compound MULTI-word options like
+            # "India Remote" that a bare-option-in-answer check can't (the
+            # option itself is longer than any single segment of the
+            # answer, so it has to be checked the other way around: does
+            # the short variant appear inside the option).
+            last_segment = ans_lower.split(",")[-1].strip()
+            answer_variants = [last_segment] if last_segment and last_segment != ans_lower else []
+
+            containment_matches = []
+            for opt in options:
+                opt_l = str(opt).lower().strip()
+                if re.search(r'\b' + re.escape(opt_l) + r'\b', ans_lower):
+                    containment_matches.append(opt)
+                    continue
+                if any(v and re.search(r'\b' + re.escape(v) + r'\b', opt_l) for v in answer_variants):
+                    containment_matches.append(opt)
+
+            if containment_matches:
+                # Prefer a "remote" option among ambiguous matches — a
+                # country-only match (e.g. "india") can equally hit a
+                # specific-hub option ("Bengaluru, India") and a remote
+                # option ("India Remote"); the candidate isn't necessarily
+                # IN a listed hub city, just eligible for remote work from
+                # that broader country.
+                remote_matches = [o for o in containment_matches if "remote" in str(o).lower()]
+                pool = remote_matches or containment_matches
+                best = max(pool, key=lambda o: len(str(o)))
+                ResponseNormalizer._dropdown_cache[cache_key] = best
+                return best
+
             # Phase B: Semantic Rule Match
             rule_match = ResponseNormalizer._semantic_rule_match(ans_lower, options)
             if rule_match:
@@ -429,13 +483,30 @@ Example: {{"selected_option": "Yes", "confidence": 95, "reasoning": "Intent expl
         return ans
 
 class QuestionEngine:
-    def __init__(self, profile_manager, rag_client, llm_client, company_context: str, job_title: str):
+    def __init__(self, profile_manager, rag_client, llm_client, company_context: str, job_title: str, job_location: str = ""):
         self.profile = profile_manager
         self.rag = rag_client
         self.llm_client = llm_client
         self.company_context = company_context
         self.job_title = job_title
+        self.job_location = job_location or ""
         self.audit_log = []
+
+    def _visa_sponsorship_needed(self) -> bool:
+        """India-based roles: no sponsorship needed. Anything else (or
+        unknown location): sponsorship is needed, per candidate preference."""
+        return "india" not in self.job_location.lower()
+
+    def _expected_salary_answer(self) -> str:
+        """Remote + US-based roles get a distinct, lower anchor figure
+        ($30,000) per explicit candidate instruction — everything else
+        (including domestic India roles) uses the profile's own stored INR
+        expectation."""
+        loc = self.job_location.lower()
+        is_us = bool(re.search(r'\bu\.?s\.?a?\b|united states', loc))
+        if "remote" in loc and is_us:
+            return "$30,000"
+        return str(self.profile.get_field("expected_salary"))
 
     def log_decision(self, question: str, classification: str, source: str, raw: str, normalized: str, metadata: dict = None):
         if metadata is None: metadata = {}
@@ -519,7 +590,7 @@ class QuestionEngine:
         
         def apply_deterministic_fallback():
             ans = ""
-            if "sponsor" in q_lower or "visa" in q_lower: ans = "No"
+            if "sponsor" in q_lower or "visa" in q_lower: ans = "Yes" if self._visa_sponsorship_needed() else "No"
             elif "authoriz" in q_lower or "work auth" in q_lower: ans = "Yes"
             elif "previously employed" in q_lower or "former employee" in q_lower or "employed by stripe" in q_lower: ans = "No"
             elif "whatsapp" in q_lower: ans = "Yes"
@@ -527,6 +598,10 @@ class QuestionEngine:
             elif "relocat" in q_lower: ans = "Yes"
             elif "travel" in q_lower: ans = "Yes"
             elif "remote" in q_lower: ans = "Yes"
+            elif "criminal" in q_lower or "felony" in q_lower or "convicted" in q_lower or "conviction" in q_lower: ans = "No"
+            elif "conflict of interest" in q_lower: ans = "No"
+            elif "relative" in q_lower or "family member" in q_lower or "related party" in q_lower: ans = "No"
+            elif "privacy" in q_lower or "acknowledg" in q_lower: ans = "Yes"
             return ans
 
         # Add robust check for is_binary_dropdown
@@ -536,7 +611,7 @@ class QuestionEngine:
                 is_binary_dropdown = True
                 
         # Force deterministic evaluation for problem fields
-        aggressive_keywords = ["sponsor", "visa", "authoriz", "work auth", "previously employed", "employed by stripe", "whatsapp", "background", "bgv", "relocat", "travel", "remote"]
+        aggressive_keywords = ["sponsor", "visa", "authoriz", "work auth", "previously employed", "employed by stripe", "whatsapp", "background", "bgv", "relocat", "travel", "remote", "criminal", "felony", "convicted", "conviction", "conflict of interest", "relative", "family member", "related party", "privacy", "acknowledg"]
         if any(kw in q_lower for kw in aggressive_keywords):
             is_binary_dropdown = True
 
@@ -576,15 +651,20 @@ class QuestionEngine:
                 # If they are dropdowns, LocationResolver handles them. If text, we should return the highest priority.
                 canonical_field = "PREFERRED_LOCATION"
                 raw_answer = LocationResolver.PRIORITY_LOCATIONS[0].title() # e.g. "Gurgaon"
+            # "country"/"city" are more specific than the generic "reside"/
+            # "current location" keywords below, so they must be checked
+            # first — otherwise "What country do you reside in?" matches the
+            # generic CURRENT_LOCATION branch (via "reside") and never
+            # reaches the COUNTRY branch, answering with the wrong field.
+            elif any(kw in q_lower or kw in hints for kw in ["country", "nationality", "residence country"]):
+                canonical_field = "COUNTRY"
+            elif any(kw in q_lower or kw in hints for kw in ["city", "current city", "location city", "location (city)"]):
+                canonical_field = "CITY"
             elif any(kw in q_lower or kw in hints for kw in ["residence location", "current residence", "where do you live", "current location", "reside"]):
                 canonical_field = "CURRENT_LOCATION"
                 raw_answer = self.profile.get_field("location")
             elif any(kw in q_lower or kw in hints for kw in ["location"]):
                 canonical_field = "LOCATION"
-            elif any(kw in q_lower or kw in hints for kw in ["city", "current city", "location city", "location (city)"]):
-                canonical_field = "CITY"
-            elif any(kw in q_lower or kw in hints for kw in ["country", "nationality", "residence country", "reside"]):
-                canonical_field = "COUNTRY"
                 
             # Logistics/Legal
             elif "notice period" in hints:
@@ -593,10 +673,47 @@ class QuestionEngine:
                 canonical_field = "VISA_REQUIREMENT"
             elif "authorized" in hints or "work authorization" in hints:
                 canonical_field = "WORK_AUTHORIZATION"
-                
+
+            # Legal / EEO — background, conduct, and consent questions the
+            # candidate has given a standing answer for, so these resolve
+            # from profile facts instead of falling through to the RAG/essay
+            # path (which has nothing relevant to retrieve for these and
+            # would otherwise escalate them as unanswerable).
+            elif any(kw in q_lower or kw in hints for kw in ["criminal", "felony", "convicted", "conviction"]):
+                canonical_field = "CRIMINAL_RECORD"
+            elif "conflict of interest" in q_lower or "conflict of interest" in hints:
+                canonical_field = "CONFLICT_OF_INTEREST"
+            elif any(kw in q_lower or kw in hints for kw in ["privacy", "acknowledg"]):
+                canonical_field = "PRIVACY_ACK"
+
+            # EEO / Demographics — profile already stores these; without
+            # this mapping every gender/veteran/disability question falls
+            # through to "no deterministic mapping" and gets escalated even
+            # though a real, correct answer exists.
+            # "transgender" must be checked before the generic "gender" match
+            # below — "gender" is a substring of "transgender", so without
+            # this ordering "Do you identify as transgender?" gets silently
+            # mapped to the GENDER field and answered "Male" (matches no
+            # real option, so the widget interaction fails, silently, same
+            # failure mode as an unmapped field).
+            elif "transgender" in q_lower or "transgender" in hints:
+                canonical_field = "TRANSGENDER_STATUS"
+            elif any(kw in q_lower or kw in hints for kw in ["gender"]):
+                canonical_field = "GENDER"
+            elif any(kw in q_lower or kw in hints for kw in ["veteran"]):
+                canonical_field = "VETERAN_STATUS"
+            elif any(kw in q_lower or kw in hints for kw in ["disability"]):
+                canonical_field = "DISABILITY_STATUS"
+            elif "race" in q_lower or "race" in hints:
+                canonical_field = "RACE"
+            elif any(kw in q_lower or kw in hints for kw in ["hispanic", "latino"]):
+                canonical_field = "HISPANIC_LATINO"
+
             # Personal
             elif "linkedin" in hints:
                 canonical_field = "LINKEDIN"
+            elif "github" in hints:
+                canonical_field = "GITHUB"
             elif "phone" in hints:
                 canonical_field = "PHONE"
             elif "email" in hints:
@@ -624,7 +741,7 @@ class QuestionEngine:
             elif "previously employed" in hints or "former employee" in hints or "previously been employed" in q_lower:
                 raw_answer = "Yes" if self.profile.get_field("previously_employed") else "No"
             elif classification == "COMPENSATION":
-                raw_answer = str(self.profile.get_field("expected_salary"))
+                raw_answer = self._expected_salary_answer()
 
             # Step 2: Profile Value Lookup
             if canonical_field:
@@ -657,11 +774,31 @@ class QuestionEngine:
                     else:
                         raw_answer = "Immediate"
                 elif canonical_field == "VISA_REQUIREMENT":
-                    raw_answer = "Yes" if self.profile.get_field("visa_sponsorship_required") else "No"
+                    raw_answer = "Yes" if self._visa_sponsorship_needed() else "No"
                 elif canonical_field == "WORK_AUTHORIZATION":
                     raw_answer = "Yes" if self.profile.get_field("work_authorization") else "No"
+                elif canonical_field == "CRIMINAL_RECORD":
+                    raw_answer = "No"
+                elif canonical_field == "CONFLICT_OF_INTEREST":
+                    raw_answer = "No"
+                elif canonical_field == "PRIVACY_ACK":
+                    raw_answer = "Yes"
+                elif canonical_field == "GENDER":
+                    raw_answer = str(self.profile.get_field("gender") or "")
+                elif canonical_field == "TRANSGENDER_STATUS":
+                    raw_answer = str(self.profile.get_field("transgender_status") or "No")
+                elif canonical_field == "VETERAN_STATUS":
+                    raw_answer = str(self.profile.get_field("veteran_status") or "")
+                elif canonical_field == "DISABILITY_STATUS":
+                    raw_answer = str(self.profile.get_field("disability_status") or "")
+                elif canonical_field == "RACE":
+                    raw_answer = str(self.profile.get_field("race") or "Decline to Self Identify")
+                elif canonical_field == "HISPANIC_LATINO":
+                    raw_answer = str(self.profile.get_field("hispanic_latino") or "")
                 elif canonical_field == "LINKEDIN":
                     raw_answer = str(self.profile.get_field("linkedin"))
+                elif canonical_field == "GITHUB":
+                    raw_answer = str(self.profile.get_field("github"))
                 elif canonical_field == "PHONE":
                     raw_answer = str(self.profile.get_field("phone"))
                 elif canonical_field == "EMAIL":
