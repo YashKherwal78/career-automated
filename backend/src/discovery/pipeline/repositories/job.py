@@ -6,7 +6,11 @@ from src.discovery.models import CanonicalJob
 from src.discovery.pipeline.repositories.base import BaseRepository
 
 def is_postgres() -> bool:
-    return False
+    try:
+        from src.runtime.postgres.connection import USE_POSTGRES
+        return USE_POSTGRES
+    except ImportError:
+        return False
 
 class JobRepository(BaseRepository):
     def _init_db(self):

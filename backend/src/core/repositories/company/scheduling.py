@@ -170,6 +170,7 @@ class PostgresSchedulingRepository(BaseRepository, ICompanySchedulingRepository)
                     reservation_token = NULL,
                     reserved_by = NULL,
                     reserved_until_tz = NULL,
+                    lease_token = NULL,
                     next_check_at_tz = %s
                 WHERE company_id = %s AND (lease_token = %s OR reservation_token = %s)
             ''', (now_epoch, now_epoch, next_check_dt, company_id, lease_token, lease_token))
@@ -192,6 +193,7 @@ class PostgresSchedulingRepository(BaseRepository, ICompanySchedulingRepository)
                     reservation_token = NULL,
                     reserved_by = NULL,
                     reserved_until_tz = NULL,
+                    lease_token = NULL,
                     next_check_at_tz = %s
                 WHERE company_id = %s AND (lease_token = %s OR reservation_token = %s)
             ''', (failures, next_check_dt, company_id, lease_token, lease_token))

@@ -244,7 +244,7 @@ class AmazonSignature(ATSDetector):
     @property
     def provider_id(self) -> str:
         return 'amazon'
-        
+
     def detect(self, url: str, response: Response) -> bool:
         if "amazon.jobs" in url:
             return True
@@ -252,12 +252,96 @@ class AmazonSignature(ATSDetector):
 
     def extract_canonical_url(self, url: str, response: Response) -> str:
         return "https://www.amazon.jobs/api/jobs"
-        
+
     def get_confidence(self) -> int:
         return 98
-        
+
     def get_reason(self) -> str:
         return "amazon.jobs domain matched"
+
+class DarwinboxSignature(ATSDetector):
+    @property
+    def provider_id(self) -> str:
+        return 'darwinbox'
+
+    def detect(self, url: str, response: Response) -> bool:
+        if "darwinbox.in" in url:
+            return True
+        if response.status_code == 200 and ("darwinbox" in response.text.lower() or "darwinbox-careers" in response.text.lower()):
+            return True
+        return False
+
+    def extract_canonical_url(self, url: str, response: Response) -> str:
+        return url
+
+    def get_confidence(self) -> int:
+        return 95
+
+    def get_reason(self) -> str:
+        return "Matched Darwinbox domain or HTML signature"
+
+class FreshteamSignature(ATSDetector):
+    @property
+    def provider_id(self) -> str:
+        return 'freshteam'
+
+    def detect(self, url: str, response: Response) -> bool:
+        if "freshteam.com" in url:
+            return True
+        if response.status_code == 200 and ("freshteam" in response.text.lower() or "freshworks" in response.text.lower()):
+            return True
+        return False
+
+    def extract_canonical_url(self, url: str, response: Response) -> str:
+        return url
+
+    def get_confidence(self) -> int:
+        return 95
+
+    def get_reason(self) -> str:
+        return "Matched Freshteam domain or HTML signature"
+
+class KekaSignature(ATSDetector):
+    @property
+    def provider_id(self) -> str:
+        return 'keka'
+
+    def detect(self, url: str, response: Response) -> bool:
+        if "keka.com" in url:
+            return True
+        if response.status_code == 200 and ("keka" in response.text.lower() or "keka-job-card" in response.text.lower()):
+            return True
+        return False
+
+    def extract_canonical_url(self, url: str, response: Response) -> str:
+        return url
+
+    def get_confidence(self) -> int:
+        return 90
+
+    def get_reason(self) -> str:
+        return "Matched Keka domain or HTML signature"
+
+class ZohoRecruitSignature(ATSDetector):
+    @property
+    def provider_id(self) -> str:
+        return 'zoho_recruit'
+
+    def detect(self, url: str, response: Response) -> bool:
+        if "zohorecruit.com" in url or "recruit.zoho" in url:
+            return True
+        if response.status_code == 200 and ("zohorecruit" in response.text.lower() or "zoho recruit" in response.text.lower()):
+            return True
+        return False
+
+    def extract_canonical_url(self, url: str, response: Response) -> str:
+        return url
+
+    def get_confidence(self) -> int:
+        return 95
+
+    def get_reason(self) -> str:
+        return "Matched Zoho Recruit domain or HTML signature"
 
 class DetectorRegistry:
     """Central registry of ATS detectors."""
@@ -273,7 +357,11 @@ class DetectorRegistry:
         RecruiteeSignature(),
         JazzHRSignature(),
         BreezySignature(),
-        AmazonSignature()
+        AmazonSignature(),
+        DarwinboxSignature(),
+        FreshteamSignature(),
+        KekaSignature(),
+        ZohoRecruitSignature()
     ]
     
     @classmethod

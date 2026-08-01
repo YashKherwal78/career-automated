@@ -109,8 +109,11 @@ def get_connection(role: DatabaseRole = DatabaseRole.OPERATIONAL) -> CompatConne
     # SQLite fallback (mostly for tests/local check compat)
     db_path = db_url.replace("sqlite:///", "")
     raw_conn = sqlite3.connect(db_path, check_same_thread=False, timeout=30.0)
+    raw_conn.execute("PRAGMA journal_mode=WAL;")
+    raw_conn.execute("PRAGMA busy_timeout=10000;")
     raw_conn.row_factory = sqlite3.Row
     return CompatConnection(raw_conn, is_sqlite=True)
+
 
 
 def get_auth_connection() -> CompatConnection:

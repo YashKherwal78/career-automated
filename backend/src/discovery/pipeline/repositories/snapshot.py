@@ -50,7 +50,8 @@ class SnapshotRepository(BaseRepository):
         
         from src.api.db import is_postgres
         with self.get_connection() as conn:
-            if is_postgres():
+            is_sqlite = getattr(conn, "_is_sqlite", isinstance(conn, sqlite3.Connection))
+            if not is_sqlite and is_postgres():
                 conn.execute("""
                     INSERT INTO board_snapshots (
                         id, board_id, synced_at, content_sha256, size_bytes, compression, payload_blob
@@ -62,6 +63,7 @@ class SnapshotRepository(BaseRepository):
                         id, board_id, synced_at, content_sha256, size_bytes, compression, payload_blob
                     ) VALUES (?, ?, ?, ?, ?, ?, ?)
                 """, (snapshot_id, board_id, synced_at, content_sha256, size_bytes, "gzip", compressed))
+
             conn.commit()
             
         return snapshot_id

@@ -13,5 +13,13 @@ class BaseRepository:
     def get_connection(self):
         from src.api.db import get_connection, is_postgres
         if is_postgres():
-            return get_connection()
-        return get_connection()
+            try:
+                return get_connection()
+            except Exception:
+                pass
+        conn = sqlite3.connect(self.db_path, timeout=30.0)
+        conn.execute("PRAGMA journal_mode=WAL;")
+        conn.execute("PRAGMA busy_timeout=10000;")
+        conn.row_factory = sqlite3.Row
+        return conn
+

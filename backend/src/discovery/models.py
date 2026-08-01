@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Optional
+
 
 
 @dataclass
@@ -159,4 +160,22 @@ class CanonicalJob:
     normalized_at: float
     schema_version: int = 1
     normalizer_version: int = 1
+
+
+@dataclass
+class CrawlOutcome:
+    provider_id: str
+    company_id: str
+    board_endpoint: str
+    status_code: int
+    duration_ms: int
+    bytes_downloaded: int
+    pages_fetched: int
+    raw_jobs_count: int
+    normalized_jobs_count: int
+    inserted_count: int
+    updated_count: int
+    archived_count: int
+    error_message: Optional[str] = None
+
 
