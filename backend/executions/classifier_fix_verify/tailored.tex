@@ -1,0 +1,147 @@
+\documentclass[letterpaper,10.5pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\usepackage{xcolor}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1.0in}
+\addtolength{\topmargin}{-0.5in}
+\addtolength{\textheight}{1.1in}
+
+\urlstyle{same}
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+\pdfgentounicode=1
+
+\newcommand{\kw}[1]{\textbf{\boldmath#1}}
+\newcommand{\resumeItem}[1]{\item\small{{#1 \vspace{0pt}}}}
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-1pt}\item
+  \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+    \textbf{#1} & #2 \\
+    \textit{\small#3} & \textit{\small #4} \\
+  \end{tabular*}\vspace{-5pt}
+}
+\newcommand{\resumeProjectHeading}[2]{
+  \vspace{-5pt}\item
+  \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+    \small#1 & \small #2 \\
+  \end{tabular*}\vspace{-5pt}
+}
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}[leftmargin=*, itemsep=1pt]}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-3pt}}
+
+%-------------------------------------------
+\begin{document}
+
+%----------HEADER----------
+\begin{center}
+    \textbf{\Huge \scshape Yash Kherwal} \\ \vspace{1pt}
+    \small +91 9891148156 $|$
+    \href{mailto:yash.kherwal78@gmail.com}{yash.kherwal78@gmail.com} $|$
+    \href{https://www.linkedin.com/in/yash-kherwal-944497254/}{linkedin.com/in/yash-kherwal-944497254} $|$
+    \href{https://github.com/YashKherwal78}{github.com/YashKherwal78} $|$
+    \href{https://careerautomated.in}{careerautomated.in}
+\end{center}
+
+%-----------EDUCATION-----------
+\section{Education}
+\resumeSubHeadingListStart
+  \resumeSubheading
+    {Indian Institute of Technology Roorkee}{2022 -- 2026}
+    {B.Tech in Chemical Engineering}{}
+\resumeSubHeadingListEnd
+
+%-----------EXPERIENCE-----------
+\section{Experience}
+\resumeSubHeadingListStart
+
+  \resumeSubheading
+    {AI Engineer Intern}{Feb 2026 -- Apr 2026}
+    {Orange Labs --- EdTech ERP platform for schools and colleges}{}
+  \resumeItemListStart
+    \resumeItem{Developed Python computer vision model detecting students from live camera feeds, auto-syncing presence records into the school ERP using Fastapi and Postgresql, eliminating manual marking.}
+    \resumeItem{Engineered synthesised audio/video using Llm and React, improving engagement over generic video content.}
+  \resumeItemListEnd
+
+  \resumeSubheading
+    {Software Development Intern}{May 2025 -- June 2025}
+    {ScoreMe Solutions}{}
+  \resumeItemListStart
+    \resumeItem{Designed a Docker-based fintech PDF processing system using rule-based heuristics and Redis for deterministic inputs, with Kubernetes for ambiguous cases.}
+    \resumeItem{Implemented \kw{confidence calibration layer}: predictions below threshold withheld from \kw{credit scoring pipelines} and flagged for review; integrated \kw{Tesseract OCR} as fallback for scanned inputs.}
+  \resumeItemListEnd
+
+  \resumeSubheading
+    {Engineering Intern}{June 2025 -- July 2025}
+    {Bharat Electronics Limited}{}
+  \resumeItemListStart
+    \resumeItem{Implemented a \kw{binary stream parser} for \kw{ASTERIX CAT048} radar protocol per EUROCONTROL spec; designed \kw{concurrent ingestion} with \kw{backpressure handling} to maintain throughput under sustained high-frequency surveillance loads.}
+  \resumeItemListEnd
+
+\resumeSubHeadingListEnd
+
+%-----------PROJECTS-----------
+\section{Projects}
+\resumeSubHeadingListStart
+
+  \resumeProjectHeading
+    {\textbf{CareerAutomated --- Autonomous AI Recruiting Platform} $|$ \emph{Python, Playwright, LangGraph, RAG}}{2025 -- 2026}
+  \resumeItemListStart
+    \resumeItem{Built an end-to-end AI job platform: \kw{50+ ATS discovery connectors} ingest and normalise \kw{1.3M+ live job postings}; a \kw{hybrid BM25 + semantic RAG} pipeline scores per-candidate job fit against real profile data.}
+    \resumeItem{Shipped an application under a framework that fact-checks every rewritten claim against the source resume, blocking hallucinated content before it ships}
+    \resumeItem{Engineered a core - a shared Playwright orchestration core with per-ATS handlers fills and submits real applications; checks block submission rather than guess when required data is missing}
+  \resumeItemListEnd
+
+  \resumeProjectHeading
+    {\textbf{Hybrid RAG Retrieval System} $|$ \emph{Python, LangChain, BGE-M3, AstraDB, FastAPI, AWS EC2}}{2024}
+  \resumeItemListStart
+    \resumeItem{Diagnosed keyword retrieval failure on 500+ document corpus - BM25 missed semantically relevant results due to vocabulary mismatch; introduced a system combining dense embeddings with sparse BM25 scores using Python, LangChain, BGE-M3, AstraDB, FastAPI}
+    \resumeItem{Designed updates on AWS EC2 for zero-downtime corpus updates; constraints enforced via prompt constraints to prevent hallucination}
+  \resumeItemListEnd
+
+  \resumeProjectHeading
+    {\textbf{YAAR --- Personality-Adaptive LLM System} $|$ \emph{React Native, LLM APIs, FastAPI, Persistent Memory}}{2025}
+  \resumeItemListStart
+    \resumeItem{Designed a system: each interaction updates a model injected into the LLM at inference time to steer tone without fine-tuning using React Native, LLM APIs, FastAPI}
+    \resumeItem{Shipped production application via React Native + EAS Build - validated end-to-end on device with sub-2s streamed LLM response latency}
+  \resumeItemListEnd
+
+\resumeSubHeadingListEnd
+
+%-----------SKILLS-----------
+\section{Technical Skills}
+\vspace{-2pt}
+\begin{itemize}[leftmargin=0.15in, label={}, itemsep=0pt, parsep=0pt]
+  \small{\item{
+    \textbf{LLM \& Agentic AI:} LangGraph, LangChain, CrewAI, Multi-Agent Orchestration, MCP, Structured Outputs, Prompt Engineering, Agentic Workflows \\
+    \textbf{Retrieval:} Hybrid RAG, BGE-M3, Dense + Sparse Retrieval, AstraDB, Vector Databases, ANN Indexing \\
+    \textbf{ML / AI:} TensorFlow, Scikit-learn, Random Forest, Confidence Calibration, Computer Vision (OpenCV) \\
+    \textbf{Backend \& Infra:} FastAPI, Docker, AWS EC2, n8n, REST APIs, Stream Processing \\
+    \textbf{Languages \& Data:} Python, SQL, Java, C++, DSA, Pandas, NumPy
+  }}
+\end{itemize}
+
+\end{document}
