@@ -279,8 +279,22 @@ class BaseATSHandler(ABC):
 
             classification = QuestionClassifier.classify(clean_label, widget_type)
             if classification == "ESCALATE":
-                logger.info(f"{self.ATS_NAME}Handler: Escalating complex question '{clean_label}' -> REVIEW_REQUIRED")
-                safe_to_submit = False
+                # Only a REQUIRED escalated question should block the whole
+                # submission. An optional one (an open-ended "anything else
+                # you'd like us to know?" box, an optional cover letter) is
+                # left blank and skipped — same treatment the unanswerable-but-
+                # optional path below already gives, and for the same reason:
+                # blocking an entire application over a blank optional textarea
+                # defeats the point of automating it. The no-guessing-on-
+                # required-fields rule is untouched.
+                if is_required:
+                    logger.info(f"{self.ATS_NAME}Handler: Escalating REQUIRED complex question '{clean_label}' -> REVIEW_REQUIRED")
+                    safe_to_submit = False
+                else:
+                    logger.info(f"{self.ATS_NAME}Handler: Escalated question '{clean_label}' is optional — leaving blank, continuing.")
+                telemetry.setdefault("escalated_questions", []).append(
+                    {"question": clean_label, "required": is_required}
+                )
                 continue
 
             answer = self.engine.answer(

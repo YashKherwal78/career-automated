@@ -2,6 +2,7 @@ from src.system.logger import setup_logger
 logger = setup_logger('question_engine')
 import re
 import json
+from datetime import datetime, timedelta
 from src.applications.profile import ProfileManager
 from src.config.config import Config
 from src.utils.llm_router import LLMRouter
@@ -127,7 +128,15 @@ class QuestionClassifier:
             return "COMPENSATION"
             
         # 4. PROFILE
-        profile_keywords = ["notice period", "start date", "graduation", "passout", "expected graduation", "school", "university", "linkedin", "portfolio", "github", "website", "organisation", "organization", "current role", "years of experience", "relative", "family member", "related party", "previously employed", "former employee", "previously been employed", "employer", "company", "institute", "college", "degree", "education", "travel", "first name", "last name", "email", "phone", "location", "city", "country", "state", "reside", "hear about", "source", "how did you find out", "referral"]
+        # Name variants are listed first inside this group's keyword set below;
+        # without them "Preferred Name" fell through every branch to the
+        # TECHNICAL fallback, which routes to the low-confidence gate and
+        # returns REVIEW_REQUIRED for a field the profile answers outright.
+        profile_keywords = ["legal name", "full name", "preferred name", "nickname",
+                            "middle name", "surname", "family name", "your name",
+                            "notice period", "start date", "earliest date", "available to start",
+                            "availability", "when can you start", "date you are available",
+                            "graduation", "passout", "expected graduation", "school", "university", "linkedin", "portfolio", "github", "website", "organisation", "organization", "current role", "years of experience", "relative", "family member", "related party", "previously employed", "former employee", "previously been employed", "employer", "company", "institute", "college", "degree", "education", "travel", "first name", "last name", "email", "phone", "location", "city", "country", "state", "reside", "hear about", "source", "how did you find out", "referral"]
         if any(kw in q_lower for kw in profile_keywords):
             essay_hints = ["describe", "tell me about", "explain", "essay"]
             if any(kw in q_lower for kw in essay_hints):
@@ -280,6 +289,41 @@ Example: {{"selected_option": "Yes", "confidence": 95, "reasoning": "Intent expl
                 if ans_lower == str(opt).lower().strip():
                     ResponseNormalizer._dropdown_cache[cache_key] = opt
                     return opt
+
+            # Phase A1: Punctuation-insensitive exact match. Phase A compares
+            # raw strings, so a purely cosmetic difference in hyphenation or
+            # punctuation defeats it: the profile stores "Decline to Self
+            # Identify" while the form offers "Decline to self-identify".
+            # That near-miss used to fall through to the fuzzy path, which
+            # picked the FIRST race option ("Hispanic or Latino") — silently
+            # submitting a false statement about a protected characteristic
+            # on a form the candidate had explicitly declined to answer.
+            def _squash(s: str) -> str:
+                return re.sub(r"[^a-z0-9]", "", str(s).lower())
+
+            ans_squashed = _squash(ans_lower)
+            for opt in options:
+                if ans_squashed and ans_squashed == _squash(opt):
+                    ResponseNormalizer._dropdown_cache[cache_key] = opt
+                    return opt
+
+            # Phase A1b: Decline-to-answer intent match. Any phrasing of "I'd
+            # rather not say" must land on the option that means the same
+            # thing, never on a substantive category. Voluntary EEO surveys
+            # word this half a dozen different ways across ATSs, so intent is
+            # matched on both sides rather than string-compared.
+            # "n't wish" deliberately covers the contracted forms ("I don't
+            # wish to answer", "doesn't wish") without matching a bare
+            # affirmative "I wish to answer".
+            _DECLINE_MARKERS = ("decline", "prefer not", "wish not", "not wish",
+                                "n't wish", "rather not", "do not want to answer",
+                                "don't want to answer", "prefer to self-describe",
+                                "choose not", "opt out")
+            if any(m in ans_lower for m in _DECLINE_MARKERS):
+                for opt in options:
+                    if any(m in str(opt).lower() for m in _DECLINE_MARKERS):
+                        ResponseNormalizer._dropdown_cache[cache_key] = opt
+                        return opt
 
             # Phase A2: Containment match — for a compound answer like
             # "Ghaziabad, Uttar Pradesh, India" against a bare country
@@ -492,6 +536,45 @@ class QuestionEngine:
         self.job_location = job_location or ""
         self.audit_log = []
 
+    # Country-specific work-authorization keys already present on the profile.
+    # Ordered so the more specific patterns are tested before broader ones.
+    # Patterns are matched against a period-stripped copy of the text (see
+    # _work_authorized_for): "U.S." becomes "us", so a single \bus\b handles
+    # "US", "U.S." and "U.S.A." without needing optional-dot patterns, which
+    # break on a trailing period ("...work in the U.S.?" left no word boundary
+    # after the final dot and silently failed to match at all).
+    _WORK_AUTH_COUNTRIES = [
+        (r"\bus\b|\busa\b|united states|america", "work_authorized_us"),
+        (r"\buk\b|united kingdom|britain", "work_authorized_uk"),
+        (r"\beu\b|european union|europe|schengen", "work_authorized_eu"),
+        (r"\bindia\b", "work_authorized_india"),
+    ]
+
+    def _work_authorized_for(self, question: str, hints: str = "") -> bool:
+        """Answer 'are you authorized to work in X?' against the RIGHT country.
+
+        This previously read the single generic `work_authorization` flag,
+        which is True (the candidate is authorized to work in India). On a US
+        posting that produced "Are you authorized to work in the U.S.?" -> Yes,
+        a false statement on a legally-significant knockout question, and one
+        that directly contradicted the very next answer ("Will you require
+        sponsorship?" -> Yes). The profile has always carried per-country keys
+        (work_authorized_us / _uk / _eu / _india); nothing was reading them.
+
+        Country is taken from the question text first, then the job location.
+        If neither names a country the fallback is the generic flag, matching
+        the previous behaviour for genuinely ambiguous phrasing.
+        """
+        haystack = re.sub(r"\.", "", f"{question} {hints}".lower())
+        for pattern, field in self._WORK_AUTH_COUNTRIES:
+            if re.search(pattern, haystack):
+                return bool(self.profile.get_field(field))
+        loc = re.sub(r"\.", "", (self.job_location or "").lower())
+        for pattern, field in self._WORK_AUTH_COUNTRIES:
+            if re.search(pattern, loc):
+                return bool(self.profile.get_field(field))
+        return bool(self.profile.get_field("work_authorization"))
+
     def _visa_sponsorship_needed(self) -> bool:
         """India-based roles: no sponsorship needed. Anything else (or
         unknown location): sponsorship is needed, per candidate preference."""
@@ -591,7 +674,15 @@ class QuestionEngine:
         def apply_deterministic_fallback():
             ans = ""
             if "sponsor" in q_lower or "visa" in q_lower: ans = "Yes" if self._visa_sponsorship_needed() else "No"
-            elif "authoriz" in q_lower or "work auth" in q_lower: ans = "Yes"
+            # Was hardcoded to "Yes". For a binary Yes/No widget this fast path
+            # runs BEFORE the profile lookup below, so it was the thing actually
+            # answering "Are you authorized to work in the U.S.?" — always Yes,
+            # regardless of country and regardless of the per-country flags on
+            # the profile saying otherwise. On a US posting that is a false
+            # statement on a knockout question, and it directly contradicted the
+            # sponsorship answer produced one line above it.
+            elif "authoriz" in q_lower or "work auth" in q_lower:
+                ans = "Yes" if self._work_authorized_for(q_lower, hints) else "No"
             elif "previously employed" in q_lower or "former employee" in q_lower or "employed by stripe" in q_lower: ans = "No"
             elif "whatsapp" in q_lower: ans = "Yes"
             elif "background" in q_lower or "bgv" in q_lower: ans = "Yes"
@@ -709,7 +800,34 @@ class QuestionEngine:
             elif any(kw in q_lower or kw in hints for kw in ["hispanic", "latino"]):
                 canonical_field = "HISPANIC_LATINO"
 
-            # Personal
+            # Personal — name variants.
+            # Ashby (and some Greenhouse boards) ask for the candidate's name
+            # as a *custom* question rather than a standard system field:
+            # "Legal Name (First Name Last Name)", "Preferred Name", "Full
+            # Name". None of these had a canonical mapping, so they fell all
+            # the way through to "PROFILE_FACT missing deterministic mapping"
+            # and escalated the whole application to REVIEW_REQUIRED — on a
+            # required field whose answer the profile obviously already holds.
+            # Matched on specific phrases, never a bare "name", so that
+            # "company name" / "university name" / "manager's name" keep
+            # resolving through their own branches above.
+            elif any(kw in q_lower or kw in hints for kw in ["preferred name", "nickname", "goes by", "preferred first name"]):
+                canonical_field = "PREFERRED_NAME"
+            elif any(kw in q_lower or kw in hints for kw in ["legal name", "full name", "full legal name", "your name", "name (first", "first and last name", "first name last name"]):
+                canonical_field = "FULL_NAME"
+            elif "middle name" in q_lower or "middle name" in hints:
+                canonical_field = "MIDDLE_NAME"
+            elif "first name" in q_lower or "first name" in hints:
+                canonical_field = "FIRST_NAME"
+            elif "last name" in q_lower or "surname" in q_lower or "family name" in q_lower:
+                canonical_field = "LAST_NAME"
+
+            # Personal — links. "Website / Portfolio" is optional on most
+            # forms, so an unmapped miss here was silently leaving it blank
+            # rather than blocking, but the profile does hold a GitHub URL
+            # that is the correct answer for a portfolio prompt.
+            elif any(kw in q_lower or kw in hints for kw in ["portfolio", "personal website", "personal site", "website"]):
+                canonical_field = "PORTFOLIO"
             elif "linkedin" in hints:
                 canonical_field = "LINKEDIN"
             elif "github" in hints:
@@ -724,7 +842,9 @@ class QuestionEngine:
                 canonical_field = "LANGUAGE"
                 
             # Availability / Dates
-            elif any(kw in q_lower or kw in hints for kw in ["start date", "earliest start", "latest start", "when can you start", "available to start"]):
+            elif any(kw in q_lower or kw in hints for kw in ["start date", "earliest start", "latest start", "when can you start",
+                                                          "available to start", "earliest date", "availability",
+                                                          "date you are available", "available date"]):
                 canonical_field = "START_DATE"
             elif any(kw in q_lower or kw in hints for kw in ["graduation date", "passout", "expected graduation", "end date"]):
                 canonical_field = "GRADUATION_DATE"
@@ -776,7 +896,7 @@ class QuestionEngine:
                 elif canonical_field == "VISA_REQUIREMENT":
                     raw_answer = "Yes" if self._visa_sponsorship_needed() else "No"
                 elif canonical_field == "WORK_AUTHORIZATION":
-                    raw_answer = "Yes" if self.profile.get_field("work_authorization") else "No"
+                    raw_answer = "Yes" if self._work_authorized_for(q_lower, hints) else "No"
                 elif canonical_field == "CRIMINAL_RECORD":
                     raw_answer = "No"
                 elif canonical_field == "CONFLICT_OF_INTEREST":
@@ -795,6 +915,25 @@ class QuestionEngine:
                     raw_answer = str(self.profile.get_field("race") or "Decline to Self Identify")
                 elif canonical_field == "HISPANIC_LATINO":
                     raw_answer = str(self.profile.get_field("hispanic_latino") or "")
+                elif canonical_field == "FULL_NAME":
+                    raw_answer = f"{self.profile.get_field('first_name') or ''} {self.profile.get_field('last_name') or ''}".strip()
+                elif canonical_field == "FIRST_NAME":
+                    raw_answer = str(self.profile.get_field("first_name") or "")
+                elif canonical_field == "LAST_NAME":
+                    raw_answer = str(self.profile.get_field("last_name") or "")
+                elif canonical_field == "PREFERRED_NAME":
+                    # No separate profile field for this; the first name is the
+                    # honest answer rather than inventing a nickname.
+                    raw_answer = str(self.profile.get_field("first_name") or "")
+                elif canonical_field == "MIDDLE_NAME":
+                    # Genuinely absent from the profile. Answering "N/A" is
+                    # correct here (the candidate has no middle name recorded)
+                    # and is not a guess about an unknown fact.
+                    raw_answer = str(self.profile.get_field("middle_name") or "N/A")
+                elif canonical_field == "PORTFOLIO":
+                    raw_answer = str(self.profile.get_field("portfolio")
+                                     or self.profile.get_field("website")
+                                     or self.profile.get_field("github") or "")
                 elif canonical_field == "LINKEDIN":
                     raw_answer = str(self.profile.get_field("linkedin"))
                 elif canonical_field == "GITHUB":
@@ -808,7 +947,26 @@ class QuestionEngine:
                     elif "english" in q_lower: raw_answer = "Professional"
                     else: raw_answer = "None"
                 elif canonical_field == "START_DATE":
-                    raw_answer = "Immediate"
+                    # "Immediate" is the right answer for a free-text box but
+                    # not for a date widget — Ashby renders this question as
+                    # an input with a "Pick date..." placeholder, where the
+                    # word "Immediate" normalises to nothing and blocked the
+                    # whole (required) submission. Emit a concrete date when
+                    # the field is asking for one.
+                    is_date_widget = (
+                        field_type in ("date", "datetime")
+                        or "date" in (placeholder or "").lower()
+                        or "dd" in (placeholder or "").lower()
+                        or "yyyy" in (placeholder or "").lower()
+                    )
+                    if is_date_widget:
+                        # Two weeks out: consistent with the profile's stored
+                        # 15-day notice period, and safely in the future
+                        # regardless of how long this application sits.
+                        start = datetime.now() + timedelta(days=15)
+                        raw_answer = start.strftime("%Y-%m-%d")
+                    else:
+                        raw_answer = "Immediate"
                 elif canonical_field == "GRADUATION_DATE":
                     raw_answer = "May 2026"
                 
