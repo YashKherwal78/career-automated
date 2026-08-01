@@ -1,0 +1,86 @@
+Priya
+priya05262005@gmail.com | +91-9311984857 | linkedin.com/in/priya-rajput04
+Area of Interest
+AI/ML Research, Applied Physics, Scientific Machine Learning, Data Analytics, AI Training & Alignment (RLHF/SFT),
+Product Analytics, Business Analysis
+Education
+Indian Institute of Technology, Roorkee B.Tech. in Engineering Physics – CGPA: 8.58 / 10.0
+Experience
+Roorkee, Uttarakhand
+2022 – 2026
+AI Training Specialist September 2025 – February 2026
+Outlier Remote
+– Contributed to RLHF and SFT tasks improving physics and coding capabilities of large language models.
+– Evaluated advanced physics problems and reviewed AI-generated responses for accuracy, reasoning, and conceptual
+correctness.
+– Designed and curated high-quality training data and response-ranking tasks to enhance model performance in
+complex STEM problem-solving.
+Research Intern – Beta Decay Half-Life Prediction Department of Physics, IIT Roorkee January 2025 – May 2025
+Roorkee, Uttarakhand
+– Built MLP and deep feedforward networks using PyTorch and TensorFlow to predict beta decay half-lives from
+nuclear structure features.
+– Generated synthetic simulation datasets and modeled complex relationships between nuclear parameters and decay
+outputs using advanced regression architectures.
+– Built custom data pipelines with normalization, batching, and GPU-accelerated training to reduce compute time
+significantly.
+– Tuned hyperparameters, applied early stopping, and used layer-wise optimizers to achieve <5% MAPE on test data.
+– Visualized latent representations and thermophysical correlations using Matplotlib and Seaborn for scientific
+reporting.
+Founder’s Office Intern May 2025 – August 2025
+W3 Dev (Nexvio.ai) Noida
+– Worked directly with the founding team at Nexvio.ai, an AI chatbot platform, to drive product adoption and
+revenue growth.
+– Designed and implemented n8n automation workflows to streamline marketing, content, and lead management
+operations, improving process efficiency by 30%.
+– Launched Slack Marketplace and Google Extension listings, enhancing distribution reach and driving a 40%
+increase in user acquisition.
+– Partnered with cross-functional teams to analyze user behavior, automate reporting, and refine monetization
+strategies for sustained engagement.
+Projects
+Numerical Modeling and Visualization of Thermal Convection | Physics Dept., IIT RoorkeeAugust 2024 – November 202
+– Developed a deep-learning-based nonlinear modeling framework to predict fluid-dynamic properties in thermal
+convection systems using PyTorch/TensorFlow.
+– Modeled complex relationships between Rayleigh/Prandtl numbers and heat-flow outputs (Nusselt, Reynolds) using
+MLP and deep feedforward networks trained on synthetic simulation datasets.
+– Built custom data pipelines with normalization, batching, and GPU-accelerated training; applied hyperparameter
+tuning and early stopping to achieve <5% MAPE.
+– Tech: Python, PyTorch, TensorFlow, Deep Learning, NumPy, Matplotlib, Seaborn, GPU Training
+AI-Powered Smart Checkout Recommender for Wings R Us | Enactus, IIT Roorkee June 2025 – July 2025
+– Built a real-time AI recommendation system for checkout across app, web, and kiosks. Achieved Recall@3: 0.90,
+CTR: 35%, AOV +12%, and 40% repeat interactions with <150ms latency.
+– Tech: Python, Machine Learning, Recommender Systems, Pandas, NumPy, Scikit-learn, APIs
+Reducing Cart Abandonment on Myntra: A Growth Case Study | Enactus, IIT RoorkeeDecember 2024 – February 202
+– Analyzed user behavior patterns revealing 60% cart drop-offs; proposed cart expiry extension (30 days) and
+personalized checkout nudges to recover lost conversions.
+– Estimated 15% conversion uplift and improved inventory turnover through data-driven recommendations validated
+via conceptual A/B testing framework.
+– Tech: SQL, Excel, Data Analysis, Product Analytics, A/B Testing (conceptual)
+Customer Feedback Analysis for L’Oreal Sustainable Shampoo | Enactus, IIT RoorkeeJuly 2025 – August 2025
+– Designed SQL database and analyzed customer feedback, sales, and segmentation. Identified retention drivers,
+churn trends, and region-wise insights, recommending bundling and subscription strategies.
+– Tech: SQL, MySQL, Data Analysis, Excel, Data Visualization
+Skills
+Programming Languages: Python, R
+Software & Tools: MongoDB, SQL, MySQL, Excel, Power BI, Tableau, Jira, PowerPoint, Google Sheets
+Frameworks & Concepts: Machine Learning, Recommender Systems, A/B Testing, SWOT Analysis, GAP Analysis,
+Financial Modeling
+Additional Courses: Product Management, Data Analytics
+Positions of Responsibility & Extra Curriculars
+Design Head June 2024 – Present
+Enactus, IIT Roorkee
+– Contributed to various design projects, creating graphics, posters, and visual content for club activities; promoted
+to Head of Design within one year for exemplary performance.
+– Led the design team, overseeing all projects and ensuring high-quality deliverables.
+– Presented two social entrepreneurship projects at Enactus India National Exposition ’23: Anushruti (ML-based
+sign language to text converter) and an eco-product upcycling initiative.
+Executive Member June 2023 – April 2024
+Thomso Cultural Fest, IIT Roorkee
+– Created visual content including posters, banners, and standees for Thomso cultural fest events, contributing to the
+overall aesthetic and success of the festival.
+Participant – Sparkathon August 2024
+Walmart
+– Developed innovative solutions for retail challenges, focusing on enhancing customer experience and optimizing
+operational efficiency.
+Awards & Achievements
+WWT Unravel 2025: Qualified for Round 2 of this national-level data science case competition.
+Super 100 Haryana: Passed the two-level entrance exam, receiving free JEE coaching from the Haryana government.

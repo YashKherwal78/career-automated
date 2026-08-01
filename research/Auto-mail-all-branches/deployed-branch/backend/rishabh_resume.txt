@@ -1,0 +1,72 @@
+Rishabh Jain
++91-9871522382 | rishabhjain.1632004@gmail.com | linkedin.com/in/rishabhjain1603 | Gurugram, Haryana, India
+Areas of Interest
+Backend Systems Design, Agentic AI, Optimised RAG Systems, ML Infrastructure & Optimization, Automation
+Education
+Indian Institute of Technology, Roorkee Roorkee, Uttarakhand, India
+B.Tech., Engineering Physics | CGPA: 9.12/10 Oct 2022 – May 2026
+Experience
+UnifyApps Gurugram, Haryana, India
+Product Engineering Intern May 2025 – Jul 2025
+• Engineered a production-grade Microsoft Planner connector in Java (Quarkus) implementing OAuth 2.0
+token exchange, and paginated Graph API traversal to reliably ingest user data at scale into UnifyApps platform.
+• Designed stateful automation workflows with branching logic, retry mechanisms, and idempotent data
+transformation steps using UnifyApps’ workflow engine, enabling enterprise clients to orchestrate cross-system data
+pipelines without custom code.
+• Integrated Slack, Google Drive, and Google Calendar APIs into the AI Agents runtime; built tool-call
+handlers, validated against live sandboxes.
+Turing Remote
+LLM Training Engineer Jan 2025 – May 2025
+• Designed high-complexity RLHF preference tasks in the coding domain for training Anthropic’s, Amazon’s,
+and Microsoft’s foundation models, producing ranked response pairs and detailed rationales to steer models
+toward production-ready, trustworthy AI coding assistants.
+• Authored adversarial and edge-case prompts targeting code correctness, security, and reasoning depth; maintained
+consistent annotation quality standards that shaped model policy updates across training cycles.
+Pepsales Bengaluru, Karnataka, India
+Backend / Machine Learning Intern Aug 2024 – Dec 2024
+• Built the Discovery Copilot end-to-end: an agentic RAG pipeline that ingests B2B SaaS sales call transcripts,
+extracts deal insights, and generates discovery questions via GPT-4o mini with map-reduce summarization chains.
+• Migrated retrieval from LangChain to a custom OpenAI-based pipeline with Astra DB and metadata filtering;
+applied binary (1-bit) quantization of float32 embeddings using Hamming Distance similarity search,
+achieving a ∼25x retrieval speedup and ∼40% latency reduction.
+• Fine-tuned GPT-4o mini via LoRA/QLoRA using an RLHF reward model trained on human-labeled
+preference data, improving domain-specific response accuracy and contextual relevance.
+• Deployed the inference service on AWS EC2 with MongoDB for persistence and AWS S3 for document storage,
+maintaining a scalable and reliable production environment.
+VJ Nucleus Kota, Rajasthan, India
+Machine Learning Intern Apr 2024 – Jun 2024
+• Fine-tuned BERT on a self-constructed JEE question-chapter dataset, achieving 98.6% classification accuracy
+for automated question categorization across subjects and chapters.
+• Engineered a student-performance-driven DPP generation system leveraging analytics to personalize practice
+problems, increasing student engagement by 40% and reducing manual curation effort by 25 hours/week.
+Projects
+ApplyWithAI | Llama 3.3 70B, Groq, Streamlit, LaTeX, SMTP Jan 2025
+• Built an AI job application copilot using Llama 3.3 70B via Groq that generates tailored cold emails by
+matching job description requirements against parsed resume data, cutting application time by ∼80%.
+• Dynamically generates ATS-friendly resumes per job posting by incorporating role-specific requirements and
+company-level insights (tech stack, culture); LLM outputs structured LaTeX, which a custom Python script
+compiles and renders into professionally formatted, job-ready resumes.
+• Implemented a parallel background pipeline for automated multi-application dispatch via Gmail SMTP with
+resume attachments; supports multiple user profiles with user-specific personalization and contextual messaging.
+Automated Memer | Reddit API, Microsoft TTS, Flask, SQLAlchemy Sep 2024
+• Automated short-video generation from Reddit posts using Microsoft TTS (Hugging Face), Pillow, Pydub, and
+FFMPEG; integrated Google OAuth v2, achieving an 80% reduction in content creation time | Demo video.
+Nuclear Half-Life Prediction | Deep Learning, PyTorch, k-Fold CV Mar 2024
+• Developed a deep learning framework to predict alpha-decay half-lives from nuclear properties (Z, A, Q),
+achieving R2 = 0.92 and 3× lower RMSE than physics-based models (Geiger-Nuttall, Royer).
+• Applied k-fold cross-validation, early stopping, and model checkpointing; preprocessed NuDat3 datasets with
+logarithmic transformations and feature normalization, achieving MAE = 1.58 on held-out test data.
+LangChain AI Chatbot | RAG, OpenAI, Astra DB, Django, React Dec 2023
+• Built a RAG-based chatbot for IIT Roorkee using OpenAI embeddings and Astra DB as vector store;
+chunked multi-source documents at 1000-char size with 300-char overlap, then applied semantic search via
+LangChain for contextually precise retrieval.
+• Engineered a Django REST backend with serialized API endpoints serving embedding queries, and a React
+frontend with component-level state management and async fetch hooks for real-time response rendering.
+Achievements
+• Achieved AIR 4486 in JEE Advanced 2022.
+• Achieved AIR 6867 (99.3 percentile) in JEE Mains 2022.
+Technical Skills
+Languages: Python, Java, C++, JavaScript
+Frameworks: Django, Flask, FastAPI, Quarkus, React, PyTorch
+Machine Learning & LLMs: OpenAI Framework, RLHF, LoRA/QLoRA, BERT, LangChain, Astra DB
+DevOps: AWS (EC2, S3), Git, Docker, Vercel, Render

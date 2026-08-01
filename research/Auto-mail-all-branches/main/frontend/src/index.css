@@ -1,0 +1,159 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Neo-Geo Design System ─────────────────────────────────────────── */
+
+:root {
+  --geo-teal: #14b8a6;
+  --geo-amber: #f59e0b;
+  --geo-obsidian: #0a0e17;
+  --geo-gunmetal: #111827;
+}
+
+@layer base {
+  body {
+    @apply bg-geo-obsidian text-geo-text font-body antialiased min-h-screen;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(20,184,166,0.08), transparent),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(245,158,11,0.05), transparent);
+  }
+
+  ::selection {
+    @apply bg-geo-teal/30 text-white;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0a0e17; }
+  ::-webkit-scrollbar-thumb { background: #14b8a620; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #14b8a640; }
+}
+
+/* ── Geometric Card System ─────────────────────────────────────────── */
+
+@layer components {
+  .geo-card {
+    @apply bg-geo-gunmetal/80 border border-geo-teal/10 rounded-lg relative overflow-hidden;
+    backdrop-filter: blur(8px);
+  }
+
+  .geo-card::before {
+    content: '';
+    @apply absolute top-0 left-0 w-full h-[1px];
+    background: linear-gradient(90deg, transparent, var(--geo-teal), transparent);
+    opacity: 0.3;
+  }
+
+  .geo-card-hover {
+    @apply geo-card transition-all duration-300;
+  }
+  .geo-card-hover:hover {
+    @apply border-geo-teal/30 shadow-lg;
+    box-shadow: 0 0 30px rgba(20,184,166,0.08), 0 4px 20px rgba(0,0,0,0.3);
+  }
+
+  /* Inputs */
+  .geo-input {
+    @apply bg-geo-void/60 border border-geo-teal/10 rounded-md px-4 py-3
+           text-geo-text font-mono text-sm
+           placeholder:text-geo-muted/50
+           focus:outline-none focus:border-geo-teal/40 focus:ring-1 focus:ring-geo-teal/20
+           transition-all duration-200;
+  }
+
+  /* Primary Button */
+  .geo-btn {
+    @apply relative px-6 py-3 font-mono text-sm font-medium tracking-wider uppercase
+           text-geo-obsidian bg-geo-teal rounded-md
+           hover:bg-geo-teal/90 hover:shadow-lg hover:shadow-geo-teal/20
+           active:scale-[0.98]
+           disabled:opacity-40 disabled:cursor-not-allowed
+           transition-all duration-200;
+  }
+
+  .geo-btn-outline {
+    @apply relative px-6 py-3 font-mono text-sm font-medium tracking-wider uppercase
+           text-geo-teal bg-transparent border border-geo-teal/40 rounded-md
+           hover:bg-geo-teal/10 hover:border-geo-teal/60
+           active:scale-[0.98]
+           disabled:opacity-40 disabled:cursor-not-allowed
+           transition-all duration-200;
+  }
+
+  .geo-btn-google {
+    @apply relative px-6 py-3 font-body text-sm font-medium
+           text-white bg-white/10 border border-white/20 rounded-md
+           hover:bg-white/15 hover:border-white/30
+           active:scale-[0.98]
+           flex items-center gap-3 justify-center
+           transition-all duration-200;
+  }
+
+  /* Badge */
+  .geo-badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full
+           text-[0.65rem] font-mono uppercase tracking-widest
+           border;
+  }
+  .geo-badge-teal {
+    @apply geo-badge bg-geo-teal/10 text-geo-teal border-geo-teal/20;
+  }
+  .geo-badge-amber {
+    @apply geo-badge bg-geo-amber/10 text-geo-amber border-geo-amber/20;
+  }
+  .geo-badge-dim {
+    @apply geo-badge bg-geo-dim/30 text-geo-muted border-geo-dim/50;
+  }
+
+  /* Log Entry */
+  .geo-log {
+    @apply flex items-start gap-2 px-3 py-1.5 text-xs font-mono border-l-2 border-geo-dim/30;
+  }
+  .geo-log-success { @apply border-l-geo-teal/60 text-geo-teal; }
+  .geo-log-error   { @apply border-l-geo-ember/60 text-geo-ember; }
+  .geo-log-warn    { @apply border-l-geo-amber/60 text-geo-amber; }
+  .geo-log-info    { @apply border-l-geo-cyan/40 text-geo-muted; }
+  .geo-log-dim     { @apply border-l-geo-dim/30 text-geo-dim; }
+}
+
+/* ── Geometric Background Patterns ─────────────────────────────────── */
+
+@layer utilities {
+  .bg-hex-grid {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='104' viewBox='0 0 60 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%2314b8a6' stroke-width='0.3' opacity='0.08'%3E%3Cpath d='M30 0L60 17.32V52L30 69.28 0 52V17.32z'/%3E%3Cpath d='M30 34.64L60 51.96V86.6L30 103.92 0 86.6V51.96z'/%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  .bg-dot-grid {
+    background-image: radial-gradient(circle, rgba(20,184,166,0.12) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .geo-glow-teal {
+    box-shadow: 0 0 40px rgba(20,184,166,0.1), inset 0 0 40px rgba(20,184,166,0.02);
+  }
+
+  .geo-glow-amber {
+    box-shadow: 0 0 40px rgba(245,158,11,0.08), inset 0 0 40px rgba(245,158,11,0.02);
+  }
+
+  .text-gradient-teal {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-geo-teal to-geo-cyan;
+  }
+
+  .text-gradient-amber {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-geo-amber to-yellow-300;
+  }
+
+  /* Staggered animation delays */
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-500 { animation-delay: 500ms; }
+  .delay-600 { animation-delay: 600ms; }
+  .delay-700 { animation-delay: 700ms; }
+  .delay-800 { animation-delay: 800ms; }
+}

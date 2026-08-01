@@ -1,0 +1,18 @@
+{
+  "cand_123": {
+    "candidate_id": "cand_123",
+    "completed_milestones": [
+      "Master Kubernetes"
+    ],
+    "accepted_jobs": [],
+    "rejected_jobs": [],
+    "preferences": {
+      "favorite_companies": [
+        "Stripe"
+      ],
+      "preferred_technologies": [],
+      "target_seniority_levels": []
+    },
+    "metadata": {}
+  }
+}

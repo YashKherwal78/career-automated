@@ -23,6 +23,7 @@ logs.csv
 data/logs.csv
 
 # Generated Resumes & Artifacts
+artifacts/
 data/linkedin_resumes/
 data/tailored_*
 data/generated_resumes/
@@ -32,5 +33,10 @@ data/reports/
 scratch/
 *.db
 
-# Research Directory
-research/
+# Personal Data & Candidate Knowledge (Ignored for Privacy & Production Multi-Tenancy)
+personal_knowledge/
+resume_knowledge/
+yash_*
+yash_master_profile.md
+yash_resume_aiproduct.pdf
+yash_resume_base_v2.tex

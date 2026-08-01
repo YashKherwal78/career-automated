@@ -1,0 +1,42 @@
+services:
+
+  # ── FastAPI Backend ─────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    # Secrets are loaded from backend/.env on the SERVER (never committed to git)
+    env_file:
+      - ./backend/.env
+    # Backend is NOT exposed to the internet — only the frontend/nginx can reach it
+    expose:
+      - "8001"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ── React Frontend + Nginx ──────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # These are baked into the JS bundle at build time — NOT runtime secrets
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-https://limitless-ai.in}
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-381088934769-so741gh16lcv03bgjfnv1orp0gqetnmm.apps.googleusercontent.com}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Let's Encrypt SSL certs (from Certbot, runs once manually on server)
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      # Live nginx config (allows reload without rebuilding image)
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped

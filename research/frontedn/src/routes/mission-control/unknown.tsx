@@ -1,0 +1,1 @@
+import { createFileRoute } from '@tanstack/react-router'; export const Route = createFileRoute('/mission-control/unknown')({ component: () => <div className='p-6 text-zinc-400'>Unknown Pipeline (Phase 5) coming soon...</div> });

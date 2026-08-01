@@ -1,0 +1,28 @@
+## Backend Docker Ignore
+# Never copy these into the image
+
+# Python env / dependencies (installed by Docker)
+venv/
+.venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+
+# Secrets — MUST NOT enter the image
+.env
+*.env
+
+# Dev/test files
+test_*.py
+*.txt.bak
+
+# Data files that shouldn't be bundled
+priya_resume.txt
+rishabh_resume.txt
+
+# OS artifacts
+.DS_Store
+*.log

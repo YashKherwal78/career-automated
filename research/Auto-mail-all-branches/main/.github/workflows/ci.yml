@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  backend-test:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - name: Install dependencies
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Check imports
+        run: |
+          cd backend
+          python -c "import main"
+      - name: Pytest
+        run: |
+          cd backend
+          pytest tests/ -q
+
+  frontend-build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+      - name: Lint frontend
+        run: |
+          cd frontend
+          npm run lint
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build

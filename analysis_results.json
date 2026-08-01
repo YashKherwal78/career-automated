@@ -1,0 +1,881 @@
+{
+  "stage_1_throughput": [
+    {
+      "provider_id": "ashby",
+      "total_active": 2862,
+      "due": 2862,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "avature",
+      "total_active": 87,
+      "due": 87,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "bamboohr",
+      "total_active": 5632,
+      "due": 5632,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "breezy",
+      "total_active": 1384,
+      "due": 1384,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "cornerstone",
+      "total_active": 297,
+      "due": 297,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "eightfold",
+      "total_active": 71,
+      "due": 71,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "gem",
+      "total_active": 496,
+      "due": 496,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "greenhouse",
+      "total_active": 4969,
+      "due": 4969,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "icims",
+      "total_active": 1363,
+      "due": 1363,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "infojobs_es",
+      "total_active": 1,
+      "due": 1,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "jazzhr",
+      "total_active": 2689,
+      "due": 2689,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "jobs_cz",
+      "total_active": 1,
+      "due": 1,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "join_com",
+      "total_active": 23547,
+      "due": 23547,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "lever",
+      "total_active": 2113,
+      "due": 2113,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "mercor",
+      "total_active": 1,
+      "due": 1,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "oracle",
+      "total_active": 401,
+      "due": 401,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "personio",
+      "total_active": 2463,
+      "due": 2463,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "pinpoint",
+      "total_active": 350,
+      "due": 350,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "recruitee",
+      "total_active": 888,
+      "due": 888,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "recruiterbox",
+      "total_active": 314,
+      "due": 314,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "rippling",
+      "total_active": 1923,
+      "due": 1923,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "smartrecruiters",
+      "total_active": 2214,
+      "due": 2214,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "successfactors",
+      "total_active": 606,
+      "due": 606,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "taleo",
+      "total_active": 150,
+      "due": 150,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "teamtailor",
+      "total_active": 1010,
+      "due": 1010,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "workable",
+      "total_active": 4269,
+      "due": 4269,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    },
+    {
+      "provider_id": "workday",
+      "total_active": 2604,
+      "due": 2604,
+      "reserved": 0,
+      "crawled_today": 0,
+      "failed": 0
+    }
+  ],
+  "stage_3_waterfall_daily": [
+    {
+      "run_date": "2026-07-27",
+      "syncs": 217,
+      "successes": 214,
+      "failures": 3,
+      "extracted": 8867,
+      "inserted": 1409,
+      "updated": 7453,
+      "archived": 245
+    },
+    {
+      "run_date": "2026-07-25",
+      "syncs": 1996,
+      "successes": 1299,
+      "failures": 697,
+      "extracted": 25793,
+      "inserted": 17252,
+      "updated": 8541,
+      "archived": 1020
+    }
+  ],
+  "schema_board_syncs": [
+    {
+      "cid": 0,
+      "name": "id",
+      "type": "TEXT",
+      "notnull": 0,
+      "dflt_value": null,
+      "pk": 1
+    },
+    {
+      "cid": 1,
+      "name": "board_id",
+      "type": "TEXT",
+      "notnull": 0,
+      "dflt_value": null,
+      "pk": 0
+    },
+    {
+      "cid": 2,
+      "name": "snapshot_id",
+      "type": "TEXT",
+      "notnull": 0,
+      "dflt_value": null,
+      "pk": 0
+    },
+    {
+      "cid": 3,
+      "name": "started_at",
+      "type": "REAL",
+      "notnull": 0,
+      "dflt_value": null,
+      "pk": 0
+    },
+    {
+      "cid": 4,
+      "name": "finished_at",
+      "type": "REAL",
+      "notnull": 0,
+      "dflt_value": null,
+      "pk": 0
+    },
+    {
+      "cid": 5,
+      "name": "duration_ms",
+      "type": "REAL",
+      "notnull": 0,
+      "dflt_value": null,
+      "pk": 0
+    },
+    {
+      "cid": 6,
+      "name": "http_status",
+      "type": "INTEGER",
+      "notnull": 0,
+      "dflt_value": null,
+      "pk": 0
+    },
+    {
+      "cid": 7,
+      "name": "bytes_downloaded",
+      "type": "INTEGER",
+      "notnull": 0,
+      "dflt_value": null,
+      "pk": 0
+    },
+    {
+      "cid": 8,
+      "name": "jobs_extracted",
+      "type": "INTEGER",
+      "notnull": 0,
+      "dflt_value": null,
+      "pk": 0
+    },
+    {
+      "cid": 9,
+      "name": "jobs_inserted",
+      "type": "INTEGER",
+      "notnull": 0,
+      "dflt_value": null,
+      "pk": 0
+    },
+    {
+      "cid": 10,
+      "name": "jobs_updated",
+      "type": "INTEGER",
+      "notnull": 0,
+      "dflt_value": null,
+      "pk": 0
+    },
+    {
+      "cid": 11,
+      "name": "jobs_archived",
+      "type": "INTEGER",
+      "notnull": 0,
+      "dflt_value": null,
+      "pk": 0
+    },
+    {
+      "cid": 12,
+      "name": "success",
+      "type": "BOOLEAN",
+      "notnull": 0,
+      "dflt_value": null,
+      "pk": 0
+    },
+    {
+      "cid": 13,
+      "name": "error_message",
+      "type": "TEXT",
+      "notnull": 0,
+      "dflt_value": null,
+      "pk": 0
+    }
+  ],
+  "stage_4_job_yield": [
+    {
+      "provider_id": "ashby",
+      "companies": 2862,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "avature",
+      "companies": 87,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "bamboohr",
+      "companies": 5632,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "breezy",
+      "companies": 1384,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "cornerstone",
+      "companies": 297,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "eightfold",
+      "companies": 71,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "gem",
+      "companies": 496,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "greenhouse",
+      "companies": 4969,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "icims",
+      "companies": 1363,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "infojobs_es",
+      "companies": 1,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "jazzhr",
+      "companies": 2689,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "jobs_cz",
+      "companies": 1,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "join_com",
+      "companies": 23547,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "lever",
+      "companies": 2113,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "mercor",
+      "companies": 1,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "oracle",
+      "companies": 401,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "personio",
+      "companies": 2463,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "pinpoint",
+      "companies": 350,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "recruitee",
+      "companies": 888,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "recruiterbox",
+      "companies": 314,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "rippling",
+      "companies": 1923,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "smartrecruiters",
+      "companies": 2214,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "successfactors",
+      "companies": 606,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "taleo",
+      "companies": 150,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "teamtailor",
+      "companies": 1010,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "workable",
+      "companies": 4269,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    },
+    {
+      "provider_id": "workday",
+      "companies": 2604,
+      "avg_jobs": null,
+      "max_jobs": null,
+      "zero_jobs": 0,
+      "jobs_1_to_5": 0,
+      "jobs_5_to_20": 0,
+      "jobs_20_to_100": 0,
+      "jobs_over_100": 0
+    }
+  ],
+  "stage_5_fairness": [
+    {
+      "provider_id": "ashby",
+      "oldest_crawl": 1784918740.836959,
+      "avg_staleness_seconds": 136977.53871323078,
+      "older_than_24h": 197,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "avature",
+      "oldest_crawl": 1784918779.143578,
+      "avg_staleness_seconds": 258675.49930113554,
+      "older_than_24h": 8,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "bamboohr",
+      "oldest_crawl": 1784918362.871301,
+      "avg_staleness_seconds": 258704.6534038612,
+      "older_than_24h": 14,
+      "older_than_3d": 1,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "breezy",
+      "oldest_crawl": 1784918855.289156,
+      "avg_staleness_seconds": 258658.0027311215,
+      "older_than_24h": 13,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "cornerstone",
+      "oldest_crawl": 1784918854.062631,
+      "avg_staleness_seconds": 258648.61620560059,
+      "older_than_24h": 13,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "eightfold",
+      "oldest_crawl": 1784918854.166939,
+      "avg_staleness_seconds": 258647.33721413978,
+      "older_than_24h": 13,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "gem",
+      "oldest_crawl": 1784918853.86745,
+      "avg_staleness_seconds": 258650.44046199322,
+      "older_than_24h": 12,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "greenhouse",
+      "oldest_crawl": 1784918361.244527,
+      "avg_staleness_seconds": 215483.25962418667,
+      "older_than_24h": 14,
+      "older_than_3d": 1,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "icims",
+      "oldest_crawl": 1784918855.42894,
+      "avg_staleness_seconds": 258631.31412700505,
+      "older_than_24h": 13,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "infojobs_es",
+      "oldest_crawl": null,
+      "avg_staleness_seconds": null,
+      "older_than_24h": 0,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "jazzhr",
+      "oldest_crawl": 1784918854.54613,
+      "avg_staleness_seconds": 258631.73673213445,
+      "older_than_24h": 13,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "jobs_cz",
+      "oldest_crawl": null,
+      "avg_staleness_seconds": null,
+      "older_than_24h": 0,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "join_com",
+      "oldest_crawl": 1784918856.006327,
+      "avg_staleness_seconds": 258625.0047487846,
+      "older_than_24h": 13,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "lever",
+      "oldest_crawl": 1784918856.633412,
+      "avg_staleness_seconds": 258619.60355248817,
+      "older_than_24h": 13,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "mercor",
+      "oldest_crawl": 1784918855.595652,
+      "avg_staleness_seconds": 258740.40434789658,
+      "older_than_24h": 1,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "oracle",
+      "oldest_crawl": 1784918856.825395,
+      "avg_staleness_seconds": 258616.6912960456,
+      "older_than_24h": 13,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "personio",
+      "oldest_crawl": 1784918856.854233,
+      "avg_staleness_seconds": 258613.67303824425,
+      "older_than_24h": 13,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "pinpoint",
+      "oldest_crawl": 1784918857.605603,
+      "avg_staleness_seconds": 258609.01234340668,
+      "older_than_24h": 13,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "recruitee",
+      "oldest_crawl": 1784918856.677816,
+      "avg_staleness_seconds": 258607.82399907478,
+      "older_than_24h": 13,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "recruiterbox",
+      "oldest_crawl": 1784918858.65182,
+      "avg_staleness_seconds": 258603.33917463743,
+      "older_than_24h": 13,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "rippling",
+      "oldest_crawl": 1784918857.904585,
+      "avg_staleness_seconds": 258601.1642182607,
+      "older_than_24h": 13,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "smartrecruiters",
+      "oldest_crawl": 1784918858.20048,
+      "avg_staleness_seconds": 258599.27650275597,
+      "older_than_24h": 13,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "successfactors",
+      "oldest_crawl": 1784918859.978208,
+      "avg_staleness_seconds": 258562.69953181528,
+      "older_than_24h": 11,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "taleo",
+      "oldest_crawl": 1784919029.898985,
+      "avg_staleness_seconds": 258483.58996099234,
+      "older_than_24h": 4,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "teamtailor",
+      "oldest_crawl": 1784918859.953359,
+      "avg_staleness_seconds": 258568.81616315476,
+      "older_than_24h": 13,
+      "older_than_3d": 0,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "workable",
+      "oldest_crawl": 1784918361.798626,
+      "avg_staleness_seconds": 258614.67083884988,
+      "older_than_24h": 14,
+      "older_than_3d": 1,
+      "older_than_7d": 0
+    },
+    {
+      "provider_id": "workday",
+      "oldest_crawl": 1784918364.189981,
+      "avg_staleness_seconds": 258612.30185677324,
+      "older_than_24h": 14,
+      "older_than_3d": 1,
+      "older_than_7d": 0
+    }
+  ],
+  "stage_6_worker": [
+    {
+      "avg_duration": null,
+      "max_duration": null,
+      "min_duration": null
+    }
+  ],
+  "errors_today": []
+}

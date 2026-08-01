@@ -84,6 +84,7 @@ async def run_production():
                 print(f"FAILURE detected for {company_id}! Stopping.")
                 break
 
+
         except Exception as e:
             traceback.print_exc()
             try:

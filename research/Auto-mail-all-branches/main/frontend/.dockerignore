@@ -1,0 +1,13 @@
+## Frontend Docker Ignore
+
+# Never copy these into the image build context
+node_modules/
+dist/
+
+# Secrets
+.env
+*.env
+
+# Dev artifacts
+.DS_Store
+*.log

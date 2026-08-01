@@ -126,3 +126,79 @@ Exposed under `/api/v1` of port `8000`:
 - `GET /api/v1/companies` — Live corporate crawling health and counts.
 - `GET /api/v1/discovery` — Live discovery queue statistics.
 - `GET /api/v1/workers` — Map of running process states.
+
+---
+
+## 6. Existing Provider Registry Architecture (Do Not Change)
+
+CareerAutomated uses provider-specific verified registries as part of the production discovery system.
+
+These registries are the authoritative verified endpoint databases for each ATS provider.
+
+Examples include:
+- `registry_greenhouse`
+- `registry_lever`
+- `registry_ashby`
+- `registry_workday`
+- `registry_workable`
+- `registry_bamboohr`
+- `registry_personio`
+- `registry_teamtailor`
+
+This architecture is production-proven and must remain unchanged.
+
+New ATS providers (e.g. Indian ATS expansion) must follow the exact same pattern by introducing:
+- `registry_darwinbox`
+- `registry_freshteam`
+- `registry_keka`
+- `registry_zoho_recruit`
+
+### Production Flow Invariant
+Every provider, existing or newly added, must traverse this identical production pipeline:
+
+```text
+Discovery
+
+↓
+
+Entity Resolution
+
+↓
+
+Qualification
+
+↓
+
+Determine Provider
+├── registry_greenhouse
+├── registry_lever
+├── registry_workday
+├── registry_darwinbox
+├── registry_freshteam
+├── registry_keka
+└── registry_zoho_recruit
+
+↓
+
+Adaptive Scheduler
+
+↓
+
+Provider Connector
+
+↓
+
+normalized_jobs
+```
+
+No provider-specific shortcuts or alternate execution paths should be introduced.
+
+### Stage E — Existing Registry Architecture Audit Directive
+Before implementing new provider registries, developers and subagents MUST audit the existing provider registry implementation to understand:
+- Schema & migrations
+- Lifecycle & state transitions (`UNVERIFIED` → `VERIFIED` → `DEGRADED`)
+- Crawl & scheduling metadata
+- Health metadata
+- Import & promotion workflows (from discovery to provider registry)
+
+The new Indian ATS registries must mirror the existing architecture rather than introducing a different implementation.

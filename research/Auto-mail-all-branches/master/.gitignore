@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# Secrets — NEVER commit these
+.env
+.streamlit/secrets.toml
+
+# OS
+.DS_Store

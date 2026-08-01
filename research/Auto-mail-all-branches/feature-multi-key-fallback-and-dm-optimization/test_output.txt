@@ -1,0 +1,74 @@
+
+======================================
+Testing Input Data 1
+URL: https://www.linkedin.com/jobs/search/?currentJobId=4394414595&f_TPR=r3600&origin=JOB_SEARCH_PAGE_JOB_FILTER
+======================================
+1. Parsing Job URL...
+    -> [LLM Call 1] Prompt: 1223, Completion: 154, Total: 1377
+   Parsed Title: IoT Engineer
+   Parsed Company: elipse
+2. Fetching Company Research...
+3. Generating Email Reply...
+    -> [LLM Call 2] Prompt: 1996, Completion: 354, Total: 2350
+4. Generating LinkedIn DM...
+    -> [LLM Call 3] Prompt: 1700, Completion: 117, Total: 1817
+
+--- TOKEN USAGE & BOTTLENECK ANALYSIS FOR THIS EMAIL ---
+Total LLM Calls: 3
+Total Prompt Tokens: 4919
+Total Completion Tokens: 625
+Total Tokens Used: 5544
+
+--- Groq Target Limits ---
+RPM (Requests Per Minute): 30
+TPM (Tokens Per Minute)  : 12,000
+
+--- Bottleneck Metrics (Emails per time period) ---
+Based on RPM : ~10.00 emails / min
+Based on TPM : ~2.16 emails / min
+-> BOTTLENECK PER MINUTE: TPM (Token Limit)
+Based on RPD : ~333.33 emails / day
+Based on TPD : ~18.04 emails / day
+-> BOTTLENECK PER DAY: TPD (Token Limit)
+
+5. Sending Actual Email...
+   Email successfully sent to rishabhjain1632004@gmail.com
+======================================
+
+
+======================================
+Testing Input Data 2
+URL: http://linkedin.com/jobs/search/?currentJobId=4394405841&f_TPR=r3600&origin=JOB_SEARCH_PAGE_JOB_FILTER
+======================================
+1. Parsing Job URL...
+    -> [LLM Call 1] Prompt: 594, Completion: 100, Total: 694
+   Parsed Title: Tech support L1-(Fresher)
+   Parsed Company: Mindenious
+2. Fetching Company Research...
+3. Generating Email Reply...
+    -> [LLM Call 2] Prompt: 1949, Completion: 348, Total: 2297
+4. Generating LinkedIn DM...
+    -> [LLM Call 3] Prompt: 1653, Completion: 132, Total: 1785
+
+--- TOKEN USAGE & BOTTLENECK ANALYSIS FOR THIS EMAIL ---
+Total LLM Calls: 3
+Total Prompt Tokens: 4196
+Total Completion Tokens: 580
+Total Tokens Used: 4776
+
+--- Groq Target Limits ---
+RPM (Requests Per Minute): 30
+TPM (Tokens Per Minute)  : 12,000
+
+--- Bottleneck Metrics (Emails per time period) ---
+Based on RPM : ~10.00 emails / min
+Based on TPM : ~2.51 emails / min
+-> BOTTLENECK PER MINUTE: TPM (Token Limit)
+Based on RPD : ~333.33 emails / day
+Based on TPD : ~20.94 emails / day
+-> BOTTLENECK PER DAY: TPD (Token Limit)
+
+5. Sending Actual Email...
+   Email successfully sent to rishabhjain1632004@gmail.com
+======================================
+

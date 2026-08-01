@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# Secrets — NEVER commit these
+.env
+.streamlit/secrets.toml
+.groq_key_state
+.email_finder_state
+
+# OS
+.DS_Store

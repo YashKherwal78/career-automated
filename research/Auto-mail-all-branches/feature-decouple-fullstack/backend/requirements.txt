@@ -1,0 +1,23 @@
+# Core API
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
+pydantic==2.9.2
+
+# LLM
+groq==0.11.0
+
+# PDF
+pymupdf==1.24.10
+
+# Utilities
+python-dotenv==1.0.1
+requests==2.32.3
+beautifulsoup4==4.12.3
+
+# Search
+ddgs==9.8.0
+
+# Google OAuth & Gmail API
+google-auth==2.34.0
+google-api-python-client==2.149.0
