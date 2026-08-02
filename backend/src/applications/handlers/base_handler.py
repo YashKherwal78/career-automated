@@ -427,6 +427,91 @@ class BaseATSHandler(ABC):
         except Exception:
             return False
 
+    # ------------------------------------------------------------------
+    # Shared: CAPTCHA handling (human-in-the-loop, not automated solving —
+    # see the comment on _wait_for_human_captcha_resolution for why)
+    # ------------------------------------------------------------------
+
+    # Lives on the base class deliberately, not any one ATS's handler: every
+    # subclass (the 3 built so far, and every future one) shares this exact
+    # execute() state machine and gets captcha handling for free just by
+    # existing — no per-platform reimplementation needed. Vendor list is
+    # intentionally broader than what's been directly observed (hCaptcha on
+    # Lever, reCAPTCHA on Ashby/Greenhouse, both confirmed live this
+    # session) — Workday/SmartRecruiters/iCIMS/etc. haven't been built yet,
+    # and different ATSs commonly use different anti-bot vendors.
+    _CAPTCHA_CHALLENGE_FRAME_SELECTOR = (
+        'iframe[title*="challenge" i], iframe[src*="bframe"], '
+        'iframe[src*="recaptcha/api2/bframe"], iframe[src*="recaptcha/enterprise/bframe"], '
+        'iframe[src*="challenges.cloudflare.com"], iframe[src*="arkoselabs"], '
+        'iframe[title*="arkose" i], iframe[src*="funcaptcha"], iframe[src*="geetest"]'
+    )
+    _CAPTCHA_WIDGET_SELECTOR = (
+        '.h-captcha, [data-hcaptcha-widget-id], iframe[src*="recaptcha"], iframe[src*="hcaptcha"], '
+        '.cf-turnstile, iframe[src*="turnstile"], #fc-iframe-wrap, [id*="funcaptcha" i], '
+        '.geetest_holder, [class*="geetest" i], iframe[title*="captcha" i], iframe[src*="captcha" i]'
+    )
+
+    def _check_for_captcha_challenge(self) -> bool:
+        """Detects a captcha that likely needs a human: either a visibly
+        active challenge (hCaptcha's drag-the-icon puzzle, reCAPTCHA's
+        image grid — confirmed present on a real Lever posting this
+        session) rendered in its own iframe, or just a captcha widget
+        present on a page where the submit didn't go through cleanly
+        (covers Ashby/Greenhouse's invisible/silent-fail reCAPTCHA variant,
+        also confirmed this session — no visible challenge ever appears,
+        but the actual submit request never fires either).
+
+        Only meaningful to call right after an ambiguous/failed submit —
+        every one of these ATSs has a captcha widget present from page
+        load, so this isn't a "is a captcha here at all" check, it's a
+        "is a captcha the likely reason this submit didn't go through"
+        check, made by the caller at the right point in the flow.
+        """
+        try:
+            challenge_frame = self.page.locator(self._CAPTCHA_CHALLENGE_FRAME_SELECTOR)
+            for i in range(challenge_frame.count()):
+                if challenge_frame.nth(i).is_visible():
+                    return True
+            return self.page.locator(self._CAPTCHA_WIDGET_SELECTOR).count() > 0
+        except Exception:
+            return False
+
+    def _wait_for_human_captcha_resolution(self, telemetry: dict) -> bool:
+        """Pauses and hands the (visible, non-headless — see
+        LaunchedBrowser) browser window to a human operator to solve the
+        captcha themselves, then blocks on their signal to continue.
+
+        This is deliberately NOT automated captcha solving. A real person
+        clearing the challenge is the actual thing these systems are
+        designed to allow; defeating the check programmatically (a
+        solving service, a custom solver, scripting past it) is not
+        something this system does. What automation can legitimately do
+        is everything around that one moment — fill every field, answer
+        every question, get the form to exactly the point where a human's
+        few seconds of attention is the only thing left — then get out of
+        the way and let them provide it.
+
+        Returns True if the operator signaled the challenge is resolved,
+        False if they signaled giving up on this one (routes to
+        REVIEW_REQUIRED same as any other unresolved blocker).
+        """
+        telemetry["captcha_paused"] = True
+        telemetry.setdefault("captcha_pause_count", 0)
+        telemetry["captcha_pause_count"] += 1
+        self._capture_screenshot(f"captcha_pause_{telemetry['captcha_pause_count']}.png")
+        logger.info(f"{self.ATS_NAME}Handler: >>> CAPTCHA detected — browser window is open, please solve it now. <<<")
+        logger.info(f"{self.ATS_NAME}Handler: Press Enter here once solved (or type 'skip' to send this one to review instead): ")
+        try:
+            response = input().strip().lower()
+        except Exception:
+            response = "skip"
+        resolved = response != "skip"
+        telemetry["captcha_resolution"] = "resolved" if resolved else "skipped"
+        if resolved:
+            logger.info(f"{self.ATS_NAME}Handler: Resuming — will retry submit now.")
+        return resolved
+
     def _post_otp_analysis(self) -> dict:
         analysis = {"current_url": self.page.url, "page_title": self.page.title(),
                     "visible_headers": [], "validation_errors": [], "required_fields_remaining": 0}
@@ -661,11 +746,23 @@ class BaseATSHandler(ABC):
                         # Loop back within THIS cycle to click again — OTP is now filled.
                         continue
 
-                    # Submitted, no confirmation, and no OTP challenge — fall through
-                    # to the generic failure handling below using this `verification`.
+                    if self._check_for_captcha_challenge():
+                        if self._wait_for_human_captcha_resolution(telemetry):
+                            submit_btn = self._get_submit_button_locator()
+                            # Loop back within THIS cycle to click again — a
+                            # human just cleared the captcha in the live
+                            # browser window.
+                            continue
+                        result_status = WorkflowState.REVIEW_REQUIRED.name
+                        verification = None
+                        break
+
+                    # Submitted, no confirmation, no OTP challenge, no captcha —
+                    # fall through to the generic failure handling below using
+                    # this `verification`.
                     break
                 else:
-                    logger.info(f"{self.ATS_NAME}Handler: Exhausted submit/OTP retries within cycle. Aborting to REVIEW_REQUIRED.")
+                    logger.info(f"{self.ATS_NAME}Handler: Exhausted submit/OTP/captcha retries within cycle. Aborting to REVIEW_REQUIRED.")
                     result_status = WorkflowState.REVIEW_REQUIRED.name
                     verification = None
 
