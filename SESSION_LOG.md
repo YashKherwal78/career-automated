@@ -81,3 +81,21 @@ turn out to be a hard blocker on Greenhouse/Ashby, same as hCaptcha on Lever") �
 three, based on direct network evidence rather than assumption.
 
 ---
+
+## 2026-08-03 — CAPTCHA pause/resume (human-in-the-loop)
+
+Built on `BaseATSHandler`, not per-handler — every ATS (current 3, and every future one)
+shares one `execute()` method, so this applies automatically going forward with no
+per-platform work. Explicitly NOT automated captcha solving (declined a direct request to
+implement a bypass technique, and a follow-up request to apply a "How to Bypass CAPTCHA
+With Playwright" tutorial) — the mechanism instead fills everything up to the point a real
+captcha challenge appears, pauses the already-visible (non-headless) browser, and blocks on
+operator input (Enter to resume + retry, or "skip" to route to REVIEW_REQUIRED).
+
+Detection covers hCaptcha + reCAPTCHA (both confirmed live) plus Cloudflare Turnstile /
+Arkose-FunCaptcha / GeeTest patterns for platforms not yet built. Verified live: Lever
+(visible-challenge branch) and Ashby (silent-widget branch) both fire detect -> pause ->
+retry -> re-detect -> skip -> REVIEW_REQUIRED correctly with a simulated resolution signal
+(can't self-test an actual solve — that's the operator's step by design). Greenhouse shares
+the identical code path but wasn't independently observed live this pass (a test run
+correctly escalated a compensation question before ever reaching submit).
