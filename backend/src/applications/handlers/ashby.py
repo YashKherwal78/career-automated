@@ -141,17 +141,43 @@ class AshbyHandler(BaseATSHandler):
             try:
                 if not container.is_visible():
                     continue
+                # Consent-checkbox fields (data-processing agreements etc.)
+                # render the standard ".ashby-application-form-question-title"
+                # label EMPTY — the real prompt text lives in a second,
+                # separate <label> that wraps the checkbox input itself. Found
+                # via a real submission where this silently dropped a
+                # required consent checkbox entirely: `.first` picked the
+                # empty title label, produced an empty clean_label, and the
+                # field never even reached the is_required check below.
                 label_loc = container.locator(".ashby-application-form-question-title, label").first
                 if label_loc.count() == 0:
                     continue
                 raw_text = label_loc.inner_text().split("\n")[0].strip()
+                if not raw_text:
+                    for lbl in container.locator("label").all():
+                        try:
+                            t = lbl.inner_text().strip()
+                        except Exception:
+                            continue
+                        if t:
+                            raw_text = t.split("\n")[0].strip()
+                            break
                 clean_label = raw_text.strip()
                 if not clean_label or clean_label.lower() in skip_list:
                     continue
                 if container.locator('input[type="file"]').count() > 0:
                     continue  # resume, handled separately
 
-                is_required = container.locator('[required]').count() > 0 or "required" in (container.get_attribute("class") or "").lower()
+                # Ashby marks required fields two different ways: a real
+                # `required`/`aria-required` attribute on most fields, but a
+                # `_required_...` (hashed) CSS class on the title label for
+                # at least the consent-checkbox pattern above — checked via
+                # a stable prefix match, not the exact hash suffix.
+                is_required = (
+                    container.locator('[required], [aria-required="true"]').count() > 0
+                    or "required" in (container.get_attribute("class") or "").lower()
+                    or bool(re.search(r"\brequired", label_loc.get_attribute("class") or "", re.IGNORECASE))
+                )
 
                 options = []
                 widget_type = "unknown"

@@ -137,7 +137,7 @@ class QuestionClassifier:
                             "notice period", "start date", "earliest date", "available to start", "when can you join",
                             "total work experience", "total experience", "come to know about", "relocate", "relocation",
                             "availability", "when can you start", "date you are available",
-                            "graduation", "passout", "expected graduation", "school", "university", "linkedin", "portfolio", "github", "website", "organisation", "organization", "current role", "years of experience", "relative", "family member", "related party", "previously employed", "former employee", "previously been employed", "employer", "company", "institute", "college", "degree", "education", "travel", "first name", "last name", "email", "phone", "location", "city", "country", "state", "reside", "hear about", "source", "how did you find out", "referral"]
+                            "graduation", "passout", "expected graduation", "school", "university", "linkedin", "portfolio", "github", "website", "organisation", "organization", "current role", "years of experience", "relative", "family member", "related party", "previously employed", "former employee", "previously been employed", "employer", "company", "institute", "college", "degree", "education", "travel", "first name", "last name", "email", "phone", "location", "city", "country", "nationality", "based in", "residence country", "state", "reside", "hear about", "source", "how did you find out", "referral"]
         if any(kw in q_lower for kw in profile_keywords):
             essay_hints = ["describe", "tell me about", "explain", "essay"]
             if any(kw in q_lower for kw in essay_hints):
@@ -785,7 +785,7 @@ class QuestionEngine:
                 canonical_field = "CRIMINAL_RECORD"
             elif "conflict of interest" in q_lower or "conflict of interest" in hints:
                 canonical_field = "CONFLICT_OF_INTEREST"
-            elif any(kw in q_lower or kw in hints for kw in ["privacy", "acknowledg"]):
+            elif any(kw in q_lower or kw in hints for kw in ["privacy", "acknowledg", "consent", "you agree", "data processing", "personal data"]):
                 canonical_field = "PRIVACY_ACK"
 
             # EEO / Demographics — profile already stores these; without
