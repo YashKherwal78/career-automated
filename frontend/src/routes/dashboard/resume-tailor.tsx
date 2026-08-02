@@ -199,44 +199,46 @@ function ResumeTailorPage() {
         {/* Your resume card */}
         {!baseResumeLoading && (
           <div
+            className="flex flex-col sm:flex-row sm:items-center"
             style={{
               background: "rgba(255,255,255,0.55)",
               border: "1px solid rgba(255,255,255,0.6)",
               borderRadius: "var(--ds-radius-xl)",
               padding: 22,
               marginBottom: 14,
-              display: "flex",
-              alignItems: "center",
               gap: 14,
             }}
           >
-            <div
-              className="flex items-center justify-center flex-shrink-0"
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: "var(--ds-radius-md)",
-                background: "var(--ds-brand-orange-tint-10)",
-              }}
-            >
+            <div className="flex items-center" style={{ gap: 14, minWidth: 0 }}>
               <div
-                className="relative"
+                className="flex items-center justify-center flex-shrink-0"
                 style={{
-                  width: 14,
-                  height: 16,
-                  borderRadius: 2,
-                  border: "2px solid var(--ds-accent-primary)",
+                  width: 38,
+                  height: 38,
+                  borderRadius: "var(--ds-radius-md)",
+                  background: "var(--ds-brand-orange-tint-10)",
                 }}
-              />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: "var(--ds-text-md)", fontWeight: 600 }}>Your resume</div>
-              <div style={{ fontSize: 12.5, color: "var(--ds-ink-400)" }}>
-                {baseResume?.exists ? "Base resume ready for tailoring" : "No base resume yet"}
+              >
+                <div
+                  className="relative"
+                  style={{
+                    width: 14,
+                    height: 16,
+                    borderRadius: 2,
+                    border: "2px solid var(--ds-accent-primary)",
+                  }}
+                />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: "var(--ds-text-md)", fontWeight: 600 }}>Your resume</div>
+                <div style={{ fontSize: 12.5, color: "var(--ds-ink-400)" }}>
+                  {baseResume?.exists ? "Base resume ready for tailoring" : "No base resume yet"}
+                </div>
               </div>
             </div>
             <Link
               to="/dashboard/resume"
+              className="flex-shrink-0 pl-[52px] sm:pl-0"
               style={{ fontSize: 13, fontWeight: 600, color: "var(--ds-accent-primary)" }}
             >
               {baseResume?.exists ? "Use a different one" : "Build your base resume →"}

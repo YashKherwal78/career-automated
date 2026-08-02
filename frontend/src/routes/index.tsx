@@ -84,6 +84,14 @@ function Landing() {
   const [openFaq, setOpenFaq] = useState(0);
   const [mockStart, setMockStart] = useState(0);
   const [mockApplying, setMockApplying] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -173,13 +181,15 @@ function Landing() {
         <Link to="/">
           <DsLogo box={37} wordmark={27} weight={600} />
         </Link>
-        <div className="flex items-center gap-7">
-          <DsNavLink href="#pipeline">Product</DsNavLink>
-          <DsNavLink href="#pricing">Pricing</DsNavLink>
-          <DsNavLink href="#story">About</DsNavLink>
-          <DsNavLink to="/signin" emphasis>
-            Sign in
-          </DsNavLink>
+        <div className="flex items-center gap-4 md:gap-7">
+          <div className="hidden md:flex items-center gap-7">
+            <DsNavLink href="#pipeline">Product</DsNavLink>
+            <DsNavLink href="#pricing">Pricing</DsNavLink>
+            <DsNavLink href="#story">About</DsNavLink>
+            <DsNavLink to="/signin" emphasis>
+              Sign in
+            </DsNavLink>
+          </div>
           <DsButton asChild variant="dark" size="md">
             <Link to="/signup">Get started</Link>
           </DsButton>
@@ -320,9 +330,9 @@ function Landing() {
               app.careerautomated.com
             </div>
           </div>
-          <div className="flex">
+          <div className="flex flex-col md:flex-row">
             <div
-              className="flex flex-col items-center gap-2.5"
+              className="hidden md:flex flex-col items-center gap-2.5"
               style={{
                 width: 72,
                 flexShrink: 0,
@@ -384,8 +394,8 @@ function Landing() {
                       position: "absolute",
                       top: 0,
                       left: 0,
-                      width: 140,
-                      transform: `translateX(${r.i * 152}px)`,
+                      width: isMobile ? 120 : 140,
+                      transform: `translateX(${r.i * (isMobile ? 130 : 152)}px)`,
                       transition:
                         "transform 0.7s cubic-bezier(0.4,0,0.2,1), background 0.4s ease, border-color 0.4s ease",
                       background: r.applying ? "rgba(200,224,190,0.55)" : "rgba(255,255,255,0.6)",
@@ -608,7 +618,7 @@ function Landing() {
 
       {/* Footer */}
       <div
-        className="flex flex-wrap justify-between gap-8"
+        className="flex flex-col md:flex-row flex-wrap justify-between gap-8"
         style={{
           borderTop: "1px solid var(--ds-border-default)",
           padding: "48px clamp(20px,6vw,64px) 32px",
