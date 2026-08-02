@@ -134,7 +134,8 @@ class QuestionClassifier:
         # returns REVIEW_REQUIRED for a field the profile answers outright.
         profile_keywords = ["legal name", "full name", "preferred name", "nickname",
                             "middle name", "surname", "family name", "your name",
-                            "notice period", "start date", "earliest date", "available to start",
+                            "notice period", "start date", "earliest date", "available to start", "when can you join",
+                            "total work experience", "total experience", "come to know about", "relocate", "relocation",
                             "availability", "when can you start", "date you are available",
                             "graduation", "passout", "expected graduation", "school", "university", "linkedin", "portfolio", "github", "website", "organisation", "organization", "current role", "years of experience", "relative", "family member", "related party", "previously employed", "former employee", "previously been employed", "employer", "company", "institute", "college", "degree", "education", "travel", "first name", "last name", "email", "phone", "location", "city", "country", "state", "reside", "hear about", "source", "how did you find out", "referral"]
         if any(kw in q_lower for kw in profile_keywords):
@@ -747,6 +748,16 @@ class QuestionEngine:
             # first — otherwise "What country do you reside in?" matches the
             # generic CURRENT_LOCATION branch (via "reside") and never
             # reaches the COUNTRY branch, answering with the wrong field.
+            # A question naming BOTH city and country ("Which country and city
+            # are you currently based in?") must be checked before the bare
+            # COUNTRY branch below, which otherwise matches on "country" and
+            # answers with just "India" — technically true but only half the
+            # answer the form asked for.
+            elif ("country" in q_lower or "country" in hints) and any(
+                    kw in q_lower or kw in hints for kw in ["city", "town", "located", "based"]):
+                canonical_field = "CURRENT_LOCATION"
+                raw_answer = str(self.profile.get_field("current_location")
+                                 or self.profile.get_field("location") or "")
             elif any(kw in q_lower or kw in hints for kw in ["country", "nationality", "residence country"]):
                 canonical_field = "COUNTRY"
             elif any(kw in q_lower or kw in hints for kw in ["city", "current city", "location city", "location (city)"]):
@@ -843,16 +854,21 @@ class QuestionEngine:
                 
             # Availability / Dates
             elif any(kw in q_lower or kw in hints for kw in ["start date", "earliest start", "latest start", "when can you start",
-                                                          "available to start", "earliest date", "availability",
+                                                          "available to start", "earliest date", "availability", "when can you join",
+                                                          "by when can you join", "how soon can you join",
                                                           "date you are available", "available date"]):
                 canonical_field = "START_DATE"
             elif any(kw in q_lower or kw in hints for kw in ["graduation date", "passout", "expected graduation", "end date"]):
                 canonical_field = "GRADUATION_DATE"
                 
             # Hotfix V2.2 Additions
-            elif any(kw in q_lower or kw in hints for kw in ["years of experience", "how many years"]):
+            elif any(kw in q_lower or kw in hints for kw in ["years of experience", "how many years", "total work experience",
+                                                          "total experience", "work experience in a similar",
+                                                          "years of professional"]):
                 canonical_field = "EXPERIENCE"
-            elif any(kw in q_lower or kw in hints for kw in ["hear about", "source", "how did you find out"]):
+            elif any(kw in q_lower or kw in hints for kw in ["hear about", "source", "how did you find out",
+                                                          "come to know about", "get to know about",
+                                                          "how did you learn about"]):
                 canonical_field = "SOURCE"
                 
             # Other mappings (Legacy)

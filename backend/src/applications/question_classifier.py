@@ -39,6 +39,15 @@ class QuestionClassifier:
         # them deterministic.
         "legal name", "full name", "preferred name", "your name", "nickname",
         "middle name", "surname", "family name",
+        # Relocation is a KNOCKOUT the profile answers outright, but it was
+        # absent here, so "will you be able to relocate to Hyderabad and work
+        # from the office?" got escalated before it ever reached the
+        # resolution logic that already knows the answer.
+        "relocate", "relocation", "willing to move", "work from the office",
+        # Real Indian-market phrasings the US-centric keyword lists missed.
+        "come to know about", "get to know about",
+        "total work experience", "total experience", "when can you join",
+        "by when can you join", "last working day",
     ]
 
     ESCALATION_KEYWORDS = [
