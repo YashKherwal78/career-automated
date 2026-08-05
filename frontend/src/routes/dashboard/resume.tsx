@@ -531,8 +531,7 @@ function ResumePage() {
         body: formData,
       });
       if (res.ok) {
-        const data = await res.json();
-        setProfile({
+        const nextProfile = {
           ...EMPTY_PROFILE,
           personal_info: { ...EMPTY_PROFILE.personal_info, ...data.personal_info },
           summary: data.summary || "",
@@ -574,7 +573,18 @@ function ResumePage() {
             }),
           ),
           certifications: (data.certifications || []).map((c: { name: string }) => c.name),
-        });
+        };
+        setProfile(nextProfile);
+
+        // Auto-save to /candidate/profile so profile is persisted across reloads & logins
+        await fetch(`${API_BASE}/candidate/profile`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify(buildSavePayload(nextProfile)),
+        }).catch(() => null);
       }
     } catch (err) {
       console.error("Resume parse failed:", err);

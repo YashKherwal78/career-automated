@@ -103,9 +103,13 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
             detail=f"Invalid or expired token credentials: {str(e)}"
         )
         
-    # Query public.user_profiles to load detailed metadata
-    # NOTE: user_profiles lives in Supabase (AUTH_DATABASE_URL) — Google OAuth creates rows there.
+    # Query user_profiles and operational tables to load detailed metadata & onboarding state
     try:
+        is_onboarded = False
+        email_val = email
+        full_name_val = ""
+        avatar_url_val = ""
+
         with get_auth_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -114,31 +118,39 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
             )
             row = cursor.fetchone()
             if row:
-                # Support dictionary and sqlite Row styles compatibly
-                if hasattr(row, "keys"):
-                    data = dict(row)
-                else:
-                    data = {
-                        "email": row[0],
-                        "full_name": row[1],
-                        "avatar_url": row[2],
-                        "onboarding_complete": bool(row[3])
-                    }
-                return CurrentUser(
-                    user_id=user_id,
-                    email=data.get("email", email),
-                    full_name=data.get("full_name"),
-                    avatar_url=data.get("avatar_url"),
-                    onboarding_complete=bool(data.get("onboarding_complete", False))
-                )
+                email_val = row[0] or email
+                full_name_val = row[1] or ""
+                avatar_url_val = row[2] or ""
+                is_onboarded = bool(row[3])
+
+        # If not marked onboarded in auth user_profiles, check user_career_profiles & user_resumes
+        if not is_onboarded:
+            try:
+                with get_connection() as conn:
+                    cursor = conn.cursor()
+                    cursor.execute(
+                        "SELECT 1 FROM public.user_career_profiles WHERE user_id = %s UNION ALL SELECT 1 FROM public.user_resumes WHERE user_id = %s",
+                        (user_id, user_id)
+                    )
+                    if cursor.fetchone():
+                        is_onboarded = True
+            except Exception:
+                pass
+
+        return CurrentUser(
+            user_id=user_id,
+            email=email_val,
+            full_name=full_name_val,
+            avatar_url=avatar_url_val,
+            onboarding_complete=is_onboarded
+        )
     except Exception as e:
         logger.error(f"Error loading user profile from database: {e}")
         
-    # Return default fallback if profile trigger is delayed
     return CurrentUser(
         user_id=user_id,
         email=email,
         full_name="",
         avatar_url="",
-        onboarding_complete=False
+        onboarding_complete=True
     )

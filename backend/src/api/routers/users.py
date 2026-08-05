@@ -110,6 +110,62 @@ def complete_onboarding(
                     """,
                     (current_user.user_id, payload.resume_url, payload.resume_file_name)
                 )
+
+            # 6. Upsert canonical profile into user_career_profiles
+            skills_dict = {}
+            for s in payload.skills:
+                skills_dict.setdefault("general", []).append(s.skill_name)
+
+            exp_list = [
+                {
+                    "company": e.company,
+                    "role": e.title,
+                    "start_date": e.start_date or "",
+                    "end_date": e.end_date or "",
+                    "description": e.description or "",
+                }
+                for e in payload.experience
+            ]
+
+            edu_list = [
+                {
+                    "institution": e.institution,
+                    "degree": e.degree or "",
+                    "field_of_study": e.field_of_study or "",
+                }
+                for e in payload.education
+            ]
+
+            profile_data_obj = {
+                "personal_info": {
+                    "full_name": payload.full_name,
+                    "email": current_user.email,
+                },
+                "skills": skills_dict,
+                "experience": exp_list,
+                "education": edu_list,
+                "projects": [],
+                "certifications": [],
+                "resume_url": payload.resume_url or "",
+                "resume_file_name": payload.resume_file_name or "",
+            }
+
+            import json
+            profile_json = json.dumps(profile_data_obj)
+            completeness = 20
+            if exp_list: completeness += 30
+            if edu_list: completeness += 20
+            if skills_dict: completeness += 30
+
+            cursor.execute(
+                """
+                INSERT INTO public.user_career_profiles (user_id, profile_data, candidate_score, completeness_score, updated_at)
+                VALUES (%s, %s, %s, %s, NOW())
+                ON CONFLICT (user_id) 
+                DO UPDATE SET profile_data = EXCLUDED.profile_data, candidate_score = EXCLUDED.candidate_score, completeness_score = EXCLUDED.completeness_score, updated_at = NOW()
+                """,
+                (current_user.user_id, profile_json, 85, completeness)
+            )
                 
             conn.commit()
             return {"status": "success", "message": "Onboarding profile saved successfully"}
@@ -162,7 +218,13 @@ def extract_profile_endpoint(
         StorageService.upload_file(tmp_path, key)
         download_url = StorageService.generate_signed_download_url(key, expires_in=604800)
         
-        # Save resume URL/file metadata to PostgreSQL user_resumes
+        parsed_data["resume_url"] = download_url
+        parsed_data["resume_file_name"] = file.filename
+
+        # Save resume URL/file metadata to PostgreSQL user_resumes & user_career_profiles
+        import json
+        profile_json = json.dumps(parsed_data)
+
         with get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM public.user_resumes WHERE user_id = %s", (current_user.user_id,))
@@ -173,10 +235,17 @@ def extract_profile_endpoint(
                 """,
                 (current_user.user_id, download_url, file.filename)
             )
+            cursor.execute(
+                """
+                INSERT INTO public.user_career_profiles (user_id, profile_data, candidate_score, completeness_score, updated_at)
+                VALUES (%s, %s, %s, %s, NOW())
+                ON CONFLICT (user_id) 
+                DO UPDATE SET profile_data = EXCLUDED.profile_data, candidate_score = EXCLUDED.candidate_score, completeness_score = EXCLUDED.completeness_score, updated_at = NOW()
+                """,
+                (current_user.user_id, profile_json, 85, 80)
+            )
             conn.commit()
 
-        parsed_data["resume_url"] = download_url
-        parsed_data["resume_file_name"] = file.filename
         return parsed_data
         
     except Exception as e:

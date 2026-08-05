@@ -130,8 +130,12 @@ function OnboardingPage() {
   const lineTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    if (!user) navigate({ to: "/signup" });
-  }, [user, navigate]);
+    if (!user) {
+      navigate({ to: "/signup" });
+    } else if (profile?.onboarding_complete) {
+      navigate({ to: "/dashboard" });
+    }
+  }, [user, profile, navigate]);
 
   useEffect(
     () => () => {
@@ -248,6 +252,31 @@ function OnboardingPage() {
           const err = await res.json().catch(() => ({}));
           throw new Error(err.detail || "Failed to save onboarding details");
         }
+
+        // Also sync canonical profile to /candidate/profile
+        await fetch(`${API_BASE}/candidate/profile`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            personal_info: profile.personal_info,
+            summary: profile.summary || "",
+            skills: profile.skills,
+            experience: profile.experience,
+            projects: [],
+            education: profile.education,
+            certifications: [],
+            achievements: [],
+            languages: [],
+            volunteer: [],
+            publications: [],
+            awards: [],
+            career_preferences: {},
+            custom_sections: [],
+          }),
+        }).catch(() => null);
       }
     } catch (err) {
       console.error("Failed to save onboarding profile:", err);

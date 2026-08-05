@@ -68,6 +68,11 @@ class CandidateProfile(BaseModel):
         desired_role = (prefs.get("desired_role") or "").strip()
         if desired_role:
             target_roles = [r.strip() for r in desired_role.split(",") if r.strip()]
+        else:
+            for entry in experience:
+                role = (entry or {}).get("role") or (entry or {}).get("title")
+                if role and str(role).strip():
+                    target_roles.append(str(role).strip())
 
         years_experience = cls._estimate_years_experience(experience)
 

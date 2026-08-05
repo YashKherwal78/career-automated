@@ -27,11 +27,9 @@ function DashboardLayout() {
     if (!isLoading) {
       if (!user) {
         navigate({ to: "/signup" });
-      } else if (profile && !profile.onboarding_complete) {
-        navigate({ to: "/onboarding" });
       }
     }
-  }, [user, profile, isLoading, navigate]);
+  }, [user, isLoading, navigate]);
 
   if (!DEV_BYPASS) {
     if (isLoading) {

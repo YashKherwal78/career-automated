@@ -55,7 +55,7 @@ function DashboardHome() {
       const hasSkills = Object.values(p.skills || {}).some(
         (arr: any) => Array.isArray(arr) && arr.length > 0
       );
-      return (p.experience || []).length > 0 || hasSkills;
+      return (p.experience || []).length > 0 || hasSkills || !!p.resume_url;
     },
     enabled: !!session,
   });
@@ -144,12 +144,12 @@ function DashboardHome() {
             className="font-[var(--ds-font-display)] font-semibold"
             style={{ fontSize: "clamp(26px,3.6vw,46px)", margin: "0 0 18px", lineHeight: "var(--ds-leading-tight)" }}
           >
-            {showResumeNudge ? "Let's get you matched." : "You're all caught up."}
+            {showResumeNudge ? "Let's get you matched." : "Your Matched Jobs Are Ready."}
           </h1>
           <p style={{ fontSize: 16, color: "var(--ds-ink-500)", margin: 0, maxWidth: 480, lineHeight: "var(--ds-leading-relaxed)" }}>
             {showResumeNudge
               ? "Add your resume — takes about two minutes — and we'll start finding roles that actually fit you."
-              : "We'll let you know when something needs you."}
+              : "Here are the top-ranked job opportunities tailored directly to your resume, skills, and experience."}
           </p>
         </div>
       </div>

@@ -23,7 +23,7 @@ class JobRepository(BaseRepository, IJobRepository):
         cache = getattr(self, "_profile_cache", None)
         if cache is None:
             cache = self._profile_cache = {}
-        if user_id in cache:
+        if user_id in cache and (cache[user_id].skills or cache[user_id].target_roles):
             return cache[user_id]
 
         profile = CandidateProfile()
@@ -43,7 +43,8 @@ class JobRepository(BaseRepository, IJobRepository):
             except Exception:
                 profile = CandidateProfile()
 
-        cache[user_id] = profile
+        if profile.skills or profile.target_roles:
+            cache[user_id] = profile
         return profile
 
     @property
@@ -60,7 +61,7 @@ class JobRepository(BaseRepository, IJobRepository):
             self._cached_intent_filter = IntentFilter()
         return self._cached_intent_filter
 
-    def get_jobs(self, page: int=1, page_size: int=50, provider: str=None, company: str=None, status: str="ACTIVE", min_score: float=None, pipeline: str="A", location: str=None, remote_type: str=None, employment_type: str=None, seniority: str=None, min_salary: float=None, sort_by: str="newest", user_id: str=None, tx=None):
+    def get_jobs(self, page: int=1, page_size: int=50, provider: str=None, company: str=None, title: str=None, status: str="ACTIVE", min_score: float=None, pipeline: str="A", location: str=None, remote_type: str=None, employment_type: str=None, seniority: str=None, min_salary: float=None, sort_by: str="newest", user_id: str=None, tx=None):
         from src.api.db import json_extract
         import json
         with self.transaction() as conn:
@@ -94,6 +95,9 @@ class JobRepository(BaseRepository, IJobRepository):
             if company:
                 base_query += f" AND (n.company_id LIKE {p} OR COALESCE(i.canonical_name, {json_company}, '') LIKE {p})"
                 params.extend([f"%{company}%", f"%{company}%"])
+            if title:
+                base_query += f" AND n.title LIKE {p}"
+                params.append(f"%{title}%")
             if location:
                 base_query += f" AND n.location LIKE {p}"
                 params.append(f"%{location}%")

@@ -32,8 +32,9 @@ class AnswerQuestionPayload(BaseModel):
 
 @router.get("/profile")
 def get_career_profile(current_user: CurrentUser = Depends(get_current_user)):
-    """Fetch the canonical candidate profile JSON."""
+    """Fetch the canonical candidate profile JSON along with active linked resume metadata."""
     try:
+        import json
         with get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -41,15 +42,36 @@ def get_career_profile(current_user: CurrentUser = Depends(get_current_user)):
                 (current_user.user_id,)
             )
             row = cursor.fetchone()
+
+            # Query linked resume metadata from public.user_resumes
+            cursor.execute(
+                "SELECT resume_url, file_name FROM public.user_resumes WHERE user_id = %s",
+                (current_user.user_id,)
+            )
+            resume_row = cursor.fetchone()
+
             if not row:
+                profile_data = {}
+                if resume_row:
+                    profile_data["resume_url"] = resume_row[0]
+                    profile_data["resume_file_name"] = resume_row[1]
                 return {
-                    "profile_data": {},
+                    "profile_data": profile_data,
                     "candidate_score": 75,
-                    "completeness_score": 0,
+                    "completeness_score": 50 if resume_row else 0,
                     "updated_at": None
                 }
+
+            profile_data = row[0] or {}
+            if isinstance(profile_data, str):
+                profile_data = json.loads(profile_data)
+
+            if resume_row:
+                profile_data["resume_url"] = resume_row[0]
+                profile_data["resume_file_name"] = resume_row[1]
+
             return {
-                "profile_data": row[0],
+                "profile_data": profile_data,
                 "candidate_score": row[1],
                 "completeness_score": row[2],
                 "updated_at": row[3].isoformat() if row[3] else None
@@ -58,6 +80,37 @@ def get_career_profile(current_user: CurrentUser = Depends(get_current_user)):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to retrieve candidate profile: {str(e)}"
+        )
+
+
+@router.get("/resume")
+def get_user_resume(current_user: CurrentUser = Depends(get_current_user)):
+    """Fetch the active linked resume URL and metadata for the current logged-in candidate."""
+    try:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT resume_url, file_name, created_at FROM public.user_resumes WHERE user_id = %s",
+                (current_user.user_id,)
+            )
+            row = cursor.fetchone()
+            if not row:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="No resume linked to candidate account."
+                )
+            return {
+                "user_id": current_user.user_id,
+                "resume_url": row[0],
+                "file_name": row[1],
+                "created_at": row[2].isoformat() if row[2] else None
+            }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch user resume: {str(e)}"
         )
 
 @router.put("/profile")
