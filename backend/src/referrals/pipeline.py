@@ -8,7 +8,7 @@ from src.referrals.profile_intelligence import scrape_profile
 from src.referrals.scoring import score_contact
 from src.referrals.email_discovery import discover_email
 
-def run_referral_engine(company_name: str, job_title: str, job_description: str = ""):
+def run_referral_engine(company_name: str, job_title: str, job_description: str = "", company_domain: str = ""):
     """
     Executes the V0.1 Referral Engine flow:
     1. Safe Job Discovery (Max 5 contacts)
@@ -16,6 +16,11 @@ def run_referral_engine(company_name: str, job_title: str, job_description: str 
     3. Referral Scoring
     4. Email Discovery (Top 3 only)
     5. Save to CRM
+
+    company_domain, when known (e.g. from company_master.domain), is
+    passed straight through to email discovery — more reliable than
+    inferring it from a DuckDuckGo search, which can occasionally surface
+    an unrelated same-named domain.
     """
     logger.info(f"\n🚀 [Referral Engine] Initiating for {company_name} - {job_title}")
     
@@ -48,14 +53,25 @@ def run_referral_engine(company_name: str, job_title: str, job_description: str 
     # Step 4: Email Discovery (Top 3 only)
     top_3 = scored_contacts[:3]
     for contact in top_3:
-        email, confidence = discover_email(contact["contact_name"], company_name)
+        # Tier 1 (JD text parsing) and Tier 3 (Hunter domain-search)
+        # in discover_contacts already attach a real, already-verified
+        # email — re-querying here would blindly overwrite a known-good
+        # email with a fresh lookup's result (possibly None, silently
+        # erasing a perfectly good email that was already found).
+        if contact.get("email"):
+            continue
+        email, confidence = discover_email(contact["contact_name"], company_name, job_title, company_domain=company_domain)
         contact["email"] = email
         contact["email_confidence"] = confidence
-        
-    # Set email=None for the rest
+
+    # Set email=None for the rest — but not if a contact already had a
+    # real email attached at discovery time (Tier 1 JD text / Tier 3
+    # Hunter domain-search) and simply scored below the top 3; wiping
+    # that out would discard a real, already-found email for no reason.
     for contact in scored_contacts[3:]:
-        contact["email"] = None
-        contact["email_confidence"] = 0
+        if not contact.get("email"):
+            contact["email"] = None
+            contact["email_confidence"] = 0
         
     # Step 5: Save to CRM
     conn = sqlite3.connect(DB_PATH)

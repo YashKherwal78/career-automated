@@ -53,14 +53,49 @@ def discover_contacts(company_name: str, job_title: str, job_description: str = 
     if contacts:
         return contacts
         
-    # Tier 3: Apify Fallback (Mocked since credits are empty)
-    logger.info(f"  -> Falling back to Apify (Mocked for safety)...")
-    contacts = [
-        {"contact_name": "Rahul Sharma", "job_title": "Machine Learning Engineer", "company": company_name, "linkedin_url": "https://linkedin.com/in/rahul-sharma-mock", "discovery_source": "Apify Fallback", "contact_type": "Technical IC"},
-        {"contact_name": "Sarah Johnson", "job_title": "Engineering Manager", "company": company_name, "linkedin_url": "https://linkedin.com/in/sarah-mock", "discovery_source": "Apify Fallback", "contact_type": "Hiring Manager"},
-        {"contact_name": "Mike Recruiter", "job_title": "Technical Recruiter", "company": company_name, "linkedin_url": "https://linkedin.com/in/mike-recruiter-mock", "discovery_source": "Apify Fallback", "contact_type": "Recruiter"}
-    ]
-    
+    # Tier 3 previously returned three hardcoded fake people ("Rahul
+    # Sharma", "Sarah Johnson", "Mike Recruiter" with "-mock" LinkedIn
+    # URLs) as if they were real discovered contacts — silently writing
+    # fabricated people into the CRM (and, downstream, generating guessed
+    # emails for them) whenever Tiers 1-2 found nothing.
+    #
+    # Replaced with a real (not fabricated) Tier 3: Hunter.io's own
+    # domain-search doesn't need a person's name at all — it returns real
+    # people AND their real emails directly from Hunter's own contact
+    # database. Confirmed live: for a company where DuckDuckGo's LinkedIn
+    # X-ray search (Tier 2) found nobody, Hunter's domain-search still
+    # found a real HR contact with a real email
+    # (sarthak.tibrewal@zomato.com for Zomato). This has no name to score
+    # against, so it's treated as already-vetted (Hunter's own confidence
+    # score stands in for the profile/referral scoring the other tiers
+    # get) rather than run back through scrape_profile/score_contact.
+    if Config.HUNTER_API_KEY:
+        logger.info(f"  -> Falling back to Hunter.io domain-search for {company_name}...")
+        from src.outreach.email_finder import find_email_hunter_domain, search_company_domain
+        domain = search_company_domain(company_name, context=job_title)
+        if domain:
+            try:
+                best_email, source, hunter_contacts = find_email_hunter_domain(domain, Config.HUNTER_API_KEY)
+                for hc in hunter_contacts[:3]:
+                    if not hc.get("name"):
+                        continue
+                    contacts.append({
+                        "contact_name": hc["name"],
+                        "job_title": hc.get("position") or "Unknown",
+                        "company": company_name,
+                        "linkedin_url": "",
+                        "discovery_source": "Hunter.io Domain Search",
+                        "contact_type": _infer_contact_type(hc.get("position") or hc.get("department") or ""),
+                        "email": hc["email"],
+                        "email_confidence": hc.get("confidence", 0),
+                    })
+            except RuntimeError:
+                logger.info("  -> Hunter.io domain-search credits exhausted.")
+            except Exception as e:
+                logger.info(f"  -> Hunter.io domain-search error: {e}")
+
+    if not contacts:
+        logger.info(f"  -> No contacts found for {company_name} via JD parsing, DuckDuckGo, or Hunter.io.")
     return contacts
 
 def _infer_contact_type(title: str) -> str:

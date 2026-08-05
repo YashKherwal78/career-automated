@@ -7,6 +7,7 @@ import { getDisplayName, getInitial } from "../../lib/displayName";
 
 const NAV_ITEMS = [
   { name: "Dashboard", to: "/dashboard" as const },
+  { name: "Jobs", to: "/dashboard/jobs" as const },
   { name: "Tailoring", to: "/dashboard/resume-tailor" as const },
   { name: "Resume", to: "/dashboard/resume" as const },
   { name: "Applications", to: "/dashboard/applications" as const },
@@ -99,6 +100,37 @@ function NavIcon({ name, active, pressed }: { name: string; active: boolean; pre
         <div
           className="absolute rounded-[1px]"
           style={{ top: 10, left: 2, width: 5, height: 1.4, background: color }}
+        />
+      </div>
+    );
+  }
+  if (name === "Jobs") {
+    return (
+      <div
+        className="relative rounded-[2px]"
+        style={{
+          width: 16,
+          height: 12,
+          border: `2px solid ${color}`,
+          transform: pressed ? "translateY(-1px)" : "translateY(0)",
+          transition: "transform 160ms cubic-bezier(0.4,0,0.2,1)",
+        }}
+      >
+        <div
+          className="absolute rounded-t-[1px]"
+          style={{
+            top: -5,
+            left: "50%",
+            marginLeft: -3,
+            width: 6,
+            height: 4,
+            border: `2px solid ${color}`,
+            borderBottom: "none",
+          }}
+        />
+        <div
+          className="absolute"
+          style={{ top: -1, left: 0, right: 0, height: 2, background: color }}
         />
       </div>
     );

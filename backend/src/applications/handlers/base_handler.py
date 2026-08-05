@@ -19,7 +19,7 @@ import random
 from playwright.sync_api import Page
 from src.system.logger import setup_logger
 from src.system.state import WorkflowState
-from src.applications.question_engine import QuestionEngine
+from src.applications.question_engine import QuestionEngine, translate_to_english
 from src.applications.question_classifier import QuestionClassifier
 from src.applications.otp_retriever import retrieve_greenhouse_otp as retrieve_application_otp
 from src.applications.verifier import SubmissionVerifier
@@ -277,7 +277,18 @@ class BaseATSHandler(ABC):
                 "disabled": False, "current_value": "", "widget_type": widget_type,
             }
 
-            classification = QuestionClassifier.classify(clean_label, widget_type)
+            # Every keyword classifier downstream (this one, and both used
+            # inside QuestionEngine.answer()) is English-only. Translate
+            # once here so a non-English question (real, live examples this
+            # session: French/Swedish Recruitee/Teamtailor postings) is
+            # actually recognized as the ordinary field it is instead of
+            # escalating just because the text doesn't match an English
+            # keyword. telemetry/logging still shows the original text —
+            # only the classification/answer inputs are translated.
+            clf_label = translate_to_english(clean_label, self.engine.llm_client)
+            clf_raw_label = translate_to_english(label_text, self.engine.llm_client)
+
+            classification = QuestionClassifier.classify(clf_label, widget_type)
             if classification == "ESCALATE":
                 # Only a REQUIRED escalated question should block the whole
                 # submission. An optional one (an open-ended "anything else
@@ -298,8 +309,8 @@ class BaseATSHandler(ABC):
                 continue
 
             answer = self.engine.answer(
-                question=clean_label, field_type=field_type, placeholder=placeholder,
-                options=options, label_text=label_text, required=is_required, dom_meta=dom_meta,
+                question=clf_label, field_type=field_type, placeholder=placeholder,
+                options=options, label_text=clf_raw_label, required=is_required, dom_meta=dom_meta,
             )
 
             # An unanswerable REQUIRED question must block submission — we

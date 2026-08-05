@@ -7,6 +7,63 @@ from src.applications.profile import ProfileManager
 from src.config.config import Config
 from src.utils.llm_router import LLMRouter
 
+# Every keyword-matching classifier in this module (and question_classifier.py)
+# is English-only. A non-English application question (common on EU-hosted
+# ATS platforms — Recruitee, BambooHR, Rippling, and Teamtailor have all shown
+# real French/Swedish/German postings this session) doesn't match any English
+# keyword, so it silently falls through to TECHNICAL/ESCALATE even for
+# completely ordinary questions (start date, GDPR consent) the engine already
+# knows how to answer. It also hurts RAG retrieval confidence directly — a
+# French question retrieves near-zero relevance against an English-only
+# candidate corpus, which is exactly what triggered the low-confidence
+# REVIEW_REQUIRED gate on the French Teamtailor consent question this session.
+# Translating once, up front, before any classification or retrieval happens,
+# fixes both problems at the same root cause instead of patching each
+# downstream symptom (which is what the earlier per-field workarounds — e.g.
+# handling Teamtailor's GDPR checkbox by id instead of by text — had to do).
+_TRANSLATION_CACHE: dict[str, str] = {}
+_NON_ENGLISH_HINT_CHARS = set("àâäéèêëïîôöùûüçñßåäöøæ")
+
+def needs_translation(text: str) -> bool:
+    """Cheap heuristic, not a real language detector: flags the accented
+    characters common to the EU languages actually seen this session
+    (French, German, Swedish, Danish, Norwegian). Deliberately
+    conservative — false negatives (missing a non-English question with no
+    accented characters) just fall back to the pre-existing English-only
+    behavior, never worse than before this fix."""
+    if not text:
+        return False
+    lower = text.lower()
+    return any(ch in _NON_ENGLISH_HINT_CHARS for ch in lower)
+
+def translate_to_english(text: str, llm_client) -> str:
+    """Best-effort translation used ONLY to feed classification/retrieval
+    with English text — never shown to the candidate or submitted as an
+    answer. Falls back to the original text on any failure, so a translation
+    outage degrades back to the pre-fix (English-only-keyword) behavior
+    rather than breaking the run."""
+    if not text or not llm_client or not needs_translation(text):
+        return text
+    if text in _TRANSLATION_CACHE:
+        return _TRANSLATION_CACHE[text]
+    try:
+        response = llm_client.chat_completion(
+            messages=[
+                {"role": "system", "content": "Translate the given job application form text to English. Reply with ONLY the translated text — no quotes, no explanation, no extra commentary."},
+                {"role": "user", "content": text}
+            ],
+            temperature=0.0,
+            intent="utility"
+        )
+        translated = response.choices[0].message.content.strip()
+        if translated:
+            _TRANSLATION_CACHE[text] = translated
+            logger.info(f"[Translation] {text!r} -> {translated!r}")
+            return translated
+    except Exception as e:
+        logger.info(f"[Translation] Failed (non-fatal, using original text): {e}")
+    return text
+
 class SalaryEngineV1:
     @staticmethod
     def calculate(role: str, location: str) -> dict:
@@ -118,7 +175,7 @@ class QuestionClassifier:
             return "KNOCKOUT"
             
         # 2. LEGAL
-        legal_keywords = ["veteran", "disability", "gender", "sex", "race", "hispanic", "latino", "criminal", "felony", "convicted", "conviction", "background", "bgv", "consent", "identify as", "privacy", "acknowledg", "conflict of interest"]
+        legal_keywords = ["veteran", "disability", "gender", "sex", "race", "ethnicity", "hispanic", "latino", "criminal", "felony", "convicted", "conviction", "background", "bgv", "consent", "identify as", "privacy", "acknowledg", "conflict of interest"]
         if any(kw in q_lower for kw in legal_keywords):
             return "LEGAL"
             
@@ -135,6 +192,7 @@ class QuestionClassifier:
         profile_keywords = ["legal name", "full name", "preferred name", "nickname",
                             "middle name", "surname", "family name", "your name",
                             "notice period", "start date", "earliest date", "available to start", "when can you join",
+                            "available to join", "date are you available", "what date are you available",
                             "total work experience", "total experience", "come to know about", "relocate", "relocation",
                             "availability", "when can you start", "date you are available",
                             "graduation", "passout", "expected graduation", "school", "university", "linkedin", "portfolio", "github", "website", "organisation", "organization", "current role", "years of experience", "relative", "family member", "related party", "previously employed", "former employee", "previously been employed", "employer", "company", "institute", "college", "degree", "education", "travel", "first name", "last name", "email", "phone", "location", "city", "country", "nationality", "based in", "residence country", "state", "reside", "hear about", "source", "how did you find out", "referral"]
@@ -168,11 +226,25 @@ class ResponseNormalizer:
             "yes": ["agree", "accept", "consent", "acknowledge", "authorized", "eligible to work", "relocate", "open to relocation", "yes", "true", "y", "1"],
             "no": ["not authorized", "require sponsorship", "disagree", "no", "false", "n", "0"]
         }
-        
+
+        # Word-boundary matching, not naive substring `in` — the single-
+        # char keywords ("y", "n", "1", "0") are meant for bare shorthand
+        # answers, but a plain `kw in ans_lower` check matches them inside
+        # ANY longer word containing that letter/digit. Confirmed live: a
+        # Degree answer "B.Tech Chemical Engineering" contains the letter
+        # "n" (in "Engineering"), tripped the "no" rule, and then matched
+        # against the option "None" (which contains "no" as a substring)
+        # — silently submitting a fabricated "no degree" answer for a
+        # candidate who has a Bachelor's. Same failure class as the
+        # earlier Ethnicity/"race" substring bug — never match short
+        # tokens without a word boundary.
+        def _word_match(kw: str, text: str) -> bool:
+            return re.search(r'\b' + re.escape(kw) + r'\b', text) is not None
+
         for option_key, intent_keywords in rules.items():
-            if any(kw in ans_lower for kw in intent_keywords):
+            if any(_word_match(kw, ans_lower) for kw in intent_keywords):
                 for opt in options:
-                    if option_key in str(opt).lower():
+                    if _word_match(option_key, str(opt).lower()):
                         return opt
         
         # Notice Period and CTC rules
@@ -367,6 +439,38 @@ Example: {{"selected_option": "Yes", "confidence": 95, "reasoning": "Intent expl
                 ResponseNormalizer._dropdown_cache[cache_key] = best
                 return best
 
+            # Phase A3: Degree priority match. Some tenants offer several
+            # genuinely different, equally valid Degree picklist entries
+            # for the same real-world qualification (a dedicated "B.Tech"
+            # option alongside a generic "Bachelor's Degree" one). Start
+            # from whichever group actually matches the CANDIDATE'S OWN
+            # stated degree, then fall through to progressively more
+            # generic groups from there — never to a MORE specific group
+            # the candidate didn't actually claim. An earlier version of
+            # this always tried the B.Tech group first regardless of the
+            # candidate's real degree, which meant a candidate who
+            # actually holds a B.E. would get silently mismatched to
+            # "Bachelor of Technology" just because that option happened
+            # to exist and B.Tech was checked first — caught by a direct
+            # unit test before it ever reached production.
+            _DEGREE_SYNONYM_GROUPS = [
+                ["b.tech", "btech", "bachelor of technology"],
+                ["b.e.", "b.e", "bachelor of engineering"],
+                ["bachelor's degree", "bachelors degree", "bachelor degree", "bachelor's", "bachelors", "bachelor"],
+            ]
+            candidate_group_index = next(
+                (i for i, group in enumerate(_DEGREE_SYNONYM_GROUPS)
+                 if any(_squash(term) in ans_squashed for term in group)),
+                None
+            )
+            if candidate_group_index is not None:
+                for group in _DEGREE_SYNONYM_GROUPS[candidate_group_index:]:
+                    for opt in options:
+                        opt_squashed = _squash(opt)
+                        if any(_squash(term) in opt_squashed for term in group):
+                            ResponseNormalizer._dropdown_cache[cache_key] = opt
+                            return opt
+
             # Phase B: Semantic Rule Match
             rule_match = ResponseNormalizer._semantic_rule_match(ans_lower, options)
             if rule_match:
@@ -411,15 +515,29 @@ Example: {{"selected_option": "Yes", "confidence": 95, "reasoning": "Intent expl
                 # Try to parse the raw answer
                 parsed_date = dateutil.parser.parse(ans)
                 
-                # Determine format from hints
-                if "mm/yyyy" in hints:
-                    return parsed_date.strftime("%m/%Y")
-                elif "yyyy-mm-dd" in hints:
+                # Determine format from hints. Longer/more-specific patterns
+                # MUST be checked before shorter ones that are literal
+                # substrings of them — "mm/yyyy" is a substring of
+                # "dd/mm/yyyy" (Europe's day-first date convention), so
+                # checking it first previously matched every "dd/mm/yyyy"
+                # placeholder and truncated a full date down to just
+                # "08/2026", silently dropping the day entirely.
+                if "yyyy-mm-dd" in hints:
                     return parsed_date.strftime("%Y-%m-%d")
+                elif "mm/dd/yyyy" in hints:
+                    # Checked before the hyphenated "mm-dd-yyyy" variant and
+                    # the bare "yyyy" fallback below — a slash-separated
+                    # placeholder (BambooHR's "Date Available" field uses
+                    # this exact string) contains "yyyy" as a substring, so
+                    # without this branch it silently matched the bare-year
+                    # fallback and truncated a full date down to just "2026".
+                    return parsed_date.strftime("%m/%d/%Y")
                 elif "mm-dd-yyyy" in hints:
                     return parsed_date.strftime("%m-%d-%Y")
                 elif "dd-mm-yyyy" in hints or "dd/mm/yyyy" in hints:
                     return parsed_date.strftime("%d-%m-%Y")
+                elif "mm/yyyy" in hints:
+                    return parsed_date.strftime("%m/%Y")
                 elif "yyyy" in hints:
                     return parsed_date.strftime("%Y")
                 elif "month" in hints and "year" not in hints:
@@ -455,7 +573,19 @@ Example: {{"selected_option": "Yes", "confidence": 95, "reasoning": "Intent expl
             return ans
 
         # 4. Experience
-        if "years of experience" in hints or "experience" in hints:
+        # Matched on phrases that actually ASK for a numeric years-of-
+        # experience answer, not a bare "experience" substring — that
+        # match was far too broad and fired on any question merely
+        # mentioning the word (e.g. "...context: professional experience,
+        # internship, or academic project?"), silently truncating a real
+        # free-text LLM answer down to the first digit it happened to
+        # contain (a project name like "Project 2" was enough to turn a
+        # full sentence into just "2").
+        _years_exp_markers = (
+            "years of experience", "years experience", "years' experience",
+            "how many years", "experience do you have", "experience in years",
+        )
+        if any(kw in hints for kw in _years_exp_markers):
             # e.g. "1.5 years" -> "1.5"
             match = re.search(r'(\d+(\.\d+)?)', ans)
             if match:
@@ -760,7 +890,12 @@ class QuestionEngine:
                                  or self.profile.get_field("location") or "")
             elif any(kw in q_lower or kw in hints for kw in ["country", "nationality", "residence country"]):
                 canonical_field = "COUNTRY"
-            elif any(kw in q_lower or kw in hints for kw in ["city", "current city", "location city", "location (city)"]):
+            elif any(kw in q_lower or kw in hints for kw in ["current city", "location city", "location (city)"]) or \
+                    re.search(r"\bcity\b", q_lower) or re.search(r"\bcity\b", hints):
+                # Bare "city" must be a word-boundary match, not a bare
+                # substring — "ethnicity" contains "city" as its literal
+                # last four characters, which previously mapped every
+                # "Ethnicity" EEO question to the candidate's home city.
                 canonical_field = "CITY"
             elif any(kw in q_lower or kw in hints for kw in ["residence location", "current residence", "where do you live", "current location", "reside"]):
                 canonical_field = "CURRENT_LOCATION"
@@ -806,7 +941,7 @@ class QuestionEngine:
                 canonical_field = "VETERAN_STATUS"
             elif any(kw in q_lower or kw in hints for kw in ["disability"]):
                 canonical_field = "DISABILITY_STATUS"
-            elif "race" in q_lower or "race" in hints:
+            elif "race" in q_lower or "race" in hints or "ethnicity" in q_lower or "ethnicity" in hints:
                 canonical_field = "RACE"
             elif any(kw in q_lower or kw in hints for kw in ["hispanic", "latino"]):
                 canonical_field = "HISPANIC_LATINO"
@@ -852,11 +987,27 @@ class QuestionEngine:
             elif any(kw in q_lower or kw in hints for kw in ["language", "speak", "proficienc"]):
                 canonical_field = "LANGUAGE"
                 
+            # Employment/education history dates (structured work-history or
+            # education entries some ATS forms build, e.g. Breezy's "Add
+            # Position"/"Add Education" sub-forms) — checked BEFORE the
+            # generic "start date"/"end date" catch below since those are
+            # substrings of these more specific phrases, and mean something
+            # different (when the candidate can start THIS job, not when a
+            # PAST position began).
+            elif any(kw in q_lower or kw in hints for kw in ["employment start date", "position start date", "job start date", "work history start date", "role start date"]):
+                canonical_field = "EMPLOYMENT_START_DATE"
+            elif any(kw in q_lower or kw in hints for kw in ["employment end date", "position end date", "job end date", "work history end date", "role end date"]):
+                canonical_field = "EMPLOYMENT_END_DATE"
+            elif any(kw in q_lower or kw in hints for kw in ["education start date", "school start date", "study start date"]):
+                canonical_field = "EDUCATION_START_DATE"
+            elif any(kw in q_lower or kw in hints for kw in ["education end date", "school end date", "study end date"]):
+                canonical_field = "EDUCATION_END_DATE"
+
             # Availability / Dates
             elif any(kw in q_lower or kw in hints for kw in ["start date", "earliest start", "latest start", "when can you start",
-                                                          "available to start", "earliest date", "availability", "when can you join",
-                                                          "by when can you join", "how soon can you join",
-                                                          "date you are available", "available date"]):
+                                                          "available to start", "available to join", "earliest date", "availability", "when can you join",
+                                                          "by when can you join", "how soon can you join", "what date are you available",
+                                                          "date you are available", "date are you available", "available date"]):
                 canonical_field = "START_DATE"
             elif any(kw in q_lower or kw in hints for kw in ["graduation date", "passout", "expected graduation", "end date"]):
                 canonical_field = "GRADUATION_DATE"
@@ -985,6 +1136,16 @@ class QuestionEngine:
                         raw_answer = "Immediate"
                 elif canonical_field == "GRADUATION_DATE":
                     raw_answer = "May 2026"
+                elif canonical_field == "EMPLOYMENT_START_DATE":
+                    # Matches OrangeLabs (Feb 2026 - Apr 2026) — the same
+                    # most-recent-role default CURRENT_ORGANIZATION uses.
+                    raw_answer = "2026-02-01"
+                elif canonical_field == "EMPLOYMENT_END_DATE":
+                    raw_answer = "2026-04-30"
+                elif canonical_field == "EDUCATION_START_DATE":
+                    raw_answer = "2022-08-01"
+                elif canonical_field == "EDUCATION_END_DATE":
+                    raw_answer = "2026-05-31"
                 
         # If it's a PROFILE_FACT but failed deterministic mapping, DO NOT SEND TO LLM
         if not raw_answer and classification == "PROFILE_FACT":
@@ -1059,7 +1220,6 @@ Instructions:
                     logger.info(f"  -> Final LLM Answer: {raw_answer}")
                     
                     # Metric Validation
-                    import re
                     chunk_nums = set(re.findall(r'\b\d+(?:\.\d+)?\b', chunk_text))
                     if options:
                         options_text = " ".join([str(o) for o in options])

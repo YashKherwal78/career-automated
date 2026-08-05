@@ -35,9 +35,16 @@ class ProfileManager:
             "phone": "9891148156",
             "linkedin": "https://www.linkedin.com/in/yash-kherwal-944497254/",
             "github": "https://github.com/YashKherwal78",
+            # Listed on the current resume header alongside LinkedIn/GitHub —
+            # previously missing here entirely, so any "portfolio/website"
+            # question silently fell back to the GitHub URL instead.
+            "portfolio": "https://careerautomated.in",
+            "website": "https://careerautomated.in",
             "location": "Ghaziabad, India",
             # Location
             "address": "Niti Khand 3, Indirapuram",
+            "postal_code": "201014",
+            "zip_code": "201014",
             "city": "Ghaziabad",
             "district": "Ghaziabad",
             "state": "Uttar Pradesh",

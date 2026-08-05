@@ -21,10 +21,21 @@ function JobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [remoteFilter, setRemoteFilter] = useState("");
   const [providerFilter, setProviderFilter] = useState("");
   const [sortField, setSortField] = useState<"intent_score" | "posted_at">("posted_at");
+
+  const ROLE_OPTIONS = [
+    { label: "All Roles", value: "" },
+    { label: "AI Engineer", value: "AI Engineer" },
+    { label: "ML Engineer", value: "Machine Learning Engineer" },
+    { label: "Software Engineer", value: "Software Engineer" },
+    { label: "Software Developer", value: "Software Developer" },
+    { label: "Data Scientist", value: "Data Scientist" },
+    { label: "Associate Product Manager", value: "Associate Product Manager" },
+  ];
 
   // Statistics state
   const [stats, setStats] = useState({
@@ -68,6 +79,7 @@ function JobsPage() {
       // 2. Load Jobs
       const filters = {
         company: search || undefined,
+        title: roleFilter || undefined,
         provider: providerFilter || undefined,
         location: locationFilter || undefined,
         remote_type: remoteFilter || undefined,
@@ -89,7 +101,7 @@ function JobsPage() {
   // Initial load
   useEffect(() => {
     loadData(true);
-  }, [activeTab, search, providerFilter, locationFilter, remoteFilter, sortField]);
+  }, [activeTab, search, roleFilter, providerFilter, locationFilter, remoteFilter, sortField]);
 
   // Live Auto-Refresh (SSE-like Poll every 30s)
   useEffect(() => {
@@ -97,7 +109,7 @@ function JobsPage() {
       loadData(false);
     }, 30000);
     return () => clearInterval(interval);
-  }, [activeTab, search, providerFilter, locationFilter, remoteFilter, sortField]);
+  }, [activeTab, search, roleFilter, providerFilter, locationFilter, remoteFilter, sortField]);
 
   // Navigate to job detail if selected via search params
   useEffect(() => {
@@ -176,6 +188,17 @@ function JobsPage() {
             className="w-full pl-9 pr-4 py-1.5 rounded-xl bg-white/50 border border-white/60 focus:outline-none focus:border-[color:var(--peach-deep)] transition-colors"
           />
         </div>
+
+        {/* Role */}
+        <select
+          value={roleFilter}
+          onChange={(e) => setRoleFilter(e.target.value)}
+          className="px-3 py-1.5 rounded-xl bg-white/50 border border-white/60 focus:outline-none text-ink-soft focus:border-[color:var(--peach-deep)] cursor-pointer"
+        >
+          {ROLE_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
 
         {/* Location */}
         <div className="relative">

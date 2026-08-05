@@ -20,6 +20,18 @@ class ApplicationDispatcher:
         "greenhouse": ("src.applications.adapters.greenhouse_adapter", "GreenhouseAdapter"),
         "lever": ("src.applications.adapters.lever_adapter", "LeverAdapter"),
         "ashby": ("src.applications.adapters.ashby_adapter", "AshbyAdapter"),
+        "breezy": ("src.applications.adapters.breezy_adapter", "BreezyAdapter"),
+        "jazzhr": ("src.applications.adapters.jazzhr_adapter", "JazzHRAdapter"),
+        "bamboohr": ("src.applications.adapters.bamboohr_adapter", "BambooHRAdapter"),
+        "workable": ("src.applications.adapters.workable_adapter", "WorkableAdapter"),
+        "recruitee": ("src.applications.adapters.recruitee_adapter", "RecruiteeAdapter"),
+        "rippling": ("src.applications.adapters.rippling_adapter", "RipplingAdapter"),
+        "personio": ("src.applications.adapters.personio_adapter", "PersonioAdapter"),
+        "teamtailor": ("src.applications.adapters.teamtailor_adapter", "TeamTailorAdapter"),
+        "pinpoint": ("src.applications.adapters.pinpoint_adapter", "PinpointAdapter"),
+        "recruiterbox": ("src.applications.adapters.trakstar_adapter", "TrakstarAdapter"),
+        "workday": ("src.applications.adapters.workday_adapter", "WorkdayAdapter"),
+        "successfactors": ("src.applications.adapters.successfactors_adapter", "SuccessFactorsAdapter"),
     }
 
     def _get_adapter(self, connector: str):
