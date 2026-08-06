@@ -50,7 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchProfile = async (token: string, fallbackUser?: User | null): Promise<UserProfile | null> => {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500);
+      const timeoutId = setTimeout(() => controller.abort(), 1200);
       const response = await fetch(`${API_BASE}/users/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -62,15 +62,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return await response.json();
       }
     } catch (e) {
-      console.warn("Failed to load user profile from backend (using auth fallback):", e);
+      console.warn("Backend profile API slow/unreachable, falling back to Supabase auth:", e);
     }
     if (fallbackUser) {
+      try {
+        const { data: spData } = await supabase
+          .from("user_profiles")
+          .select("*")
+          .eq("user_id", fallbackUser.id)
+          .maybeSingle();
+
+        if (spData) {
+          return {
+            user_id: spData.user_id,
+            email: spData.email || fallbackUser.email || "",
+            full_name: spData.full_name || fallbackUser.user_metadata?.full_name || null,
+            avatar_url: spData.avatar_url || fallbackUser.user_metadata?.avatar_url || null,
+            onboarding_complete: Boolean(spData.onboarding_complete),
+          };
+        }
+      } catch (err) {
+        console.warn("Supabase user_profiles direct query error:", err);
+      }
+
       return {
         user_id: fallbackUser.id,
         email: fallbackUser.email ?? "",
         full_name: fallbackUser.user_metadata?.full_name || fallbackUser.user_metadata?.name || null,
         avatar_url: fallbackUser.user_metadata?.avatar_url || fallbackUser.user_metadata?.picture || null,
-        onboarding_complete: true,
+        onboarding_complete: false,
       };
     }
     return null;
