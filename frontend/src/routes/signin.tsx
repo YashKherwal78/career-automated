@@ -61,6 +61,10 @@ function SignIn() {
     if (user) navigate({ to: "/dashboard" });
   }, [user, navigate]);
 
+  // Block rendering for signed-in users — redirect fires above, this
+  // prevents a flash of the signin form in the meantime.
+  if (user) return null;
+
   const handleGoogle = async () => {
     if (googleLoading) return;
     setGoogleLoading(true);

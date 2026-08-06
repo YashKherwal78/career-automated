@@ -86,6 +86,10 @@ function SignUpPage() {
     }
   }, [user, profile, navigate]);
 
+  // Block rendering for signed-in users — redirect fires above, this
+  // prevents a flash of the signup form in the meantime.
+  if (user) return null;
+
   useEffect(() => {
     const t = setInterval(() => setLineIndex((i) => (i + 1) % ROTATING_LINES.length), 6500);
     return () => clearInterval(t);
