@@ -112,32 +112,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // 1. Get initial session
-    supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
+    // 1. Get initial session from Supabase (synchronous from localStorage)
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
       setSession(initialSession);
       const currentUser = initialSession?.user ?? null;
       setUser(currentUser);
+      setIsLoading(false); // Unblock UI instantly (0ms)
+      
       if (initialSession?.access_token) {
-        const p = await fetchProfile(initialSession.access_token, currentUser);
-        applyProfile(p);
+        fetchProfile(initialSession.access_token, currentUser).then(applyProfile);
       }
-      setIsLoading(false);
     });
 
     // 2. Listen for auth changes (login, logout, token refresh)
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+    } = supabase.auth.onAuthStateChange((event, currentSession) => {
       setSession(currentSession);
       const currentUser = currentSession?.user ?? null;
       setUser(currentUser);
+      setIsLoading(false); // Unblock UI instantly (0ms)
+      
       if (currentSession?.access_token) {
-        const p = await fetchProfile(currentSession.access_token, currentUser);
-        applyProfile(p);
+        fetchProfile(currentSession.access_token, currentUser).then(applyProfile);
       } else {
         setProfile(null);
       }
-      setIsLoading(false);
     });
 
     return () => {
