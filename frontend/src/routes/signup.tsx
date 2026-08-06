@@ -80,7 +80,7 @@ function SignUpPage() {
     if (user) {
       if (profile && !profile.onboarding_complete) {
         navigate({ to: "/onboarding" });
-      } else if (profile?.onboarding_complete) {
+      } else {
         navigate({ to: "/dashboard" });
       }
     }

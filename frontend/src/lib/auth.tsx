@@ -47,25 +47,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProfile(p);
   };
 
-  const fetchProfile = async (token: string): Promise<UserProfile | null> => {
+  const fetchProfile = async (token: string, fallbackUser?: User | null): Promise<UserProfile | null> => {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
       const response = await fetch(`${API_BASE}/users/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       if (response.ok) {
         return await response.json();
       }
     } catch (e) {
-      console.error("Failed to load user profile details from backend:", e);
+      console.warn("Failed to load user profile from backend (using auth fallback):", e);
+    }
+    if (fallbackUser) {
+      return {
+        user_id: fallbackUser.id,
+        email: fallbackUser.email ?? "",
+        full_name: fallbackUser.user_metadata?.full_name || fallbackUser.user_metadata?.name || null,
+        avatar_url: fallbackUser.user_metadata?.avatar_url || fallbackUser.user_metadata?.picture || null,
+        onboarding_complete: true,
+      };
     }
     return null;
   };
 
   const refreshProfile = async () => {
     if (session?.access_token) {
-      const p = await fetchProfile(session.access_token);
+      const p = await fetchProfile(session.access_token, user);
       applyProfile(p);
     }
   };
@@ -82,9 +95,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // 1. Get initial session
     supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
       setSession(initialSession);
-      setUser(initialSession?.user ?? null);
+      const currentUser = initialSession?.user ?? null;
+      setUser(currentUser);
       if (initialSession?.access_token) {
-        const p = await fetchProfile(initialSession.access_token);
+        const p = await fetchProfile(initialSession.access_token, currentUser);
         applyProfile(p);
       }
       setIsLoading(false);
@@ -95,9 +109,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       setSession(currentSession);
-      setUser(currentSession?.user ?? null);
+      const currentUser = currentSession?.user ?? null;
+      setUser(currentUser);
       if (currentSession?.access_token) {
-        const p = await fetchProfile(currentSession.access_token);
+        const p = await fetchProfile(currentSession.access_token, currentUser);
         applyProfile(p);
       } else {
         setProfile(null);

@@ -117,7 +117,7 @@ function Spinner({ size = 56 }: { size?: number }) {
 }
 
 function OnboardingPage() {
-  const { user, session, refreshProfile, markOnboardingComplete } = useAuth();
+  const { user, session, profile: authProfile, refreshProfile, markOnboardingComplete } = useAuth();
   const navigate = useNavigate();
 
   const [step, setStep] = useState<1 | 2>(1);
@@ -132,10 +132,10 @@ function OnboardingPage() {
   useEffect(() => {
     if (!user) {
       navigate({ to: "/signup" });
-    } else if (profile?.onboarding_complete) {
+    } else if (authProfile?.onboarding_complete) {
       navigate({ to: "/dashboard" });
     }
-  }, [user, profile, navigate]);
+  }, [user, authProfile, navigate]);
 
   useEffect(
     () => () => {
