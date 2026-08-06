@@ -22,27 +22,42 @@ function DashboardLayout() {
   const navigate = useNavigate();
   const { sidebarOpen, isNarrow, toggleSidebar, closeSidebarOverlay } = useSidebarState();
 
-  useEffect(() => {
-    if (DEV_BYPASS) return; // Skip auth check in dev bypass mode
-    if (!isLoading) {
-      if (!user) {
-        navigate({ to: "/signup" });
-      }
-    }
-  }, [user, isLoading, navigate]);
+  // Hard redirect: if auth is resolved and there's no user, go to signup.
+  // This fires synchronously during render — no flash, no blank page.
+  if (!DEV_BYPASS && !isLoading && !user) {
+    return (
+      <div style={{ display: "none" }}>
+        {/* useEffect redirect as backup */}
+        {(() => { navigate({ to: "/signup" }); return null; })()}
+      </div>
+    );
+  }
 
-  if (!DEV_BYPASS) {
-    if (isLoading) {
-      return (
-        <div className="flex min-h-screen items-center justify-center bg-slate-50">
-          <div className="text-sm font-medium text-slate-500">Loading your profile...</div>
+  if (!DEV_BYPASS && isLoading) {
+    return (
+      <div
+        className="flex min-h-screen flex-col items-center justify-center"
+        style={{
+          background: "var(--ds-surface-page)",
+          fontFamily: "var(--ds-font-body)",
+          color: "var(--ds-text-primary)",
+        }}
+      >
+        <div
+          className="animate-spin rounded-full"
+          style={{
+            width: 24,
+            height: 24,
+            border: "3px solid rgba(226,116,72,0.2)",
+            borderTopColor: "var(--ds-accent-primary)",
+            marginBottom: 16,
+          }}
+        />
+        <div style={{ fontSize: 13, color: "var(--ds-ink-500)", fontWeight: 500 }}>
+          Loading…
         </div>
-      );
-    }
-
-    if (!user) {
-      return null; // Will redirect in useEffect
-    }
+      </div>
+    );
   }
 
   return (
