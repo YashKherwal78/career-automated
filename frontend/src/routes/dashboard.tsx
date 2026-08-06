@@ -181,9 +181,15 @@ function DashboardLayout() {
             }}
           />
         )}
-        <div className="relative" style={{ zIndex: 1 }}>
+        {isNarrow ? (
+          /* On narrow viewports the sidebar is position:fixed — render it
+             outside any flex-child wrapper so it doesn't affect main layout */
           <Sidebar isOpen={sidebarOpen} isNarrow={isNarrow} />
-        </div>
+        ) : (
+          <div className="relative" style={{ zIndex: 1 }}>
+            <Sidebar isOpen={sidebarOpen} isNarrow={isNarrow} />
+          </div>
+        )}
         <main
           className="flex-1 min-w-0 relative"
           style={{ zIndex: 1, paddingTop: isNarrow ? 76 : undefined }}
