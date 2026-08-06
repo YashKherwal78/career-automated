@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../lib/auth";
 import { ServiceRegistry } from "../../lib/services";
 import { getDisplayName, getInitial } from "../../lib/displayName";
+import { LogOut, Sparkles } from "lucide-react";
 
 const NAV_ITEMS = [
   { name: "Dashboard", to: "/dashboard" as const },
@@ -342,80 +343,87 @@ export function Sidebar({ isOpen, isNarrow }: SidebarProps) {
         })}
       </nav>
 
-      <Link
-        to="/dashboard/career-profile"
-        className="flex items-center gap-3 whitespace-nowrap"
+      {/* Sleek Glassmorphic Profile Card */}
+      <div
+        className="mt-auto flex items-center justify-between gap-2"
         style={{
-          marginTop: "auto",
-          padding: "14px 12px",
-          background: "rgba(255,255,255,0.45)",
-          backdropFilter: "blur(14px) saturate(160%)",
-          borderRadius: "var(--ds-radius-lg)",
-          border: "1px solid rgba(255,255,255,0.55)",
+          padding: "10px 12px",
+          background: "rgba(255,255,255,0.75)",
+          backdropFilter: "blur(16px) saturate(180%)",
+          borderRadius: 16,
+          border: "1px solid rgba(226, 232, 240, 0.8)",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
         }}
       >
-        <div
-          className="flex items-center justify-center flex-shrink-0 font-semibold"
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: "50%",
-            background: "var(--ds-ink-800)",
-            color: "var(--ds-text-on-dark)",
-            fontSize: 13,
-          }}
+        {/* Profile Link Area */}
+        <Link
+          to="/dashboard/career-profile"
+          className="flex items-center gap-2.5 min-w-0 flex-1 group"
         >
-          {initial}
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="font-semibold" style={{ fontSize: 14, color: "var(--ds-ink-900)" }}>
-            {displayName}
-          </div>
-          <div
-            className="flex items-center gap-1"
-            style={{ fontSize: 11.5, color: "var(--ds-ink-450)" }}
-          >
-            <span
-              className="rounded-full flex-shrink-0"
-              style={{ width: 4, height: 4, background: "var(--ds-ink-400)" }}
+          {profile?.avatar_url ? (
+            <img
+              src={profile.avatar_url}
+              alt={displayName}
+              className="w-9 h-9 rounded-full object-cover flex-shrink-0 ring-2 ring-slate-200/80 group-hover:ring-orange-400 transition-all duration-150"
             />
-            {tierLabel === "Free tier" ? (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  navigate({ to: "/upgrade" });
-                }}
-                style={{
-                  fontSize: 11.5,
-                  color: "var(--ds-accent-primary)",
-                  fontWeight: 600,
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 0,
-                }}
-              >
-                Free tier — Upgrade
-              </button>
-            ) : (
-              tierLabel
-            )}
+          ) : (
+            <div
+              className="flex items-center justify-center flex-shrink-0 font-bold rounded-full group-hover:scale-105 transition-transform duration-150"
+              style={{
+                width: 36,
+                height: 36,
+                background: "linear-gradient(135deg, var(--ds-ink-800), var(--ds-ink-950))",
+                color: "var(--ds-text-on-dark)",
+                fontSize: 13.5,
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.15)",
+              }}
+            >
+              {initial}
+            </div>
+          )}
+
+          <div className="min-w-0 flex-1">
+            <div
+              className="font-semibold text-slate-900 truncate group-hover:text-orange-600 transition-colors"
+              style={{ fontSize: 13.5, lineHeight: "1.25" }}
+              title={displayName}
+            >
+              {displayName}
+            </div>
+            <div className="flex items-center gap-1.5 mt-0.5" style={{ fontSize: 11 }}>
+              {subscription?.tier === "pro" ? (
+                <span className="inline-flex items-center gap-1 font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded text-[10.5px]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Pro
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    navigate({ to: "/upgrade" });
+                  }}
+                  className="inline-flex items-center gap-1 font-semibold text-orange-600 hover:text-orange-700 bg-orange-50 hover:bg-orange-100 px-1.5 py-0.5 rounded text-[10.5px] transition-colors"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  Upgrade
+                </button>
+              )}
+            </div>
           </div>
-        </div>
+        </Link>
+
+        {/* Dedicated Logout Action Button */}
         <button
           type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            logout();
-          }}
-          className="flex-shrink-0"
-          style={{ fontSize: 11, color: "var(--ds-ink-450)", fontWeight: 600 }}
+          onClick={() => logout()}
+          className="flex items-center justify-center flex-shrink-0 p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-all duration-150"
+          title="Log out"
         >
-          Log out
+          <LogOut className="w-4 h-4" />
         </button>
-      </Link>
+      </div>
     </div>
   );
 }
