@@ -91,7 +91,7 @@ class LLMRouter:
                 elif provider == "openrouter":
                     content, tokens, model_used = self._call_openrouter(messages, temperature, response_format)
                 elif provider == "groq":
-                    content, tokens, model_used = self._call_groq(messages, temperature, response_format)
+                    content, tokens, model_used = self._call_groq(messages, temperature, response_format, intent)
                 else:
                     continue
                     
@@ -159,9 +159,18 @@ class LLMRouter:
                 
         raise Exception(f"All OpenRouter fallback models failed. Last error: {last_error}")
 
-    def _call_groq(self, messages: List[Dict], temperature: float, response_format: Optional[Dict]):
-        # We assume the default model is llama-3.1-8b-instant for utility
-        model_name = "llama-3.1-8b-instant"
+    def _call_groq(self, messages: List[Dict], temperature: float, response_format: Optional[Dict], intent: str = "utility"):
+        # OpenRouter and Gemini — the providers the "reasoning" route actually
+        # prefers — are never reachable in this deployment (google-genai and
+        # openai aren't in requirements.txt, so both clients fail to
+        # initialize and every reasoning call was silently landing here
+        # anyway). Given that, at least use a model sized for reasoning
+        # instead of the small/fast instant model on every intent — llama-3.3
+        # -70b-versatile is already proven working elsewhere in this codebase
+        # (resume tailoring). Confirmed live: the 8b-instant model was
+        # truncating structured-extraction JSON output after the verbose
+        # "experience"/"projects" sections, before ever generating "skills".
+        model_name = "llama-3.3-70b-versatile" if intent == "reasoning" else "llama-3.1-8b-instant"
         response = self.groq_manager.chat_completion(
             model=model_name,
             messages=messages,
