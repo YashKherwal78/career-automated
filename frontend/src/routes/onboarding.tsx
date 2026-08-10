@@ -1,8 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../lib/auth";
 import { API_BASE } from "../lib/api";
 import { DsLogo } from "../components/ds/Logo";
+import { ServiceRegistry } from "../lib/services";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
@@ -119,6 +121,7 @@ function Spinner({ size = 56 }: { size?: number }) {
 function OnboardingPage() {
   const { user, session, profile: authProfile, refreshProfile, markOnboardingComplete } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [step, setStep] = useState<1 | 2>(1);
   const [phase, setPhase] = useState<UploadPhase>("idle");
@@ -136,6 +139,20 @@ function OnboardingPage() {
       navigate({ to: "/dashboard" });
     }
   }, [user, authProfile, navigate]);
+
+  // Jobs matching runs a real query + scoring pass on the backend (a couple
+  // seconds even after fixing the slow path) — kick it off now, while the
+  // candidate is still uploading/reviewing their resume, so it's already
+  // warm in the query cache by the time they land on /dashboard instead of
+  // them staring at a loading spinner there. Same queryKey/queryFn as
+  // dashboard/index.tsx's jobs query, so useQuery there just reuses this.
+  useEffect(() => {
+    if (!session) return;
+    queryClient.prefetchQuery({
+      queryKey: ["jobs", "dashboard"],
+      queryFn: () => ServiceRegistry.getJobService().getJobs({ sort_by: "score", page_size: 100 }),
+    });
+  }, [session, queryClient]);
 
   useEffect(
     () => () => {
