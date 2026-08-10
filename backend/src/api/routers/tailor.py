@@ -16,6 +16,7 @@ import logging
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
 from src.api.db import get_db
@@ -67,6 +68,10 @@ class TailorResponse(BaseModel):
     diff_summary: Dict[str, Any] = Field(default_factory=dict)
     version_metadata: Dict[str, str] = Field(default_factory=dict)
     is_persisted: bool = False
+
+
+class TailoredPdfRequest(BaseModel):
+    tailored_tex: str
 
 
 class CoverLetterRequest(BaseModel):
@@ -421,6 +426,44 @@ def tailor_resume(request: TailorRequest, db=Depends(get_db)):
             "llm_model": result.version_metadata.llm_model,
         },
         is_persisted=False,
+    )
+
+
+@router.post("/tailor/pdf", status_code=status.HTTP_200_OK)
+def compile_tailored_pdf(
+    request: TailoredPdfRequest,
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    """
+    Compiles a tailored .tex (as returned by POST /tailor) into a PDF and
+    streams it back. Nothing is written to permanent storage — same
+    ephemeral-by-design compile-on-demand as the rest of tailoring, just
+    reusing the base resume generator's pdflatex step so candidates get a
+    PDF instead of a raw .tex file they'd need their own LaTeX toolchain
+    to open.
+    """
+    import shutil
+    import tempfile
+
+    from src.resume_intelligence.base_resume.renderer import compile_pdf
+
+    tmp_dir = tempfile.mkdtemp(prefix="tailored_resume_")
+    try:
+        pdf_path = compile_pdf(request.tailored_tex, tmp_dir, filename_prefix="tailored_resume")
+        if pdf_path is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="PDF compilation failed for the tailored resume.",
+            )
+        with open(pdf_path, "rb") as f:
+            pdf_bytes = f.read()
+    finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=tailored_resume.pdf"},
     )
 
 
