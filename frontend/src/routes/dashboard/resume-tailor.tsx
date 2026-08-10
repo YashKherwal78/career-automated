@@ -114,17 +114,41 @@ function ResumeTailorPage() {
     }
   };
 
-  const downloadResume = () => {
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [downloadError, setDownloadError] = useState("");
+
+  const downloadResume = async () => {
     if (!tailoredTex) return;
-    const blob = new Blob([tailoredTex], { type: "text/x-tex" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `resume_tailored_${jobId || "custom"}.tex`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setDownloadingPdf(true);
+    setDownloadError("");
+    try {
+      const response = await fetch(`${API_BASE}/resume/tailor/pdf`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ tailored_tex: tailoredTex }),
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.detail || "Couldn't generate the PDF");
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `resume_tailored_${jobId || "custom"}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      setDownloadError(err instanceof Error ? err.message : "Couldn't generate the PDF");
+    } finally {
+      setDownloadingPdf(false);
+    }
   };
 
   const baseBtnStyle: React.CSSProperties = {
@@ -342,14 +366,35 @@ function ResumeTailorPage() {
           </div>
         )}
         {genPhase === "done" && (
-          <button
-            type="button"
-            onClick={downloadResume}
-            className="transition-transform active:scale-[0.98]"
-            style={{ ...baseBtnStyle, background: "var(--ds-ink-900)", color: "#FFFDFA" }}
-          >
-            ↓ Download your resume
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={downloadResume}
+              disabled={downloadingPdf}
+              className="transition-transform active:scale-[0.98]"
+              style={{
+                ...baseBtnStyle,
+                background: "var(--ds-ink-900)",
+                color: "#FFFDFA",
+                opacity: downloadingPdf ? 0.7 : 1,
+                cursor: downloadingPdf ? "default" : "pointer",
+              }}
+            >
+              {downloadingPdf ? "Generating PDF…" : "↓ Download your resume"}
+            </button>
+            {downloadError && (
+              <p
+                style={{
+                  fontSize: 12.5,
+                  color: "var(--ds-accent-danger, #C4432B)",
+                  margin: "10px 0 0",
+                  textAlign: "center",
+                }}
+              >
+                {downloadError}
+              </p>
+            )}
+          </>
         )}
         {genPhase === "error" && (
           <div
