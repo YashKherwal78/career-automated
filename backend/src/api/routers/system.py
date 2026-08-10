@@ -27,7 +27,7 @@ def get_version(repos = Depends(get_repos)):
             cur = conn.execute("SELECT version FROM schema_version ORDER BY id DESC LIMIT 1")
             row = cur.fetchone()
             if row:
-                schema_version = row[0]
+                schema_version = row["version"]
     except Exception:
         pass
 

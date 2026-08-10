@@ -53,8 +53,8 @@ def get_career_profile(current_user: CurrentUser = Depends(get_current_user)):
             if not row:
                 profile_data = {}
                 if resume_row:
-                    profile_data["resume_url"] = resume_row[0]
-                    profile_data["resume_file_name"] = resume_row[1]
+                    profile_data["resume_url"] = resume_row["resume_url"]
+                    profile_data["resume_file_name"] = resume_row["file_name"]
                 return {
                     "profile_data": profile_data,
                     "candidate_score": 75,
@@ -62,19 +62,19 @@ def get_career_profile(current_user: CurrentUser = Depends(get_current_user)):
                     "updated_at": None
                 }
 
-            profile_data = row[0] or {}
+            profile_data = row["profile_data"] or {}
             if isinstance(profile_data, str):
                 profile_data = json.loads(profile_data)
 
             if resume_row:
-                profile_data["resume_url"] = resume_row[0]
-                profile_data["resume_file_name"] = resume_row[1]
+                profile_data["resume_url"] = resume_row["resume_url"]
+                profile_data["resume_file_name"] = resume_row["file_name"]
 
             return {
                 "profile_data": profile_data,
-                "candidate_score": row[1],
-                "completeness_score": row[2],
-                "updated_at": row[3].isoformat() if row[3] else None
+                "candidate_score": row["candidate_score"],
+                "completeness_score": row["completeness_score"],
+                "updated_at": row["updated_at"].isoformat() if row["updated_at"] else None
             }
     except Exception as e:
         raise HTTPException(
@@ -101,9 +101,9 @@ def get_user_resume(current_user: CurrentUser = Depends(get_current_user)):
                 )
             return {
                 "user_id": current_user.user_id,
-                "resume_url": row[0],
-                "file_name": row[1],
-                "created_at": row[2].isoformat() if row[2] else None
+                "resume_url": row["resume_url"],
+                "file_name": row["file_name"],
+                "created_at": row["created_at"].isoformat() if row["created_at"] else None
             }
     except HTTPException:
         raise
@@ -168,12 +168,12 @@ def generate_base_resume_endpoint(current_user: CurrentUser = Depends(get_curren
                 (current_user.user_id,)
             )
             row = cursor.fetchone()
-            if not row or not row[0]:
+            if not row or not row["profile_data"]:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="No candidate profile found. Save your profile before generating a resume.",
                 )
-            profile_data = row[0]
+            profile_data = row["profile_data"]
 
         from src.resume_intelligence.base_resume.generator import generate_base_resume
 

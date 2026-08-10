@@ -258,9 +258,10 @@ def _load_candidate_memory(candidate_id: str, db) -> Dict[str, Any]:
             (candidate_id,)
         )
         row = cursor.fetchone()
-        if not row or not row[0]:
+        profile_data = row["profile_data"] if row else None
+        if not profile_data:
             return {}
-        profile = row[0]
+        profile = profile_data
         if isinstance(profile, str):
             import json
             profile = json.loads(profile)
@@ -308,9 +309,10 @@ def _load_ai_preferences(candidate_id: str, db) -> tuple[str, str]:
             (candidate_id,)
         )
         row = cursor.fetchone()
-        if not row or not row[0]:
+        profile_data = row["profile_data"] if row else None
+        if not profile_data:
             return "Professional", "Balanced"
-        profile = row[0]
+        profile = profile_data
         if isinstance(profile, str):
             import json
             profile = json.loads(profile)

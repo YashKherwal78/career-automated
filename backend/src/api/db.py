@@ -34,10 +34,10 @@ def table_exists(conn: Any, table_name: str) -> bool:
     cursor = conn.cursor()
     if USE_POSTGRES:
         cursor.execute(
-            "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = %s)",
+            "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = %s) AS exists_",
             (table_name,),
         )
-        return bool(cursor.fetchone()[0])
+        return bool(cursor.fetchone()["exists_"])
 
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,))
     return cursor.fetchone() is not None

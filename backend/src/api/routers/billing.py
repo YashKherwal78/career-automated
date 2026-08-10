@@ -141,5 +141,5 @@ def get_subscription(current_user: CurrentUser = Depends(get_current_user)):
         )
         row = cursor.fetchone()
         if row:
-            return {"tier": row[0], "active_since": row[2].isoformat() if row[2] else None}
+            return {"tier": row["plan"], "active_since": row["paid_at"].isoformat() if row["paid_at"] else None}
         return {"tier": "free", "active_since": None}
