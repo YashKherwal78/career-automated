@@ -523,6 +523,32 @@ function ResumePage() {
     }
   };
 
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+
+  const downloadBaseResumePdf = async () => {
+    setDownloadingPdf(true);
+    try {
+      const res = await fetch(`${API_BASE}/candidate/base-resume/pdf`, {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (!res.ok) throw new Error("Failed to download PDF");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "base_resume.pdf";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Base resume PDF download failed:", err);
+      setGenerateError("Couldn't download the PDF. Please try again.");
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
   const handleUploaded = async (file: File) => {
     setUploadState("uploading");
     setUploadError(null);
@@ -1852,14 +1878,22 @@ function ResumePage() {
             {generateState === "generating" ? "Generating…" : "Generate resume"}
           </button>
           {generateState === "done" && generateResult?.pdf_available && (
-            <a
-              href={`${API_BASE}/candidate/base-resume/pdf`}
-              target="_blank"
-              rel="noreferrer"
-              style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ds-accent-primary)" }}
+            <button
+              type="button"
+              onClick={downloadBaseResumePdf}
+              disabled={downloadingPdf}
+              style={{
+                fontSize: 13.5,
+                fontWeight: 600,
+                color: "var(--ds-accent-primary)",
+                background: "none",
+                border: "none",
+                padding: 0,
+                cursor: downloadingPdf ? "default" : "pointer",
+              }}
             >
-              Download PDF →
-            </a>
+              {downloadingPdf ? "Downloading…" : "Download PDF →"}
+            </button>
           )}
         </div>
         {generateState === "done" && generateResult && (
