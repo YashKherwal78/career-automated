@@ -77,12 +77,16 @@ function SignUpPage() {
   const [lineIndex, setLineIndex] = useState(0);
 
   useEffect(() => {
-    if (user) {
-      if (profile && !profile.onboarding_complete) {
-        navigate({ to: "/onboarding" });
-      } else {
-        navigate({ to: "/dashboard" });
-      }
+    if (!user) return;
+    // Wait for the real profile before deciding where to send them — it
+    // starts null while the async fetch is in flight, and treating "not
+    // loaded yet" the same as "onboarding complete" was sending brand-new
+    // signups straight to an empty dashboard, skipping onboarding entirely.
+    if (!profile) return;
+    if (!profile.onboarding_complete) {
+      navigate({ to: "/onboarding" });
+    } else {
+      navigate({ to: "/dashboard" });
     }
   }, [user, profile, navigate]);
 
