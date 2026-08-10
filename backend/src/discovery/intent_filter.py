@@ -102,12 +102,32 @@ class IntentFilter:
                 else None
             )
 
+            # analyzer.py's coverage (and experience-fit) both default to 1.0
+            # when there's nothing to evaluate against — total_req==0 means
+            # "no disagreement found" gets scored identically to "every
+            # requirement matched". Confirmed live: a German-language JD the
+            # extractor pulled zero skill requirements from scored a perfect
+            # fit.overall_fit_score=1.0 despite zero actual matched skills.
+            # Don't blend that meaningless "1.0" in as real signal — fall
+            # back to the independently-computed role/responsibility signals.
+            required_skill_count = sum(
+                1 for r in structured.requirements
+                if r.type == "skill" and r.importance == "REQUIRED"
+            )
+            trust_fit_score = required_skill_count > 0
+
             if resp_score is None:
-                # No responsibilities extracted or no candidate experience text
-                # to compare against — fall back to the original 2-signal blend.
-                combined = fit.overall_fit_score * 0.60 + role_score * 0.40
+                combined = (
+                    fit.overall_fit_score * 0.60 + role_score * 0.40
+                    if trust_fit_score
+                    else role_score
+                )
             else:
-                combined = fit.overall_fit_score * 0.45 + role_score * 0.25 + resp_score * 0.30
+                combined = (
+                    fit.overall_fit_score * 0.45 + role_score * 0.25 + resp_score * 0.30
+                    if trust_fit_score
+                    else role_score * 0.40 + resp_score * 0.60
+                )
 
             # Build score_breakdown for frontend (matches {keyword, matched} contract)
             breakdown = []
@@ -143,21 +163,51 @@ class IntentFilter:
         "hr ", "nurse", "doctor", "dentist", "chef", "driver", "plumber",
     ]
 
+    # Words that carry no role-matching signal on their own — stripped before
+    # token-overlap comparison so "AI Product Manager Intern" (a real resume
+    # experience title, not a curated role family) still meaningfully matches
+    # "Product Manager" postings instead of only ever hitting the 0.0/0.3
+    # exact-substring paths below.
+    _ROLE_STOPWORDS = {
+        "intern", "internship", "the", "a", "of", "and", "at", "for", "to",
+        "senior", "junior", "sr", "jr", "i", "ii", "iii",
+    }
+
     def _title_role_score(self, title_lower: str, profile: CandidateProfile) -> float:
         """Return 0.0–1.0 based on how well the job title matches target roles."""
         # Hard penalty for obvious wrong-domain titles
         if any(wd in title_lower for wd in self._WRONG_DOMAIN_SIGNALS):
             return 0.05
 
+        title_tokens = set(title_lower.replace(",", " ").replace("/", " ").split())
+
         best = 0.0
         for role in profile.target_roles:
-            signals = self._ROLE_SIGNALS.get(role.lower(), [role.lower()])
+            role_lower = role.lower()
+            signals = self._ROLE_SIGNALS.get(role_lower, [role_lower])
             for sig in signals:
                 if sig in title_lower:
                     best = 1.0
                     break
             if best >= 1.0:
                 break
+
+            # Curated dict/exact-phrase match missed (e.g. a resume-derived
+            # role like "AI Product Manager Intern" that isn't a canonical
+            # role family) — fall back to token overlap: how many of the
+            # role's meaningful words actually show up in this title.
+            role_tokens = {
+                t for t in role_lower.replace(",", " ").split() if t not in self._ROLE_STOPWORDS
+            }
+            if role_tokens:
+                overlap = len(role_tokens & title_tokens) / len(role_tokens)
+                # Require real overlap (not just one generic shared word) to
+                # avoid the same noise the plain generic-keyword check below
+                # already causes on its own.
+                if overlap >= 0.6:
+                    best = max(best, 0.85)
+                elif overlap >= 0.34:
+                    best = max(best, 0.5)
 
         # Partial match — title contains a generic keyword
         if best == 0.0:
