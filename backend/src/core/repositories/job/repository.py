@@ -111,6 +111,19 @@ class JobRepository(BaseRepository, IJobRepository):
                 base_query += f" AND (n.salary_max >= {p} OR n.salary_min >= {p})"
                 params.extend([min_salary, min_salary])
 
+            # Bound the candidate set to the most recent N active jobs before
+            # windowing/ranking. Without this, the per-company window function
+            # below has to sort the entire active-jobs table (1.4M+ rows,
+            # ~25s) just to produce a 2000-row page — status='ACTIVE' alone
+            # matches ~99% of the table so it can't narrow anything down.
+            # idx_normalized_jobs_active_posted_at (status='ACTIVE', posted_at
+            # DESC) lets Postgres satisfy this ORDER BY + LIMIT with an index
+            # scan instead of a full sort (~25s -> ~0.6s measured). 10k is
+            # comfortably larger than per_company_cap * any realistic company
+            # count feeding the final 2000-row cap.
+            candidate_limit = conn.dialect.create_limit(10000)
+            base_query += f" ORDER BY n.posted_at DESC {candidate_limit}"
+
             # Cap how many of the initial fetch can come from any one company.
             # Without this, a franchise/retail poster that bulk-syncs thousands
             # of store-level listings (e.g. 24k+ active jobs from one chain)
