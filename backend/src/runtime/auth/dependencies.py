@@ -7,7 +7,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
 from pydantic import BaseModel, EmailStr
 from src.runtime.config.settings import Settings
-from src.runtime.postgres.connection import get_connection
+from src.runtime.postgres.connection import get_connection, get_auth_connection
 
 logger = logging.getLogger("auth")
 
@@ -118,10 +118,10 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
             )
             row = cursor.fetchone()
             if row:
-                email_val = row[0] or email
-                full_name_val = row[1] or ""
-                avatar_url_val = row[2] or ""
-                is_onboarded = bool(row[3])
+                email_val = row["email"] or email
+                full_name_val = row["full_name"] or ""
+                avatar_url_val = row["avatar_url"] or ""
+                is_onboarded = bool(row["onboarding_complete"])
 
         # If not marked onboarded in auth user_profiles, check user_career_profiles & user_resumes
         if not is_onboarded:
@@ -146,11 +146,14 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
         )
     except Exception as e:
         logger.error(f"Error loading user profile from database: {e}")
-        
+
+    # DB lookup failed — fail closed. Defaulting to "onboarded" would skip a
+    # new user straight past resume upload into an empty dashboard; defaulting
+    # to "not onboarded" just re-shows onboarding, which is recoverable.
     return CurrentUser(
         user_id=user_id,
         email=email,
         full_name="",
         avatar_url="",
-        onboarding_complete=True
+        onboarding_complete=False
     )

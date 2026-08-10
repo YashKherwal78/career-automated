@@ -18,13 +18,8 @@ class Settings:
     APP_ENV: str = os.getenv("APP_ENV", "production")
     ENABLE_LOCAL_FALLBACKS: bool = os.getenv("ENABLE_LOCAL_FALLBACKS", "false").lower() == "true"
 
-    _auth_url: str = (os.getenv("AUTH_DATABASE_URL") or os.getenv("DATABASE_URL") or "").strip("'\"")
-    _op_url: str = (os.getenv("OPERATIONAL_DATABASE_URL") or os.getenv("DATABASE_URL") or "").strip("'\"")
-    if "dokploy-postgres" in _op_url and _auth_url:
-        _op_url = _auth_url
-
-    AUTH_DATABASE_URL: str = _auth_url
-    OPERATIONAL_DATABASE_URL: str = _op_url
+    AUTH_DATABASE_URL: str = (os.getenv("AUTH_DATABASE_URL") or os.getenv("DATABASE_URL") or "").strip("'\"")
+    OPERATIONAL_DATABASE_URL: str = (os.getenv("OPERATIONAL_DATABASE_URL") or os.getenv("DATABASE_URL") or "").strip("'\"")
     
     # Redis
     REDIS_URL: str = os.getenv("REDIS_URL", "").strip("'\"")

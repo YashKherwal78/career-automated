@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../lib/auth";
 import { ServiceRegistry } from "../../lib/services";
+import { API_BASE } from "../../lib/api";
 import { getDisplayName, getInitial } from "../../lib/displayName";
 import { LogOut, Sparkles } from "lucide-react";
 
@@ -214,7 +215,7 @@ export interface SidebarProps {
 export function Sidebar({ isOpen, isNarrow }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { profile, logout } = useAuth();
+  const { profile, logout, session } = useAuth();
   const [pressedItem, setPressedItem] = useState<string | null>(null);
   const displayName = getDisplayName(profile?.full_name, profile?.email, "You");
   const initial = getInitial(profile?.full_name, profile?.email, "?");
@@ -224,6 +225,24 @@ export function Sidebar({ isOpen, isNarrow }: SidebarProps) {
     staleTime: 60_000,
   });
   const tierLabel = subscription?.tier === "pro" ? "Pro" : "Free tier";
+
+  const { data: resumeAttached } = useQuery({
+    queryKey: ["candidate-profile-completeness"],
+    meta: { persist: true },
+    queryFn: async (): Promise<boolean> => {
+      const res = await fetch(`${API_BASE}/candidate/profile`, {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (!res.ok) return false;
+      const data = await res.json();
+      const p = data.profile_data || {};
+      const hasSkills = Object.values(p.skills || {}).some(
+        (arr: unknown) => Array.isArray(arr) && arr.length > 0,
+      );
+      return (p.experience || []).length > 0 || hasSkills || !!p.resume_url;
+    },
+    enabled: !!session,
+  });
 
   const narrowStyle: CSSProperties = {
     position: "fixed",
@@ -326,7 +345,7 @@ export function Sidebar({ isOpen, isNarrow }: SidebarProps) {
               onMouseLeave={() => setPressedItem(null)}
             >
               <div
-                className="flex items-center justify-center flex-shrink-0"
+                className="relative flex items-center justify-center flex-shrink-0"
                 style={{
                   width: 36,
                   height: 36,
@@ -336,6 +355,20 @@ export function Sidebar({ isOpen, isNarrow }: SidebarProps) {
                 }}
               >
                 <NavIcon name={item.name} active={active} pressed={isPressed} />
+                {item.name === "Resume" && (
+                  <span
+                    title={resumeAttached ? "Resume attached" : "No resume attached yet"}
+                    className="absolute rounded-full"
+                    style={{
+                      width: 8,
+                      height: 8,
+                      top: -1,
+                      right: -1,
+                      background: resumeAttached ? "var(--ds-accent-success, #6B8F5E)" : "var(--ds-ink-300)",
+                      border: "1.5px solid var(--ds-surface-card, #fff)",
+                    }}
+                  />
+                )}
               </div>
               {item.name}
             </Link>

@@ -427,6 +427,8 @@ function ResumePage() {
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [draftState, setDraftState] = useState<"idle" | "saving" | "saved">("idle");
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadState, setUploadState] = useState<"idle" | "uploading">("idle");
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     personal: true,
   });
@@ -522,6 +524,8 @@ function ResumePage() {
   };
 
   const handleUploaded = async (file: File) => {
+    setUploadState("uploading");
+    setUploadError(null);
     const formData = new FormData();
     formData.append("file", file);
     try {
@@ -530,7 +534,12 @@ function ResumePage() {
         headers: { Authorization: `Bearer ${session?.access_token}` },
         body: formData,
       });
-      if (res.ok) {
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || "Failed to read that resume. Try a different PDF or DOCX.");
+      }
+      {
+        const data = await res.json();
         const nextProfile = {
           ...EMPTY_PROFILE,
           personal_info: { ...EMPTY_PROFILE.personal_info, ...data.personal_info },
@@ -586,11 +595,16 @@ function ResumePage() {
           body: JSON.stringify(buildSavePayload(nextProfile)),
         }).catch(() => null);
       }
+      setUploadState("idle");
+      setShowUploadModal(false);
+      setMode("builder");
     } catch (err) {
       console.error("Resume parse failed:", err);
+      setUploadState("idle");
+      setUploadError(
+        err instanceof Error ? err.message : "Something went wrong reading that file.",
+      );
     }
-    setShowUploadModal(false);
-    setMode("builder");
   };
 
   const flatSkills = Object.values(profile.skills).flat();
@@ -789,7 +803,10 @@ function ResumePage() {
         </div>
 
         {showUploadModal && (
-          <DsModal onClose={() => setShowUploadModal(false)} maxWidth={480}>
+          <DsModal
+            onClose={() => (uploadState === "idle" ? setShowUploadModal(false) : undefined)}
+            maxWidth={480}
+          >
             <div style={{ padding: 28 }}>
               <div className="flex items-center justify-between" style={{ marginBottom: 18 }}>
                 <h2
@@ -800,11 +817,12 @@ function ResumePage() {
                 </h2>
                 <button
                   type="button"
-                  onClick={() => setShowUploadModal(false)}
+                  onClick={() => uploadState === "idle" && setShowUploadModal(false)}
+                  disabled={uploadState !== "idle"}
                   style={{
                     background: "none",
                     border: "none",
-                    cursor: "pointer",
+                    cursor: uploadState === "idle" ? "pointer" : "default",
                     color: "var(--ds-ink-400)",
                     fontSize: 16,
                   }}
@@ -812,7 +830,47 @@ function ResumePage() {
                   ✕
                 </button>
               </div>
-              <DsDropzone onFile={handleUploaded} />
+
+              {uploadState === "uploading" ? (
+                <div
+                  style={{
+                    border: "2px dashed var(--ds-border-medium)",
+                    borderRadius: "var(--ds-radius-2xl)",
+                    padding: "56px 32px",
+                    textAlign: "center",
+                  }}
+                >
+                  <div
+                    className="animate-spin rounded-full mx-auto"
+                    style={{
+                      width: 40,
+                      height: 40,
+                      border: "3px solid rgba(226,116,72,0.2)",
+                      borderTopColor: "var(--ds-accent-primary)",
+                      marginBottom: 18,
+                    }}
+                  />
+                  <div className="font-[var(--ds-font-display)] font-semibold" style={{ fontSize: 15.5 }}>
+                    Reading your resume…
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <DsDropzone onFile={handleUploaded} />
+                  {uploadError && (
+                    <p
+                      style={{
+                        fontSize: 13,
+                        color: "var(--ds-accent-danger, #C4432B)",
+                        margin: "14px 0 0",
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {uploadError}
+                    </p>
+                  )}
+                </>
+              )}
             </div>
           </DsModal>
         )}
