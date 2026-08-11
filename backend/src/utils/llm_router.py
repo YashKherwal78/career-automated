@@ -160,17 +160,22 @@ class LLMRouter:
         raise Exception(f"All OpenRouter fallback models failed. Last error: {last_error}")
 
     def _call_groq(self, messages: List[Dict], temperature: float, response_format: Optional[Dict], intent: str = "utility"):
-        # OpenRouter and Gemini — the providers the "reasoning" route actually
-        # prefers — are never reachable in this deployment (google-genai and
-        # openai aren't in requirements.txt, so both clients fail to
-        # initialize and every reasoning call was silently landing here
-        # anyway). Given that, at least use a model sized for reasoning
-        # instead of the small/fast instant model on every intent — llama-3.3
-        # -70b-versatile is already proven working elsewhere in this codebase
-        # (resume tailoring). Confirmed live: the 8b-instant model was
-        # truncating structured-extraction JSON output after the verbose
-        # "experience"/"projects" sections, before ever generating "skills".
-        model_name = "llama-3.3-70b-versatile" if intent == "reasoning" else "llama-3.1-8b-instant"
+        # OpenRouter and Gemini — the providers both the "reasoning" and
+        # "utility" routes list as fallbacks — are never reachable in this
+        # deployment (google-genai and openai aren't in requirements.txt, so
+        # both clients fail to initialize and every call was silently
+        # landing here anyway, with no real fallback). Given that, "utility"
+        # calls need the same treatment "reasoning" already got: llama-3.3
+        # -70b-versatile instead of the small/fast instant model. Confirmed
+        # live: application-form dropdown/EEO answer mapping (auto-apply's
+        # ResponseNormalizer._llm_fallback, intent="utility") was repeatedly
+        # hitting 8b-instant's 6000 TPM cap ("Request too large") with no
+        # working fallback provider, so a correct, already-resolved answer
+        # (e.g. veteran status from the candidate profile) fell through to
+        # REVIEW_REQUIRED purely because the mapping call itself couldn't
+        # complete — same truncation failure mode the reasoning-intent fix
+        # addressed, just on a different call site.
+        model_name = "llama-3.1-8b-instant" if intent not in ("reasoning", "utility") else "llama-3.3-70b-versatile"
         response = self.groq_manager.chat_completion(
             model=model_name,
             messages=messages,
