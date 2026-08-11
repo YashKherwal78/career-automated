@@ -244,6 +244,19 @@ class GreenhouseHandler(BaseATSHandler):
         logger.info(f"  -> File Exists: True")
         logger.info(f"  -> File Size: {file_size} bytes")
 
+        # The resume file input is React-rendered and can mount well after
+        # the rest of the form (confirmed: absent at 1.5s, present by 4s on
+        # a real Greenhouse form) — every upload strategy below was racing
+        # this and losing, so every attempt fell through to "all strategies
+        # failed" regardless of which selector should have matched.
+        try:
+            self.active_context.wait_for_selector(
+                'input[type="file"], [aria-label*="Upload"], [aria-label*="Resume"]',
+                timeout=8000,
+            )
+        except Exception:
+            pass
+
         for attempt in range(2):
             try:
                 import json
