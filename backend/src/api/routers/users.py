@@ -246,8 +246,17 @@ def extract_profile_endpoint(
             )
             conn.commit()
 
+        try:
+            from src.discovery.embeddings import embed_text, candidate_embedding_text
+            from src.core.repositories.job.repository import JobRepository
+            vec = embed_text(candidate_embedding_text(parsed_data))
+            JobRepository().store_candidate_embedding(current_user.user_id, vec)
+        except Exception as embed_err:
+            import logging
+            logging.getLogger("users").warning(f"Candidate embedding update failed: {embed_err}")
+
         return parsed_data
-        
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

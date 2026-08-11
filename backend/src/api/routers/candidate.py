@@ -145,7 +145,22 @@ def update_career_profile(
                 (current_user.user_id, profile_json, candidate_strength, score)
             )
             conn.commit()
-            return {"status": "success", "completeness_score": score, "candidate_score": candidate_strength}
+
+        # Best-effort: recompute the semantic embedding used for vector job
+        # search whenever the profile changes. Not fatal if it fails (e.g.
+        # cold model load hiccup) — the embedding backfill/scoring path can
+        # pick this candidate up later; it shouldn't block saving the
+        # profile data itself, which is the part the user is waiting on.
+        try:
+            from src.discovery.embeddings import embed_text, candidate_embedding_text
+            from src.core.repositories.job.repository import JobRepository
+            vec = embed_text(candidate_embedding_text(payload.dict()))
+            JobRepository().store_candidate_embedding(current_user.user_id, vec)
+        except Exception as embed_err:
+            import logging
+            logging.getLogger("candidate").warning(f"Candidate embedding update failed: {embed_err}")
+
+        return {"status": "success", "completeness_score": score, "candidate_score": candidate_strength}
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

@@ -61,10 +61,115 @@ class JobRepository(BaseRepository, IJobRepository):
             self._cached_intent_filter = IntentFilter()
         return self._cached_intent_filter
 
+    # Below this many precomputed rows, a user's background-scored coverage
+    # isn't wide enough to trust as "their real top matches" yet (e.g. right
+    # after signup, before JobScoringWorker has caught up) — fall back to
+    # the bounded live-scoring path instead so they see something immediately.
+    _PRECOMPUTED_MIN_COVERAGE = 20
+
+    def get_jobs_from_precomputed(self, page: int, page_size: int, user_id: str, min_score: float = None,
+                                   location: str = None, provider: str = None, company: str = None,
+                                   title: str = None, remote_type: str = None, employment_type: str = None,
+                                   min_salary: float = None, pipeline: str = "A", conn=None):
+        """
+        Serves scored jobs from user_job_scores (populated by the background
+        JobScoringWorker against the full active-jobs pool) instead of live-
+        scoring a bounded recent-jobs window per request. Returns None if
+        this user doesn't have enough precomputed coverage yet, signaling
+        the caller to fall back to the live path.
+        """
+        from src.api.db import json_extract
+        import json
+
+        p = conn.dialect.placeholder()
+        json_company = json_extract('n.raw_payload_json', '$.company')
+
+        where_clause = f"""
+            FROM public.user_job_scores s
+            JOIN normalized_jobs n ON n.job_id = s.job_id
+            LEFT JOIN company_identities i ON n.company_id = i.company_id
+            WHERE s.user_id = {p} AND s.passed_hard_reject = TRUE AND n.status = 'ACTIVE'
+        """
+        params = [user_id]
+
+        job_board_providers = ["linkedin", "google_jobs", "wellfound", "indeed"]
+        provider_placeholders = ",".join([p] * len(job_board_providers))
+        if pipeline == "B":
+            where_clause += f" AND n.provider IN ({provider_placeholders})"
+        else:
+            where_clause += f" AND n.provider NOT IN ({provider_placeholders})"
+        params.extend(job_board_providers)
+
+        if provider:
+            where_clause += f" AND n.provider = {p}"
+            params.append(provider)
+        if company:
+            where_clause += f" AND (n.company_id LIKE {p} OR COALESCE(i.canonical_name, {json_company}, '') LIKE {p})"
+            params.extend([f"%{company}%", f"%{company}%"])
+        if title:
+            where_clause += f" AND n.title LIKE {p}"
+            params.append(f"%{title}%")
+        if location:
+            where_clause += f" AND n.location LIKE {p}"
+            params.append(f"%{location}%")
+        if remote_type:
+            where_clause += f" AND n.remote_type = {p}"
+            params.append(remote_type)
+        if employment_type:
+            where_clause += f" AND n.employment_type = {p}"
+            params.append(employment_type)
+        if min_salary is not None:
+            where_clause += f" AND (n.salary_max >= {p} OR n.salary_min >= {p})"
+            params.extend([min_salary, min_salary])
+        if min_score is not None:
+            where_clause += f" AND s.job_score >= {p}"
+            params.append(min_score)
+
+        count_row = conn.execute(f"SELECT COUNT(*) as cnt {where_clause}", tuple(params)).fetchone()
+        total_scored = count_row["cnt"] if count_row else 0
+        if total_scored < self._PRECOMPUTED_MIN_COVERAGE:
+            return None
+
+        limit = conn.dialect.create_limit(page_size)
+        offset = (page - 1) * page_size
+        select_clause = f"""
+            SELECT COALESCE(i.canonical_name, {json_company}, n.company_id) AS canonical_name,
+                   i.domain AS company_domain,
+                   n.job_id, n.title, n.provider,
+                   n.location, n.remote_type as remote, n.employment_type,
+                   n.salary_min, n.salary_max, n.posted_at, n.apply_url,
+                   n.description, n.status,
+                   s.job_score, s.intent_score, s.score_breakdown
+        """
+        query = f"{select_clause} {where_clause} ORDER BY s.job_score DESC, n.posted_at DESC {limit} OFFSET {offset}"
+        c = conn.execute(query, tuple(params))
+        rows = [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
+        for r in rows:
+            try:
+                r["score_breakdown"] = json.loads(r["score_breakdown"] or "[]")
+            except Exception:
+                r["score_breakdown"] = []
+            r["match_score"] = 0.0
+            r["priority_score"] = 0.0
+            r["scoring_confidence"] = 0.0
+            r["recommendation_reason"] = ""
+            r["application_status"] = "NEW"
+        return rows
+
     def get_jobs(self, page: int=1, page_size: int=50, provider: str=None, company: str=None, title: str=None, status: str="ACTIVE", min_score: float=None, pipeline: str="A", location: str=None, remote_type: str=None, employment_type: str=None, seniority: str=None, min_salary: float=None, sort_by: str="newest", user_id: str=None, tx=None):
         from src.api.db import json_extract
         import json
         with self.transaction() as conn:
+            if sort_by == "score" and user_id:
+                precomputed = self.get_jobs_from_precomputed(
+                    page=page, page_size=page_size, user_id=user_id, min_score=min_score,
+                    location=location, provider=provider, company=company, title=title,
+                    remote_type=remote_type, employment_type=employment_type,
+                    min_salary=min_salary, pipeline=pipeline, conn=conn,
+                )
+                if precomputed is not None:
+                    return precomputed
+
             p = conn.dialect.placeholder()
             json_company = json_extract('n.raw_payload_json', '$.company')
             base_query = f"""
@@ -181,6 +286,176 @@ class JobRepository(BaseRepository, IJobRepository):
 
             offset = (page - 1) * page_size
             return scored_jobs[offset : offset + page_size]
+
+    # ── Background scoring (JobScoringWorker) ────────────────────────────────
+    # Precomputes user_job_scores against the *entire* active-jobs pool
+    # incrementally, so get_jobs_from_precomputed above can serve "best out
+    # of 1.44M" reads instantly instead of live-scoring a bounded recent
+    # window per request.
+
+    def get_users_needing_scoring(self, tx=None) -> List[Tuple[str, str]]:
+        """Every user with a career profile — (user_id, profile_updated_at as text)."""
+        with self.transaction() as conn:
+            rows = conn.execute(
+                "SELECT user_id, updated_at FROM public.user_career_profiles"
+            ).fetchall()
+            return [
+                (
+                    (r["user_id"] if hasattr(r, "keys") else r[0]),
+                    str(r["updated_at"] if hasattr(r, "keys") else r[1]),
+                )
+                for r in rows
+            ]
+
+    def get_unscored_job_batch(self, user_id: str, profile_updated_at: str, limit: int = 500, tx=None) -> List[dict]:
+        """
+        Active jobs this user hasn't been scored against yet, or whose score
+        predates their current profile (profile changed since last scored).
+        Anti-joined against user_job_scores rather than OFFSET-paginated, so
+        repeated calls naturally converge on full coverage without needing
+        the caller to track a cursor.
+        """
+        with self.transaction() as conn:
+            p = conn.dialect.placeholder()
+            batch_limit = conn.dialect.create_limit(limit)
+            query = f"""
+                SELECT n.job_id, n.title, n.description, n.provider, n.status, n.location, n.apply_url
+                FROM normalized_jobs n
+                LEFT JOIN public.user_job_scores s
+                    ON s.job_id = n.job_id AND s.user_id = {p}
+                WHERE n.status = 'ACTIVE'
+                  AND (s.job_id IS NULL OR s.profile_updated_at IS DISTINCT FROM {p}::timestamptz)
+                {batch_limit}
+            """
+            c = conn.execute(query, (user_id, profile_updated_at))
+            return [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
+
+    def store_job_scores(self, user_id: str, profile_updated_at: str, scored: List[dict], tx=None) -> None:
+        """Upserts a batch of {job_id, job_score, intent_score, passed, reason, breakdown}."""
+        import json
+        if not scored:
+            return
+        with self.transaction() as conn:
+            p = conn.dialect.placeholder()
+            for row in scored:
+                conn.execute(
+                    f"""
+                    INSERT INTO public.user_job_scores
+                        (user_id, job_id, job_score, intent_score, passed_hard_reject,
+                         rejection_reason, score_breakdown, profile_updated_at, scored_at)
+                    VALUES ({p}, {p}, {p}, {p}, {p}, {p}, {p}, {p}::timestamptz, NOW())
+                    ON CONFLICT (user_id, job_id) DO UPDATE SET
+                        job_score = EXCLUDED.job_score,
+                        intent_score = EXCLUDED.intent_score,
+                        passed_hard_reject = EXCLUDED.passed_hard_reject,
+                        rejection_reason = EXCLUDED.rejection_reason,
+                        score_breakdown = EXCLUDED.score_breakdown,
+                        profile_updated_at = EXCLUDED.profile_updated_at,
+                        scored_at = NOW()
+                    """,
+                    (
+                        user_id,
+                        row["job_id"],
+                        row["job_score"],
+                        row["intent_score"],
+                        row["passed_hard_reject"],
+                        row.get("rejection_reason"),
+                        json.dumps(row.get("score_breakdown") or []),
+                        profile_updated_at,
+                    ),
+                )
+
+    # ── Semantic (vector) matching ────────────────────────────────────────────
+    # pgvector-backed nearest-neighbor search over normalized_jobs.embedding,
+    # populated by embedding_backfill_worker.py. Complements (doesn't replace)
+    # the hard-reject filter — ANN search finds semantically close jobs fast
+    # across the full 1.4M+ pool, then the existing binary constraints
+    # (experience, location, seniority) still get applied on that shortlist,
+    # since embeddings alone don't understand "must have 5 years" as a hard
+    # cutoff the way HardRejectFilter does.
+
+    @staticmethod
+    def _vector_literal(vec: List[float]) -> str:
+        return "[" + ",".join(repr(float(x)) for x in vec) + "]"
+
+    def get_jobs_missing_embedding(self, limit: int = 500, tx=None) -> List[dict]:
+        with self.transaction() as conn:
+            batch_limit = conn.dialect.create_limit(limit)
+            c = conn.execute(
+                f"""
+                SELECT job_id, title, description FROM normalized_jobs
+                WHERE status = 'ACTIVE' AND embedding IS NULL
+                {batch_limit}
+                """
+            )
+            return [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
+
+    def store_job_embeddings(self, job_id_to_vector: dict, tx=None) -> None:
+        if not job_id_to_vector:
+            return
+        with self.transaction() as conn:
+            p = conn.dialect.placeholder()
+            for job_id, vec in job_id_to_vector.items():
+                conn.execute(
+                    f"UPDATE normalized_jobs SET embedding = {p}::vector WHERE job_id = {p}",
+                    (self._vector_literal(vec), job_id),
+                )
+
+    def get_candidate_embedding(self, user_id: str, tx=None):
+        """Returns the stored embedding vector (as a string) for this user's
+        profile, or None if not computed yet."""
+        with self.transaction() as conn:
+            p = conn.dialect.placeholder()
+            row = conn.execute(
+                f"SELECT embedding::text as embedding FROM public.user_career_profiles WHERE user_id = {p}",
+                (user_id,),
+            ).fetchone()
+            if row and row["embedding"]:
+                return row["embedding"]
+            return None
+
+    def store_candidate_embedding(self, user_id: str, vec: List[float], tx=None) -> None:
+        with self.transaction() as conn:
+            p = conn.dialect.placeholder()
+            conn.execute(
+                f"UPDATE public.user_career_profiles SET embedding = {p}::vector WHERE user_id = {p}",
+                (self._vector_literal(vec), user_id),
+            )
+
+    def get_jobs_by_vector_similarity(self, user_id: str, k: int = 500, tx=None) -> List[dict]:
+        """
+        ANN shortlist of the k jobs semantically closest to this candidate's
+        profile embedding, across the *entire* active pool — not bounded by
+        recency the way the live-scoring fallback path is. Returns raw job
+        dicts (title/description/etc, no scoring applied yet); caller runs
+        HardRejectFilter/IntentFilter on this shortlist same as any other
+        batch, or serves it directly ordered by vector distance.
+        """
+        from src.api.db import json_extract
+        embedding = self.get_candidate_embedding(user_id)
+        if not embedding:
+            return []
+
+        with self.transaction() as conn:
+            p = conn.dialect.placeholder()
+            json_company = json_extract('n.raw_payload_json', '$.company')
+            batch_limit = conn.dialect.create_limit(k)
+            query = f"""
+                SELECT COALESCE(i.canonical_name, {json_company}, n.company_id) AS canonical_name,
+                       i.domain AS company_domain,
+                       n.job_id, n.title, n.provider,
+                       n.location, n.remote_type as remote, n.employment_type,
+                       n.salary_min, n.salary_max, n.posted_at, n.apply_url,
+                       n.description, n.status,
+                       1 - (n.embedding <=> {p}::vector) AS vector_similarity
+                FROM normalized_jobs n
+                LEFT JOIN company_identities i ON n.company_id = i.company_id
+                WHERE n.status = 'ACTIVE' AND n.embedding IS NOT NULL
+                ORDER BY n.embedding <=> {p}::vector
+                {batch_limit}
+            """
+            c = conn.execute(query, (embedding, embedding))
+            return [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
 
     def get_job(self, job_id: str, tx=None) -> dict | None:
         from src.api.db import json_extract
