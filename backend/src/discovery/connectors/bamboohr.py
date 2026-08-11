@@ -5,6 +5,7 @@ from src.discovery.models import RawJob, ConnectorCapability, Board, FetchResult
 from src.discovery.registry.connector import Connector, FreshnessStrategy, DefaultFreshnessStrategy
 from src.discovery.pipeline.http_client import HttpClient
 from src.discovery.registry.connector_registry import ConnectorRegistry
+from src.discovery.html_text import strip_html
 
 import logging
 logger = logging.getLogger("BambooHRConnector")
@@ -74,15 +75,48 @@ class BambooHRConnector(Connector):
                         # Match id
                         job_id_match = re.search(r'bhrPositionID_(\d+)', job_li.get("id", ""))
                         job_id = job_id_match.group(1) if job_id_match else None
-                        
+
+                        description = await self._fetch_description(http_client, url, slug, job_id)
+
                         payload = {
                             "title": title,
                             "url": url,
                             "location": loc,
                             "department": dept_name,
-                            "id": job_id
+                            "id": job_id,
+                            "description": description,
                         }
-                        
+
                         yield RawJob(company_id=board.company_id, provider="bamboohr", board_identity=board.identity, payload=payload)
+
+    async def _fetch_description(self, http_client: HttpClient, careers_url: str, slug: str, job_id: str) -> str:
+        """Fetch the per-job JSON detail endpoint and extract the description.
+
+        The embed2.php listing markup only has title/department/location — verified
+        against a live board (rippling.bamboohr.com) — but every BambooHR careers
+        page also serves `{careers_url}/detail` which returns JSON with
+        result.jobOpening.description (HTML).
+        """
+        if not job_id:
+            return ""
+        detail_url = f"{careers_url.rstrip('/')}/detail"
+        headers = {"User-Agent": "Mozilla/5.0", "Accept": "application/json"}
+        try:
+            detail_result = await http_client.fetch("GET", detail_url, headers=headers)
+        except Exception as exc:
+            logger.warning(f"BambooHRConnector[{slug}] - Detail fetch failed for job {job_id}: {exc}")
+            return ""
+
+        if detail_result.status_code != 200 or not isinstance(detail_result.payload, dict):
+            logger.warning(f"BambooHRConnector[{slug}] - Detail HTTP {detail_result.status_code} for job {job_id}")
+            return ""
+
+        try:
+            job_opening = (detail_result.payload.get("result") or {}).get("jobOpening") or {}
+            description_html = job_opening.get("description") or ""
+            return strip_html(description_html)
+        except Exception as exc:
+            logger.warning(f"BambooHRConnector[{slug}] - Failed to parse description for job {job_id}: {exc}")
+            return ""
 
 ConnectorRegistry.register('bamboohr', 'HTML', 10, BambooHRConnector)

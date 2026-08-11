@@ -4,6 +4,7 @@ from src.discovery.models import RawJob, ConnectorCapability, Board, FetchResult
 from src.discovery.registry.connector import Connector, FreshnessStrategy, DefaultFreshnessStrategy
 from src.discovery.pipeline.http_client import HttpClient
 from src.discovery.registry.connector_registry import ConnectorRegistry
+from src.discovery.html_text import strip_html
 
 logger = logging.getLogger("RecruiterboxConnector")
 
@@ -89,6 +90,11 @@ class RecruiterboxConnector(Connector):
                 "department": department,
                 "employment_type": emp_type,
                 "url": job_url,
+                # /openings already embeds the full HTML description per job
+                # (verified live against jsapi.recruiterbox.com?client_name=basecamp)
+                # — no second fetch needed here, unlike most of the other broken
+                # connectors.
+                "description": strip_html(obj.get("description") or ""),
             }
 
             yield RawJob(

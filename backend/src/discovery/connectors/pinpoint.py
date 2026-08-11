@@ -4,6 +4,7 @@ from src.discovery.models import RawJob, ConnectorCapability, Board, FetchResult
 from src.discovery.registry.connector import Connector, FreshnessStrategy, DefaultFreshnessStrategy
 from src.discovery.pipeline.http_client import HttpClient
 from src.discovery.registry.connector_registry import ConnectorRegistry
+from src.discovery.html_text import strip_html
 
 logger = logging.getLogger("PinpointConnector")
 
@@ -102,6 +103,11 @@ class PinpointConnector(Connector):
                 "salary_currency": salary_currency,
                 "url": job_url,
                 "created_at": posting.get("published_at") or "",
+                # postings.json already embeds the full HTML description per job
+                # (verified live against workwithus.pinpointhq.com/postings.json)
+                # — no second fetch needed here, unlike most of the other broken
+                # connectors.
+                "description": strip_html(posting.get("description") or ""),
             }
 
             yield RawJob(

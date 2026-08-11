@@ -130,12 +130,15 @@ class AvatureConnector(Connector):
 
                 job_url = href if href.startswith("http") else f"{base_url.rstrip('/')}/{href.lstrip('/')}"
 
+                description = await self._fetch_description(http_client, job_url, headers, ats_id)
+
                 payload = {
                     "id": ats_id,
                     "title": title,
                     "location": location,
                     "department": department,
                     "url": job_url,
+                    "description": description,
                 }
 
                 yield RawJob(
@@ -150,6 +153,48 @@ class AvatureConnector(Connector):
             page += 1
 
         logger.info(f"AvatureConnector - Extracted {len(seen)} jobs across {page} pages.")
+
+    async def _fetch_description(self, http_client: HttpClient, job_url: str, headers: dict, ats_id: str) -> str:
+        """Fetch the JobDetail page and extract description text.
+
+        The SearchJobs listing page never includes description text — verified
+        against a live board (careers.avature.net) — so a second request per
+        job is required. Avature career sites are heavily template-customized
+        per tenant, but the verified example uses
+        `article.article--details > .article__content` sections for the body
+        copy, which is a reasonably common Avature default-theme pattern.
+        """
+        try:
+            detail_result = await http_client.fetch("GET", job_url, headers=headers)
+        except Exception as exc:
+            logger.warning(f"AvatureConnector - Detail fetch failed for job {ats_id}: {exc}")
+            return ""
+
+        if detail_result.status_code != 200:
+            logger.warning(f"AvatureConnector - Detail HTTP {detail_result.status_code} for job {ats_id}")
+            return ""
+
+        detail_html = detail_result.payload
+        if isinstance(detail_html, bytes):
+            detail_html = detail_html.decode("utf-8", errors="replace")
+        if not isinstance(detail_html, str):
+            return ""
+
+        try:
+            soup = BeautifulSoup(detail_html, "html.parser")
+            articles = soup.find_all("article", class_=lambda v: bool(v) and "article--details" in str(v))
+            if articles:
+                text = " ".join(a.get_text(" ", strip=True) for a in articles)
+                return re.sub(r"\s+", " ", text).strip()
+
+            # Fallback: any element whose class name suggests job description body copy.
+            desc_el = soup.find(class_=lambda v: bool(v) and "description" in str(v).lower())
+            if desc_el:
+                return re.sub(r"\s+", " ", desc_el.get_text(" ", strip=True)).strip()
+            return ""
+        except Exception as exc:
+            logger.warning(f"AvatureConnector - Failed to parse description for job {ats_id}: {exc}")
+            return ""
 
     def _resolve_base_url(self, endpoint: str) -> str:
         parsed = urlparse(endpoint)

@@ -1,9 +1,11 @@
 import logging
-from typing import AsyncIterator
+import xml.etree.ElementTree as ET
+from typing import AsyncIterator, Dict
 from src.discovery.models import RawJob, ConnectorCapability, Board, FetchResult
 from src.discovery.registry.connector import Connector, FreshnessStrategy, DefaultFreshnessStrategy
 from src.discovery.pipeline.http_client import HttpClient
 from src.discovery.registry.connector_registry import ConnectorRegistry
+from src.discovery.html_text import strip_html
 
 logger = logging.getLogger("PersonioConnector")
 
@@ -61,6 +63,13 @@ class PersonioConnector(Connector):
             logger.info(f"PersonioConnector - No jobs found.")
             return
 
+        # The search.json/careers list endpoints always report an empty
+        # "description" field — verified against a live board
+        # (clark.jobs.personio.de). Full descriptions live in the board-wide
+        # /xml feed, keyed by job id, so fetch it once per sync (not once per
+        # job) and look descriptions up locally.
+        descriptions = await self._fetch_descriptions(http_client, base_url)
+
         seen = set()
         for item in items:
             if not isinstance(item, dict):
@@ -105,6 +114,7 @@ class PersonioConnector(Connector):
                 "employment_type": employment_type,
                 "url": job_url,
                 "created_at": item.get("createdAt") or item.get("created_at") or "",
+                "description": descriptions.get(ats_id, ""),
             }
 
             yield RawJob(
@@ -115,6 +125,63 @@ class PersonioConnector(Connector):
             )
 
         logger.info(f"PersonioConnector - Extracted {len(seen)} jobs.")
+
+    async def _fetch_descriptions(self, http_client: HttpClient, base_url: str) -> Dict[str, str]:
+        """Fetch the board-wide XML feed and build a job id -> plain-text description map.
+
+        Unlike most of the other broken connectors, Personio's board data
+        doesn't require a per-job request: /xml returns every job's full
+        description (as <jobDescriptions><jobDescription><name>/<value> pairs)
+        in a single response, so we fetch it once per sync.
+        """
+        headers = {"User-Agent": "Mozilla/5.0", "Accept": "text/xml, application/xml"}
+        try:
+            result = await http_client.fetch("GET", f"{base_url}/xml", headers=headers)
+        except Exception as exc:
+            logger.warning(f"PersonioConnector - XML description fetch failed: {exc}")
+            return {}
+
+        if result.status_code != 200 or not result.payload:
+            logger.warning(f"PersonioConnector - XML description fetch HTTP {result.status_code}")
+            return {}
+
+        raw = result.payload
+        if isinstance(raw, (dict, list)):
+            # aiohttp tried (and failed) to treat this as JSON already handled it as bytes;
+            # if it somehow parsed as JSON this feed is not XML, bail out.
+            return {}
+        if isinstance(raw, bytes):
+            raw = raw.decode("utf-8", errors="replace")
+        if not isinstance(raw, str):
+            return {}
+
+        descriptions: Dict[str, str] = {}
+        try:
+            root = ET.fromstring(raw)
+            for job_el in root.findall("position") or list(root):
+                id_el = job_el.find("id")
+                if id_el is None or not (id_el.text or "").strip():
+                    continue
+                job_id = id_el.text.strip()
+
+                sections = []
+                job_descs = job_el.find("jobDescriptions")
+                if job_descs is not None:
+                    for section in job_descs.findall("jobDescription"):
+                        name_el = section.find("name")
+                        value_el = section.find("value")
+                        if name_el is not None and (name_el.text or "").strip():
+                            sections.append(name_el.text.strip())
+                        if value_el is not None and (value_el.text or "").strip():
+                            sections.append(value_el.text.strip())
+
+                if sections:
+                    descriptions[job_id] = strip_html(" ".join(sections))
+        except Exception as exc:
+            logger.warning(f"PersonioConnector - Failed to parse XML descriptions: {exc}")
+            return {}
+
+        return descriptions
 
     def _resolve_base_url(self, endpoint: str) -> str:
         from urllib.parse import urlparse

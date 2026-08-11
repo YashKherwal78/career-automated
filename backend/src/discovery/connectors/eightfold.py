@@ -1,11 +1,14 @@
+import json
 import logging
 import re
 from urllib.parse import urlparse
 from typing import AsyncIterator
+from bs4 import BeautifulSoup
 from src.discovery.models import RawJob, ConnectorCapability, Board, FetchResult
 from src.discovery.registry.connector import Connector, FreshnessStrategy, DefaultFreshnessStrategy
 from src.discovery.pipeline.http_client import HttpClient
 from src.discovery.registry.connector_registry import ConnectorRegistry
+from src.discovery.html_text import strip_html
 
 logger = logging.getLogger("EightfoldConnector")
 
@@ -99,7 +102,7 @@ class EightfoldConnector(Connector):
                         company_id=board.company_id,
                         provider="eightfold",
                         board_identity=board.identity,
-                        payload=self._parse_item(item, base_url),
+                        payload=await self._parse_item(item, base_url, http_client),
                     )
 
                 if page_count == 0 or len(positions) < page_size:
@@ -143,7 +146,7 @@ class EightfoldConnector(Connector):
                         company_id=board.company_id,
                         provider="eightfold",
                         board_identity=board.identity,
-                        payload=self._parse_item(item, base_url),
+                        payload=await self._parse_item(item, base_url, http_client),
                     )
 
                 if page_count == 0 or len(positions) < page_size:
@@ -166,9 +169,9 @@ class EightfoldConnector(Connector):
             return queries["domain"][0]
         return hostname
 
-    def _parse_item(self, item: dict, base_url: str) -> dict:
+    async def _parse_item(self, item: dict, base_url: str, http_client: HttpClient) -> dict:
         ats_id = str(item.get("id") or item.get("displayJobId") or "")
-        
+
         # Location
         location = ""
         for key in ("standardizedLocations", "locations"):
@@ -192,6 +195,13 @@ class EightfoldConnector(Connector):
                     remote = "Remote"
                     break
 
+        job_url = item.get("job_url") or item.get("canonicalPositionUrl") or f"{base_url}/careers/job/{ats_id}"
+
+        # Search results ("positions") always report an empty job_description
+        # field — verified live against mlp.eightfold.ai/api/apply/v2/jobs — so
+        # a second per-job request against the detail page is required.
+        description = await self._fetch_description(http_client, job_url, ats_id)
+
         return {
             "id": ats_id,
             "title": item.get("name") or item.get("posting_name") or item.get("title") or "",
@@ -199,8 +209,44 @@ class EightfoldConnector(Connector):
             "remote": remote,
             "department": item.get("department") or "",
             "employment_type": item.get("employmentType") or "",
-            "url": item.get("job_url") or f"{base_url}/careers/job/{ats_id}",
+            "url": job_url,
+            "description": description,
         }
+
+    async def _fetch_description(self, http_client: HttpClient, job_url: str, ats_id: str) -> str:
+        """Fetch the job detail page and extract the JobPosting JSON-LD description."""
+        headers = {"User-Agent": "Mozilla/5.0"}
+        try:
+            detail_result = await http_client.fetch("GET", job_url, headers=headers)
+        except Exception as exc:
+            logger.warning(f"EightfoldConnector - Detail fetch failed for job {ats_id}: {exc}")
+            return ""
+
+        if detail_result.status_code != 200:
+            logger.warning(f"EightfoldConnector - Detail HTTP {detail_result.status_code} for job {ats_id}")
+            return ""
+
+        detail_html = detail_result.payload
+        if isinstance(detail_html, bytes):
+            detail_html = detail_html.decode("utf-8", errors="replace")
+        if not isinstance(detail_html, str):
+            return ""
+
+        try:
+            soup = BeautifulSoup(detail_html, "html.parser")
+            for script in soup.find_all("script", type="application/ld+json"):
+                if not script.string:
+                    continue
+                try:
+                    data = json.loads(script.string)
+                except (ValueError, TypeError):
+                    continue
+                if isinstance(data, dict) and data.get("@type") == "JobPosting":
+                    return strip_html(data.get("description") or "")
+            return ""
+        except Exception as exc:
+            logger.warning(f"EightfoldConnector - Failed to parse description for job {ats_id}: {exc}")
+            return ""
 
 
 ConnectorRegistry.register("eightfold", "JSON", 10, EightfoldConnector)

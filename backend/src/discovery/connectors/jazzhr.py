@@ -2,6 +2,7 @@ import logging
 import re
 import html as html_lib
 from typing import AsyncIterator
+from bs4 import BeautifulSoup
 from src.discovery.models import RawJob, ConnectorCapability, Board, FetchResult
 from src.discovery.registry.connector import Connector, FreshnessStrategy, DefaultFreshnessStrategy
 from src.discovery.pipeline.http_client import HttpClient
@@ -109,12 +110,15 @@ class JazzHRConnector(Connector):
 
             job_url = f"https://{slug}.applytojob.com/apply/jobs/details/{ats_id}"
 
+            description = await self._fetch_description(http_client, job_url, slug, ats_id)
+
             payload = {
                 "id": ats_id,
                 "title": title,
                 "department": department,
                 "location": location,
                 "url": job_url,
+                "description": description,
             }
 
             yield RawJob(
@@ -125,6 +129,43 @@ class JazzHRConnector(Connector):
             )
 
         logger.info(f"JazzHRConnector[{slug}] - Extracted {len(seen)} jobs.")
+
+    async def _fetch_description(self, http_client: HttpClient, job_url: str, slug: str, ats_id: str) -> str:
+        """Fetch the per-job detail page and extract the job_description div text.
+
+        The listing page (/apply/jobs) never includes the description — verified
+        against a live payload where each row only has title/dept/location — so
+        this issues a second request per job to the detail page.
+        """
+        headers = {
+            "Accept": "text/html",
+            "User-Agent": "Mozilla/5.0 (compatible; CareerAutomated/1.0)"
+        }
+        try:
+            detail_result = await http_client.fetch("GET", job_url, headers=headers)
+        except Exception as exc:
+            logger.warning(f"JazzHRConnector[{slug}] - Detail fetch failed for job {ats_id}: {exc}")
+            return ""
+
+        if detail_result.status_code != 200:
+            logger.warning(f"JazzHRConnector[{slug}] - Detail HTTP {detail_result.status_code} for job {ats_id}")
+            return ""
+
+        detail_html = detail_result.payload
+        if isinstance(detail_html, bytes):
+            detail_html = detail_html.decode("utf-8", errors="replace")
+        if not isinstance(detail_html, str):
+            return ""
+
+        try:
+            soup = BeautifulSoup(detail_html, "html.parser")
+            desc_div = soup.find("div", class_="job_description")
+            if not desc_div:
+                return ""
+            return desc_div.get_text(" ", strip=True)
+        except Exception as exc:
+            logger.warning(f"JazzHRConnector[{slug}] - Failed to parse description for job {ats_id}: {exc}")
+            return ""
 
     def _extract_slug(self, endpoint: str) -> str:
         """Extract the tenant subdomain slug from an applytojob.com URL."""

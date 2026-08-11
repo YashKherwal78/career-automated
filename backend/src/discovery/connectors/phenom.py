@@ -1,11 +1,14 @@
+import json
 import logging
 import re
 from urllib.parse import urlparse
 from typing import AsyncIterator
+from bs4 import BeautifulSoup
 from src.discovery.models import RawJob, ConnectorCapability, Board, FetchResult
 from src.discovery.registry.connector import Connector, FreshnessStrategy, DefaultFreshnessStrategy
 from src.discovery.pipeline.http_client import HttpClient
 from src.discovery.registry.connector_registry import ConnectorRegistry
+from src.discovery.html_text import strip_html
 
 logger = logging.getLogger("PhenomConnector")
 
@@ -142,6 +145,13 @@ class PhenomConnector(Connector):
                 job_url = item.get("applyUrl") or item.get("jobUrl") or item.get("url") or ""
                 if job_url and not job_url.startswith("http"):
                     job_url = f"{base_url}{job_url if job_url.startswith('/') else '/' + job_url}"
+                if not job_url:
+                    # The refineSearch job entries carry no url/applyUrl/jobUrl field at
+                    # all in real payloads (verified live against careers.phenom.com) —
+                    # but the detail page URL only needs the jobId, any slug works.
+                    job_url = f"{base_url}/{country}/{locale.split('_')[0]}/job/{ats_id}/job"
+
+                description = await self._fetch_description(http_client, job_url, ats_id)
 
                 payload_item = {
                     "id": ats_id,
@@ -150,6 +160,7 @@ class PhenomConnector(Connector):
                     "url": job_url,
                     "department": item.get("department") or item.get("category") or "",
                     "employment_type": item.get("jobType") or "",
+                    "description": description,
                 }
 
                 yield RawJob(
@@ -164,6 +175,50 @@ class PhenomConnector(Connector):
             start += len(jobs)
 
         logger.info(f"PhenomConnector - Extracted {len(seen)} jobs.")
+
+    async def _fetch_description(self, http_client: HttpClient, job_url: str, ats_id: str) -> str:
+        """Fetch the job detail page and extract the JobPosting JSON-LD description.
+
+        The /widgets refineSearch response only has a short "descriptionTeaser"
+        field (verified live against careers.phenom.com), not the full
+        description, so this fetches the detail page and reads the
+        `<script type="application/ld+json">` JobPosting block instead.
+        """
+        headers = {"User-Agent": "Mozilla/5.0"}
+        try:
+            detail_result = await http_client.fetch("GET", job_url, headers=headers)
+        except Exception as exc:
+            logger.warning(f"PhenomConnector - Detail fetch failed for job {ats_id}: {exc}")
+            return ""
+
+        if detail_result.status_code != 200:
+            logger.warning(f"PhenomConnector - Detail HTTP {detail_result.status_code} for job {ats_id}")
+            return ""
+
+        detail_html = detail_result.payload
+        if isinstance(detail_html, bytes):
+            detail_html = detail_html.decode("utf-8", errors="replace")
+        if not isinstance(detail_html, str):
+            return ""
+
+        try:
+            soup = BeautifulSoup(detail_html, "html.parser")
+            for script in soup.find_all("script", type="application/ld+json"):
+                if not script.string:
+                    continue
+                try:
+                    data = json.loads(script.string)
+                except (ValueError, TypeError):
+                    continue
+                if isinstance(data, dict) and data.get("@type") == "JobPosting":
+                    # description is HTML that's itself HTML-entity-escaped
+                    # (verified: <strong> shows up as &lt;strong&gt;), so
+                    # strip_html's own unescape+tag-strip needs to run twice.
+                    return strip_html(strip_html(data.get("description") or ""))
+            return ""
+        except Exception as exc:
+            logger.warning(f"PhenomConnector - Failed to parse description for job {ats_id}: {exc}")
+            return ""
 
 
 ConnectorRegistry.register("phenom", "JSON", 10, PhenomConnector)
