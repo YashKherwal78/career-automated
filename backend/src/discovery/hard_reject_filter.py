@@ -91,6 +91,18 @@ class HardRejectFilter:
             r"\blead\b", r"\bdirector\b", r"\bvp\b", r"\bvice president\b",
             r"\bhead of\b",
         ]
+        # Numbered leveling schemes (Adobe/Amazon/etc: "SDE 3", "Engineer III")
+        # never say "senior" in the title at all, so the plain-keyword list
+        # above misses them entirely -- e.g. "Software Development Engineer 3"
+        # passed the filter for a candidate with 0 years experience because
+        # none of the words above appear in it. Levels 3+ (numeric or roman
+        # III/IV/V+) are senior-or-above at essentially every company that
+        # uses this scheme; levels 1-2 are intentionally left alone since
+        # those are commonly entry/mid-level (e.g. "SDE 1", "SDE II").
+        leveled_role_pattern = re.compile(
+            r"\b(?:engineer|developer|sde|swe)\s*(?:level\s*)?"
+            r"(iii|iv|v|vi|vii|viii|ix|x|[3-9]|1[0-9])\b"
+        )
         if profile.years_experience < 5:
             for pat in senior_keywords:
                 if re.search(pat, title_lower):
@@ -101,6 +113,15 @@ class HardRejectFilter:
                         job_value=title,
                         candidate_value=f"{profile.years_experience} years experience",
                     )
+            level_match = leveled_role_pattern.search(title_lower)
+            if level_match:
+                return HardRejectResult(
+                    "REJECT",
+                    reason=f"Numbered level {level_match.group(1).upper()} role detected in title",
+                    field="title",
+                    job_value=title,
+                    candidate_value=f"{profile.years_experience} years experience",
+                )
 
         # ── Rule 4: Internship / full-time mismatch ──────────────────────────
         is_internship = bool(re.search(r"\bintern(ship)?\b", title_lower))
