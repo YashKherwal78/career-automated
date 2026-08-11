@@ -208,13 +208,16 @@ class IntentFilter:
             # Engineering Technician all matched an AI/SWE candidate this
             # way). A single generic word isn't enough signal on its own.
             if len(role_tokens) >= 2:
-                overlap = len(role_tokens & title_tokens) / len(role_tokens)
-                # Require real overlap (not just one generic shared word) to
-                # avoid the same noise the plain generic-keyword check below
-                # already causes on its own.
-                if overlap >= 0.6:
+                shared = role_tokens & title_tokens
+                overlap = len(shared) / len(role_tokens)
+                # Require at least 2 shared tokens, not just a ratio — a
+                # 2-token role like "Software Development Intern" has a
+                # 50% ratio from "Development" alone, which matched every
+                # "Business Development Manager"/"Development Officer"
+                # sales posting that shares nothing else with the role.
+                if len(shared) >= 2 and overlap >= 0.6:
                     best = max(best, 0.85)
-                elif overlap >= 0.34:
+                elif len(shared) >= 2 and overlap >= 0.34:
                     best = max(best, 0.5)
 
         # Partial match — title shares a profession noun with one of the
