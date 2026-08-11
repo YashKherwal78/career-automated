@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../lib/auth";
 import { API_BASE } from "../../lib/api";
 import { DsAccordionSection } from "../../components/ds/Accordion";
@@ -92,12 +92,15 @@ const PILL_STYLE = (active: boolean): React.CSSProperties => ({
 
 function CareerProfilePage() {
   const { profile: authProfile, session } = useAuth();
+  const queryClient = useQueryClient();
   const [profile, setProfile] = useState<ProfileData>(EMPTY_PROFILE);
   const [skillsDraft, setSkillsDraft] = useState("");
   const [resumeStyle, setResumeStyle] = useState("Modern");
   const [writingTone, setWritingTone] = useState("Professional");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
   const [showReplaceModal, setShowReplaceModal] = useState(false);
+  const [replaceState, setReplaceState] = useState<"idle" | "uploading" | "error">("idle");
+  const [replaceError, setReplaceError] = useState<string | null>(null);
 
   const { data: baseResume } = useQuery({
     queryKey: ["base-resume"],
@@ -180,6 +183,59 @@ function CareerProfilePage() {
       .map((s) => s.trim())
       .filter(Boolean);
     saveField({ skills: { other: list } });
+  };
+
+  const handleResumeReplace = async (file: File) => {
+    setReplaceState("uploading");
+    setReplaceError(null);
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const res = await fetch(`${API_BASE}/users/extract_profile`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+        body: formData,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || "Couldn't read that resume. Try a different PDF or DOCX.");
+      }
+      const data = await res.json();
+      await saveField({
+        personal_info: { ...profile.personal_info, ...data.personal_info },
+        skills: data.skills && Object.keys(data.skills).length ? data.skills : { other: [] },
+        experience: (data.experience || []).map(
+          (e: { company: string; role: string; start_date: string; end_date: string; bullet_points?: string[] }) => ({
+            company: e.company,
+            role: e.role,
+            start_date: e.start_date,
+            end_date: e.end_date,
+            description: (e.bullet_points || []).join("\n"),
+          }),
+        ),
+        projects: (data.projects || []).map(
+          (p: { name: string; description?: string; bullet_points?: string[] }) => ({
+            name: p.name,
+            description: p.bullet_points?.length ? p.bullet_points.join("\n") : p.description || "",
+          }),
+        ),
+        education: (data.education || []).map((e: { institution: string; degree: string }) => ({
+          institution: e.institution,
+          degree: e.degree,
+        })),
+        certifications: (data.certifications || []).map((c: { name: string }) => c.name),
+      });
+      // The uploaded file itself (resume_url) and the profile fields it was
+      // parsed into both come back through these queries — refresh them so
+      // the "resume attached" indicator and job matching pick up the change.
+      queryClient.invalidateQueries({ queryKey: ["candidate-profile"] });
+      queryClient.invalidateQueries({ queryKey: ["candidate-profile-completeness"] });
+      setReplaceState("idle");
+      setShowReplaceModal(false);
+    } catch (err) {
+      setReplaceState("error");
+      setReplaceError(err instanceof Error ? err.message : "Upload failed. Please try again.");
+    }
   };
 
   const checks = [
@@ -1066,7 +1122,14 @@ function CareerProfilePage() {
       )}
 
       {showReplaceModal && (
-        <DsModal onClose={() => setShowReplaceModal(false)} maxWidth={480}>
+        <DsModal
+          onClose={() => {
+            setShowReplaceModal(false);
+            setReplaceState("idle");
+            setReplaceError(null);
+          }}
+          maxWidth={480}
+        >
           <div style={{ padding: 28 }}>
             <div className="flex items-center justify-between" style={{ marginBottom: 18 }}>
               <h2
@@ -1077,7 +1140,11 @@ function CareerProfilePage() {
               </h2>
               <button
                 type="button"
-                onClick={() => setShowReplaceModal(false)}
+                onClick={() => {
+                  setShowReplaceModal(false);
+                  setReplaceState("idle");
+                  setReplaceError(null);
+                }}
                 style={{
                   background: "none",
                   border: "none",
@@ -1089,22 +1156,25 @@ function CareerProfilePage() {
                 ✕
               </button>
             </div>
-            <DsDropzone
-              onFile={async (file) => {
-                const formData = new FormData();
-                formData.append("file", file);
-                try {
-                  await fetch(`${API_BASE}/users/upload_resume`, {
-                    method: "POST",
-                    headers: { Authorization: `Bearer ${session?.access_token}` },
-                    body: formData,
-                  });
-                } catch (err) {
-                  console.error("Resume upload failed:", err);
-                }
-                setShowReplaceModal(false);
-              }}
-            />
+            {replaceState === "uploading" ? (
+              <div style={{ padding: "56px 32px", textAlign: "center", fontSize: 13.5, color: "var(--ds-ink-500)" }}>
+                Reading your resume and updating your profile…
+              </div>
+            ) : (
+              <DsDropzone onFile={handleResumeReplace} />
+            )}
+            {replaceError && (
+              <div
+                style={{
+                  marginTop: 14,
+                  fontSize: 12.5,
+                  fontWeight: 600,
+                  color: "var(--ds-error-text, #B3261E)",
+                }}
+              >
+                {replaceError}
+              </div>
+            )}
           </div>
         </DsModal>
       )}

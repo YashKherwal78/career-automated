@@ -134,13 +134,14 @@ function DashboardLayout() {
             style={{
               position: "absolute",
               left: 12,
-              top: sidebarOpen ? 21 : 15,
+              top: 21,
               width: 20,
               height: 2,
               background: "var(--ds-ink-800)",
               borderRadius: 2,
-              transform: sidebarOpen ? "rotate(45deg)" : "none",
-              transition: "top 0.25s ease, transform 0.25s ease",
+              transformOrigin: "center",
+              transform: sidebarOpen ? "translateY(0) rotate(45deg)" : "translateY(-6px) rotate(0deg)",
+              transition: "transform 0.25s cubic-bezier(0.4,0,0.2,1)",
             }}
           />
           <div
@@ -160,13 +161,14 @@ function DashboardLayout() {
             style={{
               position: "absolute",
               left: 12,
-              top: sidebarOpen ? 21 : 27,
+              top: 21,
               width: 20,
               height: 2,
               background: "var(--ds-ink-800)",
               borderRadius: 2,
-              transform: sidebarOpen ? "rotate(-45deg)" : "none",
-              transition: "top 0.25s ease, transform 0.25s ease",
+              transformOrigin: "center",
+              transform: sidebarOpen ? "translateY(0) rotate(-45deg)" : "translateY(6px) rotate(0deg)",
+              transition: "transform 0.25s cubic-bezier(0.4,0,0.2,1)",
             }}
           />
         </div>

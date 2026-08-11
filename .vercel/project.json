@@ -1,1 +1,16 @@
-{"projectId":"prj_Xyoc5BaHk7MEabLkizkde4xib0vx","orgId":"team_lbXc3424WA53fr5zKSI7q0hz","projectName":"frontend"}
+{
+  "projectId": "prj_Xyoc5BaHk7MEabLkizkde4xib0vx",
+  "orgId": "team_lbXc3424WA53fr5zKSI7q0hz",
+  "projectName": "frontend",
+  "settings": {
+    "createdAt": 1783755601943,
+    "framework": "tanstack-start-lovable",
+    "devCommand": null,
+    "installCommand": null,
+    "buildCommand": null,
+    "outputDirectory": null,
+    "rootDirectory": "frontend",
+    "directoryListing": false,
+    "nodeVersion": "24.x"
+  }
+}

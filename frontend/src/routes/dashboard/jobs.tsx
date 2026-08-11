@@ -2,6 +2,7 @@ import { createFileRoute, Link, Outlet, useNavigate, useSearch } from "@tanstack
 import { useEffect, useState } from "react";
 import { useDashboard } from "../../components/dashboard/DashboardContext";
 import { LoadingSkeleton } from "../../components/dashboard/CommonComponents";
+import { CompanyLogo } from "../../components/dashboard/CompanyLogo";
 import { Search, MapPin, Laptop, SlidersHorizontal, ArrowUpDown } from "lucide-react";
 import { Job } from "../../lib/services";
 
@@ -288,10 +289,13 @@ function JobsPage() {
                 {jobs.map((job) => (
                   <tr key={job.job_id} className="border-b border-white/10 hover:bg-white/30 transition-colors">
                     <td className="py-4 font-semibold text-ink">
-                      {job.canonical_name}
-                      {activeTab === "pipeline_b" && (
-                        <span className="ml-2 text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100">EXTERNAL</span>
-                      )}
+                      <div className="flex items-center gap-2.5">
+                        <CompanyLogo name={job.canonical_name} domain={job.company_domain} size={24} radius={6} fontSize={10.5} />
+                        <span>{job.canonical_name}</span>
+                        {activeTab === "pipeline_b" && (
+                          <span className="ml-1 text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100">EXTERNAL</span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-4 text-ink-soft font-medium">{job.title}</td>
                     <td className="py-4 text-ink-soft">{job.location || "Remote"}</td>
