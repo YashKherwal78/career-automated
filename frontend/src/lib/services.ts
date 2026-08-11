@@ -106,7 +106,11 @@ export interface ResumeService {
 import { supabase } from "./supabase";
 import { API_BASE } from "./api";
 
-async function authFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+async function authFetch(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+  timeoutMs: number = 2500,
+): Promise<Response> {
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -115,7 +119,7 @@ async function authFetch(input: RequestInfo | URL, init?: RequestInit): Promise<
     headers.set("Authorization", `Bearer ${session.access_token}`);
   }
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 2500);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const res = await fetch(input, { ...init, headers, signal: controller.signal });
     clearTimeout(timeoutId);
@@ -125,6 +129,12 @@ async function authFetch(input: RequestInfo | URL, init?: RequestInit): Promise<
     throw e;
   }
 }
+
+// Job matching runs real scoring against the candidate's profile server-side
+// (a few seconds even on the fast path) — the generic 2.5s authFetch default
+// is tuned for quick CRUD calls and was cutting this off before it ever
+// finished, silently swapping in FALLBACK_JOBS below every single time.
+const JOBS_TIMEOUT_MS = 15000;
 
 export const FALLBACK_JOBS: Job[] = [
   {
@@ -291,7 +301,7 @@ export class ApiJobService implements JobService {
   async getJobs(filters?: any): Promise<Job[]> {
     try {
       const params = this.buildParams(filters);
-      const res = await authFetch(`${API_BASE}/jobs?${params.toString()}`);
+      const res = await authFetch(`${API_BASE}/jobs?${params.toString()}`, undefined, JOBS_TIMEOUT_MS);
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) return data;
@@ -305,7 +315,7 @@ export class ApiJobService implements JobService {
   async getBoardJobs(filters?: any): Promise<Job[]> {
     try {
       const params = this.buildParams(filters);
-      const res = await authFetch(`${API_BASE}/jobs/boards?${params.toString()}`);
+      const res = await authFetch(`${API_BASE}/jobs/boards?${params.toString()}`, undefined, JOBS_TIMEOUT_MS);
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) return data;
