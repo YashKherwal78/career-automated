@@ -199,7 +199,15 @@ class IntentFilter:
             role_tokens = {
                 t for t in role_lower.replace(",", " ").split() if t not in self._ROLE_STOPWORDS
             }
-            if role_tokens:
+            # Require at least 2 meaningful tokens before trusting the
+            # overlap ratio. A role like "Engineering Intern" strips down to
+            # the single token {"engineering"} once "intern" is removed as a
+            # stopword — with only one token, any title containing that one
+            # generic word scores a "100% overlap" (e.g. Civil Engineering
+            # Analyst, Naval Architecture and Marine Engineering, Electrical
+            # Engineering Technician all matched an AI/SWE candidate this
+            # way). A single generic word isn't enough signal on its own.
+            if len(role_tokens) >= 2:
                 overlap = len(role_tokens & title_tokens) / len(role_tokens)
                 # Require real overlap (not just one generic shared word) to
                 # avoid the same noise the plain generic-keyword check below
