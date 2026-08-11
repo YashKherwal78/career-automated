@@ -45,12 +45,16 @@ def _row_dict(row, cursor):
 
 
 def get_candidate_jobs(conn, user_id: str, min_score: int, limit: int = None):
-    """Matched, active, dispatcher-supported jobs not yet attempted for this user."""
-    supported_providers = (
-        "greenhouse", "lever", "ashby", "breezy", "jazzhr", "bamboohr",
-        "workable", "recruitee", "rippling", "personio", "teamtailor",
-        "pinpoint", "recruiterbox", "workday", "successfactors",
-    )
+    """Matched, active, dispatcher-supported jobs not yet attempted for this user.
+
+    _ADAPTER_REGISTRY in dispatcher.py lists 14 connector names, but only
+    greenhouse/lever/ashby have actual committed, deployed adapter modules
+    (the other 11 are uncommitted local-only stub files, never proven
+    against a real ATS) — restrict to what's actually deployed so a job
+    doesn't error out for missing a module instead of really being
+    attempted.
+    """
+    supported_providers = ("greenhouse", "lever", "ashby")
     ph = "%s" if is_postgres() else "?"
     placeholders = ",".join([ph] * len(supported_providers))
     limit_clause = f"LIMIT {int(limit)}" if limit else ""
