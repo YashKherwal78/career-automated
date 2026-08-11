@@ -229,6 +229,15 @@ class IntentFilter:
 
         return best
 
+    # Minimum title role-score to even be considered for JD-based scoring.
+    # Excludes the weak generic-profession-noun bucket (0.3) and the
+    # wrong-domain penalty (0.05) — only a real signal/token-overlap title
+    # match (>=0.5) earns a shot at JD scoring. Without this gate, JD text
+    # alone (acronym collisions like clinical "GCP" vs. cloud "GCP", or
+    # analyzer defaults that assume unstated requirements are satisfied) can
+    # pull a completely off-domain job up to a misleadingly high score.
+    TITLE_FILTER_THRESHOLD = 0.5
+
     def score_batch(
         self,
         jobs: List[Dict[str, Any]],
@@ -237,15 +246,29 @@ class IntentFilter:
         """
         Score a batch of jobs that already passed HardRejectFilter.
 
+        Two stages: (1) title-only role match filters out jobs whose title
+        doesn't plausibly belong to one of the candidate's target roles, (2)
+        only surviving jobs get the full JD-based score.
+
         Returns:
             (scored_jobs, metrics)
             scored_jobs: list of jobs with intent_score and score_breakdown added
-            metrics: {"jobs_scored": int, "avg_intent_score": float}
+            metrics: {"jobs_scored": int, "avg_intent_score": float, "jobs_title_filtered": int}
         """
+        title_filtered = 0
+        candidates = []
+        for job in jobs:
+            title_lower = str(job.get("title") or "").lower()
+            role_score = self._title_role_score(title_lower, profile)
+            if role_score < self.TITLE_FILTER_THRESHOLD:
+                title_filtered += 1
+                continue
+            candidates.append(job)
+
         scored = []
         total_score = 0.0
 
-        for job in jobs:
+        for job in candidates:
             intent_score, breakdown = self.score_job(job, profile)
             j = dict(job)
             j["intent_score"] = round(intent_score, 4)
@@ -259,12 +282,13 @@ class IntentFilter:
         avg = round(total_score / n, 4) if n > 0 else 0.0
 
         logger.info(
-            "IntentFilter: scored=%d, avg_intent_score=%.3f",
+            "IntentFilter: title_filtered=%d, scored=%d, avg_intent_score=%.3f",
+            title_filtered,
             n,
             avg,
         )
 
-        return scored, {"jobs_scored": n, "avg_intent_score": avg}
+        return scored, {"jobs_scored": n, "avg_intent_score": avg, "jobs_title_filtered": title_filtered}
 
     # ── Legacy compatibility ───────────────────────────────────────────────────
     # Scratch scripts call filter_opportunities(jobs, task) — keep signature.
