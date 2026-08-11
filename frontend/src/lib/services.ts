@@ -134,7 +134,7 @@ async function authFetch(
 // (a few seconds even on the fast path) — the generic 2.5s authFetch default
 // is tuned for quick CRUD calls and was cutting this off before it ever
 // finished, silently swapping in FALLBACK_JOBS below every single time.
-const JOBS_TIMEOUT_MS = 15000;
+const JOBS_TIMEOUT_MS = 25000;
 
 export const FALLBACK_JOBS: Job[] = [
   {
