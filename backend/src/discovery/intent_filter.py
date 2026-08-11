@@ -209,10 +209,22 @@ class IntentFilter:
                 elif overlap >= 0.34:
                     best = max(best, 0.5)
 
-        # Partial match — title contains a generic keyword
+        # Partial match — title shares a profession noun with one of the
+        # candidate's own target roles (e.g. target "Software Engineer" ->
+        # generic credit for "Engineer" titles). Previously this used a fixed
+        # ["engineer", "analyst", "manager", "developer", "scientist"] list
+        # regardless of the candidate's actual targets, so an AI/ML/SWE
+        # candidate got 0.3 for "Territory Manager" or "Business Analyst"
+        # postings purely because those titles contain "manager"/"analyst" —
+        # words that carry zero signal outside the roles the candidate
+        # actually targets.
         if best == 0.0:
-            generic_ok = ["engineer", "analyst", "manager", "developer", "scientist"]
-            if any(g in title_lower for g in generic_ok):
+            target_profession_words = {
+                role.lower().split()[-1]
+                for role in profile.target_roles
+                if role.strip()
+            } & {"engineer", "analyst", "manager", "developer", "scientist"}
+            if any(g in title_lower for g in target_profession_words):
                 best = 0.3  # plausible but not targeted
 
         return best
