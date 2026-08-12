@@ -99,6 +99,36 @@ function DashboardHome() {
     refetchInterval: batchRunning ? 5000 : false,
   });
 
+  const { data: referralDrafts = [] } = useQuery({
+    queryKey: ["referral-drafts"],
+    queryFn: () => ServiceRegistry.getReferralService().list(),
+    refetchInterval: batchRunning ? 5000 : false,
+  });
+  const pendingReferrals = referralDrafts.filter((r) => r.status === "PENDING_REVIEW");
+  const [referralActionState, setReferralActionState] = useState<Record<string, "working" | "error">>({});
+
+  const handleApproveReferral = async (id: string) => {
+    setReferralActionState((s) => ({ ...s, [id]: "working" }));
+    try {
+      await ServiceRegistry.getReferralService().approve(id);
+      queryClient.invalidateQueries({ queryKey: ["referral-drafts"] });
+    } catch (e) {
+      console.error("Failed to approve referral:", e);
+      setReferralActionState((s) => ({ ...s, [id]: "error" }));
+    }
+  };
+
+  const handleRejectReferral = async (id: string) => {
+    setReferralActionState((s) => ({ ...s, [id]: "working" }));
+    try {
+      await ServiceRegistry.getReferralService().reject(id);
+      queryClient.invalidateQueries({ queryKey: ["referral-drafts"] });
+    } catch (e) {
+      console.error("Failed to reject referral:", e);
+      setReferralActionState((s) => ({ ...s, [id]: "error" }));
+    }
+  };
+
   // Reflects server truth in the toggle: either the durable "enabled"
   // policy (survives reloads even between runs) or an active run (survives
   // reload mid-run too). "Pause" below still can't stop the actual
@@ -346,6 +376,72 @@ function DashboardHome() {
                   >
                     {item.status.replace(/_/g, " ")}
                   </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {pendingReferrals.length > 0 && (
+          <div
+            style={{
+              background: "var(--ds-surface-tint)",
+              border: "1px solid rgba(255,255,255,0.6)",
+              borderRadius: "var(--ds-radius-xl)",
+              padding: "18px 22px",
+              marginBottom: 18,
+            }}
+          >
+            <div
+              className="font-[var(--ds-font-display)] font-semibold"
+              style={{ fontSize: 15, marginBottom: 4 }}
+            >
+              Referral emails to review ({pendingReferrals.length})
+            </div>
+            <p style={{ fontSize: 12.5, color: "var(--ds-ink-500)", margin: "0 0 12px" }}>
+              Drafted for people at companies you've applied to. Review and approve to send — nothing goes out
+              without your OK yet.
+            </p>
+            <div className="flex flex-col gap-2.5">
+              {pendingReferrals.slice(0, 5).map((r) => (
+                <div
+                  key={r.id}
+                  style={{
+                    background: "rgba(255,255,255,0.6)",
+                    borderRadius: "var(--ds-radius-md)",
+                    padding: "12px 14px",
+                  }}
+                >
+                  <div style={{ fontSize: 13.5, fontWeight: 600, marginBottom: 4 }}>
+                    To {r.contact_name} ({r.contact_email}) — {r.company_name}, {r.job_title}
+                  </div>
+                  <div style={{ fontSize: 12.5, color: "var(--ds-ink-500)", marginBottom: 2 }}>
+                    <strong>{r.subject}</strong>
+                  </div>
+                  <div style={{ fontSize: 12.5, color: "var(--ds-ink-600)", whiteSpace: "pre-wrap", marginBottom: 10 }}>
+                    {r.body}
+                  </div>
+                  <div className="flex gap-2">
+                    <DsButton
+                      variant="primary"
+                      size="md"
+                      disabled={referralActionState[r.id] === "working"}
+                      onClick={() => handleApproveReferral(r.id)}
+                    >
+                      {referralActionState[r.id] === "working" ? "Sending…" : "Approve & send"}
+                    </DsButton>
+                    <DsButton
+                      variant="outline"
+                      size="md"
+                      disabled={referralActionState[r.id] === "working"}
+                      onClick={() => handleRejectReferral(r.id)}
+                    >
+                      Reject
+                    </DsButton>
+                    {referralActionState[r.id] === "error" && (
+                      <span style={{ fontSize: 12, color: "#B4392C", alignSelf: "center" }}>Failed — try again</span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

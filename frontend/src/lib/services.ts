@@ -117,6 +117,51 @@ export interface NeedsReviewItem {
   created_at: string;
 }
 
+export interface ReferralDraft {
+  id: string;
+  company_name: string;
+  job_title: string;
+  contact_name: string;
+  contact_role: string | null;
+  contact_email: string | null;
+  subject: string;
+  body: string;
+  status: "PENDING_REVIEW" | "SENT" | "REJECTED" | "FAILED";
+  error: string | null;
+  created_at: string;
+  sent_at: string | null;
+}
+
+export class ReferralService {
+  async list(): Promise<ReferralDraft[]> {
+    const res = await authFetch(`${API_BASE}/referrals/`);
+    if (!res.ok) throw new Error(`Referrals fetch failed (${res.status})`);
+    const data = await res.json();
+    return data.items || [];
+  }
+  async approve(id: string): Promise<void> {
+    const res = await authFetch(`${API_BASE}/referrals/${id}/approve`, { method: "POST" });
+    if (!res.ok) throw new Error(`Approve failed (${res.status})`);
+  }
+  async reject(id: string): Promise<void> {
+    const res = await authFetch(`${API_BASE}/referrals/${id}/reject`, { method: "POST" });
+    if (!res.ok) throw new Error(`Reject failed (${res.status})`);
+  }
+  async getAutoSendPolicy(): Promise<boolean> {
+    const res = await authFetch(`${API_BASE}/referrals/policy`);
+    if (!res.ok) throw new Error(`Referral policy fetch failed (${res.status})`);
+    return (await res.json()).auto_send;
+  }
+  async setAutoSendPolicy(autoSend: boolean): Promise<void> {
+    const res = await authFetch(`${API_BASE}/referrals/policy`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ auto_send: autoSend }),
+    });
+    if (!res.ok) throw new Error(`Referral policy save failed (${res.status})`);
+  }
+}
+
 export interface CompanyService {
   getCompanies(page?: number): Promise<Company[]>;
 }
@@ -646,5 +691,9 @@ export class ServiceRegistry {
 
   static getBillingService(): BillingService {
     return new BillingService();
+  }
+
+  static getReferralService(): ReferralService {
+    return new ReferralService();
   }
 }
