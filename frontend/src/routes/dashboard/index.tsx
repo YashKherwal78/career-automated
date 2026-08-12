@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ServiceRegistry, type Job } from "../../lib/services";
 import { useAuth } from "../../lib/auth";
@@ -80,13 +80,21 @@ function DashboardHome() {
   const { data: batchStatus } = useQuery({
     queryKey: ["batch-apply-status"],
     queryFn: () => ServiceRegistry.getJobService().getBatchApplyStatus(),
-    enabled: autoApplyOn,
-    // The run itself is server-side and keeps going even if this tab closes
-    // or "Pause" is clicked below (no cancel endpoint exists yet) — polling
-    // just controls whether *this* dashboard is watching it.
-    refetchInterval: 3000,
+    // Always enabled (not gated on the local autoApplyOn toggle) — the run
+    // is server-side and survives page reloads/tab closes, so a fresh page
+    // load needs to ask the server whether one is already in progress
+    // rather than assuming "not running" just because local state reset.
+    refetchInterval: (query) => (query.state.data?.running ? 3000 : 15000),
   });
   const batchRunning = !!batchStatus?.running;
+
+  // Reflects server truth in the toggle even if you reload mid-run or open
+  // the dashboard in a new tab — "Pause" below still can't stop the actual
+  // server-side run (no cancel endpoint yet), it only stops this tab from
+  // polling, so this effect will just flip it back on next poll anyway.
+  useEffect(() => {
+    if (batchStatus?.running) setAutoApplyOn(true);
+  }, [batchStatus?.running]);
 
   const filtered = useMemo(() => {
     return jobs.filter((job) => {
@@ -245,9 +253,14 @@ function DashboardHome() {
                     ? `Done: ${batchStatus.submitted ?? 0} submitted, ${batchStatus.review_required ?? 0} need review, ${batchStatus.failed ?? 0} failed`
                     : "Auto Apply on ✓"}
               </span>
-              <DsButton variant="outline" size="md" onClick={handleToggleAutoApply}>
-                Pause
-              </DsButton>
+              {!batchRunning && (
+                // Nothing to "pause" mid-run (no cancel endpoint) — this
+                // button only appears once a run has actually finished, to
+                // dismiss the summary and go back to "Start Auto Apply".
+                <DsButton variant="outline" size="md" onClick={handleToggleAutoApply}>
+                  Dismiss
+                </DsButton>
+              )}
             </div>
           ) : (
             <DsButton variant="primary" size="md" onClick={handleToggleAutoApply}>
