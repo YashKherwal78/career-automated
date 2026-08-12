@@ -89,6 +89,18 @@ export interface JobService {
     really_submitted: boolean;
     failure_reason: string | null;
   }>;
+  startBatchApply(minScore?: number): Promise<{ started: boolean; candidate_count: number }>;
+  getBatchApplyStatus(): Promise<BatchApplyStatus>;
+}
+
+export interface BatchApplyStatus {
+  running: boolean;
+  total?: number;
+  completed?: number;
+  submitted?: number;
+  review_required?: number;
+  failed?: number;
+  current_job_title?: string | null;
 }
 
 export interface CompanyService {
@@ -367,6 +379,23 @@ export class ApiJobService implements JobService {
     if (!res.ok) throw new Error(`Apply request failed (${res.status})`);
     return res.json();
   }
+
+  async startBatchApply(minScore = 70): Promise<{ started: boolean; candidate_count: number }> {
+    const res = await authFetch(`${API_BASE}/applications/batch-apply`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ min_score: minScore }),
+    });
+    if (res.status === 409) return { started: true, candidate_count: 0 };
+    if (!res.ok) throw new Error(`Batch apply request failed (${res.status})`);
+    return res.json();
+  }
+
+  async getBatchApplyStatus(): Promise<BatchApplyStatus> {
+    const res = await authFetch(`${API_BASE}/applications/batch-apply/status`);
+    if (!res.ok) throw new Error(`Batch apply status failed (${res.status})`);
+    return res.json();
+  }
 }
 
 export class ApiCompanyService implements CompanyService {
@@ -497,6 +526,12 @@ export class MockJobService implements JobService {
   }
   async applyToJob(): Promise<{ status: string; really_submitted: boolean; failure_reason: string | null }> {
     return { status: "COMPLETED", really_submitted: true, failure_reason: null };
+  }
+  async startBatchApply(): Promise<{ started: boolean; candidate_count: number }> {
+    return { started: true, candidate_count: this.mockJobs.length };
+  }
+  async getBatchApplyStatus(): Promise<BatchApplyStatus> {
+    return { running: false };
   }
 }
 

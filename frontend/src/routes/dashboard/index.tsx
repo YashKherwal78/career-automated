@@ -77,6 +77,17 @@ function DashboardHome() {
     Record<string, { state: "applying" | "applied" | "review_required" | "failed"; message?: string }>
   >({});
 
+  const { data: batchStatus } = useQuery({
+    queryKey: ["batch-apply-status"],
+    queryFn: () => ServiceRegistry.getJobService().getBatchApplyStatus(),
+    enabled: autoApplyOn,
+    // The run itself is server-side and keeps going even if this tab closes
+    // or "Pause" is clicked below (no cancel endpoint exists yet) — polling
+    // just controls whether *this* dashboard is watching it.
+    refetchInterval: 3000,
+  });
+  const batchRunning = !!batchStatus?.running;
+
   const filtered = useMemo(() => {
     return jobs.filter((job) => {
       const matchLocation =
@@ -105,10 +116,18 @@ function DashboardHome() {
     setAutoApplyOn(false);
   };
 
-  const handleSavePreferences = () => {
-    // Career preferences are frontend-only for this pass — no backend policy endpoint exists yet.
+  const handleSavePreferences = async () => {
+    // Career preferences (location/work-mode/etc.) are still frontend-only —
+    // no backend policy endpoint exists yet. min_score is hardcoded here
+    // until preferences actually feed one through.
     setShowPreferencesModal(false);
     setAutoApplyOn(true);
+    try {
+      await ServiceRegistry.getJobService().startBatchApply(70);
+    } catch (e) {
+      console.error("Failed to start auto-apply batch:", e);
+      setAutoApplyOn(false);
+    }
   };
 
   const handleQueueJob = async (jobId: string) => {
@@ -218,7 +237,13 @@ function DashboardHome() {
                 className="font-semibold"
                 style={{ fontSize: 14, color: "var(--ds-sage-text)" }}
               >
-                Auto Apply on ✓
+                {batchRunning
+                  ? `Applying… ${batchStatus?.completed ?? 0}/${batchStatus?.total ?? 0}${
+                      batchStatus?.current_job_title ? ` — ${batchStatus.current_job_title}` : ""
+                    }`
+                  : batchStatus && (batchStatus.total ?? 0) > 0
+                    ? `Done: ${batchStatus.submitted ?? 0} submitted, ${batchStatus.review_required ?? 0} need review, ${batchStatus.failed ?? 0} failed`
+                    : "Auto Apply on ✓"}
               </span>
               <DsButton variant="outline" size="md" onClick={handleToggleAutoApply}>
                 Pause
