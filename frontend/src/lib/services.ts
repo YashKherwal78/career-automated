@@ -118,6 +118,45 @@ export interface NeedsReviewItem {
   apply_url: string;
 }
 
+export interface ActiveCaptcha {
+  active: boolean;
+  session_id?: string;
+  job_id?: string;
+}
+
+export class CaptchaService {
+  async getActive(): Promise<ActiveCaptcha> {
+    const res = await authFetch(`${API_BASE}/applications/captcha/active`);
+    if (!res.ok) throw new Error(`Captcha status fetch failed (${res.status})`);
+    return res.json();
+  }
+  // Returns an object URL for the current screenshot -- caller must
+  // revokeObjectURL the previous one before requesting a new one to avoid
+  // leaking memory across the poll loop.
+  async getScreenshot(sessionId: string): Promise<string> {
+    const res = await authFetch(`${API_BASE}/applications/captcha/${sessionId}/screenshot`);
+    if (!res.ok) throw new Error(`Screenshot fetch failed (${res.status})`);
+    const blob = await res.blob();
+    return URL.createObjectURL(blob);
+  }
+  async click(sessionId: string, x: number, y: number): Promise<void> {
+    const res = await authFetch(`${API_BASE}/applications/captcha/${sessionId}/click`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ x, y }),
+    });
+    if (!res.ok) throw new Error(`Click failed (${res.status})`);
+  }
+  async resolved(sessionId: string): Promise<void> {
+    const res = await authFetch(`${API_BASE}/applications/captcha/${sessionId}/resolved`, { method: "POST" });
+    if (!res.ok) throw new Error(`Resolved signal failed (${res.status})`);
+  }
+  async skip(sessionId: string): Promise<void> {
+    const res = await authFetch(`${API_BASE}/applications/captcha/${sessionId}/skip`, { method: "POST" });
+    if (!res.ok) throw new Error(`Skip signal failed (${res.status})`);
+  }
+}
+
 export interface ReferralDraft {
   id: string;
   company_name: string;
@@ -696,5 +735,9 @@ export class ServiceRegistry {
 
   static getReferralService(): ReferralService {
     return new ReferralService();
+  }
+
+  static getCaptchaService(): CaptchaService {
+    return new CaptchaService();
   }
 }

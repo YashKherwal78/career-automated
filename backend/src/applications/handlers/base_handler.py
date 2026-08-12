@@ -32,7 +32,7 @@ class BaseATSHandler(ABC):
 
     def __init__(self, page: Page, job_title: str, company_name: str, location: str, resume_path: str,
                  test_mode: bool = False, execution_dir: str = "", profile_manager=None, rag_client=None,
-                 llm_client=None, company_context: str = ""):
+                 llm_client=None, company_context: str = "", user_id: str = None, job_id: str = None):
         self.page = page
         self.job_title = job_title
         self.company_name = company_name
@@ -41,6 +41,12 @@ class BaseATSHandler(ABC):
         self.test_mode = test_mode
         self.execution_dir = execution_dir
         self.profile = profile_manager
+        # Only used to open a live captcha-solving session (see
+        # captcha_bridge.py / _wait_for_human_captcha_resolution) -- None
+        # for callers that predate per-user captcha handoff, in which case
+        # a captcha just routes straight to REVIEW_REQUIRED with no wait.
+        self.user_id = user_id
+        self.job_id = job_id
         self.engine = QuestionEngine(
             profile_manager=profile_manager,
             rag_client=rag_client,
@@ -527,14 +533,30 @@ class BaseATSHandler(ABC):
         telemetry.setdefault("captcha_pause_count", 0)
         telemetry["captcha_pause_count"] += 1
         self._capture_screenshot(f"captcha_pause_{telemetry['captcha_pause_count']}.png")
-        logger.info(f"{self.ATS_NAME}Handler: >>> CAPTCHA detected — browser window is open, please solve it now. <<<")
-        logger.info(f"{self.ATS_NAME}Handler: Press Enter here once solved (or type 'skip' to send this one to review instead): ")
-        try:
-            response = input().strip().lower()
-        except Exception:
-            response = "skip"
-        resolved = response != "skip"
-        telemetry["captcha_resolution"] = "resolved" if resolved else "skipped"
+
+        # input() only ever worked when this ran locally with a terminal
+        # attached -- in the production container there's no stdin, so it
+        # failed in under half a second, every time, silently routing every
+        # captcha straight to REVIEW_REQUIRED with no real chance for a
+        # human to solve it (confirmed live in production logs). If we know
+        # who this run is for, open a real live-view session instead: the
+        # dashboard polls for it, shows the live page, and relays clicks
+        # back to this exact `page` object via captcha_bridge's thread-safe
+        # queues (Playwright's sync API isn't safe to call from any thread
+        # other than the one that created it, which is why this can't just
+        # be a direct API call into `self.page` from the request handler).
+        if not self.user_id:
+            logger.info(f"{self.ATS_NAME}Handler: CAPTCHA detected but no user_id available for a live session — routing to REVIEW_REQUIRED.")
+            telemetry["captcha_resolution"] = "no_session"
+            return False
+
+        from src.applications.captcha_bridge import create_session, wait_for_human
+        session_id = create_session(self.user_id, self.job_id)
+        telemetry["captcha_session_id"] = session_id
+        logger.info(f"{self.ATS_NAME}Handler: >>> CAPTCHA detected — live session {session_id} opened, waiting up to 10 min for it to be solved. <<<")
+
+        resolved = wait_for_human(session_id, self.page, timeout_seconds=600)
+        telemetry["captcha_resolution"] = "resolved" if resolved else "skipped_or_timed_out"
         if resolved:
             logger.info(f"{self.ATS_NAME}Handler: Resuming — will retry submit now.")
         return resolved

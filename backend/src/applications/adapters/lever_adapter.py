@@ -13,7 +13,7 @@ class LeverAdapter(BaseAdapter):
         self.rag_client = rag_client
         self.llm_router = llm_router
 
-    def apply(self, job: Dict[str, Any], resume_path: str, profile_manager: Any, test_mode: bool = False) -> ApplicationResult:
+    def apply(self, job: Dict[str, Any], resume_path: str, profile_manager: Any, test_mode: bool = False, user_id: str = None) -> ApplicationResult:
         logger.info(f"[LeverAdapter] Launching browser for Job: {job.get('id')} - {job.get('company_name')}")
 
         execution_dir = f"executions/job_{job.get('id')}"
@@ -25,6 +25,8 @@ class LeverAdapter(BaseAdapter):
                 page.goto(job.get("apply_url") or job.get("job_url"), timeout=30000)
 
                 handler = LeverHandler(
+                    user_id=user_id,
+                    job_id=job.get("id"),
                     page=page,
                     job_title=job.get("job_title", ""),
                     company_name=job.get("company_name", ""),

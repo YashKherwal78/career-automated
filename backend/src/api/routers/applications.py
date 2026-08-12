@@ -1,13 +1,14 @@
 import json
 import os
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from src.api.db import get_connection, is_postgres
 from src.api.dependencies import get_repos
 from src.core.repositories.manager import RepositoryManager
+from src.applications import captcha_bridge
 from src.applications.apply_service import apply_to_job
 from src.applications.batch_apply import get_candidate_jobs, get_status, run_batch
 from src.applications.profile import ProfileManager
@@ -305,3 +306,56 @@ def needs_review(current_user: CurrentUser = Depends(get_current_user)):
             "apply_url": d.get("apply_url") or "",
         })
     return {"items": items}
+
+
+@router.get("/captcha/active")
+def get_active_captcha(current_user: CurrentUser = Depends(get_current_user)):
+    """Polled by the dashboard to discover "is a background run of mine
+    currently stuck on a CAPTCHA right now" without already knowing a
+    session_id."""
+    session_id = captcha_bridge.get_active_session_id_for_user(current_user.user_id)
+    if not session_id:
+        return {"active": False}
+    session = captcha_bridge.get_session(session_id)
+    return {"active": True, "session_id": session_id, "job_id": session.get("job_id") if session else None}
+
+
+def _require_own_session(session_id: str, current_user: CurrentUser):
+    session = captcha_bridge.get_session(session_id)
+    if not session or session.get("user_id") != current_user.user_id:
+        raise HTTPException(status_code=404, detail="No active captcha session")
+
+
+@router.get("/captcha/{session_id}/screenshot")
+def captcha_screenshot(session_id: str, current_user: CurrentUser = Depends(get_current_user)):
+    _require_own_session(session_id, current_user)
+    png = captcha_bridge.request_screenshot(session_id)
+    if png is None:
+        raise HTTPException(status_code=504, detail="Screenshot timed out")
+    return Response(content=png, media_type="image/png")
+
+
+class CaptchaClick(BaseModel):
+    x: float
+    y: float
+
+
+@router.post("/captcha/{session_id}/click")
+def captcha_click(session_id: str, body: CaptchaClick, current_user: CurrentUser = Depends(get_current_user)):
+    _require_own_session(session_id, current_user)
+    ok = captcha_bridge.request_click(session_id, body.x, body.y)
+    return {"ok": ok}
+
+
+@router.post("/captcha/{session_id}/resolved")
+def captcha_resolved(session_id: str, current_user: CurrentUser = Depends(get_current_user)):
+    _require_own_session(session_id, current_user)
+    captcha_bridge.signal_resolved(session_id)
+    return {"ok": True}
+
+
+@router.post("/captcha/{session_id}/skip")
+def captcha_skip(session_id: str, current_user: CurrentUser = Depends(get_current_user)):
+    _require_own_session(session_id, current_user)
+    captcha_bridge.signal_skip(session_id)
+    return {"ok": True}

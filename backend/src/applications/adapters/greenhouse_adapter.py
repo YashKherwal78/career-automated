@@ -13,7 +13,7 @@ class GreenhouseAdapter(BaseAdapter):
         self.rag_client = rag_client
         self.llm_router = llm_router
 
-    def apply(self, job: Dict[str, Any], resume_path: str, profile_manager: Any, test_mode: bool = False) -> ApplicationResult:
+    def apply(self, job: Dict[str, Any], resume_path: str, profile_manager: Any, test_mode: bool = False, user_id: str = None) -> ApplicationResult:
         logger.info(f"[GreenhouseAdapter] Launching browser for Job: {job.get('id')} - {job.get('company_name')}")
 
         execution_dir = f"executions/job_{job.get('id')}"
@@ -35,7 +35,9 @@ class GreenhouseAdapter(BaseAdapter):
                     profile_manager=self.profile_manager,
                     rag_client=self.rag_client,
                     llm_client=self.llm_router,
-                    company_context=""
+                    company_context="",
+                    user_id=user_id,
+                    job_id=job.get("id"),
                 )
 
                 result_data = handler.execute()

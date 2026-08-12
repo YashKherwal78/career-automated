@@ -51,11 +51,15 @@ class ApplicationDispatcher:
             )
         return self._adapters[connector]
 
-    def dispatch(self, job: Dict[str, Any], resume_path: str, test_mode: bool = True) -> ApplicationResult:
+    def dispatch(self, job: Dict[str, Any], resume_path: str, test_mode: bool = True, user_id: str = None) -> ApplicationResult:
         # Defaults to test_mode=True (never clicks the final submit button) —
         # this is the entry point new/automated callers reach through, so a
         # missing or accidental invocation should never risk a real
         # submission. Real applications require an explicit test_mode=False.
+        # user_id, when supplied, lets the handler open a live captcha-
+        # solving session for this specific user if one is hit (see
+        # captcha_bridge.py) -- omitted entirely for callers that predate
+        # that (falls back to the old no-human-available behavior).
         connector = job.get("connector", "unknown")
 
         adapter = self._get_adapter(connector)
@@ -67,7 +71,7 @@ class ApplicationDispatcher:
 
         logger.info(f"[Dispatcher] Routing job {job.get('id')} to {connector.capitalize()}Adapter (test_mode={test_mode})")
         try:
-            return adapter.apply(job, resume_path, self.profile_manager, test_mode=test_mode)
+            return adapter.apply(job, resume_path, self.profile_manager, test_mode=test_mode, user_id=user_id)
         except Exception as e:
             logger.info(f"[Dispatcher] Unhandled adapter error: {e}")
             return ApplicationResult(

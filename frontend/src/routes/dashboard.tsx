@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { Sidebar } from "../components/dashboard/Sidebar";
 import { DashboardProvider } from "../components/dashboard/DashboardContext";
+import { CaptchaLiveView } from "../components/dashboard/CaptchaLiveView";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -199,6 +200,7 @@ function DashboardLayout() {
           <Outlet />
         </main>
       </div>
+      <CaptchaLiveView />
     </DashboardProvider>
   );
 }

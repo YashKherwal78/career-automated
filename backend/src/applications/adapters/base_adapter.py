@@ -42,7 +42,7 @@ class ApplicationResult:
 
 class BaseAdapter(ABC):
     @abstractmethod
-    def apply(self, job: Dict[str, Any], resume_path: str, profile_manager: Any, test_mode: bool = False) -> ApplicationResult:
+    def apply(self, job: Dict[str, Any], resume_path: str, profile_manager: Any, test_mode: bool = False, user_id: str = None) -> ApplicationResult:
         """
         Executes the application logic for a specific ATS connector.
         Returns an ApplicationResult indicating success or failure.

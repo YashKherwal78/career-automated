@@ -67,4 +67,4 @@ def apply_to_job(job_row: Dict[str, Any], test_mode: bool = True, user_id: Optio
     )
 
     logger.info(f"[ApplyService] Dispatching job {mapped_job['id']} ({mapped_job['connector']}) test_mode={test_mode}")
-    return dispatcher.dispatch(mapped_job, resume_path, test_mode=test_mode)
+    return dispatcher.dispatch(mapped_job, resume_path, test_mode=test_mode, user_id=user_id)

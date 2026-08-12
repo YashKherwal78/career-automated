@@ -13,7 +13,7 @@ class WorkableAdapter(BaseAdapter):
         self.rag_client = rag_client
         self.llm_router = llm_router
 
-    def apply(self, job: Dict[str, Any], resume_path: str, profile_manager: Any, test_mode: bool = False) -> ApplicationResult:
+    def apply(self, job: Dict[str, Any], resume_path: str, profile_manager: Any, test_mode: bool = False, user_id: str = None) -> ApplicationResult:
         logger.info(f"[WorkableAdapter] Launching browser for Job: {job.get('id')} - {job.get('company_name')}")
 
         execution_dir = f"executions/job_{job.get('id')}"
