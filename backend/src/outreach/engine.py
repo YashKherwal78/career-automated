@@ -227,8 +227,9 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
                 logger.info(f"Failed to pass Email Critic for {email_val}. Skipping.")
                 failures += 1
                 if failures >= 5:
-                    logger.info("Too many consecutive failures. Aborting batch early due to likely API rate limits.")
-                    break
+                    logger.info("Consecutive LLM failures (likely API rate limit). Pausing for 60s to let cooldown expire...")
+                    time.sleep(60)
+                    failures = 0
                 continue
             else:
                 failures = 0  # Reset on success
