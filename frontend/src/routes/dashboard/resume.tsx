@@ -607,19 +607,46 @@ function ResumePage() {
               field_of_study: e.field_of_study,
             }),
           ),
-          certifications: (data.certifications || []).map((c: { name: string }) => c.name),
+          certifications: (data.certifications || []).map(
+            (c: { name: string } | string) => (typeof c === "string" ? c : c?.name || ""),
+          ),
         };
         setProfile(nextProfile);
 
-        // Auto-save to /candidate/profile so profile is persisted across reloads & logins
-        await fetch(`${API_BASE}/candidate/profile`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session?.access_token}`,
-          },
-          body: JSON.stringify(buildSavePayload(nextProfile)),
-        }).catch(() => null);
+        // Auto-save to /candidate/profile so profile is persisted across reloads &
+        // logins. This used to be a fire-and-forget `.catch(() => null)` — it
+        // didn't even check res.ok, so a validation error (422) or any server
+        // error resolved "successfully" and the parsed resume looked saved in
+        // the UI while nothing actually persisted. The profile is still shown
+        // locally either way (setProfile above already ran) so nothing extracted
+        // is lost — this only changes whether you're told the save itself failed.
+        try {
+          const saveRes = await fetch(`${API_BASE}/candidate/profile`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session?.access_token}`,
+            },
+            body: JSON.stringify(buildSavePayload(nextProfile)),
+          });
+          if (!saveRes.ok) {
+            const err = await saveRes.json().catch(() => ({}));
+            throw new Error(err.detail || `Save failed (${saveRes.status})`);
+          }
+        } catch (saveErr) {
+          console.error("Resume auto-save failed:", saveErr);
+          // Deliberately does NOT close the modal or switch to the builder —
+          // uploadError only renders while showUploadModal is still open
+          // (see below), so closing it here would hide the message entirely
+          // and look identical to a silent success.
+          setUploadState("idle");
+          setUploadError(
+            `Resume was read okay, but saving it failed (${
+              saveErr instanceof Error ? saveErr.message : "unknown error"
+            }). Close this and use the Save button to retry.`,
+          );
+          return;
+        }
       }
       setUploadState("idle");
       setShowUploadModal(false);
