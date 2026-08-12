@@ -38,6 +38,7 @@ import { Route as MissionControlCompanyReplayRouteImport } from './routes/missio
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
 import { Route as DashboardResumeTailorRouteImport } from './routes/dashboard/resume-tailor'
 import { Route as DashboardResumeRouteImport } from './routes/dashboard/resume'
+import { Route as DashboardOutreachRouteImport } from './routes/dashboard/outreach'
 import { Route as DashboardJobsRouteImport } from './routes/dashboard/jobs'
 import { Route as DashboardCoverLetterRouteImport } from './routes/dashboard/cover-letter'
 import { Route as DashboardCareerProfileRouteImport } from './routes/dashboard/career-profile'
@@ -193,6 +194,11 @@ const DashboardResumeRoute = DashboardResumeRouteImport.update({
   path: '/resume',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardOutreachRoute = DashboardOutreachRouteImport.update({
+  id: '/outreach',
+  path: '/outreach',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardJobsRoute = DashboardJobsRouteImport.update({
   id: '/jobs',
   path: '/jobs',
@@ -249,6 +255,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/career-profile': typeof DashboardCareerProfileRoute
   '/dashboard/cover-letter': typeof DashboardCoverLetterRoute
   '/dashboard/jobs': typeof DashboardJobsRouteWithChildren
+  '/dashboard/outreach': typeof DashboardOutreachRoute
   '/dashboard/resume': typeof DashboardResumeRoute
   '/dashboard/resume-tailor': typeof DashboardResumeTailorRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
@@ -284,6 +291,7 @@ export interface FileRoutesByTo {
   '/dashboard/career-profile': typeof DashboardCareerProfileRoute
   '/dashboard/cover-letter': typeof DashboardCoverLetterRoute
   '/dashboard/jobs': typeof DashboardJobsRouteWithChildren
+  '/dashboard/outreach': typeof DashboardOutreachRoute
   '/dashboard/resume': typeof DashboardResumeRoute
   '/dashboard/resume-tailor': typeof DashboardResumeTailorRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
@@ -322,6 +330,7 @@ export interface FileRoutesById {
   '/dashboard/career-profile': typeof DashboardCareerProfileRoute
   '/dashboard/cover-letter': typeof DashboardCoverLetterRoute
   '/dashboard/jobs': typeof DashboardJobsRouteWithChildren
+  '/dashboard/outreach': typeof DashboardOutreachRoute
   '/dashboard/resume': typeof DashboardResumeRoute
   '/dashboard/resume-tailor': typeof DashboardResumeTailorRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
@@ -361,6 +370,7 @@ export interface FileRouteTypes {
     | '/dashboard/career-profile'
     | '/dashboard/cover-letter'
     | '/dashboard/jobs'
+    | '/dashboard/outreach'
     | '/dashboard/resume'
     | '/dashboard/resume-tailor'
     | '/dashboard/settings'
@@ -396,6 +406,7 @@ export interface FileRouteTypes {
     | '/dashboard/career-profile'
     | '/dashboard/cover-letter'
     | '/dashboard/jobs'
+    | '/dashboard/outreach'
     | '/dashboard/resume'
     | '/dashboard/resume-tailor'
     | '/dashboard/settings'
@@ -433,6 +444,7 @@ export interface FileRouteTypes {
     | '/dashboard/career-profile'
     | '/dashboard/cover-letter'
     | '/dashboard/jobs'
+    | '/dashboard/outreach'
     | '/dashboard/resume'
     | '/dashboard/resume-tailor'
     | '/dashboard/settings'
@@ -673,6 +685,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardResumeRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/outreach': {
+      id: '/dashboard/outreach'
+      path: '/outreach'
+      fullPath: '/dashboard/outreach'
+      preLoaderRoute: typeof DashboardOutreachRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/jobs': {
       id: '/dashboard/jobs'
       path: '/jobs'
@@ -745,6 +764,7 @@ interface DashboardRouteChildren {
   DashboardCareerProfileRoute: typeof DashboardCareerProfileRoute
   DashboardCoverLetterRoute: typeof DashboardCoverLetterRoute
   DashboardJobsRoute: typeof DashboardJobsRouteWithChildren
+  DashboardOutreachRoute: typeof DashboardOutreachRoute
   DashboardResumeRoute: typeof DashboardResumeRoute
   DashboardResumeTailorRoute: typeof DashboardResumeTailorRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
@@ -756,6 +776,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardCareerProfileRoute: DashboardCareerProfileRoute,
   DashboardCoverLetterRoute: DashboardCoverLetterRoute,
   DashboardJobsRoute: DashboardJobsRouteWithChildren,
+  DashboardOutreachRoute: DashboardOutreachRoute,
   DashboardResumeRoute: DashboardResumeRoute,
   DashboardResumeTailorRoute: DashboardResumeTailorRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,

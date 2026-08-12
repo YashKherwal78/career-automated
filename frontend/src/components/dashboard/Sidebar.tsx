@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { name: "Tailoring", to: "/dashboard/resume-tailor" as const },
   { name: "Resume", to: "/dashboard/resume" as const },
   { name: "Applications", to: "/dashboard/applications" as const },
+  { name: "Outreach", to: "/dashboard/outreach" as const },
   { name: "Settings", to: "/dashboard/settings" as const },
 ];
 
@@ -155,6 +156,35 @@ function NavIcon({ name, active, pressed }: { name: string; active: boolean; pre
       </div>
     );
   }
+  if (name === "Outreach") {
+    // Simple envelope: rectangle + a "V" fold line, flap lifts slightly on press.
+    return (
+      <div
+        className="relative rounded-[2px]"
+        style={{
+          width: 16,
+          height: 12,
+          border: `2px solid ${color}`,
+          transition: "transform 160ms cubic-bezier(0.4,0,0.2,1)",
+          transform: pressed ? "translateY(-1px)" : "translateY(0)",
+        }}
+      >
+        <div
+          className="absolute"
+          style={{
+            top: pressed ? -1 : 0,
+            left: 0,
+            width: 0,
+            height: 0,
+            borderLeft: "8px solid transparent",
+            borderRight: "8px solid transparent",
+            borderTop: `6px solid ${color}`,
+            transition: "top 160ms cubic-bezier(0.4,0,0.2,1)",
+          }}
+        />
+      </div>
+    );
+  }
   // Settings gear
   return (
     <div
@@ -254,8 +284,8 @@ export function Sidebar({ isOpen, isNarrow }: SidebarProps) {
     enabled: !!session,
     refetchInterval: 15000,
   });
-  const applicationsBadgeCount =
-    needsReview.length + referralDrafts.filter((r) => r.status === "PENDING_REVIEW").length;
+  const applicationsBadgeCount = needsReview.length;
+  const outreachBadgeCount = referralDrafts.filter((r) => r.status === "PENDING_REVIEW").length;
 
   const narrowStyle: CSSProperties = {
     position: "fixed",
@@ -399,6 +429,26 @@ export function Sidebar({ isOpen, isNarrow }: SidebarProps) {
                     }}
                   >
                     {applicationsBadgeCount > 9 ? "9+" : applicationsBadgeCount}
+                  </span>
+                )}
+                {item.name === "Outreach" && outreachBadgeCount > 0 && (
+                  <span
+                    title={`${outreachBadgeCount} referral drafts waiting on you`}
+                    className="absolute flex items-center justify-center font-bold"
+                    style={{
+                      minWidth: 16,
+                      height: 16,
+                      padding: "0 4px",
+                      top: -4,
+                      right: -4,
+                      borderRadius: 8,
+                      background: "#B4392C",
+                      color: "#fff",
+                      fontSize: 10,
+                      border: "1.5px solid var(--ds-surface-card, #fff)",
+                    }}
+                  >
+                    {outreachBadgeCount > 9 ? "9+" : outreachBadgeCount}
                   </span>
                 )}
               </div>

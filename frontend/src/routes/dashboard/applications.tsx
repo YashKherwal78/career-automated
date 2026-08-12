@@ -280,36 +280,17 @@ function ApplicationsPage() {
     refetchInterval: 10000,
   });
 
+  // Full referral management (approve/reject/status history/auto-send
+  // toggle) moved to its own page -- /dashboard/outreach -- since burying
+  // it here meant only the first 5 pending drafts were ever reachable and
+  // sent/rejected/failed ones weren't visible anywhere. Kept a lightweight
+  // count query here just for the summary pointer card below.
   const { data: referralDrafts = [] } = useQuery({
     queryKey: ["referral-drafts"],
     queryFn: () => ServiceRegistry.getReferralService().list(),
-    refetchInterval: 10000,
+    refetchInterval: 30000,
   });
   const pendingReferrals = referralDrafts.filter((r) => r.status === "PENDING_REVIEW");
-  const [referralActionState, setReferralActionState] = useState<Record<string, "working" | "error">>({});
-  const [expandedReferralId, setExpandedReferralId] = useState<string | null>(null);
-
-  const handleApproveReferral = async (id: string) => {
-    setReferralActionState((s) => ({ ...s, [id]: "working" }));
-    try {
-      await ServiceRegistry.getReferralService().approve(id);
-      queryClient.invalidateQueries({ queryKey: ["referral-drafts"] });
-    } catch (e) {
-      console.error("Failed to approve referral:", e);
-      setReferralActionState((s) => ({ ...s, [id]: "error" }));
-    }
-  };
-
-  const handleRejectReferral = async (id: string) => {
-    setReferralActionState((s) => ({ ...s, [id]: "working" }));
-    try {
-      await ServiceRegistry.getReferralService().reject(id);
-      queryClient.invalidateQueries({ queryKey: ["referral-drafts"] });
-    } catch (e) {
-      console.error("Failed to reject referral:", e);
-      setReferralActionState((s) => ({ ...s, [id]: "error" }));
-    }
-  };
 
   // Opens the real job page and tells the CareerAutomated extension (via a
   // query param its content scripts check for) to fill the form
@@ -447,119 +428,35 @@ function ApplicationsPage() {
         </div>
       )}
 
-      {pendingReferrals.length > 0 && (
-        <div
+      {referralDrafts.length > 0 && (
+        <Link
+          to="/dashboard/outreach"
+          className="flex items-center justify-between"
           style={{
             background: "var(--ds-surface-tint)",
             border: "1px solid rgba(255,255,255,0.6)",
             borderRadius: "var(--ds-radius-xl)",
-            padding: "24px 26px",
+            padding: "18px 22px",
             marginBottom: 28,
             maxWidth: 860,
+            textDecoration: "none",
           }}
         >
-          <div
-            className="font-[var(--ds-font-display)] font-semibold"
-            style={{ fontSize: 16, marginBottom: 6 }}
-          >
-            Referral emails to review ({pendingReferrals.length})
+          <div>
+            <div className="font-[var(--ds-font-display)] font-semibold" style={{ fontSize: 15, color: "var(--ds-ink-900)" }}>
+              Referral emails
+              {pendingReferrals.length > 0 && (
+                <span style={{ color: "var(--ds-accent-primary)" }}> · {pendingReferrals.length} waiting on you</span>
+              )}
+            </div>
+            <p style={{ fontSize: 12.5, color: "var(--ds-ink-500)", margin: "4px 0 0" }}>
+              Drafted for people at companies you've applied to — review, approve, and track what's been sent.
+            </p>
           </div>
-          <p style={{ fontSize: 13, color: "var(--ds-ink-500)", lineHeight: 1.5, margin: "0 0 16px" }}>
-            Drafted for people at companies you've applied to. Review and approve to send — nothing goes out
-            without your OK yet.
-          </p>
-          <div className="flex flex-col" style={{ gap: 12 }}>
-            {pendingReferrals.slice(0, 5).map((r) => {
-              const isExpanded = expandedReferralId === r.id;
-              return (
-                <div
-                  key={r.id}
-                  style={{
-                    background: "rgba(255,255,255,0.7)",
-                    borderRadius: "var(--ds-radius-lg)",
-                    padding: "16px 18px",
-                  }}
-                >
-                  <div style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.4 }}>
-                    {r.contact_name}
-                    <span style={{ color: "var(--ds-ink-450)", fontWeight: 500 }}>
-                      {" "}
-                      · {r.company_name} — {r.job_title}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--ds-ink-450)", marginTop: 2 }}>{r.contact_email}</div>
-
-                  <button
-                    type="button"
-                    onClick={() => setExpandedReferralId(isExpanded ? null : r.id)}
-                    style={{
-                      display: "block",
-                      width: "100%",
-                      textAlign: "left",
-                      background: "rgba(0,0,0,0.03)",
-                      border: "none",
-                      borderRadius: "var(--ds-radius-md)",
-                      padding: "10px 12px",
-                      marginTop: 12,
-                      cursor: "pointer",
-                    }}
-                  >
-                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: isExpanded ? 8 : 0 }}>
-                      {r.subject}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 12.5,
-                        color: "var(--ds-ink-600)",
-                        lineHeight: 1.6,
-                        whiteSpace: "pre-wrap",
-                        display: isExpanded ? "block" : "-webkit-box",
-                        WebkitLineClamp: isExpanded ? undefined : 2,
-                        WebkitBoxOrient: isExpanded ? undefined : "vertical",
-                        overflow: isExpanded ? "visible" : "hidden",
-                      }}
-                    >
-                      {r.body}
-                    </div>
-                    <span
-                      style={{
-                        fontSize: 11.5,
-                        color: "var(--ds-ink-400)",
-                        fontWeight: 600,
-                        display: "inline-block",
-                        marginTop: 6,
-                      }}
-                    >
-                      {isExpanded ? "Show less ↑" : "Show full email ↓"}
-                    </span>
-                  </button>
-
-                  <div className="flex items-center gap-2.5" style={{ marginTop: 14 }}>
-                    <DsButton
-                      variant="primary"
-                      size="md"
-                      disabled={referralActionState[r.id] === "working"}
-                      onClick={() => handleApproveReferral(r.id)}
-                    >
-                      {referralActionState[r.id] === "working" ? "Sending…" : "Approve & send"}
-                    </DsButton>
-                    <DsButton
-                      variant="outline"
-                      size="md"
-                      disabled={referralActionState[r.id] === "working"}
-                      onClick={() => handleRejectReferral(r.id)}
-                    >
-                      Reject
-                    </DsButton>
-                    {referralActionState[r.id] === "error" && (
-                      <span style={{ fontSize: 12, color: "#B4392C" }}>Failed — try again</span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ds-accent-primary)", flexShrink: 0, marginLeft: 16 }}>
+            Open →
+          </span>
+        </Link>
       )}
 
       <div style={{ maxWidth: 340, marginBottom: 32 }}>
