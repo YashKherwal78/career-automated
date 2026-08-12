@@ -45,19 +45,35 @@ def apply_to_job_endpoint(
     if not job_row:
         raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
 
-    # Mirrors scripts/run_batch_apply.py's dedup: without this, a page
-    # reload resets the frontend's in-memory queue state and a re-click
-    # would fire a second real application at the same employer for a job
-    # already attempted by this user.
+    # Claims a row up front, atomically, instead of a plain SELECT-then-
+    # INSERT-later dedupe check -- the old version checked for an existing
+    # row, then ran the (multi-minute) Playwright apply, then inserted
+    # afterwards, leaving a window where two near-simultaneous requests for
+    # the same job could both pass the check before either insert landed
+    # and both go on to really submit. INSERT ... ON CONFLICT DO NOTHING
+    # against the unique (user_id, job_id) constraint (migration 037) makes
+    # the second concurrent request fail here, before it ever touches
+    # Playwright, instead of racing.
     ph = "%s" if is_postgres() else "?"
     with get_connection() as conn:
         cur = conn.execute(
-            f"SELECT status FROM public.application_packages WHERE job_id = {ph}::uuid AND user_id = {ph}::uuid",
-            (job_id, current_user.user_id),
+            f"""
+            INSERT INTO public.application_packages (user_id, job_id, status)
+            VALUES ({ph}::uuid, {ph}::uuid, 'PENDING')
+            ON CONFLICT (user_id, job_id) DO NOTHING
+            RETURNING package_id
+            """,
+            (current_user.user_id, job_id),
         )
-        existing = cur.fetchone()
-        if existing:
-            existing_status = existing["status"] if hasattr(existing, "keys") else existing[0]
+        claimed = cur.fetchone()
+        conn.commit()
+        if not claimed:
+            cur = conn.execute(
+                f"SELECT status FROM public.application_packages WHERE job_id = {ph}::uuid AND user_id = {ph}::uuid",
+                (job_id, current_user.user_id),
+            )
+            existing = cur.fetchone()
+            existing_status = (existing["status"] if hasattr(existing, "keys") else existing[0]) if existing else "unknown"
             raise HTTPException(
                 status_code=409,
                 detail=f"Already applied to this job (status={existing_status})",
@@ -71,10 +87,11 @@ def apply_to_job_endpoint(
     with get_connection() as conn:
         conn.execute(
             f"""
-            INSERT INTO public.application_packages (user_id, job_id, status, screening_answers)
-            VALUES ({ph}::uuid, {ph}::uuid, {ph}, {ph})
+            UPDATE public.application_packages
+            SET status = {ph}, screening_answers = {ph}, updated_at = NOW()
+            WHERE user_id = {ph}::uuid AND job_id = {ph}::uuid
             """,
-            (current_user.user_id, job_id, db_status, json.dumps(result.submitted_answers or {}, default=str)),
+            (db_status, json.dumps(result.submitted_answers or {}, default=str), current_user.user_id, job_id),
         )
         conn.commit()
 

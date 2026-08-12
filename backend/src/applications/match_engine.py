@@ -162,9 +162,14 @@ class MatchEngine:
                 # Bottom 50% -> scale 0 to 69 based on raw
                 job['opportunity_score'] = int((job.get('raw_score', 0) / 100.0) * 69)
                 
-            # Update passed flag based on new threshold
+            # Update passed flag based on new threshold. .get() here, not
+            # direct subscript -- evaluate()'s non-hard-reject success path
+            # never sets "rejection_reason" (only its two early hard-reject
+            # returns do), so a direct job['rejection_reason'] read raised
+            # KeyError for every job that fell below threshold after
+            # normalization -- i.e. most jobs, by design of this function.
             job['passed'] = job['opportunity_score'] >= self.threshold
-            if not job['passed'] and not job['rejection_reason']:
+            if not job['passed'] and not job.get('rejection_reason'):
                 job['rejection_reason'] = "Normalized Score Below Threshold"
                 
         return valid_jobs + rejects

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../lib/auth";
 import { API_BASE } from "../../lib/api";
@@ -154,6 +154,14 @@ function useCandidateProfile() {
   return useQuery({
     queryKey: ["candidate-profile"],
     meta: { persist: true },
+    // No staleTime meant every window refocus refetched this and handed a
+    // new object reference to the effect below, which unconditionally
+    // overwrote in-progress local edits with the stale server snapshot --
+    // confirmed real: alt-tab mid-edit, come back, unsaved changes gone
+    // with no warning. Refocus-triggered refetch of a form the user might
+    // be actively editing is the wrong default here.
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
     queryFn: async (): Promise<ProfileData> => {
       const res = await fetch(`${API_BASE}/candidate/profile`, {
         headers: { Authorization: `Bearer ${session?.access_token}` },
@@ -425,7 +433,7 @@ function ResumePage() {
   const [mode, setMode] = useState<"chooser" | "builder">("chooser");
   const [profile, setProfile] = useState<ProfileData>(EMPTY_PROFILE);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
-  const [draftState, setDraftState] = useState<"idle" | "saving" | "saved">("idle");
+  const [draftState, setDraftState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadState, setUploadState] = useState<"idle" | "uploading">("idle");
@@ -443,8 +451,14 @@ function ResumePage() {
   } | null>(null);
   const [generateError, setGenerateError] = useState<string | null>(null);
 
+  // Applies the server snapshot into local edit state exactly once -- after
+  // that, local edits are authoritative. Without this guard, any later
+  // re-fetch of ["candidate-profile"] (even a deliberate one elsewhere in
+  // the app) would silently overwrite whatever the user was mid-editing.
+  const profileInitialized = useRef(false);
   useEffect(() => {
-    if (loadedProfile) {
+    if (loadedProfile && !profileInitialized.current) {
+      profileInitialized.current = true;
       setProfile(loadedProfile);
       if (loadedProfile.experience.length > 0 || loadedProfile.personal_info.full_name) {
         setMode("builder");
@@ -489,7 +503,11 @@ function ResumePage() {
       setDraftState("saved");
       setTimeout(() => setDraftState("idle"), 2000);
     } catch {
-      setDraftState("idle");
+      // Was silently resetting to "idle" -- indistinguishable from a
+      // successful save that had simply finished, so a failed save looked
+      // exactly like nothing happened. The draft was never persisted.
+      setDraftState("error");
+      setTimeout(() => setDraftState("idle"), 3000);
     }
   };
 
@@ -973,7 +991,9 @@ function ResumePage() {
               ? "Saving…"
               : draftState === "saved"
                 ? "Draft saved ✓"
-                : "Save draft"}
+                : draftState === "error"
+                  ? "Save failed — retry"
+                  : "Save draft"}
           </button>
           <button
             type="button"

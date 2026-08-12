@@ -114,8 +114,8 @@ def find_and_draft_referral(
                 f"""
                 INSERT INTO public.referral_outreach
                     (user_id, job_id, company_name, job_title, contact_name, contact_role,
-                     contact_email, email_confidence, discovery_source, subject, body, status)
-                VALUES ({ph}::uuid, {ph}::uuid, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})
+                     contact_email, email_confidence, discovery_source, subject, body, status{", sent_at" if sent_at_clause else ""})
+                VALUES ({ph}::uuid, {ph}::uuid, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}{", NOW()" if sent_at_clause else ""})
                 """,
                 tuple(params),
             )

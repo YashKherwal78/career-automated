@@ -272,7 +272,7 @@ export const FALLBACK_JOBS: Job[] = [
     provider: "greenhouse",
     posted_at: "Today",
     job_score: 95,
-    intent_score: 98,
+    intent_score: 0.98,
     score_breakdown: [
       { keyword: "Python", matched: true },
       { keyword: "FastAPI", matched: true },
@@ -293,7 +293,7 @@ export const FALLBACK_JOBS: Job[] = [
     provider: "greenhouse",
     posted_at: "Today",
     job_score: 93,
-    intent_score: 95,
+    intent_score: 0.95,
     score_breakdown: [
       { keyword: "Machine Learning", matched: true },
       { keyword: "PyTorch", matched: true },
@@ -313,7 +313,7 @@ export const FALLBACK_JOBS: Job[] = [
     provider: "lever",
     posted_at: "1 day ago",
     job_score: 91,
-    intent_score: 92,
+    intent_score: 0.92,
     score_breakdown: [
       { keyword: "Go", matched: true },
       { keyword: "PostgreSQL", matched: true },
@@ -333,7 +333,7 @@ export const FALLBACK_JOBS: Job[] = [
     provider: "ashby",
     posted_at: "Today",
     job_score: 90,
-    intent_score: 94,
+    intent_score: 0.94,
     score_breakdown: [
       { keyword: "React", matched: true },
       { keyword: "TypeScript", matched: true },
@@ -353,7 +353,7 @@ export const FALLBACK_JOBS: Job[] = [
     provider: "ashby",
     posted_at: "2 days ago",
     job_score: 89,
-    intent_score: 90,
+    intent_score: 0.90,
     score_breakdown: [
       { keyword: "React", matched: true },
       { keyword: "TypeScript", matched: true },
@@ -373,7 +373,7 @@ export const FALLBACK_JOBS: Job[] = [
     provider: "greenhouse",
     posted_at: "1 day ago",
     job_score: 96,
-    intent_score: 99,
+    intent_score: 0.99,
     score_breakdown: [
       { keyword: "Python", matched: true },
       { keyword: "LLM", matched: true },
@@ -393,7 +393,7 @@ export const FALLBACK_JOBS: Job[] = [
     provider: "keka",
     posted_at: "Today",
     job_score: 88,
-    intent_score: 89,
+    intent_score: 0.89,
     score_breakdown: [
       { keyword: "Java", matched: true },
       { keyword: "Kubernetes", matched: true },
@@ -423,41 +423,35 @@ export class ApiJobService implements JobService {
   }
 
   async getJobs(filters?: any): Promise<Job[]> {
-    try {
-      const params = this.buildParams(filters);
-      const res = await authFetch(`${API_BASE}/jobs?${params.toString()}`, undefined, JOBS_TIMEOUT_MS);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) return data;
-      }
-    } catch (e) {
-      console.warn("Backend jobs API slow/unreachable, using instant job feed fallback:", e);
-    }
-    return FALLBACK_JOBS;
+    // Used to silently fall back to FALLBACK_JOBS (hardcoded fake Stripe/
+    // Airbnb/Anthropic postings with fake apply links) on ANY failure --
+    // including a slow response, a transient 5xx, or genuinely zero real
+    // matches -- with no signal distinguishing them from real jobs. A user
+    // could click "Apply" on a fake posting and hit a dead job_id server-
+    // side. Real failures now propagate so the caller's actual empty/error
+    // state (e.g. dashboard/index.tsx's "still scanning for you") renders
+    // instead of fabricated data. FALLBACK_JOBS itself is kept only for
+    // MockJobService (explicit demo mode), not used here anymore.
+    const params = this.buildParams(filters);
+    const res = await authFetch(`${API_BASE}/jobs?${params.toString()}`, undefined, JOBS_TIMEOUT_MS);
+    if (!res.ok) throw new Error(`Jobs request failed (${res.status})`);
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
   }
 
   async getBoardJobs(filters?: any): Promise<Job[]> {
-    try {
-      const params = this.buildParams(filters);
-      const res = await authFetch(`${API_BASE}/jobs/boards?${params.toString()}`, undefined, JOBS_TIMEOUT_MS);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) return data;
-      }
-    } catch (e) {
-      console.warn("Backend board jobs API slow/unreachable, using instant job feed fallback:", e);
-    }
-    return FALLBACK_JOBS;
+    const params = this.buildParams(filters);
+    const res = await authFetch(`${API_BASE}/jobs/boards?${params.toString()}`, undefined, JOBS_TIMEOUT_MS);
+    if (!res.ok) throw new Error(`Board jobs request failed (${res.status})`);
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
   }
 
   async getJob(jobId: string): Promise<Job> {
-    try {
-      const res = await authFetch(`${API_BASE}/jobs/${jobId}`);
-      if (res.ok) return await res.json();
-    } catch (e) {
-      console.warn("Backend job details API slow/unreachable:", e);
-    }
-    return FALLBACK_JOBS.find((j) => j.job_id === jobId) || FALLBACK_JOBS[0];
+    // Same reasoning as getJobs/getBoardJobs above -- no fabricated fallback.
+    const res = await authFetch(`${API_BASE}/jobs/${jobId}`);
+    if (!res.ok) throw new Error(`Job detail request failed (${res.status})`);
+    return await res.json();
   }
 
   async getRecentJobs(): Promise<Job[]> {

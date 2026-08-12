@@ -358,7 +358,7 @@ def _has_cover_letter_access(current_user: "CurrentUser", db) -> bool:
 # ---------------------------------------------------------------------------
 
 @router.post("/tailor", response_model=TailorResponse, status_code=status.HTTP_200_OK)
-def tailor_resume(request: TailorRequest, db=Depends(get_db)):
+def tailor_resume(request: TailorRequest, db=Depends(get_db), current_user: CurrentUser = Depends(get_current_user)):
     """
     Tailor the candidate's base resume for a specific job.
 
@@ -366,6 +366,14 @@ def tailor_resume(request: TailorRequest, db=Depends(get_db)):
     Runs TailoringEngineV1 and returns the ephemeral tailored .tex.
     Result is never written to DB.
     """
+    # This router is mounted with a router-level auth dependency, so every
+    # caller here is a *logged-in* user -- but candidate_id came from the
+    # request body, not the session, so without this check any logged-in
+    # user could pass someone else's candidate_id and get their base resume
+    # text, career-profile facts, and AI tone preferences back (an IDOR:
+    # authenticated, but not authorized for the specific resource).
+    if request.candidate_id != current_user.user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="candidate_id does not match the authenticated user")
     logger.info("POST /resume/tailor — candidate=%s, job=%s", request.candidate_id, request.job_id or "(pasted JD)")
 
     base_tex = _load_base_tex(request.candidate_id, db)
@@ -468,11 +476,14 @@ def compile_tailored_pdf(
 
 
 @router.post("/tailor/preview", response_model=TailorPreviewResponse, status_code=status.HTTP_200_OK)
-def preview_tailor(request: TailorRequest, db=Depends(get_db)):
+def preview_tailor(request: TailorRequest, db=Depends(get_db), current_user: CurrentUser = Depends(get_current_user)):
     """
     Preview what the tailoring engine would change — without returning the full .tex.
     Used by the dashboard diff view.
     """
+    # Same authorization gap as /tailor above -- see comment there.
+    if request.candidate_id != current_user.user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="candidate_id does not match the authenticated user")
     logger.info("POST /resume/tailor/preview — candidate=%s, job=%s", request.candidate_id, request.job_id or "(pasted JD)")
 
     base_tex = _load_base_tex(request.candidate_id, db)
@@ -527,6 +538,10 @@ def generate_cover_letter(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
             detail="Cover letter generation is a Pro feature. Upgrade to generate one.",
         )
+    # Same authorization gap as /tailor -- being a paying user isn't the
+    # same as being authorized for the specific candidate_id in the body.
+    if request.candidate_id != current_user.user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="candidate_id does not match the authenticated user")
 
     logger.info("POST /resume/cover-letter — candidate=%s, job=%s", request.candidate_id, request.job_id or "(pasted JD)")
 

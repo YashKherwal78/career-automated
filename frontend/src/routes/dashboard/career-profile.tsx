@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../lib/auth";
 import { API_BASE } from "../../lib/api";
@@ -120,6 +120,11 @@ function CareerProfilePage() {
   const { data: loaded, isLoading } = useQuery({
     queryKey: ["candidate-profile"],
     meta: { persist: true },
+    // See resume.tsx's identical query for why: without this, a window
+    // refocus mid-edit silently refetches and the effect below stomps
+    // unsaved field edits with the pre-edit server snapshot.
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
     queryFn: async (): Promise<ProfileData> => {
       const res = await fetch(`${API_BASE}/candidate/profile`, {
         headers: { Authorization: `Bearer ${session?.access_token}` },
@@ -140,8 +145,14 @@ function CareerProfilePage() {
     enabled: !!session,
   });
 
+  // Applied once -- see resume.tsx's identical guard. Individual fields
+  // here save on blur, so a stray refetch reverting an already-blurred
+  // field would be harmless, but a field the user is actively typing into
+  // (not yet blurred) would get silently reset without this.
+  const profileInitialized = useRef(false);
   useEffect(() => {
-    if (loaded) {
+    if (loaded && !profileInitialized.current) {
+      profileInitialized.current = true;
       setProfile(loaded);
       setSkillsDraft(Object.values(loaded.skills).flat().join(", "));
     }

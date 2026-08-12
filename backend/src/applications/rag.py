@@ -229,20 +229,39 @@ class RAGClient:
                 linked |= chunk_idxs
         return linked
 
+    # Standard default per the Reciprocal Rank Fusion literature (Cormack
+    # et al. 2009; the value pgvector/hybrid-search production guides also
+    # converge on) -- large enough that rank 1 vs rank 2 in one retriever
+    # doesn't swing the fused score wildly, small enough that top ranks
+    # still dominate. Not re-derived here since 60 is the well-established
+    # default, not a free parameter worth hand-tuning on a 20-chunk corpus.
+    _RRF_K = 60
+
     def retrieve(self, query: str, top_k_initial: int = 8, top_k_final: int = 3) -> list[dict]:
         """
-        Hybrid retrieval: BM25 (sparse/keyword) + embedding cosine similarity
-        (dense/semantic) + a keyword tag boost, fused into one normalized
-        [0,1] confidence per chunk. Graph-linked chunks (see
-        _build_entity_graph) are unioned into the candidate pool before
-        scoring so an entity match can surface a chunk that neither BM25 nor
-        the embedding would have ranked in the initial top-K alone --
-        multi-hop recall without needing a heavier graph-RAG stack.
+        Hybrid retrieval via Reciprocal Rank Fusion (RRF) over two ranked
+        lists -- BM25 (sparse/keyword) and embedding cosine similarity
+        (dense/semantic) -- rather than a hand-tuned weighted sum of raw
+        scores. RRF fuses by *rank*, not raw score, which sidesteps the
+        scale-mismatch problem that caused a real bug here before (BM25's
+        raw score is unbounded and corpus-size-dependent; cosine similarity
+        is bounded [-1,1] -- averaging them directly over- or under-weights
+        one arbitrarily depending on corpus size). This is the standard
+        approach in production hybrid-search systems (see e.g. Elasticsearch
+        and pgvector hybrid-search reference implementations), not a
+        custom scheme invented for this corpus.
 
-        Each returned item includes both a raw "score" (backward compatible
-        with callers doing their own reranking) and a normalized
-        "confidence" in [0,1] -- callers doing a low-confidence gate should
-        use "confidence", not "score", since "score" isn't on a stable scale.
+        Graph-linked chunks (see _build_entity_graph) are unioned into the
+        candidate pool AND treated as a third ranked list (all tied at rank
+        1) so an entity match can surface a chunk that neither BM25 nor the
+        embedding ranked highly alone -- multi-hop recall without a heavier
+        graph-RAG stack, which public guidance on this (see research notes
+        in the commit this landed in) says isn't justified at this corpus
+        size (~20 chunks, one source document) regardless.
+
+        Each returned item includes "confidence" -- the fused RRF score,
+        which callers should use directly for a low-confidence gate rather
+        than either underlying signal alone.
         """
         if not self.chunks:
             return []
@@ -250,7 +269,6 @@ class RAGClient:
         query_tokens = _tokenize(query)
 
         bm25_scores = self.bm25.get_scores(query_tokens) if self.bm25 else [0.0] * len(self.chunks)
-        max_bm25 = max(bm25_scores) if len(bm25_scores) else 0.0
 
         query_embedding = None
         if self.chunk_embeddings:
@@ -259,42 +277,36 @@ class RAGClient:
             except Exception as e:
                 logger.info(f"RAGClient: query embedding failed ({e}); continuing BM25-only for this query.")
 
-        # Candidate pool: top-N by BM25 alone, unioned with every
-        # graph-linked chunk for entities mentioned in the query.
-        bm25_ranked = sorted(range(len(self.chunks)), key=lambda i: bm25_scores[i], reverse=True)
-        candidate_idxs = set(bm25_ranked[:top_k_initial]) | self._graph_linked_indices(query)
+        graph_linked = self._graph_linked_indices(query)
+
+        # Rank lists: BM25 over every chunk with nonzero score (a chunk
+        # sharing zero tokens with the query shouldn't get RRF credit just
+        # for existing); embeddings over every chunk if available.
+        bm25_rank_list = [i for i in sorted(range(len(self.chunks)), key=lambda i: bm25_scores[i], reverse=True) if bm25_scores[i] > 0]
+        bm25_rank_of = {idx: r for r, idx in enumerate(bm25_rank_list)}
+
+        embed_rank_of: dict[int, int] = {}
+        if query_embedding is not None and self.chunk_embeddings:
+            sims = [(_cosine(query_embedding, vec), idx) for idx, vec in enumerate(self.chunk_embeddings)]
+            sims.sort(key=lambda x: x[0], reverse=True)
+            embed_rank_of = {idx: r for r, (_, idx) in enumerate(sims)}
+
+        candidate_idxs = set(bm25_rank_list[:top_k_initial]) | set(embed_rank_of.keys() and list(embed_rank_of.keys())[:top_k_initial]) | graph_linked
 
         scored = []
         for idx in candidate_idxs:
             chunk_data = self.chunks[idx]
-            chunk_text_lower = chunk_data["text"].lower()
-
-            bm25_norm = (bm25_scores[idx] / max_bm25) if max_bm25 > 0 else 0.0
-
-            embed_sim = 0.0
-            if query_embedding is not None and idx < len(self.chunk_embeddings):
-                embed_sim = max(0.0, _cosine(query_embedding, self.chunk_embeddings[idx]))
-
-            tag_hits = 0
-            for token in query_tokens:
-                clean_token = token.strip("?,.!\"'")
-                if len(clean_token) > 3 and clean_token in chunk_text_lower:
-                    tag_hits += 1
-            tag_norm = min(1.0, tag_hits / max(1, len(query_tokens)))
-
-            # BM25 kept as the primary signal -- exact tech/company-name
-            # matches (the terms these questions actually turn on) are
-            # sparse-retrieval's strength -- with embedding similarity
-            # filling the recall gap on paraphrased questions, and the tag
-            # boost as a light tiebreaker. Weights are a judgment call, not
-            # tuned against a held-out set -- see rag_eval.py for the
-            # harness to actually validate/adjust this against real
-            # questions instead of guessing forever.
-            confidence = 0.5 * bm25_norm + 0.35 * embed_sim + 0.15 * tag_norm
+            rrf = 0.0
+            if idx in bm25_rank_of:
+                rrf += 1.0 / (self._RRF_K + bm25_rank_of[idx] + 1)
+            if idx in embed_rank_of:
+                rrf += 1.0 / (self._RRF_K + embed_rank_of[idx] + 1)
+            if idx in graph_linked:
+                rrf += 1.0 / (self._RRF_K + 1)  # treated as rank-1 in the graph "retriever"
 
             scored.append({
-                "score": bm25_scores[idx] + tag_hits,  # backward-compatible raw score
-                "confidence": confidence,
+                "score": rrf,
+                "confidence": rrf,
                 "text": chunk_data["text"],
                 "type": chunk_data["type"],
             })
