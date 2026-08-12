@@ -16,6 +16,7 @@ from typing import Any, Dict, Optional
 from src.api.db import get_connection, is_postgres
 from src.applications.apply_service import apply_to_job
 from src.applications.resume_selector import ResumeSelector
+from src.referrals.apply_integration import find_and_draft_referral
 from src.system.logger import setup_logger
 
 logger = setup_logger("batch_apply")
@@ -48,8 +49,9 @@ def get_candidate_jobs(conn, user_id: str, min_score: int, limit: Optional[int] 
     placeholders = ",".join([ph] * len(_SUPPORTED_PROVIDERS))
     limit_clause = f"LIMIT {int(limit)}" if limit else ""
     query = f"""
-        SELECT n.job_id, n.title, n.provider, n.apply_url, n.location,
+        SELECT n.job_id, n.title, n.provider, n.apply_url, n.location, n.description,
                COALESCE(i.canonical_name, n.company_id) AS canonical_name,
+               i.domain AS company_domain,
                s.job_score
         FROM public.user_job_scores s
         JOIN public.normalized_jobs n ON n.job_id = s.job_id
@@ -195,6 +197,19 @@ def run_batch(
                 record_attempt(attempt_conn, user_id, job_id, db_status, record)
         except Exception:
             pass
+
+        if live:
+            # Best-effort, non-fatal by design (see apply_integration.py) --
+            # a referral-discovery failure must never affect the batch's own
+            # progress/results.
+            find_and_draft_referral(
+                user_id=user_id,
+                job_id=job_id,
+                job_title=job["title"],
+                company_name=job.get("canonical_name", ""),
+                job_description=job.get("description") or "",
+                company_domain=job.get("company_domain") or "",
+            )
 
         status["completed"] = i + 1
         if i < len(jobs) - 1:

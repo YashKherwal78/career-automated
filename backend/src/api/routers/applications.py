@@ -14,6 +14,7 @@ from src.applications.profile import ProfileManager
 from src.applications.question_engine import QuestionEngine
 from src.applications.rag import RAGClient
 from src.applications.resume_selector import ResumeSelector
+from src.referrals.apply_integration import find_and_draft_referral
 from src.runtime.auth.dependencies import CurrentUser, get_current_user
 from src.utils.llm_router import LLMRouter
 
@@ -34,6 +35,7 @@ class ApplyRequest(BaseModel):
 @router.post("/{job_id}/apply")
 def apply_to_job_endpoint(
     job_id: str,
+    background_tasks: BackgroundTasks,
     body: ApplyRequest = ApplyRequest(),
     repos: RepositoryManager = Depends(get_repos),
     current_user: CurrentUser = Depends(get_current_user),
@@ -74,6 +76,17 @@ def apply_to_job_endpoint(
             (current_user.user_id, job_id, db_status, json.dumps(result.submitted_answers or {}, default=str)),
         )
         conn.commit()
+
+    if not body.test_mode:
+        background_tasks.add_task(
+            find_and_draft_referral,
+            user_id=current_user.user_id,
+            job_id=job_id,
+            job_title=job_row.get("title", ""),
+            company_name=job_row.get("canonical_name", ""),
+            job_description=job_row.get("description") or "",
+            company_domain=job_row.get("company_domain") or "",
+        )
 
     return {
         "status": result.status,

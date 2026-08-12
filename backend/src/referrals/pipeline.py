@@ -28,7 +28,7 @@ def run_referral_engine(company_name: str, job_title: str, job_description: str 
     contacts = discover_contacts(company_name, job_title, job_description)
     if not contacts:
         logger.info("❌ [Referral Engine] No contacts discovered.")
-        return
+        return []
         
     logger.info(f"✅ Discovered {len(contacts)} potential contacts.")
     
@@ -73,21 +73,29 @@ def run_referral_engine(company_name: str, job_title: str, job_description: str 
             contact["email"] = None
             contact["email_confidence"] = 0
         
-    # Step 5: Save to CRM
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    for contact in scored_contacts:
-        cursor.execute('''
-            INSERT OR IGNORE INTO referral_contacts 
-            (company, job_title, contact_name, linkedin_url, email, email_confidence, 
-             contact_type, discovery_source, profile_confidence, raw_profile_json, referral_score, ranking_reason)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            contact["company"], contact["job_title"], contact["contact_name"], contact["linkedin_url"],
-            contact["email"], contact["email_confidence"], contact["contact_type"], contact["discovery_source"],
-            contact["profile_confidence"], contact["raw_profile_json"], contact["referral_score"], contact["ranking_reason"]
-        ))
-    conn.commit()
-    conn.close()
-    
-    logger.info(f"✅ [Referral Engine] Successfully logged {len(scored_contacts)} contacts into the CRM.")
+    # Step 5: Save to local CRM (best-effort -- this is a standalone
+    # SQLite scratch DB, disconnected from the production Postgres DB the
+    # apply flow actually runs on; see src/referrals/apply_integration.py
+    # for the real per-application storage. A failure writing to this local
+    # file shouldn't block returning scored_contacts to that caller.)
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        for contact in scored_contacts:
+            cursor.execute('''
+                INSERT OR IGNORE INTO referral_contacts
+                (company, job_title, contact_name, linkedin_url, email, email_confidence,
+                 contact_type, discovery_source, profile_confidence, raw_profile_json, referral_score, ranking_reason)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                contact["company"], contact["job_title"], contact["contact_name"], contact["linkedin_url"],
+                contact["email"], contact["email_confidence"], contact["contact_type"], contact["discovery_source"],
+                contact["profile_confidence"], contact["raw_profile_json"], contact["referral_score"], contact["ranking_reason"]
+            ))
+        conn.commit()
+        conn.close()
+        logger.info(f"✅ [Referral Engine] Successfully logged {len(scored_contacts)} contacts into the local CRM.")
+    except Exception as e:
+        logger.info(f"⚠️ [Referral Engine] Local CRM logging failed (non-fatal): {e}")
+
+    return scored_contacts
