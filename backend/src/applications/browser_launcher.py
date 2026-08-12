@@ -16,7 +16,45 @@ None of this fakes a "trusted" click or bypasses an actual CAPTCHA
 challenge — see the auto-apply architecture notes on why that's not
 attempted here.
 """
+import atexit
+import os
+import shutil
+import subprocess
+import sys
+import time
+
 from playwright.sync_api import sync_playwright
+
+_XVFB_STARTED = False
+
+
+def _ensure_virtual_display() -> None:
+    """Chrome is launched headed (see LaunchedBrowser below) rather than
+    headless — headless Chrome trips several ATS bot-detection heuristics
+    that headed Chrome doesn't. On a local dev machine that's fine, there's
+    a real display. On a Linux server/container (no X server) headed launch
+    fails outright ("Missing X server or $DISPLAY"), and after that failure
+    Playwright's driver is left in a broken state that also poisons every
+    later launch in the same process ("Sync API inside asyncio loop").
+    Starting one Xvfb virtual display for the life of this process — instead
+    of switching to headless=True — keeps the real-Chrome rendering path
+    that the stealth patches below are built around.
+    """
+    global _XVFB_STARTED
+    if _XVFB_STARTED or os.environ.get("DISPLAY") or sys.platform != "linux":
+        return
+    if not shutil.which("Xvfb"):
+        return
+    proc = subprocess.Popen(
+        ["Xvfb", ":99", "-screen", "0", "1280x800x24", "-nolisten", "tcp"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    atexit.register(proc.terminate)
+    os.environ["DISPLAY"] = ":99"
+    time.sleep(0.5)
+    _XVFB_STARTED = True
+
 
 _STEALTH_INIT_SCRIPT = """
 Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
@@ -34,6 +72,7 @@ class LaunchedBrowser:
     (and potentially drift on) the same launch boilerplate."""
 
     def __enter__(self):
+        _ensure_virtual_display()
         self._pw = sync_playwright().start()
         self.browser = self._pw.chromium.launch(
             headless=False,
