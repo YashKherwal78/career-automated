@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ServiceRegistry, type Job } from "../../lib/services";
 import { useAuth } from "../../lib/auth";
 import { API_BASE } from "../../lib/api";
@@ -30,6 +30,7 @@ function timeGreeting(): string {
 
 function DashboardHome() {
   const { profile, session } = useAuth();
+  const queryClient = useQueryClient();
   const firstName = getDisplayName(profile?.full_name, profile?.email, "there").split(" ")[0];
 
   const {
@@ -66,9 +67,6 @@ function DashboardHome() {
   const [page, setPage] = useState(0);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
-  // Auto-apply toggle/preferences are still frontend-only (no backend policy
-  // endpoint) but "Add to auto-apply queue" now drives a real submission —
-  // see handleQueueJob.
   const [autoApplyOn, setAutoApplyOn] = useState(false);
   const [showPreferencesModal, setShowPreferencesModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -88,13 +86,27 @@ function DashboardHome() {
   });
   const batchRunning = !!batchStatus?.running;
 
-  // Reflects server truth in the toggle even if you reload mid-run or open
-  // the dashboard in a new tab — "Pause" below still can't stop the actual
+  const { data: autoApplyPolicy } = useQuery({
+    queryKey: ["auto-apply-policy"],
+    queryFn: () => ServiceRegistry.getJobService().getAutoApplyPolicy(),
+  });
+
+  const { data: needsReview = [] } = useQuery({
+    queryKey: ["needs-review"],
+    queryFn: () => ServiceRegistry.getJobService().getNeedsReview(),
+    // Re-check after each batch-apply job finishes, not just on load — the
+    // list should grow live as a run progresses, same as the progress text.
+    refetchInterval: batchRunning ? 5000 : false,
+  });
+
+  // Reflects server truth in the toggle: either the durable "enabled"
+  // policy (survives reloads even between runs) or an active run (survives
+  // reload mid-run too). "Pause" below still can't stop the actual
   // server-side run (no cancel endpoint yet), it only stops this tab from
   // polling, so this effect will just flip it back on next poll anyway.
   useEffect(() => {
-    if (batchStatus?.running) setAutoApplyOn(true);
-  }, [batchStatus?.running]);
+    if (batchStatus?.running || autoApplyPolicy?.enabled) setAutoApplyOn(true);
+  }, [batchStatus?.running, autoApplyPolicy?.enabled]);
 
   const filtered = useMemo(() => {
     return jobs.filter((job) => {
@@ -116,12 +128,18 @@ function DashboardHome() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageResults = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
 
-  const handleToggleAutoApply = () => {
+  const handleToggleAutoApply = async () => {
     if (!autoApplyOn) {
       setShowPreferencesModal(true);
       return;
     }
     setAutoApplyOn(false);
+    try {
+      await ServiceRegistry.getJobService().setAutoApplyPolicy(false, 70);
+      queryClient.invalidateQueries({ queryKey: ["auto-apply-policy"] });
+    } catch (e) {
+      console.error("Failed to disable auto-apply policy:", e);
+    }
   };
 
   const handleSavePreferences = async () => {
@@ -131,6 +149,8 @@ function DashboardHome() {
     setShowPreferencesModal(false);
     setAutoApplyOn(true);
     try {
+      await ServiceRegistry.getJobService().setAutoApplyPolicy(true, 70);
+      queryClient.invalidateQueries({ queryKey: ["auto-apply-policy"] });
       await ServiceRegistry.getJobService().startBatchApply(70);
     } catch (e) {
       console.error("Failed to start auto-apply batch:", e);
@@ -268,6 +288,67 @@ function DashboardHome() {
             </DsButton>
           )}
         </div>
+
+        {needsReview.length > 0 && (
+          <div
+            style={{
+              background: "var(--ds-brand-orange-tint-08)",
+              border: "1px solid rgba(255,255,255,0.6)",
+              borderRadius: "var(--ds-radius-xl)",
+              padding: "18px 22px",
+              marginBottom: 18,
+            }}
+          >
+            <div
+              className="font-[var(--ds-font-display)] font-semibold"
+              style={{ fontSize: 15, marginBottom: 10 }}
+            >
+              Needs your attention ({needsReview.length})
+            </div>
+            <div className="flex flex-col gap-2.5">
+              {needsReview.slice(0, 8).map((item) => (
+                <div
+                  key={item.job_id}
+                  className="flex items-center justify-between gap-3 flex-wrap"
+                  style={{
+                    background: "rgba(255,255,255,0.6)",
+                    borderRadius: "var(--ds-radius-md)",
+                    padding: "10px 14px",
+                  }}
+                >
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 600 }}>
+                      {item.title || "Untitled role"}
+                      <span style={{ color: "var(--ds-ink-400)", fontWeight: 500 }}>
+                        {" "}
+                        · {item.provider}
+                        {item.job_score != null ? ` · ${item.job_score}% match` : ""}
+                      </span>
+                    </div>
+                    {item.reason && (
+                      <div style={{ fontSize: 12, color: "var(--ds-ink-500)", marginTop: 2 }}>
+                        {item.reason}
+                      </div>
+                    )}
+                  </div>
+                  <span
+                    className="font-semibold uppercase flex-shrink-0"
+                    style={{
+                      fontSize: 10.5,
+                      letterSpacing: 0.4,
+                      color: "var(--ds-brand-orange-text)",
+                      background: "var(--ds-cream-300)",
+                      padding: "4px 8px",
+                      borderRadius: "var(--ds-radius-pill)",
+                    }}
+                  >
+                    {item.status.replace(/_/g, " ")}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {showResumeNudge && (
           <div

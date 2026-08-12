@@ -91,6 +91,9 @@ export interface JobService {
   }>;
   startBatchApply(minScore?: number): Promise<{ started: boolean; candidate_count: number }>;
   getBatchApplyStatus(): Promise<BatchApplyStatus>;
+  getAutoApplyPolicy(): Promise<{ enabled: boolean; min_score: number }>;
+  setAutoApplyPolicy(enabled: boolean, minScore?: number): Promise<{ enabled: boolean; min_score: number }>;
+  getNeedsReview(): Promise<NeedsReviewItem[]>;
 }
 
 export interface BatchApplyStatus {
@@ -101,6 +104,16 @@ export interface BatchApplyStatus {
   review_required?: number;
   failed?: number;
   current_job_title?: string | null;
+}
+
+export interface NeedsReviewItem {
+  job_id: string;
+  title: string;
+  provider: string;
+  job_score: number | null;
+  status: string;
+  reason: string;
+  created_at: string;
 }
 
 export interface CompanyService {
@@ -396,6 +409,32 @@ export class ApiJobService implements JobService {
     if (!res.ok) throw new Error(`Batch apply status failed (${res.status})`);
     return res.json();
   }
+
+  async getAutoApplyPolicy(): Promise<{ enabled: boolean; min_score: number }> {
+    const res = await authFetch(`${API_BASE}/applications/auto-apply-policy`);
+    if (!res.ok) throw new Error(`Auto-apply policy fetch failed (${res.status})`);
+    return res.json();
+  }
+
+  async setAutoApplyPolicy(
+    enabled: boolean,
+    minScore = 70,
+  ): Promise<{ enabled: boolean; min_score: number }> {
+    const res = await authFetch(`${API_BASE}/applications/auto-apply-policy`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ enabled, min_score: minScore }),
+    });
+    if (!res.ok) throw new Error(`Auto-apply policy save failed (${res.status})`);
+    return res.json();
+  }
+
+  async getNeedsReview(): Promise<NeedsReviewItem[]> {
+    const res = await authFetch(`${API_BASE}/applications/needs-review`);
+    if (!res.ok) throw new Error(`Needs-review fetch failed (${res.status})`);
+    const data = await res.json();
+    return data.items || [];
+  }
 }
 
 export class ApiCompanyService implements CompanyService {
@@ -532,6 +571,15 @@ export class MockJobService implements JobService {
   }
   async getBatchApplyStatus(): Promise<BatchApplyStatus> {
     return { running: false };
+  }
+  async getAutoApplyPolicy(): Promise<{ enabled: boolean; min_score: number }> {
+    return { enabled: false, min_score: 70 };
+  }
+  async setAutoApplyPolicy(enabled: boolean, minScore = 70): Promise<{ enabled: boolean; min_score: number }> {
+    return { enabled, min_score: minScore };
+  }
+  async getNeedsReview(): Promise<NeedsReviewItem[]> {
+    return [];
   }
 }
 

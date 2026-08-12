@@ -196,3 +196,97 @@ def resume_for_job(
         media_type="application/pdf",
         filename=os.path.basename(resume_path),
     )
+
+
+class AutoApplyPolicy(BaseModel):
+    enabled: bool
+    min_score: int = 70
+
+
+@router.get("/auto-apply-policy")
+def get_auto_apply_policy(current_user: CurrentUser = Depends(get_current_user)):
+    """Durable on/off state for the dashboard's "Start Auto Apply" toggle --
+    previously only lived in frontend useState, so it reset to "off" on
+    every page load/reload regardless of whether a run was still going."""
+    ph = "%s" if is_postgres() else "?"
+    with get_connection() as conn:
+        cur = conn.execute(
+            f"SELECT enabled, minimum_match_score FROM public.user_application_policies WHERE user_id = {ph}::uuid",
+            (current_user.user_id,),
+        )
+        row = cur.fetchone()
+    if not row:
+        return {"enabled": False, "min_score": 70}
+    d = row if isinstance(row, dict) else dict(row)
+    return {"enabled": bool(d.get("enabled")), "min_score": d.get("minimum_match_score", 70)}
+
+
+@router.post("/auto-apply-policy")
+def set_auto_apply_policy(
+    body: AutoApplyPolicy,
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    ph = "%s" if is_postgres() else "?"
+    with get_connection() as conn:
+        if is_postgres():
+            conn.execute(
+                f"""
+                INSERT INTO public.user_application_policies (user_id, enabled, minimum_match_score, updated_at)
+                VALUES ({ph}::uuid, {ph}, {ph}, NOW())
+                ON CONFLICT (user_id) DO UPDATE
+                SET enabled = EXCLUDED.enabled, minimum_match_score = EXCLUDED.minimum_match_score, updated_at = NOW()
+                """,
+                (current_user.user_id, body.enabled, body.min_score),
+            )
+        else:
+            conn.execute(
+                f"""
+                INSERT OR REPLACE INTO public.user_application_policies (user_id, enabled, minimum_match_score)
+                VALUES ({ph}, {ph}, {ph})
+                """,
+                (current_user.user_id, body.enabled, body.min_score),
+            )
+        conn.commit()
+    return {"enabled": body.enabled, "min_score": body.min_score}
+
+
+@router.get("/needs-review")
+def needs_review(current_user: CurrentUser = Depends(get_current_user)):
+    """Applications that stopped short of submitting -- REVIEW_REQUIRED
+    (couldn't confidently finish, or hit a CAPTCHA), FAILED, or
+    RUNNER_ERROR -- with the actual reason, so a batch run's blockers are
+    visible instead of silently sitting in application_packages."""
+    ph = "%s" if is_postgres() else "?"
+    with get_connection() as conn:
+        cur = conn.execute(
+            f"""
+            SELECT job_id, status, screening_answers, created_at
+            FROM public.application_packages
+            WHERE user_id = {ph}::uuid AND status != 'SUBMITTED'
+            ORDER BY created_at DESC
+            LIMIT 100
+            """,
+            (current_user.user_id,),
+        )
+        rows = cur.fetchall()
+
+    items = []
+    for r in rows:
+        d = r if isinstance(r, dict) else dict(r)
+        answers = d.get("screening_answers")
+        if isinstance(answers, str):
+            try:
+                answers = json.loads(answers)
+            except Exception:
+                answers = {}
+        answers = answers or {}
+        items.append({
+            "job_id": str(d.get("job_id")),
+            "title": answers.get("title", ""),
+            "provider": answers.get("provider", ""),
+            "job_score": answers.get("job_score"),
+            "status": answers.get("status", d.get("status")),
+            "reason": answers.get("failure_reason") or answers.get("error") or "",
+            "created_at": str(d.get("created_at")),
+        })
+    return {"items": items}

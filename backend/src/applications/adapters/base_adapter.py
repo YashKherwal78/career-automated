@@ -1,6 +1,32 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Any
 
+
+def derive_diagnosis(telemetry: dict) -> str:
+    """Human-readable reason a non-COMPLETED result stopped short, built
+    from the telemetry fields base_handler.py's execute() already populates
+    (escalated_questions, missing_fields, captcha_paused). Every adapter
+    previously read telemetry.get("diagnosis_json", "") for failure_reason,
+    but nothing ever set that key, so failure_reason was silently blank on
+    every REVIEW_REQUIRED/FAILED result -- callers had no way to know why."""
+    reasons = []
+    if telemetry.get("captcha_paused"):
+        reasons.append("A CAPTCHA challenge appeared and needs a human to solve it")
+    for m in telemetry.get("missing_fields", []):
+        reasons.append(
+            f"Couldn't confidently answer required question: \"{m.get('question')}\" "
+            f"(confidence {m.get('confidence')})"
+        )
+    for e in telemetry.get("escalated_questions", []):
+        if e.get("required"):
+            reasons.append(f"Complex required question needs a human answer: \"{e.get('question')}\"")
+    if not reasons:
+        error_text = telemetry.get("submission_proof", {}).get("error_text")
+        if error_text:
+            reasons.append(error_text)
+    return "; ".join(reasons)
+
+
 class ApplicationResult:
     def __init__(self, status: str, confirmation_url: str = "", screenshot_path: str = "", submitted_answers: Dict[str, Any] = None, failure_reason: str = "", really_submitted: bool = False):
         self.status = status # COMPLETED, FAILED, REVIEW_REQUIRED

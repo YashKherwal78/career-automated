@@ -3,7 +3,7 @@ logger = setup_logger('workday_adapter')
 import os
 from typing import Dict, Any
 
-from src.applications.adapters.base_adapter import BaseAdapter, ApplicationResult
+from src.applications.adapters.base_adapter import BaseAdapter, ApplicationResult, derive_diagnosis
 from src.applications.browser_launcher import LaunchedBrowser
 from src.applications.handlers.workday import WorkdayHandler
 
@@ -52,7 +52,7 @@ class WorkdayAdapter(BaseAdapter):
                     confirmation_url=page.url if really_submitted else "",
                     screenshot_path=screenshot_path,
                     submitted_answers={},
-                    failure_reason=telemetry.get("diagnosis_json", "") if status != "COMPLETED" else "",
+                    failure_reason=derive_diagnosis(telemetry) if status != "COMPLETED" else "",
                     really_submitted=really_submitted,
                 )
 
