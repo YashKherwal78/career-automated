@@ -49,8 +49,19 @@ class JobScoringWorker(BaseWorker):
         total_scored = 0
         while self.running:
             with repos.job.transaction() as conn:
-                batch = repos.job.get_unscored_job_batch(user_id, profile_updated_at, limit=BATCH_SIZE)
                 profile = repos.job._load_profile(conn, user_id)
+                # SQL pre-filter mirrors HardRejectFilter's two dominant
+                # rejection checks (senior title keywords, India/remote
+                # location) so those jobs are never fetched+evaluated in
+                # Python at all instead of being pulled then immediately
+                # rejected -- see get_unscored_job_batch's docstring.
+                batch = repos.job.get_unscored_job_batch(
+                    user_id,
+                    profile_updated_at,
+                    limit=BATCH_SIZE,
+                    years_experience=profile.years_experience,
+                    preferred_locations=profile.preferred_locations,
+                )
 
             if not batch:
                 break

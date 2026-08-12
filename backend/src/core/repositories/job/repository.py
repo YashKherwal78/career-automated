@@ -336,17 +336,72 @@ class JobRepository(BaseRepository, IJobRepository):
                 for r in rows
             ]
 
-    def get_unscored_job_batch(self, user_id: str, profile_updated_at: str, limit: int = 500, tx=None) -> List[dict]:
+    # Same two regex vocabularies HardRejectFilter's Rule 3 (senior keywords)
+    # and Rule 6 (India/remote location) use, duplicated here deliberately
+    # rather than imported -- this SQL filter is a coarse, APPROXIMATE
+    # pre-filter, not a second source of truth. It only needs to be
+    # conservative (never exclude a job HardRejectFilter would have passed);
+    # it's fine if it's slightly looser than the Python rules (e.g. it
+    # doesn't also check numbered/L-grade levels or the full geo-restricted-
+    # remote signal list) since HardRejectFilter still runs, unchanged, on
+    # whatever this lets through. The point is only to stop fetching+
+    # evaluating jobs in Python that are obviously going to hard-reject on
+    # the two checks that dominate real rejection counts (confirmed via
+    # live worker logs: "Location mismatch" and "Senior-level role" together
+    # account for ~75-80% of every batch's rejections).
+    _SQL_SENIOR_TITLE_PATTERN = (
+        r"\ysenior\y|\ysr\y|\ystaff\y|\yprincipal\y|\ylead\y|\ydirector\y|\yvp\y|"
+        r"\yvice president\y|\yhead of\y|\yengineering manager\y|\ytechnical manager\y"
+    )
+    _SQL_INDIA_LOCATION_PATTERN = (
+        r"\ybangalore\y|\ybengaluru\y|\ymumbai\y|\ypune\y|\yhyderabad\y|\ychennai\y|"
+        r"\ydelhi\y|\yncr\y|\ygurgaon\y|\ygurugram\y|\ynoida\y|\ykolkata\y|\yahmedabad\y|\yindia\y"
+    )
+    _SQL_REMOTE_LOCATION_PATTERN = r"\yremote\y|\ywork from home\y|\ywfh\y"
+
+    def get_unscored_job_batch(
+        self,
+        user_id: str,
+        profile_updated_at: str,
+        limit: int = 500,
+        years_experience: int | None = None,
+        preferred_locations: List[str] | None = None,
+        tx=None,
+    ) -> List[dict]:
         """
         Active jobs this user hasn't been scored against yet, or whose score
         predates their current profile (profile changed since last scored).
         Anti-joined against user_job_scores rather than OFFSET-paginated, so
         repeated calls naturally converge on full coverage without needing
         the caller to track a cursor.
+
+        When years_experience/preferred_locations are supplied, also applies
+        the SQL pre-filter described above -- callers that omit them get the
+        unfiltered batch (e.g. the anti-join alone), same as before this was
+        added.
         """
         with self.transaction() as conn:
             p = conn.dialect.placeholder()
             batch_limit = conn.dialect.create_limit(limit)
+            params = [user_id, profile_updated_at]
+            extra_where = ""
+
+            if years_experience is not None and (years_experience or 0) < 5:
+                extra_where += f" AND (n.title !~* {p})"
+                params.append(self._SQL_SENIOR_TITLE_PATTERN)
+
+            if preferred_locations is not None:
+                location_clause = (
+                    f"n.location ~* {p} OR n.location ~* {p} "
+                    f"OR n.location IS NULL OR n.location = ''"
+                )
+                params.extend([self._SQL_INDIA_LOCATION_PATTERN, self._SQL_REMOTE_LOCATION_PATTERN])
+                preferred = [pl.strip() for pl in preferred_locations if pl and pl.strip()]
+                if preferred:
+                    location_clause += f" OR n.location ILIKE ANY({p})"
+                    params.append([f"%{pl}%" for pl in preferred])
+                extra_where += f" AND ({location_clause})"
+
             query = f"""
                 SELECT n.job_id, n.title, n.description, n.provider, n.status, n.location, n.apply_url
                 FROM normalized_jobs n
@@ -354,9 +409,10 @@ class JobRepository(BaseRepository, IJobRepository):
                     ON s.job_id = n.job_id AND s.user_id = {p}
                 WHERE n.status = 'ACTIVE'
                   AND (s.job_id IS NULL OR s.profile_updated_at IS DISTINCT FROM {p}::timestamptz)
+                  {extra_where}
                 {batch_limit}
             """
-            c = conn.execute(query, (user_id, profile_updated_at))
+            c = conn.execute(query, tuple(params))
             return [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
 
     def store_job_scores(self, user_id: str, profile_updated_at: str, scored: List[dict], tx=None) -> None:
