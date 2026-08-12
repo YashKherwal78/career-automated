@@ -275,7 +275,7 @@ def needs_review(current_user: CurrentUser = Depends(get_current_user)):
             f"""
             SELECT p.job_id, p.status, p.screening_answers, p.created_at, n.apply_url
             FROM public.application_packages p
-            LEFT JOIN public.normalized_jobs n ON n.job_id::uuid = p.job_id
+            LEFT JOIN public.normalized_jobs n ON n.job_id = REPLACE(p.job_id::text, '-', '')
             WHERE p.user_id = {ph}::uuid AND p.status != 'SUBMITTED'
             ORDER BY p.created_at DESC
             LIMIT 100
