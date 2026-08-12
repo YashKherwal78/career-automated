@@ -273,10 +273,11 @@ def needs_review(current_user: CurrentUser = Depends(get_current_user)):
     with get_connection() as conn:
         cur = conn.execute(
             f"""
-            SELECT job_id, status, screening_answers, created_at
-            FROM public.application_packages
-            WHERE user_id = {ph}::uuid AND status != 'SUBMITTED'
-            ORDER BY created_at DESC
+            SELECT p.job_id, p.status, p.screening_answers, p.created_at, n.apply_url
+            FROM public.application_packages p
+            LEFT JOIN public.normalized_jobs n ON n.job_id::uuid = p.job_id
+            WHERE p.user_id = {ph}::uuid AND p.status != 'SUBMITTED'
+            ORDER BY p.created_at DESC
             LIMIT 100
             """,
             (current_user.user_id,),
@@ -301,5 +302,6 @@ def needs_review(current_user: CurrentUser = Depends(get_current_user)):
             "status": answers.get("status", d.get("status")),
             "reason": answers.get("failure_reason") or answers.get("error") or "",
             "created_at": str(d.get("created_at")),
+            "apply_url": d.get("apply_url") or "",
         })
     return {"items": items}

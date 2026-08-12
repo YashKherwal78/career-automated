@@ -115,6 +115,7 @@ export interface NeedsReviewItem {
   status: string;
   reason: string;
   created_at: string;
+  apply_url: string;
 }
 
 export interface ReferralDraft {

@@ -187,9 +187,34 @@
     document.body.appendChild(button);
   }
 
+  // Lets the dashboard's "Open & Autofill" link (for a REVIEW_REQUIRED
+  // application) skip the extra manual click -- open the real job page
+  // with ?_careerautomated_autofill=1 and this fires the same autofill()
+  // the button does, automatically, the moment the form actually exists.
+  // Fires once (autoTriggered guard) since the MutationObserver below can
+  // otherwise re-run it every time the SPA re-renders the form.
+  let autoTriggered = false;
+  function checkAutoTrigger() {
+    if (autoTriggered) return;
+    if (new URLSearchParams(location.search).get("_careerautomated_autofill") !== "1") return;
+    const btn = document.getElementById("careerautomated-autofill-btn");
+    if (!btn || btn.disabled) return;
+    autoTriggered = true;
+    autofill(btn);
+  }
+
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", injectButton);
   } else {
     injectButton();
   }
+  checkAutoTrigger();
+  // Greenhouse's form (React-rendered) can mount after this script first
+  // runs -- same race the resume-upload wait already accounts for -- so
+  // keep checking as the DOM changes instead of only trying once at load.
+  const observer = new MutationObserver(() => {
+    injectButton();
+    checkAutoTrigger();
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
 })();

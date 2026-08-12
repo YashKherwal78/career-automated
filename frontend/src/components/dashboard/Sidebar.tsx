@@ -242,6 +242,21 @@ export function Sidebar({ isOpen, isNarrow }: SidebarProps) {
     enabled: !!session,
   });
 
+  const { data: needsReview = [] } = useQuery({
+    queryKey: ["needs-review"],
+    queryFn: () => ServiceRegistry.getJobService().getNeedsReview(),
+    enabled: !!session,
+    refetchInterval: 15000,
+  });
+  const { data: referralDrafts = [] } = useQuery({
+    queryKey: ["referral-drafts"],
+    queryFn: () => ServiceRegistry.getReferralService().list(),
+    enabled: !!session,
+    refetchInterval: 15000,
+  });
+  const applicationsBadgeCount =
+    needsReview.length + referralDrafts.filter((r) => r.status === "PENDING_REVIEW").length;
+
   const narrowStyle: CSSProperties = {
     position: "fixed",
     top: 0,
@@ -365,6 +380,26 @@ export function Sidebar({ isOpen, isNarrow }: SidebarProps) {
                       border: "1.5px solid var(--ds-surface-card, #fff)",
                     }}
                   />
+                )}
+                {item.name === "Applications" && applicationsBadgeCount > 0 && (
+                  <span
+                    title={`${applicationsBadgeCount} need your attention`}
+                    className="absolute flex items-center justify-center font-bold"
+                    style={{
+                      minWidth: 16,
+                      height: 16,
+                      padding: "0 4px",
+                      top: -4,
+                      right: -4,
+                      borderRadius: 8,
+                      background: "#B4392C",
+                      color: "#fff",
+                      fontSize: 10,
+                      border: "1.5px solid var(--ds-surface-card, #fff)",
+                    }}
+                  >
+                    {applicationsBadgeCount > 9 ? "9+" : applicationsBadgeCount}
+                  </span>
                 )}
               </div>
               {item.name}

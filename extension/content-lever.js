@@ -181,14 +181,32 @@
     document.body.appendChild(button);
   }
 
+  // Lets the dashboard's "Open & Autofill" link (for a REVIEW_REQUIRED
+  // application) skip the extra manual click -- open the real job page
+  // with ?_careerautomated_autofill=1 and this fires the same autofill()
+  // the button does, automatically, the moment the form actually exists.
+  let autoTriggered = false;
+  function checkAutoTrigger() {
+    if (autoTriggered) return;
+    if (new URLSearchParams(location.search).get("_careerautomated_autofill") !== "1") return;
+    const btn = document.getElementById("careerautomated-autofill-btn");
+    if (!btn || btn.disabled) return;
+    autoTriggered = true;
+    autofill(btn);
+  }
+
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", injectButton);
   } else {
     injectButton();
   }
+  checkAutoTrigger();
   // Lever's apply form can appear after a client-side navigation (job page
   // -> "Apply for this job" click) without a full page load, so the initial
   // injectButton() call may run before .application-question exists yet.
-  const observer = new MutationObserver(injectButton);
+  const observer = new MutationObserver(() => {
+    injectButton();
+    checkAutoTrigger();
+  });
   observer.observe(document.body, { childList: true, subtree: true });
 })();

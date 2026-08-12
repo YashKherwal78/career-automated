@@ -188,14 +188,32 @@
     document.body.appendChild(button);
   }
 
+  // Lets the dashboard's "Open & Autofill" link (for a REVIEW_REQUIRED
+  // application) skip the extra manual click -- open the real job page
+  // with ?_careerautomated_autofill=1 and this fires the same autofill()
+  // the button does, automatically, the moment the form actually exists.
+  let autoTriggered = false;
+  function checkAutoTrigger() {
+    if (autoTriggered) return;
+    if (new URLSearchParams(location.search).get("_careerautomated_autofill") !== "1") return;
+    const btn = document.getElementById("careerautomated-autofill-btn");
+    if (!btn || btn.disabled) return;
+    autoTriggered = true;
+    autofill(btn);
+  }
+
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", injectButton);
   } else {
     injectButton();
   }
+  checkAutoTrigger();
   // Ashby is a full React SPA -- the form can mount well after initial
   // page load, or after a client-side route change, without a fresh
   // DOMContentLoaded.
-  const observer = new MutationObserver(injectButton);
+  const observer = new MutationObserver(() => {
+    injectButton();
+    checkAutoTrigger();
+  });
   observer.observe(document.body, { childList: true, subtree: true });
 })();
