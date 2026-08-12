@@ -117,6 +117,27 @@ def start_batch_apply(
     if existing.get("running"):
         raise HTTPException(status_code=409, detail="A batch-apply run is already in progress")
 
+    ph = "%s" if is_postgres() else "?"
+    with get_connection() as conn:
+        cur = conn.execute(
+            f"SELECT apply_mode FROM public.user_application_policies WHERE user_id = {ph}::uuid",
+            (current_user.user_id,),
+        )
+        row = cur.fetchone()
+    apply_mode = (row["apply_mode"] if isinstance(row, dict) else (dict(row)["apply_mode"] if row else None)) or "automatic"
+    if apply_mode == "assisted":
+        # Assisted-mode users never get server-side dispatch -- they work
+        # matched jobs themselves via "Open & Autofill" (extension, runs on
+        # their own machine/IP). Starting a batch here would silently run
+        # Playwright against jobs they expect to handle by hand.
+        # 403, not 409 -- start_batch_apply's callers already treat 409
+        # ("a run is already in progress") as an idempotent success, so a
+        # real policy rejection needs its own status code to be seen at all.
+        raise HTTPException(
+            status_code=403,
+            detail="Auto Apply is set to assisted mode -- switch to automatic mode in preferences to run applications on the server.",
+        )
+
     with get_connection() as conn:
         candidate_count = len(get_candidate_jobs(conn, current_user.user_id, body.min_score, body.limit))
 
@@ -215,6 +236,11 @@ def resume_for_job(
 class AutoApplyPolicy(BaseModel):
     enabled: bool
     min_score: int = 70
+    # 'automatic': runs server-side (batch_apply.run_batch), costs compute,
+    # hits the live-view CAPTCHA flow when needed. 'assisted': matched jobs
+    # surface an "Open & Autofill" action instead of ever being dispatched
+    # server-side -- runs on the user's own machine/IP via the extension.
+    apply_mode: str = "automatic"
 
 
 @router.get("/auto-apply-policy")
@@ -225,14 +251,18 @@ def get_auto_apply_policy(current_user: CurrentUser = Depends(get_current_user))
     ph = "%s" if is_postgres() else "?"
     with get_connection() as conn:
         cur = conn.execute(
-            f"SELECT enabled, minimum_match_score FROM public.user_application_policies WHERE user_id = {ph}::uuid",
+            f"SELECT enabled, minimum_match_score, apply_mode FROM public.user_application_policies WHERE user_id = {ph}::uuid",
             (current_user.user_id,),
         )
         row = cur.fetchone()
     if not row:
-        return {"enabled": False, "min_score": 70}
+        return {"enabled": False, "min_score": 70, "apply_mode": "automatic"}
     d = row if isinstance(row, dict) else dict(row)
-    return {"enabled": bool(d.get("enabled")), "min_score": d.get("minimum_match_score", 70)}
+    return {
+        "enabled": bool(d.get("enabled")),
+        "min_score": d.get("minimum_match_score", 70),
+        "apply_mode": d.get("apply_mode") or "automatic",
+    }
 
 
 @router.post("/auto-apply-policy")
@@ -245,23 +275,24 @@ def set_auto_apply_policy(
         if is_postgres():
             conn.execute(
                 f"""
-                INSERT INTO public.user_application_policies (user_id, enabled, minimum_match_score, updated_at)
-                VALUES ({ph}::uuid, {ph}, {ph}, NOW())
+                INSERT INTO public.user_application_policies (user_id, enabled, minimum_match_score, apply_mode, updated_at)
+                VALUES ({ph}::uuid, {ph}, {ph}, {ph}, NOW())
                 ON CONFLICT (user_id) DO UPDATE
-                SET enabled = EXCLUDED.enabled, minimum_match_score = EXCLUDED.minimum_match_score, updated_at = NOW()
+                SET enabled = EXCLUDED.enabled, minimum_match_score = EXCLUDED.minimum_match_score,
+                    apply_mode = EXCLUDED.apply_mode, updated_at = NOW()
                 """,
-                (current_user.user_id, body.enabled, body.min_score),
+                (current_user.user_id, body.enabled, body.min_score, body.apply_mode),
             )
         else:
             conn.execute(
                 f"""
-                INSERT OR REPLACE INTO public.user_application_policies (user_id, enabled, minimum_match_score)
-                VALUES ({ph}, {ph}, {ph})
+                INSERT OR REPLACE INTO public.user_application_policies (user_id, enabled, minimum_match_score, apply_mode)
+                VALUES ({ph}, {ph}, {ph}, {ph})
                 """,
-                (current_user.user_id, body.enabled, body.min_score),
+                (current_user.user_id, body.enabled, body.min_score, body.apply_mode),
             )
         conn.commit()
-    return {"enabled": body.enabled, "min_score": body.min_score}
+    return {"enabled": body.enabled, "min_score": body.min_score, "apply_mode": body.apply_mode}
 
 
 @router.get("/needs-review")

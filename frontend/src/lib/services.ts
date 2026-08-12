@@ -89,10 +89,14 @@ export interface JobService {
     really_submitted: boolean;
     failure_reason: string | null;
   }>;
-  startBatchApply(minScore?: number): Promise<{ started: boolean; candidate_count: number }>;
+  startBatchApply(minScore?: number): Promise<{ started: boolean; candidate_count: number; blocked_reason?: string }>;
   getBatchApplyStatus(): Promise<BatchApplyStatus>;
-  getAutoApplyPolicy(): Promise<{ enabled: boolean; min_score: number }>;
-  setAutoApplyPolicy(enabled: boolean, minScore?: number): Promise<{ enabled: boolean; min_score: number }>;
+  getAutoApplyPolicy(): Promise<{ enabled: boolean; min_score: number; apply_mode: "automatic" | "assisted" }>;
+  setAutoApplyPolicy(
+    enabled: boolean,
+    minScore?: number,
+    applyMode?: "automatic" | "assisted",
+  ): Promise<{ enabled: boolean; min_score: number; apply_mode: "automatic" | "assisted" }>;
   getNeedsReview(): Promise<NeedsReviewItem[]>;
 }
 
@@ -479,13 +483,19 @@ export class ApiJobService implements JobService {
     return res.json();
   }
 
-  async startBatchApply(minScore = 70): Promise<{ started: boolean; candidate_count: number }> {
+  async startBatchApply(
+    minScore = 70,
+  ): Promise<{ started: boolean; candidate_count: number; blocked_reason?: string }> {
     const res = await authFetch(`${API_BASE}/applications/batch-apply`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ min_score: minScore }),
     });
     if (res.status === 409) return { started: true, candidate_count: 0 };
+    if (res.status === 403) {
+      const body = await res.json().catch(() => ({}) as { detail?: string });
+      return { started: false, candidate_count: 0, blocked_reason: body.detail || "Blocked by policy" };
+    }
     if (!res.ok) throw new Error(`Batch apply request failed (${res.status})`);
     return res.json();
   }
@@ -496,7 +506,11 @@ export class ApiJobService implements JobService {
     return res.json();
   }
 
-  async getAutoApplyPolicy(): Promise<{ enabled: boolean; min_score: number }> {
+  async getAutoApplyPolicy(): Promise<{
+    enabled: boolean;
+    min_score: number;
+    apply_mode: "automatic" | "assisted";
+  }> {
     const res = await authFetch(`${API_BASE}/applications/auto-apply-policy`);
     if (!res.ok) throw new Error(`Auto-apply policy fetch failed (${res.status})`);
     return res.json();
@@ -505,11 +519,12 @@ export class ApiJobService implements JobService {
   async setAutoApplyPolicy(
     enabled: boolean,
     minScore = 70,
-  ): Promise<{ enabled: boolean; min_score: number }> {
+    applyMode: "automatic" | "assisted" = "automatic",
+  ): Promise<{ enabled: boolean; min_score: number; apply_mode: "automatic" | "assisted" }> {
     const res = await authFetch(`${API_BASE}/applications/auto-apply-policy`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ enabled, min_score: minScore }),
+      body: JSON.stringify({ enabled, min_score: minScore, apply_mode: applyMode }),
     });
     if (!res.ok) throw new Error(`Auto-apply policy save failed (${res.status})`);
     return res.json();
@@ -652,17 +667,25 @@ export class MockJobService implements JobService {
   async applyToJob(): Promise<{ status: string; really_submitted: boolean; failure_reason: string | null }> {
     return { status: "COMPLETED", really_submitted: true, failure_reason: null };
   }
-  async startBatchApply(): Promise<{ started: boolean; candidate_count: number }> {
+  async startBatchApply(): Promise<{ started: boolean; candidate_count: number; blocked_reason?: string }> {
     return { started: true, candidate_count: this.mockJobs.length };
   }
   async getBatchApplyStatus(): Promise<BatchApplyStatus> {
     return { running: false };
   }
-  async getAutoApplyPolicy(): Promise<{ enabled: boolean; min_score: number }> {
-    return { enabled: false, min_score: 70 };
+  async getAutoApplyPolicy(): Promise<{
+    enabled: boolean;
+    min_score: number;
+    apply_mode: "automatic" | "assisted";
+  }> {
+    return { enabled: false, min_score: 70, apply_mode: "automatic" };
   }
-  async setAutoApplyPolicy(enabled: boolean, minScore = 70): Promise<{ enabled: boolean; min_score: number }> {
-    return { enabled, min_score: minScore };
+  async setAutoApplyPolicy(
+    enabled: boolean,
+    minScore = 70,
+    applyMode: "automatic" | "assisted" = "automatic",
+  ): Promise<{ enabled: boolean; min_score: number; apply_mode: "automatic" | "assisted" }> {
+    return { enabled, min_score: minScore, apply_mode: applyMode };
   }
   async getNeedsReview(): Promise<NeedsReviewItem[]> {
     return [];

@@ -27,6 +27,14 @@ function JobsPage() {
   const [remoteFilter, setRemoteFilter] = useState("");
   const [providerFilter, setProviderFilter] = useState("");
   const [sortField, setSortField] = useState<"intent_score" | "posted_at">("posted_at");
+  const [applyMode, setApplyMode] = useState<"automatic" | "assisted">("automatic");
+
+  useEffect(() => {
+    jobService
+      .getAutoApplyPolicy()
+      .then((p) => setApplyMode(p.apply_mode))
+      .catch(() => {});
+  }, [jobService]);
 
   const ROLE_OPTIONS = [
     { label: "All Roles", value: "" },
@@ -315,9 +323,21 @@ function JobsPage() {
                       <span className="ml-1 text-[9px] text-ink-soft font-normal">intent</span>
                     </td>
                     <td className="py-4 text-right">
-                      <Link to={`/dashboard/jobs/${job.job_id}`} className="btn-peach px-3 py-1.5 text-xs rounded-xl">
-                        View Details
-                      </Link>
+                      <div className="flex items-center justify-end gap-1.5">
+                        {applyMode === "assisted" && job.apply_url && (
+                          <a
+                            href={`${job.apply_url}?_careerautomated_autofill=1`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1.5 text-xs rounded-xl border border-[color:var(--peach-deep)] text-[color:var(--peach-deep)] font-medium whitespace-nowrap"
+                          >
+                            Open & Autofill
+                          </a>
+                        )}
+                        <Link to={`/dashboard/jobs/${job.job_id}`} className="btn-peach px-3 py-1.5 text-xs rounded-xl">
+                          View Details
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}

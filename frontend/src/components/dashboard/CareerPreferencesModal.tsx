@@ -16,6 +16,7 @@ export interface CareerPreferences {
   industries: string;
   visaSponsorship: string;
   openToRelocation: boolean;
+  applyMode: "automatic" | "assisted";
 }
 
 export function CareerPreferencesModal({
@@ -33,6 +34,7 @@ export function CareerPreferencesModal({
   const [industries, setIndustries] = useState("");
   const [visaSponsorship, setVisaSponsorship] = useState("No preference");
   const [openToRelocation, setOpenToRelocation] = useState(false);
+  const [applyMode, setApplyMode] = useState<"automatic" | "assisted">("automatic");
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
@@ -224,6 +226,60 @@ export function CareerPreferencesModal({
             </div>
           </div>
 
+          <div>
+            <label
+              style={{
+                display: "block",
+                fontSize: 13,
+                fontWeight: 600,
+                color: "var(--ds-ink-700)",
+                marginBottom: 8,
+              }}
+            >
+              How should matched jobs get applied to?
+            </label>
+            <div className="flex flex-col gap-2">
+              {(
+                [
+                  {
+                    key: "automatic" as const,
+                    title: "Fully automatic",
+                    desc: "Runs on our servers. You only step in for CAPTCHAs.",
+                  },
+                  {
+                    key: "assisted" as const,
+                    title: "I'll review & submit myself",
+                    desc: "Matched jobs open pre-filled in your browser — you click submit.",
+                  },
+                ]
+              ).map((opt) => (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => setApplyMode(opt.key)}
+                  style={{
+                    textAlign: "left",
+                    padding: "11px 14px",
+                    borderRadius: "var(--ds-radius-md)",
+                    border: `1px solid ${
+                      applyMode === opt.key ? "var(--ds-accent-primary)" : "var(--ds-border-medium)"
+                    }`,
+                    background:
+                      applyMode === opt.key ? "rgba(226,116,72,0.08)" : "var(--ds-surface-card)",
+                    cursor: "pointer",
+                  }}
+                >
+                  <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ds-ink-800)" }}>
+                    {opt.title}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--ds-ink-500)", marginTop: 2 }}>
+                    {opt.desc}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="flex items-center justify-between">
             <label style={{ fontSize: 13, fontWeight: 600, color: "var(--ds-ink-700)" }}>
               Open to relocation
@@ -289,6 +345,7 @@ export function CareerPreferencesModal({
                 industries,
                 visaSponsorship,
                 openToRelocation,
+                applyMode,
               })
             }
             className="flex-1 font-bold"

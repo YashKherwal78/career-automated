@@ -9,7 +9,7 @@ import { DsChip } from "../../components/ds/Chip";
 import { DsInput } from "../../components/ds/Input";
 import { DsButton } from "../../components/ds/Button";
 import { JobDetailModal } from "../../components/dashboard/JobDetailModal";
-import { CareerPreferencesModal } from "../../components/dashboard/CareerPreferencesModal";
+import { CareerPreferencesModal, type CareerPreferences } from "../../components/dashboard/CareerPreferencesModal";
 import { UpgradeModal } from "../../components/dashboard/UpgradeModal";
 import { CompanyLogo } from "../../components/dashboard/CompanyLogo";
 
@@ -127,23 +127,26 @@ function DashboardHome() {
     }
     setAutoApplyOn(false);
     try {
-      await ServiceRegistry.getJobService().setAutoApplyPolicy(false, 70);
+      await ServiceRegistry.getJobService().setAutoApplyPolicy(false, 70, autoApplyPolicy?.apply_mode ?? "automatic");
       queryClient.invalidateQueries({ queryKey: ["auto-apply-policy"] });
     } catch (e) {
       console.error("Failed to disable auto-apply policy:", e);
     }
   };
 
-  const handleSavePreferences = async () => {
-    // Career preferences (location/work-mode/etc.) are still frontend-only —
-    // no backend policy endpoint exists yet. min_score is hardcoded here
-    // until preferences actually feed one through.
+  const handleSavePreferences = async (prefs: CareerPreferences) => {
+    // Career preferences beyond apply mode (location/work-mode/etc.) are
+    // still frontend-only -- no backend policy endpoint exists for them
+    // yet. min_score is hardcoded here until they actually feed one
+    // through. apply_mode is the one field that's real end-to-end.
     setShowPreferencesModal(false);
     setAutoApplyOn(true);
     try {
-      await ServiceRegistry.getJobService().setAutoApplyPolicy(true, 70);
+      await ServiceRegistry.getJobService().setAutoApplyPolicy(true, 70, prefs.applyMode);
       queryClient.invalidateQueries({ queryKey: ["auto-apply-policy"] });
-      await ServiceRegistry.getJobService().startBatchApply(70);
+      if (prefs.applyMode === "automatic") {
+        await ServiceRegistry.getJobService().startBatchApply(70);
+      }
     } catch (e) {
       console.error("Failed to start auto-apply batch:", e);
       setAutoApplyOn(false);
