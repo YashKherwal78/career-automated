@@ -1156,27 +1156,56 @@ class QuestionEngine:
         if not raw_answer and classification in ["MOTIVATION", "BEHAVIORAL", "TECHNICAL", "PROFILE", "PROFILE_ESSAY"]:
             source = "LLM + RAG"
             
-            # Retrieve Top 3 Chunks
-            retrieved_items = self.rag.retrieve(question, top_k_initial=5, top_k_final=3) if self.rag else []
+            # Retrieve Top 3 Chunks (hybrid BM25 + embedding + graph-expanded — see rag.py)
+            retrieved_items = self.rag.retrieve(question, top_k_initial=8, top_k_final=3) if self.rag else []
             dom_meta["retrieved_chunks"] = len(retrieved_items)
 
-            
-            # Log Retrieval Scores & Check Confidence
-            max_score = 0
+
+            # Log Retrieval Scores & Check Confidence. Gates on "confidence"
+            # (normalized 0-1 from rag.py's hybrid fusion), not the old raw
+            # BM25 "score" -- that was an unbounded, corpus-size-dependent
+            # number with no principled threshold, and it gated out
+            # perfectly answerable questions whenever the phrasing didn't
+            # share literal keywords with the source chunk (the exact
+            # "vocabulary mismatch" failure mode this candidate's own
+            # profile write-up on Semantic Document Search describes).
+            max_confidence = 0.0
             chunk_texts = []
             logger.info(f"\n[Essay Debug] Question: {question}")
             for i, item in enumerate(retrieved_items):
-                score = item.get("score", 0)
+                conf = item.get("confidence", 0.0)
                 text = item.get("text", "")
-                if score > max_score: max_score = score
+                if conf > max_confidence: max_confidence = conf
                 chunk_texts.append(text)
                 title = text.split("\n")[0] if "\n" in text else text[:50]
-                logger.info(f"  -> Retrieved Chunk {i+1}: {title} (Score: {score:.2f})")
-                
-            # If retrieval confidence is low, fallback to REVIEW_REQUIRED
-            # Assuming a BM25 base score + tag boost, a score < 1.0 means practically no matching terms.
-            if max_score < 1.0 and classification in ["TECHNICAL", "BEHAVIORAL"]:
-                logger.info(f"  -> [Warning] Low retrieval confidence ({max_score:.2f}). Triggering REVIEW_REQUIRED.")
+                logger.info(f"  -> Retrieved Chunk {i+1}: {title} (Confidence: {conf:.2f})")
+
+            # Confirmed-gap check: a named technology/tool in the question
+            # that never appears anywhere in the source profile is a
+            # reliable, literal signal -- more reliable than retrieval
+            # confidence, which can still score an unrelated chunk decently
+            # off generic phrase overlap. This answers honestly and
+            # deterministically instead of either routing to
+            # REVIEW_REQUIRED or risking an LLM fabricating "yes".
+            unknown_entities = self.rag.find_unknown_entities(question) if self.rag else []
+
+            # RAG_CONFIDENCE_GATE: below this, retrieval didn't find enough
+            # to answer honestly, so we abstain rather than let the LLM fill
+            # the gap. Not tuned against a held-out set yet -- see
+            # scripts/rag_eval.py, which is the harness to validate/adjust
+            # this threshold against real questions instead of guessing.
+            RAG_CONFIDENCE_GATE = 0.22
+            if unknown_entities and classification in ["TECHNICAL", "BEHAVIORAL"]:
+                logger.info(f"  -> [Confirmed Gap] Question names {unknown_entities}, absent from profile. Answering honestly.")
+                raw_answer = (
+                    f"I don't have hands-on production experience with {unknown_entities[0]}. "
+                    "I'm comfortable picking up new tools quickly given my background across similar systems."
+                )
+                source = "Confirmed_Gap_Fallback"
+                confidence = 85
+                dom_meta["unknown_entities"] = unknown_entities
+            elif max_confidence < RAG_CONFIDENCE_GATE and classification in ["TECHNICAL", "BEHAVIORAL"]:
+                logger.info(f"  -> [Warning] Low retrieval confidence ({max_confidence:.2f}). Triggering REVIEW_REQUIRED.")
                 raw_answer = "REVIEW_REQUIRED"
                 normalized = "REVIEW_REQUIRED"
                 source = "Low_Confidence_Gate"
@@ -1238,9 +1267,37 @@ Instructions:
                     else:
                         logger.info(f"  [Metric Grounding] Validation Passed.")
 
+                    # Proper-noun grounding: catches invented companies/tools
+                    # (e.g. the LLM naming a technology never mentioned in
+                    # the retrieved chunks) the way metric validation catches
+                    # invented numbers. Heuristic capitalized-word extraction,
+                    # not real NER -- so this only lowers confidence (visible
+                    # in telemetry/dom_meta for audit) rather than rewriting
+                    # the answer, since a false positive here (a legitimate
+                    # capitalized word the crude regex just hasn't seen
+                    # before) would otherwise silently degrade a correct
+                    # answer with no way to tell the difference after the
+                    # fact.
+                    # Deliberately excludes `question`/`job_title` -- if the
+                    # question itself names a technology ("Have you used
+                    # Kubernetes?"), the LLM echoing that word back inside a
+                    # fabricated "yes" must still be caught; grounding this
+                    # check on question text would let it defeat itself.
+                    grounded_pool = f"{chunk_text}\n{profile_context}".lower()
+                    candidate_terms = re.findall(r"\b[A-Z][A-Za-z0-9+.#]{2,}\b", raw_answer)
+                    _COMMON_SENTENCE_STARTERS = {"I", "The", "My", "This", "It", "In", "At", "A", "An", "Yes", "No"}
+                    unsupported_terms = [
+                        t for t in set(candidate_terms)
+                        if t not in _COMMON_SENTENCE_STARTERS and t.lower() not in grounded_pool
+                    ]
+
                     approx_tokens = (len(SYSTEM_PROMPT) + len(current_prompt) + len(raw_answer)) // 4
                     dom_meta["llm_tokens_used"] = approx_tokens
                     confidence = 90
+                    if unsupported_terms:
+                        logger.info(f"  [Entity Grounding] Possibly ungrounded terms in answer: {unsupported_terms}")
+                        dom_meta["ungrounded_terms"] = unsupported_terms
+                        confidence = 60
                 except Exception as e:
                     logger.info(f"QuestionEngine LLM Error: {e}")
                     raw_answer = ""

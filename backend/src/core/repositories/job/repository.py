@@ -366,6 +366,7 @@ class JobRepository(BaseRepository, IJobRepository):
         limit: int = 500,
         years_experience: int | None = None,
         preferred_locations: List[str] | None = None,
+        prioritize_by_vector: bool = True,
         tx=None,
     ) -> List[dict]:
         """
@@ -379,6 +380,20 @@ class JobRepository(BaseRepository, IJobRepository):
         the SQL pre-filter described above -- callers that omit them get the
         unfiltered batch (e.g. the anti-join alone), same as before this was
         added.
+
+        When prioritize_by_vector is True (default) and this user has a
+        stored profile embedding, orders the batch by pgvector cosine
+        distance to that embedding -- jobs with NULL embedding (not yet
+        backfilled) sort last by default. This doesn't shrink the pool
+        HardRejectFilter/IntentFilter ultimately still scores (every active
+        job still gets covered eventually across repeated calls, same as
+        before) -- it changes the *order*, so the semantically closest jobs
+        get scored first instead of whatever order the anti-join happened
+        to return, which is the difference between a user seeing their best
+        matches in minutes vs. only once the worker's sweep happens to reach
+        them. This was previously computed, stored, and never read anywhere
+        in the live pipeline (get_jobs_by_vector_similarity below has no
+        other caller) -- this is the fix for that gap.
         """
         with self.transaction() as conn:
             p = conn.dialect.placeholder()
@@ -402,6 +417,12 @@ class JobRepository(BaseRepository, IJobRepository):
                     params.append([f"%{pl}%" for pl in preferred])
                 extra_where += f" AND ({location_clause})"
 
+            order_clause = ""
+            candidate_embedding = self.get_candidate_embedding(user_id) if prioritize_by_vector else None
+            if candidate_embedding:
+                order_clause = f"ORDER BY n.embedding <=> {p}::vector"
+                params.append(candidate_embedding)
+
             query = f"""
                 SELECT n.job_id, n.title, n.description, n.provider, n.status, n.location, n.apply_url
                 FROM normalized_jobs n
@@ -410,6 +431,7 @@ class JobRepository(BaseRepository, IJobRepository):
                 WHERE n.status = 'ACTIVE'
                   AND (s.job_id IS NULL OR s.profile_updated_at IS DISTINCT FROM {p}::timestamptz)
                   {extra_where}
+                {order_clause}
                 {batch_limit}
             """
             c = conn.execute(query, tuple(params))

@@ -9,6 +9,7 @@ narrow ask (a referral or a few minutes of their time), not a cold
 introduction.
 """
 import json
+import re
 
 from src.system.logger import setup_logger
 from src.applications.profile import ProfileManager
@@ -36,8 +37,19 @@ claim any prior connection to {contact_name} or {company_name} that isn't
 true. No generic "I'd love to connect" filler. End with a clear, low-effort
 ask (a referral, or 10 minutes to chat).
 
+STRICT METRIC GROUNDING RULE: never state a number (percentage, user count,
+revenue, latency, R^2, etc.) that isn't explicitly present in the candidate
+background or relevant experience above. If you'd naturally reach for a
+number that isn't there, describe the work qualitatively instead.
+
 Return ONLY a JSON object: {{"subject": "...", "body": "..."}}
 """
+
+
+def _unsupported_numbers(body: str, grounded_text: str) -> set[str]:
+    grounded_nums = set(re.findall(r"\b\d+(?:\.\d+)?\b", grounded_text))
+    body_nums = set(re.findall(r"\b\d+(?:\.\d+)?\b", body))
+    return body_nums - grounded_nums
 
 
 def draft_referral_email(
@@ -66,17 +78,40 @@ def draft_referral_email(
         relevant_experience=relevant_experience,
     )
 
-    response = llm_client.chat_completion(
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.3,
-        response_format={"type": "json_object"},
-        intent="referral_drafting",
-    )
-    data = json.loads(response.choices[0].message.content)
-    subject = (data.get("subject") or "").strip()
-    body = (data.get("body") or "").strip()
-    if not subject or not body:
-        raise ValueError(f"LLM returned an incomplete draft: {data}")
+    def _generate() -> tuple[str, str]:
+        response = llm_client.chat_completion(
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3,
+            response_format={"type": "json_object"},
+            intent="referral_drafting",
+        )
+        data = json.loads(response.choices[0].message.content)
+        subj = (data.get("subject") or "").strip()
+        bod = (data.get("body") or "").strip()
+        if not subj or not bod:
+            raise ValueError(f"LLM returned an incomplete draft: {data}")
+        return subj, bod
+
+    subject, body = _generate()
+
+    # Metric grounding, mirroring question_engine.py's check for form
+    # answers -- this goes into a real inbox under the candidate's name, so
+    # an invented number here is worse than one caught in a form field a
+    # human already has to review. One retry with a stricter reminder; if
+    # that still doesn't ground, strip the offending numbers rather than
+    # block the draft outright (referral emails already require explicit
+    # human approval before sending -- see referral_auto_send policy -- so
+    # this is a quality safeguard for that reviewer, not a hard gate).
+    grounded_text = f"{profile_context}\n{relevant_experience}"
+    unsupported = _unsupported_numbers(body, grounded_text)
+    if unsupported:
+        logger.info(f"[Metric Grounding] Retry -- unsupported numbers in draft: {unsupported}")
+        subject, body = _generate()
+        unsupported = _unsupported_numbers(body, grounded_text)
+        if unsupported:
+            logger.info(f"[Metric Grounding] Still unsupported after retry: {unsupported}. Stripping.")
+            for num in unsupported:
+                body = re.sub(rf"[^.]*\b{re.escape(num)}\b[^.]*\.", "", body).strip()
 
     # A signed, real name matters more here than in the auto-apply flow's
     # form-answers -- this goes into someone's inbox under the candidate's
