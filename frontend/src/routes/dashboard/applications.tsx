@@ -287,6 +287,7 @@ function ApplicationsPage() {
   });
   const pendingReferrals = referralDrafts.filter((r) => r.status === "PENDING_REVIEW");
   const [referralActionState, setReferralActionState] = useState<Record<string, "working" | "error">>({});
+  const [expandedReferralId, setExpandedReferralId] = useState<string | null>(null);
 
   const handleApproveReferral = async (id: string) => {
     setReferralActionState((s) => ({ ...s, [id]: "working" }));
@@ -368,67 +369,78 @@ function ApplicationsPage() {
             background: "var(--ds-brand-orange-tint-08)",
             border: "1px solid rgba(255,255,255,0.6)",
             borderRadius: "var(--ds-radius-xl)",
-            padding: "18px 22px",
-            marginBottom: 24,
-            maxWidth: 720,
+            padding: "24px 26px",
+            marginBottom: 28,
+            maxWidth: 860,
           }}
         >
           <div
             className="font-[var(--ds-font-display)] font-semibold"
-            style={{ fontSize: 15, marginBottom: 10 }}
+            style={{ fontSize: 16, marginBottom: 16 }}
           >
             Needs your attention ({needsReview.length})
           </div>
-          <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col" style={{ gap: 12 }}>
             {needsReview.slice(0, 8).map((item) => (
               <div
                 key={item.job_id}
-                className="flex items-center justify-between gap-3 flex-wrap"
                 style={{
-                  background: "rgba(255,255,255,0.6)",
-                  borderRadius: "var(--ds-radius-md)",
-                  padding: "10px 14px",
+                  background: "rgba(255,255,255,0.7)",
+                  borderRadius: "var(--ds-radius-lg)",
+                  padding: "16px 18px",
                 }}
               >
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 13.5, fontWeight: 600 }}>
-                    {item.title || "Untitled role"}
-                    <span style={{ color: "var(--ds-ink-400)", fontWeight: 500 }}>
-                      {" "}
-                      · {item.provider}
-                      {item.job_score != null ? ` · ${item.job_score}% match` : ""}
-                    </span>
-                  </div>
-                  {item.reason && (
-                    <div style={{ fontSize: 12, color: "var(--ds-ink-500)", marginTop: 2 }}>
-                      {item.reason}
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                  <div style={{ minWidth: 0, flex: "1 1 320px" }}>
+                    <div style={{ fontSize: 14.5, fontWeight: 600, lineHeight: 1.4 }}>
+                      {item.title || "Untitled role"}
                     </div>
-                  )}
-                </div>
-                <div className="flex items-center gap-2.5 flex-shrink-0">
+                    <div style={{ fontSize: 12.5, color: "var(--ds-ink-450)", marginTop: 3 }}>
+                      {item.provider}
+                      {item.job_score != null ? ` · ${item.job_score}% match` : ""}
+                    </div>
+                  </div>
                   <span
-                    className="font-semibold uppercase"
+                    className="font-semibold uppercase flex-shrink-0"
                     style={{
                       fontSize: 10.5,
                       letterSpacing: 0.4,
                       color: "var(--ds-brand-orange-text)",
                       background: "var(--ds-cream-300)",
-                      padding: "4px 8px",
+                      padding: "5px 10px",
                       borderRadius: "var(--ds-radius-pill)",
                     }}
                   >
                     {item.status.replace(/_/g, " ")}
                   </span>
-                  {item.apply_url && (
+                </div>
+
+                {item.reason && (
+                  <div
+                    style={{
+                      fontSize: 12.5,
+                      color: "var(--ds-ink-500)",
+                      lineHeight: 1.5,
+                      marginTop: 10,
+                      paddingTop: 10,
+                      borderTop: "1px solid rgba(0,0,0,0.06)",
+                    }}
+                  >
+                    {item.reason}
+                  </div>
+                )}
+
+                {item.apply_url && (
+                  <div style={{ marginTop: 14 }}>
                     <DsButton variant="primary" size="md" onClick={() => handleOpenAndAutofill(item.apply_url)}>
                       Open & Autofill
                     </DsButton>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
-          <p style={{ fontSize: 11.5, color: "var(--ds-ink-450)", margin: "10px 0 0" }}>
+          <p style={{ fontSize: 11.5, color: "var(--ds-ink-450)", lineHeight: 1.5, margin: "16px 0 0" }}>
             "Open & Autofill" needs the CareerAutomated browser extension installed — it fills the form in your
             own browser, so all that's usually left is the CAPTCHA and Submit.
           </p>
@@ -441,63 +453,111 @@ function ApplicationsPage() {
             background: "var(--ds-surface-tint)",
             border: "1px solid rgba(255,255,255,0.6)",
             borderRadius: "var(--ds-radius-xl)",
-            padding: "18px 22px",
-            marginBottom: 24,
-            maxWidth: 720,
+            padding: "24px 26px",
+            marginBottom: 28,
+            maxWidth: 860,
           }}
         >
           <div
             className="font-[var(--ds-font-display)] font-semibold"
-            style={{ fontSize: 15, marginBottom: 4 }}
+            style={{ fontSize: 16, marginBottom: 6 }}
           >
             Referral emails to review ({pendingReferrals.length})
           </div>
-          <p style={{ fontSize: 12.5, color: "var(--ds-ink-500)", margin: "0 0 12px" }}>
+          <p style={{ fontSize: 13, color: "var(--ds-ink-500)", lineHeight: 1.5, margin: "0 0 16px" }}>
             Drafted for people at companies you've applied to. Review and approve to send — nothing goes out
             without your OK yet.
           </p>
-          <div className="flex flex-col gap-2.5">
-            {pendingReferrals.slice(0, 5).map((r) => (
-              <div
-                key={r.id}
-                style={{
-                  background: "rgba(255,255,255,0.6)",
-                  borderRadius: "var(--ds-radius-md)",
-                  padding: "12px 14px",
-                }}
-              >
-                <div style={{ fontSize: 13.5, fontWeight: 600, marginBottom: 4 }}>
-                  To {r.contact_name} ({r.contact_email}) — {r.company_name}, {r.job_title}
-                </div>
-                <div style={{ fontSize: 12.5, color: "var(--ds-ink-500)", marginBottom: 2 }}>
-                  <strong>{r.subject}</strong>
-                </div>
-                <div style={{ fontSize: 12.5, color: "var(--ds-ink-600)", whiteSpace: "pre-wrap", marginBottom: 10 }}>
-                  {r.body}
-                </div>
-                <div className="flex gap-2">
-                  <DsButton
-                    variant="primary"
-                    size="md"
-                    disabled={referralActionState[r.id] === "working"}
-                    onClick={() => handleApproveReferral(r.id)}
+          <div className="flex flex-col" style={{ gap: 12 }}>
+            {pendingReferrals.slice(0, 5).map((r) => {
+              const isExpanded = expandedReferralId === r.id;
+              return (
+                <div
+                  key={r.id}
+                  style={{
+                    background: "rgba(255,255,255,0.7)",
+                    borderRadius: "var(--ds-radius-lg)",
+                    padding: "16px 18px",
+                  }}
+                >
+                  <div style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.4 }}>
+                    {r.contact_name}
+                    <span style={{ color: "var(--ds-ink-450)", fontWeight: 500 }}>
+                      {" "}
+                      · {r.company_name} — {r.job_title}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--ds-ink-450)", marginTop: 2 }}>{r.contact_email}</div>
+
+                  <button
+                    type="button"
+                    onClick={() => setExpandedReferralId(isExpanded ? null : r.id)}
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      textAlign: "left",
+                      background: "rgba(0,0,0,0.03)",
+                      border: "none",
+                      borderRadius: "var(--ds-radius-md)",
+                      padding: "10px 12px",
+                      marginTop: 12,
+                      cursor: "pointer",
+                    }}
                   >
-                    {referralActionState[r.id] === "working" ? "Sending…" : "Approve & send"}
-                  </DsButton>
-                  <DsButton
-                    variant="outline"
-                    size="md"
-                    disabled={referralActionState[r.id] === "working"}
-                    onClick={() => handleRejectReferral(r.id)}
-                  >
-                    Reject
-                  </DsButton>
-                  {referralActionState[r.id] === "error" && (
-                    <span style={{ fontSize: 12, color: "#B4392C", alignSelf: "center" }}>Failed — try again</span>
-                  )}
+                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: isExpanded ? 8 : 0 }}>
+                      {r.subject}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 12.5,
+                        color: "var(--ds-ink-600)",
+                        lineHeight: 1.6,
+                        whiteSpace: "pre-wrap",
+                        display: isExpanded ? "block" : "-webkit-box",
+                        WebkitLineClamp: isExpanded ? undefined : 2,
+                        WebkitBoxOrient: isExpanded ? undefined : "vertical",
+                        overflow: isExpanded ? "visible" : "hidden",
+                      }}
+                    >
+                      {r.body}
+                    </div>
+                    <span
+                      style={{
+                        fontSize: 11.5,
+                        color: "var(--ds-ink-400)",
+                        fontWeight: 600,
+                        display: "inline-block",
+                        marginTop: 6,
+                      }}
+                    >
+                      {isExpanded ? "Show less ↑" : "Show full email ↓"}
+                    </span>
+                  </button>
+
+                  <div className="flex items-center gap-2.5" style={{ marginTop: 14 }}>
+                    <DsButton
+                      variant="primary"
+                      size="md"
+                      disabled={referralActionState[r.id] === "working"}
+                      onClick={() => handleApproveReferral(r.id)}
+                    >
+                      {referralActionState[r.id] === "working" ? "Sending…" : "Approve & send"}
+                    </DsButton>
+                    <DsButton
+                      variant="outline"
+                      size="md"
+                      disabled={referralActionState[r.id] === "working"}
+                      onClick={() => handleRejectReferral(r.id)}
+                    >
+                      Reject
+                    </DsButton>
+                    {referralActionState[r.id] === "error" && (
+                      <span style={{ fontSize: 12, color: "#B4392C" }}>Failed — try again</span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
