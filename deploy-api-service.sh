@@ -58,8 +58,7 @@ sudo docker service create \
   --network "$NETWORK" \
   --restart-condition on-failure \
   --restart-delay 10s \
-  --restart-max-attempts 5 \
-  \
+  --mount type=bind,source="$(cd "$(dirname "$0")" && pwd)/backend/data",target=/app/data \
   --label "traefik.enable=true" \
   --label "traefik.http.routers.${SERVICE_NAME}.rule=Host(\`api.careerautomated.in\`)" \
   --label "traefik.http.routers.${SERVICE_NAME}.entrypoints=websecure" \
