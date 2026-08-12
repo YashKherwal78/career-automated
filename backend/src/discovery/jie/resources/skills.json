@@ -52,5 +52,203 @@
   ],
   "Project Management": [
     "project management"
+  ],
+  "Distributed Systems": [
+    "distributed systems"
+  ],
+  "System Architecture": [
+    "system architecture",
+    "software architecture"
+  ],
+  "Microservices": [
+    "microservices",
+    "microservice architecture"
+  ],
+  "API Design": [
+    "api design"
+  ],
+  "Object-Oriented Design": [
+    "object-oriented design",
+    "oop",
+    "object oriented programming"
+  ],
+  "Data Structures & Algorithms": [
+    "data structures and algorithms"
+  ],
+  "Statistics": [
+    "statistics",
+    "statistical analysis"
+  ],
+  "Data Visualization": [
+    "data visualization"
+  ],
+  "Business Intelligence": [
+    "business intelligence",
+    "bi"
+  ],
+  "Stakeholder Management": [
+    "stakeholder management"
+  ],
+  "Cross-functional Collaboration": [
+    "cross-functional collaboration",
+    "cross functional teams"
+  ],
+  "Negotiation": [
+    "negotiation"
+  ],
+  "Public Speaking": [
+    "public speaking",
+    "presentation skills"
+  ],
+  "Time Management": [
+    "time management"
+  ],
+  "Critical Thinking": [
+    "critical thinking"
+  ],
+  "Analytical Skills": [
+    "analytical skills",
+    "analytical thinking"
+  ],
+  "Adaptability": [
+    "adaptability"
+  ],
+  "Mentorship": [
+    "mentorship",
+    "mentoring"
+  ],
+  "Strategic Planning": [
+    "strategic planning"
+  ],
+  "Go-to-Market Strategy": [
+    "go-to-market strategy",
+    "gtm strategy"
+  ],
+  "Growth Marketing": [
+    "growth marketing"
+  ],
+  "Digital Marketing": [
+    "digital marketing"
+  ],
+  "SEO": [
+    "seo",
+    "search engine optimization"
+  ],
+  "Content Marketing": [
+    "content marketing"
+  ],
+  "Social Media Marketing": [
+    "social media marketing"
+  ],
+  "Email Marketing": [
+    "email marketing"
+  ],
+  "Sales": [
+    "sales",
+    "b2b sales",
+    "b2c sales"
+  ],
+  "Customer Relationship Management": [
+    "customer relationship management",
+    "crm"
+  ],
+  "Account Management": [
+    "account management"
+  ],
+  "Business Development": [
+    "business development"
+  ],
+  "Financial Modeling": [
+    "financial modeling"
+  ],
+  "Financial Analysis": [
+    "financial analysis"
+  ],
+  "Budgeting": [
+    "budgeting"
+  ],
+  "Forecasting": [
+    "forecasting"
+  ],
+  "Recruiting": [
+    "recruiting",
+    "talent acquisition"
+  ],
+  "Onboarding": [
+    "employee onboarding",
+    "onboarding"
+  ],
+  "Performance Management": [
+    "performance management"
+  ],
+  "UX Research": [
+    "ux research",
+    "user research"
+  ],
+  "UI/UX Design": [
+    "ui/ux design",
+    "user experience design",
+    "ui design"
+  ],
+  "Wireframing": [
+    "wireframing",
+    "prototyping"
+  ],
+  "User Testing": [
+    "user testing",
+    "usability testing"
+  ],
+  "Customer Success": [
+    "customer success"
+  ],
+  "Technical Support": [
+    "technical support"
+  ],
+  "Supply Chain Management": [
+    "supply chain management"
+  ],
+  "Operations Management": [
+    "operations management"
+  ],
+  "Quality Assurance": [
+    "quality assurance",
+    "qa testing"
+  ],
+  "Code Review": [
+    "code review"
+  ],
+  "Technical Writing": [
+    "technical writing"
+  ],
+  "DevOps Culture": [
+    "devops"
+  ],
+  "Site Reliability Engineering": [
+    "site reliability engineering",
+    "sre"
+  ],
+  "Scalability": [
+    "scalability",
+    "scalable systems"
+  ],
+  "Performance Optimization": [
+    "performance optimization",
+    "performance tuning"
+  ],
+  "Cybersecurity": [
+    "cybersecurity",
+    "information security",
+    "infosec"
+  ],
+  "Compliance": [
+    "compliance",
+    "regulatory compliance"
+  ],
+  "Prompt Engineering": [
+    "prompt engineering"
+  ],
+  "Multi-Agent Systems": [
+    "multi-agent systems",
+    "agentic ai"
   ]
 }
