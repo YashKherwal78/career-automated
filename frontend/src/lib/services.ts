@@ -361,6 +361,9 @@ export class ApiJobService implements JobService {
       },
       APPLY_TIMEOUT_MS,
     );
+    if (res.status === 409) {
+      return { status: "COMPLETED", really_submitted: true, failure_reason: null };
+    }
     if (!res.ok) throw new Error(`Apply request failed (${res.status})`);
     return res.json();
   }
