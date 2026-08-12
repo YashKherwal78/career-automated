@@ -263,15 +263,17 @@ function DashboardHome() {
             <div className="flex items-center gap-3">
               <span
                 className="font-semibold"
-                style={{ fontSize: 14, color: "var(--ds-sage-text)" }}
+                style={{ fontSize: 14, color: batchStatus?.error ? "#B4392C" : "var(--ds-sage-text)" }}
               >
-                {batchRunning
-                  ? `Applying… ${batchStatus?.completed ?? 0}/${batchStatus?.total ?? 0}${
-                      batchStatus?.current_job_title ? ` — ${batchStatus.current_job_title}` : ""
-                    }`
-                  : batchStatus && (batchStatus.total ?? 0) > 0
-                    ? `Done: ${batchStatus.submitted ?? 0} submitted, ${batchStatus.review_required ?? 0} need review, ${batchStatus.failed ?? 0} failed`
-                    : "Auto Apply on ✓"}
+                {batchStatus?.error
+                  ? `Couldn't start: ${batchStatus.error}`
+                  : batchRunning
+                    ? `Applying… ${batchStatus?.completed ?? 0}/${batchStatus?.total ?? 0}${
+                        batchStatus?.current_job_title ? ` — ${batchStatus.current_job_title}` : ""
+                      }`
+                    : batchStatus && (batchStatus.total ?? 0) > 0
+                      ? `Done: ${batchStatus.submitted ?? 0} submitted, ${batchStatus.review_required ?? 0} need review, ${batchStatus.failed ?? 0} failed`
+                      : "Auto Apply on ✓"}
               </span>
               {!batchRunning && (
                 // Nothing to "pause" mid-run (no cancel endpoint) — this

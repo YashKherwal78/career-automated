@@ -15,6 +15,7 @@ from typing import Any, Dict, Optional
 
 from src.api.db import get_connection, is_postgres
 from src.applications.apply_service import apply_to_job
+from src.applications.resume_selector import ResumeSelector
 from src.system.logger import setup_logger
 
 logger = setup_logger("batch_apply")
@@ -97,6 +98,31 @@ def run_batch(
     which offloads sync callables to a threadpool -- same pattern the single-
     job /apply endpoint already relies on for its own Playwright run)."""
     test_mode = not live
+
+    # Fail fast on a systemic problem (e.g. the resume data directory being
+    # empty/unmounted -- confirmed real incident: a bind mount left pointing
+    # at a stale, orphaned directory made every single job in a 30+ job
+    # batch fail identically with the same RUNNER_ERROR, one at a time,
+    # burning the full per-job delay each time before anyone noticed) rather
+    # than discovering it 8 seconds and one wasted attempt at a time. This
+    # only proves *a* resume resolves, not that every job-specific variant
+    # will -- it's a smoke test for "is the data directory even there",
+    # not a guarantee.
+    try:
+        ResumeSelector().get_resume({"job_title": "Software Engineer"})
+    except Exception as preflight_err:
+        logger.info(f"[batch_apply] user={user_id} aborting before start -- resume preflight failed: {preflight_err}")
+        _BATCH_STATUS[user_id] = {
+            "running": False,
+            "total": 0,
+            "completed": 0,
+            "submitted": 0,
+            "review_required": 0,
+            "failed": 0,
+            "current_job_title": None,
+            "error": f"Aborted before starting: {preflight_err}",
+        }
+        return
 
     with get_connection() as conn:
         jobs = get_candidate_jobs(conn, user_id, min_score, limit)

@@ -1,10 +1,24 @@
 import os
+from pathlib import Path
 from typing import Dict, Any, Tuple
 
+# Resolved from this file's own location (backend/src/applications/ -> ../../data
+# -> backend/data, /app/data in the container) rather than a bare "data"
+# relative to the process's current working directory. A relative default
+# works fine as long as every caller happens to run with CWD == the backend
+# root, but that's an assumption, not a guarantee -- a plain relative path
+# gave zero indication of *which* directory it actually meant when a resume
+# genuinely went missing (bind-mount got orphaned by a host-side directory
+# recreation -- see the RUNNER_ERROR incident this fixed), it was just
+# "data/Yash_product.pdf" with no way to tell if that path was even pointed
+# at the right place.
+_DEFAULT_DATA_DIR = str(Path(__file__).resolve().parents[2] / "data")
+
+
 class ResumeSelector:
-    def __init__(self, data_dir: str = "data"):
+    def __init__(self, data_dir: str = _DEFAULT_DATA_DIR):
         self.data_dir = data_dir
-        
+
         # Base resumes map
         self.base_resumes = {
             "Product": "Yash_product.pdf",
@@ -36,8 +50,17 @@ class ResumeSelector:
         variant_name = self.base_resumes.get(role_family, "Yash_product.pdf")
         
         resume_path = os.path.join(self.data_dir, variant_name)
-        
+
         if not os.path.exists(resume_path):
+            # Distinguish "this one file is missing" from "the whole data
+            # directory is empty/unmounted" -- the latter is an infra
+            # problem (e.g. a bind mount pointing at a stale/orphaned
+            # directory) that will fail identically for every job in a
+            # batch run, not something specific to this resume variant.
+            if not os.path.isdir(self.data_dir):
+                raise Exception(f"Resume data directory does not exist: {self.data_dir}")
+            if not os.listdir(self.data_dir):
+                raise Exception(f"Resume data directory is empty (likely an unmounted/stale volume): {self.data_dir}")
             raise Exception(f"Resume file not found: {resume_path}")
-            
+
         return resume_path, role_family

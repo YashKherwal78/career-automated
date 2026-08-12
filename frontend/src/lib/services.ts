@@ -104,6 +104,7 @@ export interface BatchApplyStatus {
   review_required?: number;
   failed?: number;
   current_job_title?: string | null;
+  error?: string;
 }
 
 export interface NeedsReviewItem {
