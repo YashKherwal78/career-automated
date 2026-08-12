@@ -270,8 +270,14 @@ function OnboardingPage() {
           throw new Error(err.detail || "Failed to save onboarding details");
         }
 
-        // Also sync canonical profile to /candidate/profile
-        await fetch(`${API_BASE}/candidate/profile`, {
+        // Also sync canonical profile to /candidate/profile -- this is the
+        // table job matching/scoring and embeddings actually read from, so
+        // silently losing this (the previous `.catch(() => null)`, no res.ok
+        // check) meant a brand-new user could sail through onboarding with
+        // markOnboardingComplete()/navigate() still firing below, while their
+        // skills/experience/education never made it into the data the rest
+        // of the product runs on.
+        const syncRes = await fetch(`${API_BASE}/candidate/profile`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -293,7 +299,11 @@ function OnboardingPage() {
             career_preferences: {},
             custom_sections: [],
           }),
-        }).catch(() => null);
+        });
+        if (!syncRes.ok) {
+          const err = await syncRes.json().catch(() => ({}));
+          throw new Error(err.detail || "Failed to sync your profile");
+        }
       }
     } catch (err) {
       console.error("Failed to save onboarding profile:", err);
