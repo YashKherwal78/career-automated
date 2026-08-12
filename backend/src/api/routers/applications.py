@@ -1,6 +1,8 @@
 import json
+import os
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from src.api.db import get_connection, is_postgres
@@ -8,7 +10,12 @@ from src.api.dependencies import get_repos
 from src.core.repositories.manager import RepositoryManager
 from src.applications.apply_service import apply_to_job
 from src.applications.batch_apply import get_candidate_jobs, get_status, run_batch
+from src.applications.profile import ProfileManager
+from src.applications.question_engine import QuestionEngine
+from src.applications.rag import RAGClient
+from src.applications.resume_selector import ResumeSelector
 from src.runtime.auth.dependencies import CurrentUser, get_current_user
+from src.utils.llm_router import LLMRouter
 
 router = APIRouter()
 
@@ -117,3 +124,75 @@ def start_batch_apply(
 @router.get("/batch-apply/status")
 def batch_apply_status(current_user: CurrentUser = Depends(get_current_user)):
     return get_status(current_user.user_id)
+
+
+class AutofillQuestion(BaseModel):
+    question: str
+    field_type: str = "text"
+    placeholder: str = ""
+    options: list[str] | None = None
+    label_text: str = ""
+    required: bool = False
+
+
+class AutofillRequest(BaseModel):
+    job_title: str
+    company_name: str = ""
+    location: str = ""
+    questions: list[AutofillQuestion]
+
+
+@router.post("/autofill")
+def autofill_answers(
+    body: AutofillRequest,
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    """
+    Answer-generation only -- no browser, no DOM. Built for the browser
+    extension (runs in the user's own real Chrome, so it does the DOM
+    extraction/filling itself and just needs answers back): reuses the same
+    QuestionEngine the Playwright-based auto-apply flow already calls from
+    inside base_handler.py, since QuestionEngine.answer() only ever took
+    plain extracted data (label/type/options), never a live Page object.
+    """
+    engine = QuestionEngine(
+        profile_manager=ProfileManager(),
+        rag_client=RAGClient(),
+        llm_client=LLMRouter(),
+        company_context=body.company_name,
+        job_title=body.job_title,
+        job_location=body.location,
+    )
+    answers = []
+    for q in body.questions:
+        try:
+            answer = engine.answer(
+                question=q.question,
+                field_type=q.field_type,
+                placeholder=q.placeholder,
+                options=q.options,
+                label_text=q.label_text,
+                required=q.required,
+            )
+        except Exception as e:
+            answer = ""
+        answers.append(answer)
+    return {"answers": answers}
+
+
+@router.get("/resume-for-job")
+def resume_for_job(
+    job_title: str,
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    """Lets the extension fetch the right resume variant for a job (same
+    selection logic apply_service uses) to attach via a real file input in
+    the user's own browser."""
+    resume_path, _role_family = ResumeSelector().get_resume({"job_title": job_title})
+    if not os.path.exists(resume_path):
+        raise HTTPException(status_code=404, detail="Resume file not found")
+    return FileResponse(
+        resume_path,
+        media_type="application/pdf",
+        filename=os.path.basename(resume_path),
+    )

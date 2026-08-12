@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "CareerAutomated Autofill",
+  "version": "0.1.0",
+  "description": "Autofills ATS job application forms using your CareerAutomated profile. Runs in your own browser so CAPTCHAs are just yours to solve normally — you review and click submit.",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://job-boards.greenhouse.io/*",
+    "https://boards.greenhouse.io/*",
+    "https://*.careerautomated.in/*",
+    "https://api.careerautomated.in/*",
+    "http://localhost:8000/*",
+    "http://localhost:5173/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.careerautomated.in/*", "http://localhost:5173/*"],
+      "js": ["bridge-auth.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://job-boards.greenhouse.io/*", "https://boards.greenhouse.io/*"],
+      "js": ["content-greenhouse.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
