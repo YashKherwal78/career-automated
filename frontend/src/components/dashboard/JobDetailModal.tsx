@@ -209,6 +209,20 @@ export function JobDetailModal({
           >
             Tailor for this role
           </Link>
+          <Link
+            to="/dashboard/cover-letter"
+            search={{ jobId: job.job_id }}
+            className="flex-shrink-0 font-semibold text-center"
+            style={{
+              padding: "13px 20px",
+              borderRadius: "var(--ds-radius-md)",
+              border: "1px solid var(--ds-border-medium)",
+              color: "var(--ds-ink-700)",
+              fontSize: 14,
+            }}
+          >
+            Cover letter
+          </Link>
         </div>
         {applyStatus?.message && (
           <div style={{ fontSize: 12.5, color: "var(--ds-ink-500)" }}>{applyStatus.message}</div>

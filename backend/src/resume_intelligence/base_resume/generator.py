@@ -11,13 +11,20 @@ import os
 import tempfile
 from typing import Any, Dict, Optional, Tuple
 
+from src.config.config import Config
 from src.resume_intelligence.base_resume.builder import build_structured_resume
 from src.resume_intelligence.base_resume.page_fit import optimize_for_one_page, PageFitReport, RenderSettings
 from src.resume_intelligence.base_resume.renderer import compile_pdf, count_pdf_pages, render_tex
 
 logger = logging.getLogger("BaseResumeGenerator")
 
-BASE_RESUME_STORAGE_DIR = os.path.join("artifacts", "stored_base_resumes_json")
+# Was a bare relative "artifacts/..." path -- resolved against the process
+# CWD (/app), which is the container's own ephemeral filesystem, not the
+# mounted careerautomated_data volume. Every base resume a user generated
+# was silently wiped on the next deploy/restart. Config.DATA_DIR is the
+# same persisted volume resume_selector.py and everything else already
+# uses.
+BASE_RESUME_STORAGE_DIR = str(Config.DATA_DIR / "stored_base_resumes_json")
 
 
 def _make_measurer():

@@ -216,7 +216,8 @@ def get_base_resume(current_user: CurrentUser = Depends(get_current_user)):
     """Returns the candidate's most recently generated base resume, if any."""
     import os
 
-    out_dir = os.path.join("artifacts", "stored_base_resumes_json", current_user.user_id)
+    from src.resume_intelligence.base_resume.generator import BASE_RESUME_STORAGE_DIR
+    out_dir = os.path.join(BASE_RESUME_STORAGE_DIR, current_user.user_id)
     tex_path = os.path.join(out_dir, "base_resume.tex")
     pdf_path = os.path.join(out_dir, "base_resume.pdf")
 
@@ -237,7 +238,8 @@ def download_base_resume_pdf(current_user: CurrentUser = Depends(get_current_use
     """Downloads the candidate's most recently generated base resume PDF."""
     import os
 
-    pdf_path = os.path.join("artifacts", "stored_base_resumes_json", current_user.user_id, "base_resume.pdf")
+    from src.resume_intelligence.base_resume.generator import BASE_RESUME_STORAGE_DIR
+    pdf_path = os.path.join(BASE_RESUME_STORAGE_DIR, current_user.user_id, "base_resume.pdf")
     if not os.path.exists(pdf_path):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No base resume PDF available.")
     return FileResponse(pdf_path, media_type="application/pdf", filename="base_resume.pdf")

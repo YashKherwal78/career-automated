@@ -105,27 +105,24 @@ class TailorPreviewResponse(BaseModel):
 
 def _load_base_tex(candidate_id: str, db) -> str:
     """
-    Load the stored base .tex for a candidate.
-    Tries artifacts/stored_base_resumes_json/<candidate_id>/base_resume.tex first,
-    then falls back to the canonical yash_resume_base_v2.tex for development.
+    Load the stored base .tex for a candidate from the same persisted
+    location the base-resume generator writes to (see
+    resume_intelligence/base_resume/generator.py -- this used to be a bare
+    "artifacts/..." relative path resolved against the container's
+    ephemeral filesystem, not the mounted data volume, so a freshly
+    generated base resume could 404 here immediately after being "saved").
     """
     import os
-    tex_path = os.path.join(
-        "artifacts", "stored_base_resumes_json", candidate_id, "base_resume.tex"
-    )
+    from src.resume_intelligence.base_resume.generator import BASE_RESUME_STORAGE_DIR
+
+    tex_path = os.path.join(BASE_RESUME_STORAGE_DIR, candidate_id, "base_resume.tex")
     if os.path.exists(tex_path):
         with open(tex_path, "r", encoding="utf-8") as f:
             return f.read()
 
-    # Development fallback: use the known base resume
-    fallback = "yash_resume_base_v2.tex"
-    if os.path.exists(fallback):
-        with open(fallback, "r", encoding="utf-8") as f:
-            return f.read()
-
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"Base resume .tex not found for candidate_id='{candidate_id}'",
+        detail="No base resume found for your account yet. Generate one from the Resume page first.",
     )
 
 

@@ -5,25 +5,25 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../lib/auth";
 import { API_BASE } from "../../lib/api";
 import { ServiceRegistry } from "../../lib/services";
+import { UpgradeModal } from "../../components/dashboard/UpgradeModal";
 
 const searchSchema = z.object({
   jobId: z.string().optional(),
 });
 
-export const Route = createFileRoute("/dashboard/resume-tailor")({
+export const Route = createFileRoute("/dashboard/cover-letter")({
   validateSearch: searchSchema,
-  component: ResumeTailorPage,
+  component: CoverLetterPage,
 });
 
 const LOADING_LINES = [
-  "Reading through what makes you a fit…",
-  "Pulling out your strongest, most relevant work…",
-  "Rewriting your resume around this role…",
-  "Making sure it reads clearly to a real person…",
-  "Sharpening the details that matter most…",
+  "Reading the role…",
+  "Finding the strongest angle from your background…",
+  "Writing it in your voice, not a template's…",
+  "Cutting anything that sounds like filler…",
 ];
 
-type GenPhase = "idle" | "generating" | "done" | "error";
+type GenPhase = "idle" | "generating" | "done" | "error" | "paywalled";
 
 function Spinner() {
   return (
@@ -44,27 +44,30 @@ function useBaseResume() {
   return useQuery({
     queryKey: ["base-resume"],
     meta: { persist: true },
-    queryFn: async (): Promise<{ exists: boolean; pdfAvailable: boolean }> => {
+    queryFn: async (): Promise<{ exists: boolean }> => {
       const res = await fetch(`${API_BASE}/candidate/base-resume`, {
         headers: { Authorization: `Bearer ${session?.access_token}` },
       });
-      if (res.status === 404) return { exists: false, pdfAvailable: false };
+      if (res.status === 404) return { exists: false };
       if (!res.ok) throw new Error("Failed to load base resume");
-      const data = await res.json();
-      return { exists: true, pdfAvailable: !!data.pdf_available };
+      return { exists: true };
     },
     enabled: !!session,
   });
 }
 
-function ResumeTailorPage() {
+function CoverLetterPage() {
   const { jobId } = Route.useSearch();
   const { user, session } = useAuth();
   const [genPhase, setGenPhase] = useState<GenPhase>("idle");
   const [lineIndex, setLineIndex] = useState(0);
-  const [tailoredTex, setTailoredTex] = useState<string | null>(null);
+  const [letterText, setLetterText] = useState<string | null>(null);
+  const [wordCount, setWordCount] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
   const [jobDescription, setJobDescription] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [roleTitle, setRoleTitle] = useState("");
+  const [copied, setCopied] = useState(false);
 
   const { data: job } = useQuery({
     queryKey: ["job", jobId],
@@ -81,14 +84,15 @@ function ResumeTailorPage() {
     return () => clearInterval(t);
   }, [genPhase]);
 
-  const generateResume = async () => {
-    if (!user) return;
-    if (!jobId && !jobDescription.trim()) return;
+  const canGenerate = !!jobId || jobDescription.trim().length > 0;
+
+  const generateCoverLetter = async () => {
+    if (!user || !canGenerate) return;
     setGenPhase("generating");
     setLineIndex(0);
     setErrorMessage("");
     try {
-      const response = await fetch(`${API_BASE}/resume/tailor`, {
+      const response = await fetch(`${API_BASE}/resume/cover-letter`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -96,16 +100,26 @@ function ResumeTailorPage() {
         },
         body: JSON.stringify(
           jobId
-            ? { candidate_id: user.id, job_id: jobId }
-            : { candidate_id: user.id, job_description: jobDescription },
+            ? { candidate_id: user.id, job_id: jobId, company_name: companyName || undefined, role_title: roleTitle || undefined }
+            : {
+                candidate_id: user.id,
+                job_description: jobDescription,
+                company_name: companyName || undefined,
+                role_title: roleTitle || undefined,
+              },
         ),
       });
+      if (response.status === 402) {
+        setGenPhase("paywalled");
+        return;
+      }
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));
-        throw new Error(err.detail || "Tailoring failed");
+        throw new Error(err.detail || "Generation failed");
       }
       const data = await response.json();
-      setTailoredTex(data.tailored_tex);
+      setLetterText(data.cover_letter_text);
+      setWordCount(data.word_count);
       setGenPhase("done");
     } catch (err) {
       console.error(err);
@@ -114,41 +128,28 @@ function ResumeTailorPage() {
     }
   };
 
-  const [downloadingPdf, setDownloadingPdf] = useState(false);
-  const [downloadError, setDownloadError] = useState("");
-
-  const downloadResume = async () => {
-    if (!tailoredTex) return;
-    setDownloadingPdf(true);
-    setDownloadError("");
+  const copyToClipboard = async () => {
+    if (!letterText) return;
     try {
-      const response = await fetch(`${API_BASE}/resume/tailor/pdf`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token}`,
-        },
-        body: JSON.stringify({ tailored_tex: tailoredTex }),
-      });
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.detail || "Couldn't generate the PDF");
-      }
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `resume_tailored_${jobId || "custom"}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      await navigator.clipboard.writeText(letterText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error(err);
-      setDownloadError(err instanceof Error ? err.message : "Couldn't generate the PDF");
-    } finally {
-      setDownloadingPdf(false);
+      console.error("Clipboard write failed:", err);
     }
+  };
+
+  const downloadAsText = () => {
+    if (!letterText) return;
+    const blob = new Blob([letterText], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `cover_letter_${jobId || "custom"}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const baseBtnStyle: React.CSSProperties = {
@@ -165,7 +166,21 @@ function ResumeTailorPage() {
     cursor: "pointer",
   };
 
-  const canGenerate = !!jobId || jobDescription.trim().length > 0;
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    boxSizing: "border-box",
+    padding: "11px 14px",
+    borderRadius: "var(--ds-radius-md)",
+    border: "1px solid var(--ds-border-medium)",
+    fontSize: 13.5,
+    fontFamily: "var(--ds-font-body)",
+    background: "var(--ds-surface-card)",
+    color: "var(--ds-text-primary)",
+  };
+
+  if (genPhase === "paywalled") {
+    return <UpgradeModal onClose={() => setGenPhase("idle")} />;
+  }
 
   return (
     <div
@@ -193,89 +208,34 @@ function ResumeTailorPage() {
             marginBottom: 12,
           }}
         >
-          Tailoring
+          Cover Letter
         </div>
-        <div className="flex items-start justify-between" style={{ marginBottom: 20 }}>
-          <h1
-            className="font-[var(--ds-font-display)] font-semibold"
-            style={{ fontSize: "clamp(26px,3vw,34px)", margin: 0, maxWidth: 440 }}
-          >
-            Hand us the job. We'll handle the fit.
-          </h1>
-          <Link
-            to="/dashboard/cover-letter"
-            search={jobId ? { jobId } : {}}
-            className="flex-shrink-0"
-            style={{ fontSize: 12.5, fontWeight: 600, color: "var(--ds-accent-primary)", marginTop: 8 }}
-          >
-            Need a cover letter too? →
-          </Link>
-        </div>
+        <h1
+          className="font-[var(--ds-font-display)] font-semibold"
+          style={{ fontSize: "clamp(26px,3vw,34px)", margin: "0 0 20px" }}
+        >
+          A short, specific letter — not a form one.
+        </h1>
 
-        {!jobId && (
+        {!baseResumeLoading && !baseResume?.exists && (
           <div
+            className="flex items-center justify-between"
             style={{
-              background: "rgba(139,123,192,0.08)",
-              border: "1px solid rgba(139,123,192,0.2)",
+              background: "rgba(180,57,44,0.06)",
+              border: "1px solid rgba(180,57,44,0.2)",
               borderRadius: "var(--ds-radius-lg)",
               padding: "14px 18px",
               marginBottom: 14,
               fontSize: 13,
               color: "var(--ds-ink-600)",
-              lineHeight: 1.5,
             }}
           >
-            First time here? Paste in a job description below and watch your resume reshape around
-            it — nothing saves until you download.
-          </div>
-        )}
-
-        {/* Your resume card */}
-        {!baseResumeLoading && (
-          <div
-            className="flex flex-col sm:flex-row sm:items-center"
-            style={{
-              background: "rgba(255,255,255,0.55)",
-              border: "1px solid rgba(255,255,255,0.6)",
-              borderRadius: "var(--ds-radius-xl)",
-              padding: 22,
-              marginBottom: 14,
-              gap: 14,
-            }}
-          >
-            <div className="flex items-center" style={{ gap: 14, minWidth: 0 }}>
-              <div
-                className="flex items-center justify-center flex-shrink-0"
-                style={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: "var(--ds-radius-md)",
-                  background: "var(--ds-brand-orange-tint-10)",
-                }}
-              >
-                <div
-                  className="relative"
-                  style={{
-                    width: 14,
-                    height: 16,
-                    borderRadius: 2,
-                    border: "2px solid var(--ds-accent-primary)",
-                  }}
-                />
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: "var(--ds-text-md)", fontWeight: 600 }}>Your resume</div>
-                <div style={{ fontSize: 12.5, color: "var(--ds-ink-400)" }}>
-                  {baseResume?.exists ? "Base resume ready for tailoring" : "No base resume yet"}
-                </div>
-              </div>
-            </div>
+            <span>Cover letters draw on your base resume — build one first.</span>
             <Link
               to="/dashboard/resume"
-              className="flex-shrink-0 pl-[52px] sm:pl-0"
-              style={{ fontSize: 13, fontWeight: 600, color: "var(--ds-accent-primary)" }}
+              style={{ fontSize: 13, fontWeight: 600, color: "var(--ds-accent-primary)", flexShrink: 0, marginLeft: 12 }}
             >
-              {baseResume?.exists ? "Use a different one" : "Build your base resume →"}
+              Build it →
             </Link>
           </div>
         )}
@@ -294,7 +254,7 @@ function ResumeTailorPage() {
               {job ? `${job.title} at ${job.canonical_name}` : "Loading role…"}
             </div>
             <div style={{ fontSize: 12.5, color: "var(--ds-ink-400)" }}>
-              Tailoring against this role's stored requirements — nothing saves until you download.
+              Written against this role's stored requirements.
             </div>
           </div>
         ) : (
@@ -304,7 +264,7 @@ function ResumeTailorPage() {
               border: "1px solid rgba(255,255,255,0.6)",
               borderRadius: "var(--ds-radius-xl)",
               padding: 22,
-              marginBottom: 26,
+              marginBottom: 14,
             }}
           >
             <label
@@ -322,8 +282,8 @@ function ResumeTailorPage() {
             <textarea
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
-              placeholder="Paste the job description here — we'll take it from there."
-              rows={6}
+              placeholder="Paste the job description here."
+              rows={5}
               className="w-full bg-transparent outline-none resize-none"
               style={{
                 fontSize: 13.5,
@@ -333,77 +293,116 @@ function ResumeTailorPage() {
                 borderRadius: "var(--ds-radius-md)",
                 padding: 12,
                 boxSizing: "border-box",
+                marginBottom: 10,
               }}
             />
+            <div className="flex gap-2.5">
+              <input
+                type="text"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder="Company (optional)"
+                style={inputStyle}
+              />
+              <input
+                type="text"
+                value={roleTitle}
+                onChange={(e) => setRoleTitle(e.target.value)}
+                placeholder="Role title (optional)"
+                style={inputStyle}
+              />
+            </div>
           </div>
         )}
 
         {genPhase === "idle" && (
           <button
             type="button"
-            onClick={generateResume}
+            onClick={generateCoverLetter}
             disabled={!canGenerate || !baseResume?.exists}
             className="transition-transform active:scale-[0.98]"
             style={{
               ...baseBtnStyle,
               background:
-                canGenerate && baseResume?.exists
-                  ? "var(--ds-accent-primary)"
-                  : "var(--ds-cream-300)",
-              color:
-                canGenerate && baseResume?.exists ? "var(--ds-text-on-brand)" : "var(--ds-ink-400)",
+                canGenerate && baseResume?.exists ? "var(--ds-accent-primary)" : "var(--ds-cream-300)",
+              color: canGenerate && baseResume?.exists ? "var(--ds-text-on-brand)" : "var(--ds-ink-400)",
               boxShadow:
-                canGenerate && baseResume?.exists
-                  ? "0 10px 22px -8px rgba(226,116,72,0.45)"
-                  : "none",
+                canGenerate && baseResume?.exists ? "0 10px 22px -8px rgba(226,116,72,0.45)" : "none",
               cursor: canGenerate && baseResume?.exists ? "pointer" : "default",
             }}
           >
-            Tailor my resume
+            Write my cover letter
           </button>
         )}
         {genPhase === "generating" && (
           <div
             className="flex items-center justify-center gap-2.5"
-            style={{
-              ...baseBtnStyle,
-              background: "var(--ds-accent-primary)",
-              color: "var(--ds-text-on-brand)",
-            }}
+            style={{ ...baseBtnStyle, background: "var(--ds-accent-primary)", color: "var(--ds-text-on-brand)" }}
           >
             <Spinner />
             {LOADING_LINES[lineIndex]}
           </div>
         )}
-        {genPhase === "done" && (
+        {genPhase === "done" && letterText && (
           <>
-            <button
-              type="button"
-              onClick={downloadResume}
-              disabled={downloadingPdf}
-              className="transition-transform active:scale-[0.98]"
+            <div
               style={{
-                ...baseBtnStyle,
-                background: "var(--ds-ink-900)",
-                color: "#FFFDFA",
-                opacity: downloadingPdf ? 0.7 : 1,
-                cursor: downloadingPdf ? "default" : "pointer",
+                background: "rgba(255,255,255,0.65)",
+                border: "1px solid var(--ds-border-medium)",
+                borderRadius: "var(--ds-radius-lg)",
+                padding: 18,
+                marginBottom: 14,
+                fontSize: 13.5,
+                lineHeight: 1.7,
+                color: "var(--ds-text-primary)",
+                whiteSpace: "pre-wrap",
+                maxHeight: 360,
+                overflowY: "auto",
               }}
             >
-              {downloadingPdf ? "Generating PDF…" : "↓ Download your resume"}
-            </button>
-            {downloadError && (
-              <p
+              {letterText}
+            </div>
+            <div style={{ fontSize: 11.5, color: "var(--ds-ink-400)", marginBottom: 12, textAlign: "right" }}>
+              {wordCount} words
+            </div>
+            <div className="flex gap-2.5">
+              <button
+                type="button"
+                onClick={copyToClipboard}
+                className="flex-1 transition-transform active:scale-[0.98]"
                 style={{
-                  fontSize: 12.5,
-                  color: "var(--ds-accent-danger, #C4432B)",
-                  margin: "10px 0 0",
-                  textAlign: "center",
+                  ...baseBtnStyle,
+                  background: "transparent",
+                  border: "1px solid var(--ds-border-medium)",
+                  color: "var(--ds-ink-700)",
                 }}
               >
-                {downloadError}
-              </p>
-            )}
+                {copied ? "Copied ✓" : "Copy text"}
+              </button>
+              <button
+                type="button"
+                onClick={downloadAsText}
+                className="flex-1 transition-transform active:scale-[0.98]"
+                style={{ ...baseBtnStyle, background: "var(--ds-ink-900)", color: "#FFFDFA" }}
+              >
+                ↓ Download .txt
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => setGenPhase("idle")}
+              style={{
+                display: "block",
+                margin: "14px auto 0",
+                background: "none",
+                border: "none",
+                fontSize: 12.5,
+                color: "var(--ds-ink-450)",
+                cursor: "pointer",
+              }}
+            >
+              Write another
+            </button>
           </>
         )}
         {genPhase === "error" && (
@@ -416,18 +415,11 @@ function ResumeTailorPage() {
               textAlign: "center",
             }}
           >
-            <div
-              style={{
-                fontSize: 13.5,
-                fontWeight: 600,
-                color: "var(--ds-ink-800)",
-                marginBottom: 4,
-              }}
-            >
+            <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ds-ink-800)", marginBottom: 4 }}>
               That didn't go through.
             </div>
             <div style={{ fontSize: 13, color: "var(--ds-ink-500)", marginBottom: 12 }}>
-              Your work is safe — nothing was lost. Let's try that again.
+              Nothing was lost. Let's try that again.
               {errorMessage ? ` (${errorMessage})` : ""}
             </div>
             <button
