@@ -2,7 +2,7 @@ import { useState } from "react";
 import { DsModal, DsModalCloseButton } from "../ds/Modal";
 import { DsChip } from "../ds/Chip";
 
-const WORK_MODES = ["Remote", "Hybrid", "Onsite"];
+const WORK_MODES = ["Any", "Remote", "Hybrid", "Onsite"];
 const EMPLOYMENT_TYPES = ["Full-time", "Contract", "Internship", "Part-time"];
 const COMPANY_SIZES = ["Startup", "Mid-size", "Large", "Any"];
 const VISA_OPTIONS = ["Required", "Not required", "No preference"];

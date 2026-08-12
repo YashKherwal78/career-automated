@@ -116,18 +116,44 @@ class IntentFilter:
             )
             trust_fit_score = required_skill_count > 0
 
+            # analyzer.py (JIE-internal, not modified here) only scores
+            # req.type=="skill" entries, so the prose "Requirements"/"Nice to
+            # have" bullets extracted alongside skill-dictionary hits (see
+            # extractors/requirements.py) never reach fit.overall_fit_score.
+            # Previously that meant any JD whose real requirements weren't
+            # phrased as dictionary-matchable skill tokens (most non-software
+            # roles, and plenty of software ones too, given how small
+            # skills.json/technologies.json are) fell all the way back to
+            # title-only scoring even though the JD had real, readable
+            # requirement text. When there's no skill-dictionary signal but
+            # real bullets exist, use TF-IDF cosine similarity between the
+            # candidate's skills/experience text and those bullets as a
+            # non-vacuous substitute instead of discarding that content.
+            required_bullets = [
+                r.evidence for r in structured.requirements
+                if r.type == "requirement" and r.importance == "REQUIRED"
+            ]
+            bullet_score = None
+            if not trust_fit_score and required_bullets:
+                candidate_text = profile.experience_text or " ".join(profile.skills)
+                bullet_text = " ".join(required_bullets)
+                if candidate_text and bullet_text:
+                    bullet_score = cosine_similarity(candidate_text, bullet_text)
+
             if resp_score is None:
-                combined = (
-                    fit.overall_fit_score * 0.60 + role_score * 0.40
-                    if trust_fit_score
-                    else role_score
-                )
+                if trust_fit_score:
+                    combined = fit.overall_fit_score * 0.60 + role_score * 0.40
+                elif bullet_score is not None:
+                    combined = bullet_score * 0.50 + role_score * 0.50
+                else:
+                    combined = role_score
             else:
-                combined = (
-                    fit.overall_fit_score * 0.45 + role_score * 0.25 + resp_score * 0.30
-                    if trust_fit_score
-                    else role_score * 0.40 + resp_score * 0.60
-                )
+                if trust_fit_score:
+                    combined = fit.overall_fit_score * 0.45 + role_score * 0.25 + resp_score * 0.30
+                elif bullet_score is not None:
+                    combined = bullet_score * 0.35 + role_score * 0.25 + resp_score * 0.40
+                else:
+                    combined = role_score * 0.40 + resp_score * 0.60
 
             # Build score_breakdown for frontend (matches {keyword, matched} contract)
             breakdown = []
