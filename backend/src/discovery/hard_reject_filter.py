@@ -90,6 +90,14 @@ class HardRejectFilter:
             r"\bsenior\b", r"\bsr\b", r"\bstaff\b", r"\bprincipal\b",
             r"\blead\b", r"\bdirector\b", r"\bvp\b", r"\bvice president\b",
             r"\bhead of\b",
+            # People-management titles specifically -- these always require
+            # real prior IC experience before managing a team, unlike plain
+            # "manager" (deliberately NOT blocked here: "Associate Product
+            # Manager"/"Product Manager" are legitimate entry-level titles at
+            # many companies, e.g. APM programs, and blocking on the bare
+            # word would wrongly reject those too). "\blead\b" above already
+            # catches "Engineering Lead"/"Team Lead".
+            r"\bengineering manager\b", r"\btechnical manager\b",
         ]
         # Numbered leveling schemes (Adobe/Amazon/etc: "SDE 3", "Engineer III")
         # never say "senior" in the title at all, so the plain-keyword list
