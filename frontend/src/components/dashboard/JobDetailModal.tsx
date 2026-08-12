@@ -56,15 +56,22 @@ function formatSalary(job: Job): string | null {
   return fmt(job.salary_min || job.salary_max || 0) + " / year";
 }
 
+type ApplyStatus = {
+  state: "applying" | "applied" | "review_required" | "failed";
+  message?: string;
+};
+
 export function JobDetailModal({
   job,
   queued,
+  applyStatus,
   onToggleQueue,
   onClose,
   showMatch = true,
 }: {
   job: Job;
   queued: boolean;
+  applyStatus?: ApplyStatus;
   onToggleQueue: () => void;
   onClose: () => void;
   showMatch?: boolean;
@@ -149,10 +156,12 @@ export function JobDetailModal({
             </div>
           )}
         </div>
-        <div className="flex gap-2.5" style={{ marginTop: 20 }}>
+        <div className="flex flex-col gap-1.5" style={{ marginTop: 20 }}>
+        <div className="flex gap-2.5">
           <button
             type="button"
             onClick={onToggleQueue}
+            disabled={queued}
             className="font-semibold transition-transform active:scale-[0.98]"
             style={{
               padding: "13px 20px",
@@ -161,10 +170,15 @@ export function JobDetailModal({
               background: queued ? "var(--ds-cream-300)" : "var(--ds-accent-primary)",
               color: queued ? "var(--ds-ink-700)" : "var(--ds-text-on-brand)",
               fontSize: 14,
-              cursor: "pointer",
+              cursor: queued ? "default" : "pointer",
+              opacity: applyStatus?.state === "applying" ? 0.7 : 1,
             }}
           >
-            {queued ? "Remove from queue" : "Add to auto-apply queue"}
+            {applyStatus?.state === "applying" && "Applying…"}
+            {applyStatus?.state === "applied" && "Applied ✓"}
+            {applyStatus?.state === "review_required" && "Submitted — review needed"}
+            {applyStatus?.state === "failed" && "Failed — try again"}
+            {!applyStatus && (queued ? "Queued" : "Add to auto-apply queue")}
           </button>
           <a
             href={job.apply_url}
@@ -195,6 +209,10 @@ export function JobDetailModal({
           >
             Tailor for this role
           </Link>
+        </div>
+        {applyStatus?.message && (
+          <div style={{ fontSize: 12.5, color: "var(--ds-ink-500)" }}>{applyStatus.message}</div>
+        )}
         </div>
       </div>
 

@@ -84,6 +84,11 @@ export interface JobService {
   }): Promise<Job[]>;
   getJob(jobId: string): Promise<Job>;
   getRecentJobs(): Promise<Job[]>;
+  applyToJob(jobId: string): Promise<{
+    status: string;
+    really_submitted: boolean;
+    failure_reason: string | null;
+  }>;
 }
 
 export interface CompanyService {
@@ -135,6 +140,10 @@ async function authFetch(
 // is tuned for quick CRUD calls and was cutting this off before it ever
 // finished, silently swapping in FALLBACK_JOBS below every single time.
 const JOBS_TIMEOUT_MS = 25000;
+
+// A real application run drives a full browser session (page load, resume
+// upload, LLM-answered questions) — minutes, not the usual CRUD-call scale.
+const APPLY_TIMEOUT_MS = 120000;
 
 export const FALLBACK_JOBS: Job[] = [
   {
@@ -339,6 +348,22 @@ export class ApiJobService implements JobService {
   async getRecentJobs(): Promise<Job[]> {
     return this.getJobs({ page_size: 10 });
   }
+
+  async applyToJob(
+    jobId: string,
+  ): Promise<{ status: string; really_submitted: boolean; failure_reason: string | null }> {
+    const res = await authFetch(
+      `${API_BASE}/applications/${jobId}/apply`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ test_mode: false }),
+      },
+      APPLY_TIMEOUT_MS,
+    );
+    if (!res.ok) throw new Error(`Apply request failed (${res.status})`);
+    return res.json();
+  }
 }
 
 export class ApiCompanyService implements CompanyService {
@@ -466,6 +491,9 @@ export class MockJobService implements JobService {
   }
   async getRecentJobs(): Promise<Job[]> {
     return this.mockJobs;
+  }
+  async applyToJob(): Promise<{ status: string; really_submitted: boolean; failure_reason: string | null }> {
+    return { status: "COMPLETED", really_submitted: true, failure_reason: null };
   }
 }
 

@@ -66,11 +66,16 @@ function DashboardHome() {
   const [page, setPage] = useState(0);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
-  // Auto-apply is frontend-only for this pass — no backend policy/queue endpoints exist yet.
+  // Auto-apply toggle/preferences are still frontend-only (no backend policy
+  // endpoint) but "Add to auto-apply queue" now drives a real submission —
+  // see handleQueueJob.
   const [autoApplyOn, setAutoApplyOn] = useState(false);
   const [showPreferencesModal, setShowPreferencesModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [queuedJobIds, setQueuedJobIds] = useState<string[]>([]);
+  const [applyStatus, setApplyStatus] = useState<
+    Record<string, { state: "applying" | "applied" | "review_required" | "failed"; message?: string }>
+  >({});
 
   const filtered = useMemo(() => {
     return jobs.filter((job) => {
@@ -106,9 +111,9 @@ function DashboardHome() {
     setAutoApplyOn(true);
   };
 
-  const handleQueueJob = (jobId: string) => {
+  const handleQueueJob = async (jobId: string) => {
     if (queuedJobIds.includes(jobId)) {
-      setQueuedJobIds((ids) => ids.filter((id) => id !== jobId));
+      // Already submitted (or in flight) — nothing to undo on the ATS side.
       return;
     }
     if (queuedJobIds.length >= FREE_TIER_AUTO_APPLY_CAP) {
@@ -116,6 +121,30 @@ function DashboardHome() {
       return;
     }
     setQueuedJobIds((ids) => [...ids, jobId]);
+    setApplyStatus((s) => ({ ...s, [jobId]: { state: "applying" } }));
+    try {
+      const result = await ServiceRegistry.getJobService().applyToJob(jobId);
+      if (result.really_submitted) {
+        setApplyStatus((s) => ({ ...s, [jobId]: { state: "applied" } }));
+      } else if (result.status === "REVIEW_REQUIRED") {
+        setApplyStatus((s) => ({
+          ...s,
+          [jobId]: { state: "review_required", message: "Needs manual review on the employer site" },
+        }));
+      } else {
+        setApplyStatus((s) => ({
+          ...s,
+          [jobId]: { state: "failed", message: result.failure_reason || "Application failed" },
+        }));
+        setQueuedJobIds((ids) => ids.filter((id) => id !== jobId));
+      }
+    } catch (e) {
+      setApplyStatus((s) => ({
+        ...s,
+        [jobId]: { state: "failed", message: e instanceof Error ? e.message : "Application failed" },
+      }));
+      setQueuedJobIds((ids) => ids.filter((id) => id !== jobId));
+    }
   };
 
   return (
@@ -495,6 +524,7 @@ function DashboardHome() {
         <JobDetailModal
           job={selectedJob}
           queued={queuedJobIds.includes(selectedJob.job_id)}
+          applyStatus={applyStatus[selectedJob.job_id]}
           onToggleQueue={() => handleQueueJob(selectedJob.job_id)}
           onClose={() => setSelectedJob(null)}
           showMatch={!showResumeNudge}
