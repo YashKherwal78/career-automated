@@ -111,7 +111,7 @@ def run_batch(
     # will -- it's a smoke test for "is the data directory even there",
     # not a guarantee.
     try:
-        ResumeSelector().get_resume({"job_title": "Software Engineer"})
+        ResumeSelector().get_resume({"job_title": "Software Engineer"}, user_id=user_id)
     except Exception as preflight_err:
         logger.info(f"[batch_apply] user={user_id} aborting before start -- resume preflight failed: {preflight_err}")
         _BATCH_STATUS[user_id] = {
@@ -166,7 +166,7 @@ def run_batch(
             "test_mode": test_mode,
         }
         try:
-            result = apply_to_job(job_row, test_mode=test_mode)
+            result = apply_to_job(job_row, test_mode=test_mode, user_id=user_id)
             record["status"] = result.status
             record["really_submitted"] = bool(result.really_submitted)
             record["failure_reason"] = result.failure_reason

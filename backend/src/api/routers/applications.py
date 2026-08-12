@@ -62,7 +62,7 @@ def apply_to_job_endpoint(
                 detail=f"Already applied to this job (status={existing_status})",
             )
 
-    result = apply_to_job(job_row, test_mode=body.test_mode)
+    result = apply_to_job(job_row, test_mode=body.test_mode, user_id=current_user.user_id)
 
     db_status = (
         "SUBMITTED" if (result.status == "COMPLETED" and result.really_submitted) else "DRAFT"
@@ -201,7 +201,7 @@ def resume_for_job(
     """Lets the extension fetch the right resume variant for a job (same
     selection logic apply_service uses) to attach via a real file input in
     the user's own browser."""
-    resume_path, _role_family = ResumeSelector().get_resume({"job_title": job_title})
+    resume_path, _role_family = ResumeSelector().get_resume({"job_title": job_title}, user_id=current_user.user_id)
     if not os.path.exists(resume_path):
         raise HTTPException(status_code=404, detail="Resume file not found")
     return FileResponse(

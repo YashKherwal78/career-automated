@@ -1,6 +1,10 @@
 import os
 from pathlib import Path
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Optional, Tuple
+
+from src.system.logger import setup_logger
+
+logger = setup_logger("resume_selector")
 
 # Resolved from this file's own location (backend/src/applications/ -> ../../data
 # -> backend/data, /app/data in the container) rather than a bare "data"
@@ -40,15 +44,69 @@ class ResumeSelector:
         # Default fallback
         return "Product"
 
-    def get_resume(self, job: Dict[str, Any]) -> Tuple[str, str]:
+    def _get_uploaded_resume(self, user_id: str) -> Optional[str]:
+        """Downloads (fresh, from R2 -- not the stored presigned URL, which
+        expires 7 days after upload) the resume this specific user actually
+        uploaded via the dashboard, caching it locally. Returns None if the
+        user hasn't uploaded one, in which case the caller falls back to a
+        generic default -- but never silently substitutes a DIFFERENT
+        person's or a stale placeholder resume for a user who HAS uploaded
+        their own (that was the actual bug this replaces: every real
+        application went out with a static file from the initial commit,
+        unrelated to and predating any real per-user upload)."""
+        try:
+            from src.api.db import get_connection
+            from src.runtime.storage.storage_service import StorageService
+
+            with get_connection() as conn:
+                cur = conn.execute(
+                    "SELECT file_name FROM public.user_resumes WHERE user_id = %s",
+                    (user_id,),
+                )
+                row = cur.fetchone()
+            if not row:
+                return None
+            file_name = row["file_name"] if hasattr(row, "keys") else row[0]
+            if not file_name:
+                return None
+
+            cache_dir = os.path.join(self.data_dir, "cache", "resumes")
+            os.makedirs(cache_dir, exist_ok=True)
+            cache_path = os.path.join(cache_dir, f"{user_id}_{file_name}")
+
+            key = f"resumes/{user_id}/{file_name}"
+            if StorageService.download_file(key, cache_path):
+                return cache_path
+
+            # Download failed (network hiccup, R2 issue) -- reuse a
+            # previously cached copy rather than falling all the way back
+            # to the generic default, if one exists from an earlier
+            # successful fetch.
+            if os.path.exists(cache_path):
+                logger.info(f"R2 download failed for {key}, reusing cached copy at {cache_path}")
+                return cache_path
+            return None
+        except Exception as e:
+            logger.info(f"Failed to resolve uploaded resume for user_id={user_id}: {e}")
+            return None
+
+    def get_resume(self, job: Dict[str, Any], user_id: Optional[str] = None) -> Tuple[str, str]:
         """
-        Returns (resume_path, resume_variant)
-        In the future, this will call Resume Tailoring Engine.
-        For now, it falls back to the deterministic base resumes.
+        Returns (resume_path, resume_variant). Prefers the specific resume
+        this user actually uploaded (see _get_uploaded_resume) when
+        user_id is supplied and a real upload exists; falls back to the
+        generic role-family default otherwise -- e.g. for a user who
+        hasn't uploaded a resume yet, or when user_id isn't known at the
+        call site.
         """
         role_family = self._determine_role_family(job)
+
+        if user_id:
+            uploaded_path = self._get_uploaded_resume(user_id)
+            if uploaded_path:
+                return uploaded_path, role_family
+
         variant_name = self.base_resumes.get(role_family, "Yash_product.pdf")
-        
         resume_path = os.path.join(self.data_dir, variant_name)
 
         if not os.path.exists(resume_path):

@@ -8,7 +8,7 @@ work included) went through manual scratch scripts hardcoding job URLs.
 Kept intentionally small: map the job row's field names to what the
 dispatcher/adapters expect, pick a resume, dispatch. No new business logic.
 """
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from src.system.logger import setup_logger
 from src.applications.dispatcher import ApplicationDispatcher
@@ -35,11 +35,17 @@ def _map_job_row(job_row: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def apply_to_job(job_row: Dict[str, Any], test_mode: bool = True) -> ApplicationResult:
+def apply_to_job(job_row: Dict[str, Any], test_mode: bool = True, user_id: Optional[str] = None) -> ApplicationResult:
     """
     `job_row` is whatever `RepositoryManager.job.get_job(job_id)` returns.
     `test_mode` defaults to True (never clicks final submit) — callers must
     explicitly pass False for a real submission.
+
+    `user_id`, when supplied, makes ResumeSelector prefer the resume this
+    specific user actually uploaded over the generic static default -- see
+    ResumeSelector.get_resume's docstring. Optional only because a couple of
+    call sites (ad hoc scripts/tests) predate multi-tenant resume support;
+    every real request-handling caller should pass it.
     """
     mapped_job = _map_job_row(job_row)
 
@@ -48,7 +54,7 @@ def apply_to_job(job_row: Dict[str, Any], test_mode: bool = True) -> Application
     if not mapped_job["connector"]:
         return ApplicationResult(status="REVIEW_REQUIRED", failure_reason="Job has no provider/connector set")
 
-    resume_path, _role_family = ResumeSelector().get_resume(mapped_job)
+    resume_path, _role_family = ResumeSelector().get_resume(mapped_job, user_id=user_id)
 
     profile_manager = ProfileManager()
     rag_client = RAGClient()
