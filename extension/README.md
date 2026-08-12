@@ -9,8 +9,10 @@ handoff infra needed.
 
 ## What it does today (v1 scope)
 
-- Adds an "Autofill (CareerAutomated)" button to Greenhouse job application
-  pages (`job-boards.greenhouse.io`, `boards.greenhouse.io`).
+- Adds an "Autofill (CareerAutomated)" button to Greenhouse, Lever, and
+  Ashby application pages (`job-boards.greenhouse.io`, `boards.greenhouse.io`,
+  `jobs.lever.co`, `jobs.ashbyhq.com`) — the same 3 ATSs the server-side
+  batch-apply system supports.
 - Fills text inputs, textareas, and native `<select>` dropdowns using
   `POST /api/v1/applications/autofill`.
 - Attaches the right resume variant via `GET /api/v1/applications/resume-for-job`.
@@ -21,8 +23,6 @@ handoff infra needed.
 
 - Radio buttons / checkbox groups (label-matching them reliably needs more
   work — left for you to fill by hand for now, same as before this existed).
-- Only Greenhouse. Lever/Ashby content scripts would follow the same pattern
-  (see `content-greenhouse.js`) once this one's proven out.
 - No cancel/undo — it's a one-shot fill per page load.
 
 ## Loading it locally
@@ -32,8 +32,8 @@ handoff infra needed.
 2. Log into `careerautomated.in` in a normal tab — `bridge-auth.js` picks up
    your session token automatically and hands it to the extension. Check the
    extension popup for "Connected ✓".
-3. Open any Greenhouse job application page. Click the button in the
-   bottom-right corner.
+3. Open a Greenhouse, Lever, or Ashby job application page. Click the button
+   in the bottom-right corner.
 
 ## Auth
 

@@ -7,6 +7,8 @@
   "host_permissions": [
     "https://job-boards.greenhouse.io/*",
     "https://boards.greenhouse.io/*",
+    "https://jobs.lever.co/*",
+    "https://jobs.ashbyhq.com/*",
     "https://*.careerautomated.in/*",
     "https://api.careerautomated.in/*",
     "http://localhost:8000/*",
@@ -27,6 +29,16 @@
     {
       "matches": ["https://job-boards.greenhouse.io/*", "https://boards.greenhouse.io/*"],
       "js": ["content-greenhouse.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://jobs.lever.co/*"],
+      "js": ["content-lever.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://jobs.ashbyhq.com/*"],
+      "js": ["content-ashby.js"],
       "run_at": "document_idle"
     }
   ]
