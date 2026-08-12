@@ -84,6 +84,16 @@ class AshbyHandler(BaseATSHandler):
         # styled "Upload file" button, but it's still a genuine <input
         # type=file> — set_input_files works on it directly without needing
         # to intercept a file-chooser dialog.
+        # Ashby's application form is a React SPA — the file input can mount
+        # after the rest of the form is visible (same race Greenhouse hit
+        # and was fixed for in commit 71bc99d: absent at 1.5s, present by
+        # 4s there). This had no wait at all, so a slow mount meant
+        # count() == 0 and an immediate, unretried give-up.
+        try:
+            self.active_context.wait_for_selector('#_systemfield_resume, input[type="file"]', timeout=8000)
+        except Exception:
+            pass
+
         file_input = self.active_context.locator('#_systemfield_resume, input[type="file"]').first
         if file_input.count() == 0:
             logger.info("AshbyHandler: No file input found for resume upload.")

@@ -47,6 +47,7 @@ const DEFAULT_SETTINGS: SettingsValues = {
 function useSettingsPersistence(session: { access_token?: string } | null | undefined) {
   const [settings, setSettings] = useState<SettingsValues>(DEFAULT_SETTINGS);
   const [loaded, setLoaded] = useState(false);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const rawProfileRef = useRef<Record<string, any>>({});
 
   useEffect(() => {
@@ -92,6 +93,7 @@ function useSettingsPersistence(session: { access_token?: string } | null | unde
   const persist = (next: SettingsValues) => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(async () => {
+      setSaveState("saving");
       const base = rawProfileRef.current || {};
       const payload = {
         personal_info: base.personal_info || {},
@@ -130,14 +132,22 @@ function useSettingsPersistence(session: { access_token?: string } | null | unde
           },
         },
       };
-      await fetch(`${API_BASE}/candidate/profile`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      try {
+        const res = await fetch(`${API_BASE}/candidate/profile`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error(`save failed (${res.status})`);
+        setSaveState("saved");
+        setTimeout(() => setSaveState("idle"), 2000);
+      } catch (e) {
+        console.error("Settings save failed:", e);
+        setSaveState("error");
+      }
     }, 500);
   };
 
@@ -149,7 +159,7 @@ function useSettingsPersistence(session: { access_token?: string } | null | unde
     });
   };
 
-  return { settings, update, loaded };
+  return { settings, update, loaded, saveState };
 }
 
 export const Route = createFileRoute("/dashboard/settings")({
@@ -288,7 +298,7 @@ function SettingsPage() {
   const { profile, user, session, logout } = useAuth();
   const navigate = useNavigate();
 
-  const { settings, update: updateSetting } = useSettingsPersistence(session);
+  const { settings, update: updateSetting, saveState } = useSettingsPersistence(session);
   const { data: subscription } = useQuery({
     queryKey: ["subscription"],
     queryFn: () => ServiceRegistry.getBillingService().getSubscription(),
@@ -312,6 +322,7 @@ function SettingsPage() {
   const [replaceFile, setReplaceFile] = useState<File | null>(null);
   const [showReplaceModal, setShowReplaceModal] = useState(false);
   const [replaceState, setReplaceState] = useState<"idle" | "uploading">("idle");
+  const [replaceError, setReplaceError] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteTyped, setDeleteTyped] = useState("");
   const [deleteState, setDeleteState] = useState<"idle" | "deleting" | "error">("idle");
@@ -356,20 +367,30 @@ function SettingsPage() {
   const confirmReplace = async () => {
     if (!replaceFile) return;
     setReplaceState("uploading");
+    setReplaceError(null);
     const formData = new FormData();
     formData.append("file", replaceFile);
     try {
-      await fetch(`${API_BASE}/users/upload_resume`, {
+      const res = await fetch(`${API_BASE}/users/upload_resume`, {
         method: "POST",
         headers: { Authorization: `Bearer ${session?.access_token}` },
         body: formData,
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || `Upload failed (${res.status})`);
+      }
+      setReplaceState("idle");
+      setReplaceFile(null);
+      setShowReplaceModal(false);
     } catch (err) {
+      // Deliberately does not close the modal or clear replaceFile here —
+      // doing so on failure (the previous behavior) closed the dialog as if
+      // the old resume had been replaced when it hadn't been.
       console.error("Resume upload failed:", err);
+      setReplaceState("idle");
+      setReplaceError(err instanceof Error ? err.message : "Upload failed. Try again.");
     }
-    setReplaceState("idle");
-    setReplaceFile(null);
-    setShowReplaceModal(false);
   };
 
   const deleteAccount = async () => {
@@ -389,12 +410,32 @@ function SettingsPage() {
 
   return (
     <div style={{ padding: "40px clamp(24px,4vw,56px)", maxWidth: 720 }}>
-      <h1
-        className="font-[var(--ds-font-display)] font-semibold"
-        style={{ fontSize: 28, margin: "0 0 8px" }}
-      >
-        Settings
-      </h1>
+      <div className="flex items-center gap-3" style={{ marginBottom: 8 }}>
+        <h1
+          className="font-[var(--ds-font-display)] font-semibold"
+          style={{ fontSize: 28, margin: 0 }}
+        >
+          Settings
+        </h1>
+        {saveState !== "idle" && (
+          <span
+            style={{
+              fontSize: 12.5,
+              fontWeight: 600,
+              color:
+                saveState === "error"
+                  ? "#B4392C"
+                  : saveState === "saved"
+                    ? "var(--ds-sage-text)"
+                    : "var(--ds-ink-400)",
+            }}
+          >
+            {saveState === "saving" && "Saving…"}
+            {saveState === "saved" && "Saved ✓"}
+            {saveState === "error" && "Couldn't save — try again"}
+          </span>
+        )}
+      </div>
       <p style={{ fontSize: 14, color: "var(--ds-ink-500)", margin: "0 0 32px" }}>
         Manage your account, preferences, and how CareerAutomated works for you.
       </p>
@@ -536,7 +577,10 @@ function SettingsPage() {
           <RowLabel label="Replace resume" />
           <button
             type="button"
-            onClick={() => setShowReplaceModal(true)}
+            onClick={() => {
+              setReplaceError(null);
+              setShowReplaceModal(true);
+            }}
             style={{
               fontSize: 13,
               fontWeight: 600,
@@ -750,6 +794,9 @@ function SettingsPage() {
                 >
                   {replaceState === "uploading" ? "Uploading…" : "Upload"}
                 </button>
+                {replaceError && (
+                  <p style={{ fontSize: 12.5, color: "#B4392C", marginTop: 10 }}>{replaceError}</p>
+                )}
               </div>
             ) : (
               <DsDropzone onFile={(file) => setReplaceFile(file)} />

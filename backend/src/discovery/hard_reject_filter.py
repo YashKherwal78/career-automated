@@ -111,6 +111,18 @@ class HardRejectFilter:
             r"\b(?:engineer|developer|sde|swe)\s*(?:level\s*)?"
             r"(iii|iv|v|vi|vii|viii|ix|x|[3-9]|1[0-9])\b"
         )
+        # L-prefixed grades (Google/Meta/many others: "Software Engineer,
+        # L5", "SWE III (L4)") are just as reliably senior-or-above at L3+
+        # as the numbered scheme above, but the pattern above requires the
+        # level token immediately after engineer/developer/sde/swe with no
+        # "L" allowed -- "Software Engineer, L5" doesn't match it at all
+        # (comma breaks adjacency, "L" breaks the digit-only alternation),
+        # so a real senior-equivalent title passed through for a 0-YOE
+        # candidate. Checked as a standalone token anywhere in the title
+        # rather than requiring adjacency to a role keyword, since the L-
+        # grade convention is specific enough on its own not to false-
+        # positive on ordinary title text.
+        l_grade_pattern = re.compile(r"\bl(?:[3-9]|1[0-9])\b")
         if profile.years_experience < 5:
             for pat in senior_keywords:
                 if re.search(pat, title_lower):
@@ -126,6 +138,15 @@ class HardRejectFilter:
                 return HardRejectResult(
                     "REJECT",
                     reason=f"Numbered level {level_match.group(1).upper()} role detected in title",
+                    field="title",
+                    job_value=title,
+                    candidate_value=f"{profile.years_experience} years experience",
+                )
+            l_grade_match = l_grade_pattern.search(title_lower)
+            if l_grade_match:
+                return HardRejectResult(
+                    "REJECT",
+                    reason=f"Grade level {l_grade_match.group(0).upper()} role detected in title",
                     field="title",
                     job_value=title,
                     candidate_value=f"{profile.years_experience} years experience",
@@ -209,14 +230,30 @@ class HardRejectFilter:
                         )
                     # Pure "Remote" with no country restriction → KEEP
                 else:
-                    # Not remote, not India → reject
-                    return HardRejectResult(
-                        "REJECT",
-                        reason="Location mismatch",
-                        field="location",
-                        job_value=job.get("location"),
-                        candidate_value=profile.preferred_locations,
+                    # Not remote, not India — reject unless the job's
+                    # location explicitly matches a location the candidate
+                    # actually stated a preference for. Deliberately does
+                    # NOT also gate on willing_to_relocate: that field
+                    # defaults to True for essentially every profile, so
+                    # using it alone would let through onsite jobs anywhere
+                    # in the world regardless of stated location
+                    # preference — the previous version of this rule
+                    # ignored preferred_locations entirely, rejecting an
+                    # exact match to a candidate's own stated city (e.g.
+                    # preferred_locations=["San Francisco, CA"] against a
+                    # job actually located in San Francisco).
+                    matches_preferred_location = any(
+                        pl.strip() and pl.strip().lower() in location
+                        for pl in profile.preferred_locations
                     )
+                    if not matches_preferred_location:
+                        return HardRejectResult(
+                            "REJECT",
+                            reason="Location mismatch",
+                            field="location",
+                            job_value=job.get("location"),
+                            candidate_value=profile.preferred_locations,
+                        )
 
         # ── Rule 7: Doctoral degree ──────────────────────────────────────────
         if re.search(r"\b(phd required|doctoral degree required|ph\.d\.)\b", desc_lower):

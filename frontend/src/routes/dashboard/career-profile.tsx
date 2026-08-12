@@ -97,7 +97,7 @@ function CareerProfilePage() {
   const [skillsDraft, setSkillsDraft] = useState("");
   const [resumeStyle, setResumeStyle] = useState("Modern");
   const [writingTone, setWritingTone] = useState("Professional");
-  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [showReplaceModal, setShowReplaceModal] = useState(false);
   const [replaceState, setReplaceState] = useState<"idle" | "uploading" | "error">("idle");
   const [replaceError, setReplaceError] = useState<string | null>(null);
@@ -149,12 +149,18 @@ function CareerProfilePage() {
 
   const flatSkills = Object.values(profile.skills).flat();
 
-  const saveField = async (updates: Partial<ProfileData>) => {
+  // Returns whether the save actually succeeded -- most call sites below are
+  // fire-and-forget onBlur handlers that ignore this, but handleResumeReplace
+  // needs to know, since it surfaces a specific error message on failure.
+  // Previously this had no res.ok check at all and reset straight back to
+  // "idle" on any failure (not even an "error" state existed), so a rejected
+  // save looked identical to nothing having changed.
+  const saveField = async (updates: Partial<ProfileData>): Promise<boolean> => {
     const next = { ...profile, ...updates };
     setProfile(next);
     setSaveState("saving");
     try {
-      await fetch(`${API_BASE}/candidate/profile`, {
+      const res = await fetch(`${API_BASE}/candidate/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -170,10 +176,14 @@ function CareerProfilePage() {
           career_preferences: next.career_preferences,
         }),
       });
+      if (!res.ok) throw new Error(`save failed (${res.status})`);
       setSaveState("saved");
       setTimeout(() => setSaveState("idle"), 1500);
-    } catch {
-      setSaveState("idle");
+      return true;
+    } catch (e) {
+      console.error("Profile save failed:", e);
+      setSaveState("error");
+      return false;
     }
   };
 
@@ -201,7 +211,7 @@ function CareerProfilePage() {
         throw new Error(err.detail || "Couldn't read that resume. Try a different PDF or DOCX.");
       }
       const data = await res.json();
-      await saveField({
+      const saved = await saveField({
         personal_info: { ...profile.personal_info, ...data.personal_info },
         skills: data.skills && Object.keys(data.skills).length ? data.skills : { other: [] },
         experience: (data.experience || []).map(
@@ -223,8 +233,11 @@ function CareerProfilePage() {
           institution: e.institution,
           degree: e.degree,
         })),
-        certifications: (data.certifications || []).map((c: { name: string }) => c.name),
+        certifications: (data.certifications || []).map(
+          (c: { name: string } | string) => (typeof c === "string" ? c : c?.name || ""),
+        ),
       });
+      if (!saved) throw new Error("Resume was read okay, but saving it failed. Try again.");
       // The uploaded file itself (resume_url) and the profile fields it was
       // parsed into both come back through these queries — refresh them so
       // the "resume attached" indicator and job matching pick up the change.
@@ -1110,14 +1123,21 @@ function CareerProfilePage() {
             right: 24,
             fontSize: 13,
             fontWeight: 600,
-            color: saveState === "saved" ? "var(--ds-sage-text)" : "var(--ds-ink-450)",
+            color:
+              saveState === "saved"
+                ? "var(--ds-sage-text)"
+                : saveState === "error"
+                  ? "#B4392C"
+                  : "var(--ds-ink-450)",
             background: "var(--ds-surface-card)",
             padding: "10px 16px",
             borderRadius: "var(--ds-radius-md)",
             boxShadow: "var(--ds-shadow-card)",
           }}
         >
-          {saveState === "saving" ? "Saving…" : "Saved ✓"}
+          {saveState === "saving" && "Saving…"}
+          {saveState === "saved" && "Saved ✓"}
+          {saveState === "error" && "Couldn't save — try again"}
         </div>
       )}
 

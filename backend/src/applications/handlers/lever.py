@@ -98,6 +98,19 @@ class LeverHandler(BaseATSHandler):
             logger.info(f"Resume Upload Failed: File does not exist at {self.resume_path}")
             return False
 
+        # Lever's application form is a React SPA — the file input can mount
+        # after the rest of the form is visible (same race Greenhouse hit
+        # and was fixed for in commit 71bc99d: absent at 1.5s, present by
+        # 4s there). This had no wait at all, so a slow mount meant
+        # count() == 0 and an immediate, unretried give-up.
+        try:
+            self.active_context.wait_for_selector(
+                'input[type="file"][name="resume"], #resume-upload-input, input[type="file"]',
+                timeout=8000,
+            )
+        except Exception:
+            pass
+
         file_input = self.active_context.locator('input[type="file"][name="resume"], #resume-upload-input, input[type="file"]').first
         if file_input.count() == 0:
             logger.info("LeverHandler: No file input found for resume upload.")

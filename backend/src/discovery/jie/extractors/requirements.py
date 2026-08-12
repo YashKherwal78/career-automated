@@ -17,9 +17,20 @@ _PREFERRED_HEADERS = [
     r"bonus\s+points", r"good\s+to\s+have", r"pluses", r"preferred",
 ]
 
+_ALL_HEADERS_ALT = "|".join(_REQUIRED_HEADERS + _PREFERRED_HEADERS)
+
 _SECTION_PATTERN = re.compile(
-    r"(?P<header>" + "|".join(_REQUIRED_HEADERS + _PREFERRED_HEADERS) + r")\s*:\s*"
-    r"(?P<body>.*?)(?=\n\s*\n|\n[A-Z][A-Za-z /]{2,40}:|\Z)",
+    r"(?P<header>" + _ALL_HEADERS_ALT + r")\s*:\s*"
+    # A section body ends at a blank line, a generic capitalized header line,
+    # OR the start of another header we actually recognize -- that third
+    # branch matters because the first two miss a lowercase header glued
+    # directly to the previous section with no blank line ("nice to have:"
+    # right after a "Requirements:" bullet list, no capital letter, no blank
+    # line between them). Without it, the whole regex is case-insensitive
+    # everywhere else but the body-boundary check silently wasn't, so a
+    # lowercase "nice to have:" got consumed as more REQUIRED bullets
+    # instead of ending the Requirements section.
+    r"(?P<body>.*?)(?=\n\s*\n|\n[A-Z][A-Za-z /]{2,40}:|\n\s*(?:" + _ALL_HEADERS_ALT + r")\s*:|\Z)",
     re.IGNORECASE | re.DOTALL,
 )
 _PREFERRED_HEADER_SET = {h.replace(r"\s+", " ") for h in _PREFERRED_HEADERS}

@@ -308,10 +308,26 @@ class BaseATSHandler(ABC):
                 )
                 continue
 
-            answer = self.engine.answer(
-                question=clf_label, field_type=field_type, placeholder=placeholder,
-                options=options, label_text=clf_raw_label, required=is_required, dom_meta=dom_meta,
-            )
+            # QuestionEngine.answer() is a large, LLM/RAG-backed code path
+            # with no exception handling of its own around most of its
+            # branches (confirmed: a missing/failing import inside its date-
+            # parsing branch previously took down an entire application with
+            # a bare FAILED, rather than just that one field, since nothing
+            # between here and execute()'s outermost handler caught it).
+            # Treat any exception the same as the existing "unanswerable"
+            # path just below — required blocks submission, optional gets
+            # skipped — instead of letting one bad question crash the whole
+            # run.
+            try:
+                answer = self.engine.answer(
+                    question=clf_label, field_type=field_type, placeholder=placeholder,
+                    options=options, label_text=clf_raw_label, required=is_required, dom_meta=dom_meta,
+                )
+            except Exception as answer_err:
+                logger.info(f"{self.ATS_NAME}Handler: engine.answer() raised for '{clean_label}': {answer_err}")
+                answer = "REVIEW_REQUIRED"
+                dom_meta["confidence"] = 0
+                dom_meta["answer_exception"] = str(answer_err)
 
             # An unanswerable REQUIRED question must block submission — we
             # don't guess. An unanswerable OPTIONAL one (no stored data, low
