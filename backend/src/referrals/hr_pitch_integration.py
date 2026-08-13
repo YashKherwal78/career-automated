@@ -69,6 +69,7 @@ def find_and_draft_hr_pitch(
             rag_client=RAGClient(),
             llm_client=LLMRouter(),
             apply_url=apply_url,
+            user_id=user_id,
         )
 
         auto_send = _get_referral_auto_send(user_id)

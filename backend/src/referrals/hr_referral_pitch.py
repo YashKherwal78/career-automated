@@ -38,6 +38,63 @@ from src.applications.rag import RAGClient
 
 logger = setup_logger("hr_referral_pitch")
 
+# The candidate background these emails were actually drawing from was
+# RAGClient's static, hardcoded yash_master_profile.md file -- a fixed
+# markdown file, not this user's real database profile. Confirmed real
+# quality gap, not just a correctness/multi-tenancy one: the real
+# per-user profile (public.user_career_profiles, written by the Career
+# Profile page) had richer, more current bullet points that the static
+# file didn't (a "Nexus" and "Sentinel" project, and materially more
+# up-to-date metrics on "CareerAutomated" itself) that were never being
+# used. This loads real, structured, quantified bullets straight from
+# that DB row -- the actual "candidate profile" -- and only falls back
+# to the RAG file if a user hasn't filled in a profile yet (keeps this
+# working for a brand-new user with an empty database profile).
+def _load_profile_facts(user_id: str, max_facts: int = 10) -> list[str]:
+    try:
+        from src.api.db import get_connection
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT profile_data FROM public.user_career_profiles WHERE user_id = %s LIMIT 1",
+                (user_id,),
+            )
+            row = cursor.fetchone()
+        if not row:
+            return []
+        profile_data = row["profile_data"] if hasattr(row, "keys") else row[0]
+        if not profile_data:
+            return []
+        profile = json.loads(profile_data) if isinstance(profile_data, str) else profile_data
+
+        facts: list[str] = []
+        for exp in (profile.get("experience") or []):
+            role = exp.get("role") or exp.get("title") or ""
+            company = exp.get("company") or ""
+            prefix = f"At {company} ({role}): " if (role or company) else ""
+            for bullet in (exp.get("bullet_points") or []):
+                if bullet:
+                    facts.append(f"{prefix}{bullet}")
+            for achievement in (exp.get("achievements") or []):
+                if achievement:
+                    facts.append(f"{prefix}{achievement}")
+
+        for proj in (profile.get("projects") or []):
+            name = proj.get("name") or ""
+            prefix = f"Project {name}: " if name else ""
+            for bullet in (proj.get("bullet_points") or []):
+                if bullet:
+                    facts.append(f"{prefix}{bullet}")
+
+        for achievement in (profile.get("achievements") or []):
+            if isinstance(achievement, str) and achievement:
+                facts.append(achievement)
+
+        return facts[:max_facts]
+    except Exception as e:
+        logger.info(f"_load_profile_facts failed for user_id={user_id}: {e}")
+        return []
+
 HR_PITCH_SYSTEM_PROMPT = """You write short, specific outreach emails from a real job candidate directly \
 to a recruiter or hiring manager at the company they just applied to.
 
@@ -242,6 +299,7 @@ def draft_hr_or_referral_pitch(
     rag_client: RAGClient,
     llm_client,
     apply_url: str = "",
+    user_id: str = "",
 ) -> tuple[str, str, str]:
     """Returns (subject, body, mode) where mode is "hr_pitch" or
     "referral_ask" -- callers store this so the Outreach UI can label which
@@ -253,9 +311,18 @@ def draft_hr_or_referral_pitch(
     contact_name = contact.get("contact_name") or "there"
     contact_role = contact.get("job_title") or contact.get("contact_type") or "unknown role"
 
-    query = f"{job_title} {company_name}"
-    chunks = rag_client.retrieve(query, top_k_initial=8, top_k_final=4)
-    resume_facts = "\n".join(f"- {c.get('text', '')}" for c in chunks) or "(no specific matching experience found)"
+    # Real per-user database profile first (see _load_profile_facts) --
+    # richer and more current than the static RAG file. Falls back to the
+    # RAG file only if this user hasn't filled in a profile yet.
+    db_facts = _load_profile_facts(user_id) if user_id else []
+    if db_facts:
+        resume_facts = "\n".join(f"- {f}" for f in db_facts)
+        logger.info(f"[{mode}] using {len(db_facts)} facts from database candidate profile")
+    else:
+        query = f"{job_title} {company_name}"
+        chunks = rag_client.retrieve(query, top_k_initial=8, top_k_final=4)
+        resume_facts = "\n".join(f"- {c.get('text', '')}" for c in chunks) or "(no specific matching experience found)"
+        logger.info(f"[{mode}] no database profile facts -- falling back to RAG file")
     grounded_text = f"{resume_facts}\n{profile_manager.get_llm_context() or ''}"
 
     if mode == "hr_pitch":
