@@ -55,6 +55,8 @@ export function CaptchaLiveView() {
 
   if (!active?.active || !sessionId) return null;
 
+  const isFinalReview = active.reason === "final_review";
+
   const handleImageClick = async (e: React.MouseEvent<HTMLImageElement>) => {
     if (!imgRef.current || busy) return;
     const rect = imgRef.current.getBoundingClientRect();
@@ -112,11 +114,12 @@ export function CaptchaLiveView() {
         <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
           <div>
             <div className="font-[var(--ds-font-display)] font-semibold" style={{ fontSize: 17 }}>
-              CAPTCHA needs you
+              {isFinalReview ? "Ready for your final review" : "CAPTCHA needs you"}
             </div>
             <p style={{ fontSize: 13, color: "var(--ds-ink-500)", margin: "4px 0 0" }}>
-              An application in progress hit a CAPTCHA — everything else is already filled in. Click on it below
-              to solve it, then confirm.
+              {isFinalReview
+                ? "The application is fully filled in and ready to go. Take a look, and confirm to submit it."
+                : "An application in progress hit a CAPTCHA — everything else is already filled in. Click on it below to solve it, then confirm."}
             </p>
           </div>
         </div>
@@ -138,7 +141,12 @@ export function CaptchaLiveView() {
               src={screenshotUrl}
               alt="Live application form"
               onClick={handleImageClick}
-              style={{ width: "100%", height: "100%", objectFit: "contain", cursor: "crosshair" }}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+                cursor: isFinalReview ? "default" : "crosshair",
+              }}
             />
           ) : (
             <div
@@ -152,14 +160,16 @@ export function CaptchaLiveView() {
 
         <div className="flex items-center justify-between flex-wrap gap-3">
           <p style={{ fontSize: 11.5, color: "var(--ds-ink-450)", margin: 0 }}>
-            Click directly on the CAPTCHA in the image above to interact with it. Updates about once a second.
+            {isFinalReview
+              ? "Click on the image above if you need to fix anything. Updates about once a second."
+              : "Click directly on the CAPTCHA in the image above to interact with it. Updates about once a second."}
           </p>
           <div className="flex gap-2.5">
             <DsButton variant="outline" size="md" disabled={busy} onClick={() => finish("skip")}>
-              Skip — send to review instead
+              {isFinalReview ? "Don't submit — send to review instead" : "Skip — send to review instead"}
             </DsButton>
             <DsButton variant="primary" size="md" disabled={busy} onClick={() => finish("resolved")}>
-              I solved it — continue
+              {isFinalReview ? "Looks good — submit it" : "I solved it — continue"}
             </DsButton>
           </div>
         </div>

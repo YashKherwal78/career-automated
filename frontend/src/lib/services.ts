@@ -93,12 +93,13 @@ export interface JobService {
   }>;
   startBatchApply(minScore?: number): Promise<{ started: boolean; candidate_count: number; blocked_reason?: string }>;
   getBatchApplyStatus(): Promise<BatchApplyStatus>;
-  getAutoApplyPolicy(): Promise<{ enabled: boolean; min_score: number; apply_mode: "automatic" | "assisted" }>;
+  getAutoApplyPolicy(): Promise<{ enabled: boolean; min_score: number; apply_mode: "automatic" | "assisted"; confirm_before_submit: boolean }>;
   setAutoApplyPolicy(
     enabled: boolean,
     minScore?: number,
     applyMode?: "automatic" | "assisted",
-  ): Promise<{ enabled: boolean; min_score: number; apply_mode: "automatic" | "assisted" }>;
+    confirmBeforeSubmit?: boolean,
+  ): Promise<{ enabled: boolean; min_score: number; apply_mode: "automatic" | "assisted"; confirm_before_submit: boolean }>;
   getNeedsReview(): Promise<NeedsReviewItem[]>;
 }
 
@@ -128,6 +129,7 @@ export interface ActiveCaptcha {
   active: boolean;
   session_id?: string;
   job_id?: string;
+  reason?: "captcha" | "final_review";
 }
 
 export class CaptchaService {
@@ -545,6 +547,7 @@ export class ApiJobService implements JobService {
     enabled: boolean;
     min_score: number;
     apply_mode: "automatic" | "assisted";
+    confirm_before_submit: boolean;
   }> {
     const res = await authFetch(`${API_BASE}/applications/auto-apply-policy`);
     if (!res.ok) throw new Error(`Auto-apply policy fetch failed (${res.status})`);
@@ -555,11 +558,12 @@ export class ApiJobService implements JobService {
     enabled: boolean,
     minScore = 70,
     applyMode: "automatic" | "assisted" = "automatic",
-  ): Promise<{ enabled: boolean; min_score: number; apply_mode: "automatic" | "assisted" }> {
+    confirmBeforeSubmit = false,
+  ): Promise<{ enabled: boolean; min_score: number; apply_mode: "automatic" | "assisted"; confirm_before_submit: boolean }> {
     const res = await authFetch(`${API_BASE}/applications/auto-apply-policy`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ enabled, min_score: minScore, apply_mode: applyMode }),
+      body: JSON.stringify({ enabled, min_score: minScore, apply_mode: applyMode, confirm_before_submit: confirmBeforeSubmit }),
     });
     if (!res.ok) throw new Error(`Auto-apply policy save failed (${res.status})`);
     return res.json();
@@ -712,15 +716,17 @@ export class MockJobService implements JobService {
     enabled: boolean;
     min_score: number;
     apply_mode: "automatic" | "assisted";
+    confirm_before_submit: boolean;
   }> {
-    return { enabled: false, min_score: 70, apply_mode: "automatic" };
+    return { enabled: false, min_score: 70, apply_mode: "automatic", confirm_before_submit: false };
   }
   async setAutoApplyPolicy(
     enabled: boolean,
     minScore = 70,
     applyMode: "automatic" | "assisted" = "automatic",
-  ): Promise<{ enabled: boolean; min_score: number; apply_mode: "automatic" | "assisted" }> {
-    return { enabled, min_score: minScore, apply_mode: applyMode };
+    confirmBeforeSubmit = false,
+  ): Promise<{ enabled: boolean; min_score: number; apply_mode: "automatic" | "assisted"; confirm_before_submit: boolean }> {
+    return { enabled, min_score: minScore, apply_mode: applyMode, confirm_before_submit: confirmBeforeSubmit };
   }
   async getNeedsReview(): Promise<NeedsReviewItem[]> {
     return [];

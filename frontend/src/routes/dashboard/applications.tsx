@@ -5,6 +5,8 @@ import { ServiceRegistry } from "../../lib/services";
 import { DsInput } from "../../components/ds/Input";
 import { DsButton } from "../../components/ds/Button";
 import { DsModal, DsModalCloseButton } from "../../components/ds/Modal";
+import { BackgroundApplyButton } from "../../components/dashboard/BackgroundApplyButton";
+import { isExtensionInstalled } from "../../lib/extensionBridge";
 
 export const Route = createFileRoute("/dashboard/applications")({
   component: ApplicationsPage,
@@ -272,7 +274,12 @@ function ApplicationsPage() {
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [hasExtension, setHasExtension] = useState<boolean | undefined>(undefined);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    isExtensionInstalled().then(setHasExtension);
+  }, []);
 
   const { data: needsReview = [] } = useQuery({
     queryKey: ["needs-review"],
@@ -291,19 +298,6 @@ function ApplicationsPage() {
     refetchInterval: 30000,
   });
   const pendingReferrals = referralDrafts.filter((r) => r.status === "PENDING_REVIEW");
-
-  // Opens the real job page and tells the CareerAutomated extension (via a
-  // query param its content scripts check for) to fill the form
-  // automatically instead of waiting for a manual click on its own
-  // "Autofill" button -- by the time the tab finishes loading, all that's
-  // left for a REVIEW_REQUIRED application is the CAPTCHA and Submit.
-  // Requires the extension to be installed; if it isn't, this just opens
-  // the plain job page.
-  const handleOpenAndAutofill = (applyUrl: string) => {
-    if (!applyUrl) return;
-    const sep = applyUrl.includes("?") ? "&" : "?";
-    window.open(`${applyUrl}${sep}_careerautomated_autofill=1`, "_blank", "noopener");
-  };
 
   useEffect(() => {
     const t = setTimeout(() => setLoaded(true), 300);
@@ -413,9 +407,11 @@ function ApplicationsPage() {
 
                 {item.apply_url && (
                   <div style={{ marginTop: 14 }}>
-                    <DsButton variant="primary" size="md" onClick={() => handleOpenAndAutofill(item.apply_url)}>
-                      Open & Autofill
-                    </DsButton>
+                    <BackgroundApplyButton
+                      jobId={item.job_id}
+                      applyUrl={item.apply_url}
+                      hasExtension={!!hasExtension}
+                    />
                   </div>
                 )}
               </div>

@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useDashboard } from "../../components/dashboard/DashboardContext";
 import { LoadingSkeleton } from "../../components/dashboard/CommonComponents";
 import { CompanyLogo } from "../../components/dashboard/CompanyLogo";
+import { BackgroundApplyButton } from "../../components/dashboard/BackgroundApplyButton";
+import { isExtensionInstalled } from "../../lib/extensionBridge";
 import { Search, MapPin, ArrowUpDown } from "lucide-react";
 import { Job } from "../../lib/services";
 
@@ -40,12 +42,18 @@ function JobsPage() {
   // returned real, relevant matches.
   const [sortField, setSortField] = useState<"intent_score" | "posted_at">("intent_score");
   const [applyMode, setApplyMode] = useState<"automatic" | "assisted">("automatic");
+  // Detected once per page load -- undefined while checking (renders
+  // nothing extra), then true/false. isExtensionInstalled() itself
+  // resolves to false safely on any browser without extension support at
+  // all (mobile Safari/Chrome), so this never throws there.
+  const [hasExtension, setHasExtension] = useState<boolean | undefined>(undefined);
 
   useEffect(() => {
     jobService
       .getAutoApplyPolicy()
       .then((p) => setApplyMode(p.apply_mode))
       .catch(() => {});
+    isExtensionInstalled().then(setHasExtension);
   }, [jobService]);
 
   const ROLE_OPTIONS = [
@@ -220,14 +228,11 @@ function JobsPage() {
                     <td className="py-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         {applyMode === "assisted" && job.apply_url && (
-                          <a
-                            href={`${job.apply_url}?_careerautomated_autofill=1`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-3 py-1.5 text-xs rounded-xl border border-[color:var(--peach-deep)] text-[color:var(--peach-deep)] font-medium whitespace-nowrap"
-                          >
-                            Open & Autofill
-                          </a>
+                          <BackgroundApplyButton
+                            jobId={job.job_id}
+                            applyUrl={job.apply_url}
+                            hasExtension={!!hasExtension}
+                          />
                         )}
                         <Link to={`/dashboard/jobs/${job.job_id}`} className="btn-peach px-3 py-1.5 text-xs rounded-xl">
                           View Details

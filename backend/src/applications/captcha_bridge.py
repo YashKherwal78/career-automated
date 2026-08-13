@@ -27,12 +27,17 @@ _LOCK = threading.Lock()
 _ACTIVE_BY_USER: dict[str, str] = {}
 
 
-def create_session(user_id: str, job_id: str) -> str:
+def create_session(user_id: str, job_id: str, reason: str = "captcha") -> str:
+    """reason is "captcha" (a real challenge blocked progress) or
+    "final_review" (nothing's blocking -- this is the confirm-before-submit
+    checkpoint, same mechanism, different purpose) -- lets the frontend
+    show the right copy without needing a second endpoint/session type."""
     session_id = str(uuid.uuid4())
     with _LOCK:
         _SESSIONS[session_id] = {
             "user_id": user_id,
             "job_id": job_id,
+            "reason": reason,
             "cmd_queue": queue.Queue(),
             "result_queue": queue.Queue(),
             "created_at": time.time(),

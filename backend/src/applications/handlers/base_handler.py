@@ -47,6 +47,14 @@ class BaseATSHandler(ABC):
         # a captcha just routes straight to REVIEW_REQUIRED with no wait.
         self.user_id = user_id
         self.job_id = job_id
+        # Opt-in policy flag (user_application_policies.confirm_before_submit)
+        # -- pauses once, before the first submit click, for a final live-
+        # view look/confirm, same mechanism as the captcha handoff. Looked
+        # up here (not threaded through dispatcher/adapters as a new
+        # constructor kwarg on all 16 of them) since self.user_id is
+        # already available and this is a one-time read, not a hot path.
+        self.confirm_before_submit = self._load_confirm_before_submit_policy()
+        self._submit_confirmation_shown = False
         self.engine = QuestionEngine(
             profile_manager=profile_manager,
             rag_client=rag_client,
@@ -56,6 +64,27 @@ class BaseATSHandler(ABC):
             job_location=location,
         )
         self.active_context = self.page
+
+    def _load_confirm_before_submit_policy(self) -> bool:
+        if not self.user_id:
+            return False
+        try:
+            from src.api.db import get_connection, is_postgres
+            ph = "%s" if is_postgres() else "?"
+            with get_connection() as conn:
+                cur = conn.execute(
+                    f"SELECT confirm_before_submit FROM public.user_application_policies WHERE user_id = {ph}::uuid" if is_postgres()
+                    else f"SELECT confirm_before_submit FROM user_application_policies WHERE user_id = {ph}",
+                    (self.user_id,),
+                )
+                row = cur.fetchone()
+            if not row:
+                return False
+            d = row if isinstance(row, dict) else dict(row)
+            return bool(d.get("confirm_before_submit"))
+        except Exception as e:
+            logger.info(f"{self.ATS_NAME}Handler: confirm_before_submit policy lookup failed (defaulting False): {e}")
+            return False
 
     # ------------------------------------------------------------------
     # ATS-specific primitives — every subclass must implement these.
@@ -561,6 +590,39 @@ class BaseATSHandler(ABC):
             logger.info(f"{self.ATS_NAME}Handler: Resuming — will retry submit now.")
         return resolved
 
+    def _wait_for_human_submit_confirmation(self, telemetry: dict) -> bool:
+        """Opt-in checkpoint (user_application_policies.confirm_before_submit)
+        -- pauses once, right before the very first submit click, and hands
+        the live view to the user for a final look, using the exact same
+        mechanism as the CAPTCHA handoff above (create_session/wait_for_human)
+        with reason="final_review" instead of "captcha" so the frontend
+        shows different copy. Built for mobile, where there's no browser
+        extension to fill the form in the user's own visible tab -- this is
+        how a mobile user still gets "I only click one thing, plus CAPTCHA"
+        instead of a fully blind server-side submit. Only ever fires once
+        per application (self._submit_confirmation_shown), regardless of
+        how many retry cycles the submit loop goes through.
+
+        Returns True if the user said go ahead, False if they skipped
+        (routes to REVIEW_REQUIRED, same convention as the CAPTCHA path)."""
+        if self._submit_confirmation_shown:
+            return True
+        self._submit_confirmation_shown = True
+
+        if not self.user_id:
+            logger.info(f"{self.ATS_NAME}Handler: confirm_before_submit set but no user_id available for a live session — proceeding without pausing.")
+            return True
+
+        from src.applications.captcha_bridge import create_session, wait_for_human
+        self._capture_screenshot("00_pre_submit_review.png")
+        session_id = create_session(self.user_id, self.job_id, reason="final_review")
+        telemetry["final_review_session_id"] = session_id
+        logger.info(f"{self.ATS_NAME}Handler: >>> Form filled — live review session {session_id} opened, waiting up to 10 min for confirm/skip. <<<")
+
+        confirmed = wait_for_human(session_id, self.page, timeout_seconds=600)
+        telemetry["final_review_resolution"] = "confirmed" if confirmed else "skipped_or_timed_out"
+        return confirmed
+
     def _post_otp_analysis(self) -> dict:
         analysis = {"current_url": self.page.url, "page_title": self.page.title(),
                     "visible_headers": [], "validation_errors": [], "required_fields_remaining": 0}
@@ -713,6 +775,12 @@ class BaseATSHandler(ABC):
                     logger.info(f"{self.ATS_NAME}Handler: Submit button is DISABLED. Aborting to REVIEW_REQUIRED.")
                     result_status = WorkflowState.REVIEW_REQUIRED.name
                     break
+
+                if self.confirm_before_submit:
+                    if not self._wait_for_human_submit_confirmation(telemetry):
+                        logger.info(f"{self.ATS_NAME}Handler: User skipped the final review. Routing to REVIEW_REQUIRED.")
+                        result_status = WorkflowState.REVIEW_REQUIRED.name
+                        break
 
                 # Click submit. If an OTP challenge appears AFTER this click, fill it
                 # and click again immediately within this same cycle — do not fall

@@ -127,7 +127,12 @@ function DashboardHome() {
     }
     setAutoApplyOn(false);
     try {
-      await ServiceRegistry.getJobService().setAutoApplyPolicy(false, 70, autoApplyPolicy?.apply_mode ?? "automatic");
+      await ServiceRegistry.getJobService().setAutoApplyPolicy(
+        false,
+        70,
+        autoApplyPolicy?.apply_mode ?? "automatic",
+        autoApplyPolicy?.confirm_before_submit ?? false,
+      );
       queryClient.invalidateQueries({ queryKey: ["auto-apply-policy"] });
     } catch (e) {
       console.error("Failed to disable auto-apply policy:", e);
@@ -142,7 +147,7 @@ function DashboardHome() {
     setShowPreferencesModal(false);
     setAutoApplyOn(true);
     try {
-      await ServiceRegistry.getJobService().setAutoApplyPolicy(true, 70, prefs.applyMode);
+      await ServiceRegistry.getJobService().setAutoApplyPolicy(true, 70, prefs.applyMode, prefs.confirmBeforeSubmit);
       queryClient.invalidateQueries({ queryKey: ["auto-apply-policy"] });
       if (prefs.applyMode === "automatic") {
         await ServiceRegistry.getJobService().startBatchApply(70);

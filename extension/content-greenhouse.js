@@ -166,9 +166,15 @@
       });
 
       button.textContent = `Filled ${filled}/${fields.length} — review & submit`;
+      // Tells background.js "this background-apply window is ready" --
+      // only meaningful when this run was launched by
+      // startBackgroundApply() (minimized window), but harmless to send
+      // otherwise since there's no session for background.js to update.
+      chrome.runtime.sendMessage({ type: "AUTOFILL_STATUS", filled, total: fields.length }).catch(() => {});
     } catch (e) {
       console.error("CareerAutomated autofill error:", e);
       button.textContent = "Autofill failed — see console";
+      chrome.runtime.sendMessage({ type: "AUTOFILL_STATUS", filled: 0, total: fields.length, error: String(e) }).catch(() => {});
     } finally {
       button.disabled = false;
     }

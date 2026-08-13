@@ -159,9 +159,11 @@
       });
 
       button.textContent = `Filled ${filled}/${fields.length} — review & submit`;
+      chrome.runtime.sendMessage({ type: "AUTOFILL_STATUS", filled, total: fields.length }).catch(() => {});
     } catch (e) {
       console.error("CareerAutomated autofill error:", e);
       button.textContent = "Autofill failed — see console";
+      chrome.runtime.sendMessage({ type: "AUTOFILL_STATUS", filled: 0, total: fields.length, error: String(e) }).catch(() => {});
     } finally {
       button.disabled = false;
     }

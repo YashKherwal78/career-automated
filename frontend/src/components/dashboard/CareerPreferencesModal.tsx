@@ -17,6 +17,7 @@ export interface CareerPreferences {
   visaSponsorship: string;
   openToRelocation: boolean;
   applyMode: "automatic" | "assisted";
+  confirmBeforeSubmit: boolean;
 }
 
 export function CareerPreferencesModal({
@@ -35,6 +36,7 @@ export function CareerPreferencesModal({
   const [visaSponsorship, setVisaSponsorship] = useState("No preference");
   const [openToRelocation, setOpenToRelocation] = useState(false);
   const [applyMode, setApplyMode] = useState<"automatic" | "assisted">("automatic");
+  const [confirmBeforeSubmit, setConfirmBeforeSubmit] = useState(false);
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
@@ -280,6 +282,49 @@ export function CareerPreferencesModal({
             </div>
           </div>
 
+          {applyMode === "automatic" && (
+            <div className="flex items-center justify-between">
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: "var(--ds-ink-700)" }}>
+                  Pause for my final review before submitting
+                </label>
+                <div style={{ fontSize: 11.5, color: "var(--ds-ink-500)", marginTop: 2, maxWidth: 320 }}>
+                  Useful on mobile — we fill the form, then wait for you to glance at it and confirm before it goes out.
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setConfirmBeforeSubmit((v) => !v)}
+                style={{
+                  width: 40,
+                  height: 22,
+                  borderRadius: 11,
+                  background: confirmBeforeSubmit
+                    ? "var(--ds-accent-primary)"
+                    : "var(--ds-border-medium)",
+                  position: "relative",
+                  transition: "background 160ms linear",
+                  border: "none",
+                  cursor: "pointer",
+                  flexShrink: 0,
+                }}
+              >
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 2,
+                    left: confirmBeforeSubmit ? 20 : 2,
+                    width: 18,
+                    height: 18,
+                    borderRadius: "50%",
+                    background: "#fff",
+                    transition: "left 160ms linear",
+                  }}
+                />
+              </button>
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
             <label style={{ fontSize: 13, fontWeight: 600, color: "var(--ds-ink-700)" }}>
               Open to relocation
@@ -346,6 +391,7 @@ export function CareerPreferencesModal({
                 visaSponsorship,
                 openToRelocation,
                 applyMode,
+                confirmBeforeSubmit,
               })
             }
             className="flex-1 font-bold"

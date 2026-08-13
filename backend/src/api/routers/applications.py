@@ -283,6 +283,10 @@ class AutoApplyPolicy(BaseModel):
     # surface an "Open & Autofill" action instead of ever being dispatched
     # server-side -- runs on the user's own machine/IP via the extension.
     apply_mode: str = "automatic"
+    # Opt-in checkpoint: pause once, right before the final submit click, and
+    # hand the live-view session to the user for a look before it goes out.
+    # Built for mobile users (no extension there), but works for anyone.
+    confirm_before_submit: bool = False
 
 
 @router.get("/auto-apply-policy")
@@ -293,17 +297,18 @@ def get_auto_apply_policy(current_user: CurrentUser = Depends(get_current_user))
     ph = "%s" if is_postgres() else "?"
     with get_connection() as conn:
         cur = conn.execute(
-            f"SELECT enabled, minimum_match_score, apply_mode FROM public.user_application_policies WHERE user_id = {ph}::uuid",
+            f"SELECT enabled, minimum_match_score, apply_mode, confirm_before_submit FROM public.user_application_policies WHERE user_id = {ph}::uuid",
             (current_user.user_id,),
         )
         row = cur.fetchone()
     if not row:
-        return {"enabled": False, "min_score": 70, "apply_mode": "automatic"}
+        return {"enabled": False, "min_score": 70, "apply_mode": "automatic", "confirm_before_submit": False}
     d = row if isinstance(row, dict) else dict(row)
     return {
         "enabled": bool(d.get("enabled")),
         "min_score": d.get("minimum_match_score", 70),
         "apply_mode": d.get("apply_mode") or "automatic",
+        "confirm_before_submit": bool(d.get("confirm_before_submit")),
     }
 
 
@@ -317,24 +322,24 @@ def set_auto_apply_policy(
         if is_postgres():
             conn.execute(
                 f"""
-                INSERT INTO public.user_application_policies (user_id, enabled, minimum_match_score, apply_mode, updated_at)
-                VALUES ({ph}::uuid, {ph}, {ph}, {ph}, NOW())
+                INSERT INTO public.user_application_policies (user_id, enabled, minimum_match_score, apply_mode, confirm_before_submit, updated_at)
+                VALUES ({ph}::uuid, {ph}, {ph}, {ph}, {ph}, NOW())
                 ON CONFLICT (user_id) DO UPDATE
                 SET enabled = EXCLUDED.enabled, minimum_match_score = EXCLUDED.minimum_match_score,
-                    apply_mode = EXCLUDED.apply_mode, updated_at = NOW()
+                    apply_mode = EXCLUDED.apply_mode, confirm_before_submit = EXCLUDED.confirm_before_submit, updated_at = NOW()
                 """,
-                (current_user.user_id, body.enabled, body.min_score, body.apply_mode),
+                (current_user.user_id, body.enabled, body.min_score, body.apply_mode, body.confirm_before_submit),
             )
         else:
             conn.execute(
                 f"""
-                INSERT OR REPLACE INTO public.user_application_policies (user_id, enabled, minimum_match_score, apply_mode)
-                VALUES ({ph}, {ph}, {ph}, {ph})
+                INSERT OR REPLACE INTO public.user_application_policies (user_id, enabled, minimum_match_score, apply_mode, confirm_before_submit)
+                VALUES ({ph}, {ph}, {ph}, {ph}, {ph})
                 """,
-                (current_user.user_id, body.enabled, body.min_score, body.apply_mode),
+                (current_user.user_id, body.enabled, body.min_score, body.apply_mode, body.confirm_before_submit),
             )
         conn.commit()
-    return {"enabled": body.enabled, "min_score": body.min_score, "apply_mode": body.apply_mode}
+    return {"enabled": body.enabled, "min_score": body.min_score, "apply_mode": body.apply_mode, "confirm_before_submit": body.confirm_before_submit}
 
 
 @router.get("/needs-review")
@@ -427,7 +432,12 @@ def get_active_captcha(current_user: CurrentUser = Depends(get_current_user)):
     if not session_id:
         return {"active": False}
     session = captcha_bridge.get_session(session_id)
-    return {"active": True, "session_id": session_id, "job_id": session.get("job_id") if session else None}
+    return {
+        "active": True,
+        "session_id": session_id,
+        "job_id": session.get("job_id") if session else None,
+        "reason": session.get("reason", "captcha") if session else "captcha",
+    }
 
 
 def _require_own_session(session_id: str, current_user: CurrentUser):
