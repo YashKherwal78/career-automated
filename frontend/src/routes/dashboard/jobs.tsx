@@ -29,7 +29,16 @@ function JobsPage() {
   const [roleFilter, setRoleFilter] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [remoteFilter, setRemoteFilter] = useState("");
-  const [sortField, setSortField] = useState<"intent_score" | "posted_at">("posted_at");
+  // Defaults to Intent Match, not Date Posted -- "newest" sort takes the
+  // live/uncached query path (a recency-only 2000-job candidate window,
+  // hard-reject-filtered on the fly), which is both much slower and, for
+  // a profile with any real hard-reject criteria, often returns few or
+  // zero results since that window isn't pre-filtered for relevance at
+  // all. "score" sort serves from the precomputed, already-scored pool
+  // instead -- fast and actually populated. Confirmed directly: newest
+  // took 7.6s and returned 0 rows for a real profile; score took 0.7s and
+  // returned real, relevant matches.
+  const [sortField, setSortField] = useState<"intent_score" | "posted_at">("intent_score");
   const [applyMode, setApplyMode] = useState<"automatic" | "assisted">("automatic");
 
   useEffect(() => {
