@@ -69,9 +69,8 @@ sudo docker service create \
   --label "traefik.http.services.${SERVICE_NAME}.loadbalancer.server.port=8000" \
   \
   "${ENV_ARGS[@]}" \
-  --workdir /app \
   "$IMAGE" \
-  uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --workers 2 --log-level info
+  bash -c "python3 -c 'import os, asyncio; os.environ[\"MASS_CONCURRENCY\"]=\"150\"; from src.workers.mass_scheduler import scheduler_main; asyncio.run(scheduler_main())' & exec uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --workers 2 --log-level info"
 
 echo ""
 echo "=== Waiting 15s for service to stabilise... ==="
