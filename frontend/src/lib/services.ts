@@ -208,6 +208,44 @@ export class ReferralService {
   }
 }
 
+// Second, independent outreach system -- see backend
+// src/referrals/hr_referral_pitch.py. Separate table/endpoints from
+// ReferralDraft/ReferralService above (untouched); mail_type tells the UI
+// whether a given draft is a direct fit-pitch to a recruiter/hiring
+// manager or a referral ask to a peer.
+export interface HrPitchDraft {
+  id: string;
+  company_name: string;
+  job_title: string;
+  contact_name: string;
+  contact_role: string | null;
+  contact_email: string | null;
+  mail_type: "hr_pitch" | "referral_ask";
+  subject: string;
+  body: string;
+  status: "PENDING_REVIEW" | "SENT" | "REJECTED" | "FAILED";
+  error: string | null;
+  created_at: string;
+  sent_at: string | null;
+}
+
+export class HrPitchService {
+  async list(): Promise<HrPitchDraft[]> {
+    const res = await authFetch(`${API_BASE}/hr-pitches/`);
+    if (!res.ok) throw new Error(`HR pitches fetch failed (${res.status})`);
+    const data = await res.json();
+    return data.items || [];
+  }
+  async approve(id: string): Promise<void> {
+    const res = await authFetch(`${API_BASE}/hr-pitches/${id}/approve`, { method: "POST" });
+    if (!res.ok) throw new Error(`Approve failed (${res.status})`);
+  }
+  async reject(id: string): Promise<void> {
+    const res = await authFetch(`${API_BASE}/hr-pitches/${id}/reject`, { method: "POST" });
+    if (!res.ok) throw new Error(`Reject failed (${res.status})`);
+  }
+}
+
 export interface CompanyService {
   getCompanies(page?: number): Promise<Company[]>;
 }
@@ -755,6 +793,10 @@ export class ServiceRegistry {
 
   static getReferralService(): ReferralService {
     return new ReferralService();
+  }
+
+  static getHrPitchService(): HrPitchService {
+    return new HrPitchService();
   }
 
   static getCaptchaService(): CaptchaService {

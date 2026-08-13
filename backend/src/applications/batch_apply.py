@@ -17,6 +17,7 @@ from src.api.db import get_connection, is_postgres
 from src.applications.apply_service import apply_to_job
 from src.applications.resume_selector import ResumeSelector
 from src.referrals.apply_integration import find_and_draft_referral
+from src.referrals.hr_pitch_integration import find_and_draft_hr_pitch
 from src.resume_intelligence.cover_letter.auto_generate import generate_and_store_cover_letter
 from src.system.logger import setup_logger
 
@@ -210,6 +211,17 @@ def run_batch(
                 company_name=job.get("canonical_name", ""),
                 job_description=job.get("description") or "",
                 company_domain=job.get("company_domain") or "",
+            )
+            # Second, independent outreach system -- see hr_pitch_integration.py.
+            # Runs alongside the cold-referral-ask above, not instead of it.
+            find_and_draft_hr_pitch(
+                user_id=user_id,
+                job_id=job_id,
+                job_title=job["title"],
+                company_name=job.get("canonical_name", ""),
+                job_description=job.get("description") or "",
+                company_domain=job.get("company_domain") or "",
+                apply_url=job.get("apply_url") or "",
             )
 
         if db_status == "SUBMITTED":

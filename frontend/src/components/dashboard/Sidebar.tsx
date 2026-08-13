@@ -335,8 +335,16 @@ export function Sidebar({ isOpen, isNarrow }: SidebarProps) {
     enabled: !!session,
     refetchInterval: 15000,
   });
+  const { data: hrPitchDrafts = [] } = useQuery({
+    queryKey: ["hr-pitch-drafts"],
+    queryFn: () => ServiceRegistry.getHrPitchService().list(),
+    enabled: !!session,
+    refetchInterval: 15000,
+  });
   const applicationsBadgeCount = needsReview.length;
-  const outreachBadgeCount = referralDrafts.filter((r) => r.status === "PENDING_REVIEW").length;
+  const outreachBadgeCount =
+    referralDrafts.filter((r) => r.status === "PENDING_REVIEW").length +
+    hrPitchDrafts.filter((r) => r.status === "PENDING_REVIEW").length;
 
   const narrowStyle: CSSProperties = {
     position: "fixed",

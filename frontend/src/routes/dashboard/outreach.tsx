@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ServiceRegistry, type ReferralDraft } from "../../lib/services";
+import { ServiceRegistry, type ReferralDraft, type HrPitchDraft } from "../../lib/services";
 import { DsButton } from "../../components/ds/Button";
 
 export const Route = createFileRoute("/dashboard/outreach")({
@@ -17,8 +17,24 @@ const TABS = [
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
+type Draft = ReferralDraft | HrPitchDraft;
 
-function statusBadgeColor(status: ReferralDraft["status"]) {
+const SOURCES = [
+  {
+    key: "referral" as const,
+    label: "Referral requests",
+    description:
+      "For every real application, we look for a hiring manager, recruiter, or someone else at the company and draft a short referral-request email.",
+  },
+  {
+    key: "hr_pitch" as const,
+    label: "Direct pitch & referral ask",
+    description:
+      "A second, separate system: a direct fit-pitch email to the recruiter or hiring manager for the specific job, or a low-effort referral ask to a peer if no HR contact is found.",
+  },
+];
+
+function statusBadgeColor(status: Draft["status"]) {
   switch (status) {
     case "SENT":
       return { bg: "rgba(60,150,90,0.12)", fg: "#2E7D4F" };
@@ -31,17 +47,29 @@ function statusBadgeColor(status: ReferralDraft["status"]) {
   }
 }
 
+function mailTypeLabel(mailType: HrPitchDraft["mail_type"]) {
+  return mailType === "hr_pitch" ? "Direct pitch" : "Referral ask";
+}
+
 function OutreachPage() {
   const queryClient = useQueryClient();
+  const [activeSource, setActiveSource] = useState<"referral" | "hr_pitch">("referral");
   const [activeTab, setActiveTab] = useState<TabKey>("PENDING_REVIEW");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [actionState, setActionState] = useState<Record<string, "working" | "error">>({});
 
-  const { data: drafts = [], isLoading } = useQuery({
+  const { data: referralDrafts = [] } = useQuery({
     queryKey: ["referral-drafts"],
     queryFn: () => ServiceRegistry.getReferralService().list(),
     refetchInterval: 30000,
   });
+  const { data: hrPitchDrafts = [] } = useQuery({
+    queryKey: ["hr-pitch-drafts"],
+    queryFn: () => ServiceRegistry.getHrPitchService().list(),
+    refetchInterval: 30000,
+  });
+  const drafts: Draft[] = activeSource === "referral" ? referralDrafts : hrPitchDrafts;
+  const isLoading = false;
 
   const { data: autoSend } = useQuery({
     queryKey: ["referral-auto-send-policy"],
@@ -62,13 +90,17 @@ function OutreachPage() {
     }
   };
 
+  const activeService = () =>
+    activeSource === "referral" ? ServiceRegistry.getReferralService() : ServiceRegistry.getHrPitchService();
+  const activeDraftsKey = activeSource === "referral" ? "referral-drafts" : "hr-pitch-drafts";
+
   const handleApprove = async (id: string) => {
     setActionState((s) => ({ ...s, [id]: "working" }));
     try {
-      await ServiceRegistry.getReferralService().approve(id);
-      queryClient.invalidateQueries({ queryKey: ["referral-drafts"] });
+      await activeService().approve(id);
+      queryClient.invalidateQueries({ queryKey: [activeDraftsKey] });
     } catch (e) {
-      console.error("Failed to approve referral:", e);
+      console.error("Failed to approve draft:", e);
       setActionState((s) => ({ ...s, [id]: "error" }));
     }
   };
@@ -76,10 +108,10 @@ function OutreachPage() {
   const handleReject = async (id: string) => {
     setActionState((s) => ({ ...s, [id]: "working" }));
     try {
-      await ServiceRegistry.getReferralService().reject(id);
-      queryClient.invalidateQueries({ queryKey: ["referral-drafts"] });
+      await activeService().reject(id);
+      queryClient.invalidateQueries({ queryKey: [activeDraftsKey] });
     } catch (e) {
-      console.error("Failed to reject referral:", e);
+      console.error("Failed to reject draft:", e);
       setActionState((s) => ({ ...s, [id]: "error" }));
     }
   };
@@ -89,6 +121,7 @@ function OutreachPage() {
     acc[t.key] = drafts.filter((d) => d.status === t.key).length;
     return acc;
   }, {});
+  const activeSourceMeta = SOURCES.find((s) => s.key === activeSource)!;
 
   return (
     <div style={{ padding: "clamp(24px,4vw,48px)", maxWidth: 900 }}>
@@ -96,13 +129,37 @@ function OutreachPage() {
         Outreach
       </div>
       <h1 className="font-[var(--ds-font-display)] font-semibold" style={{ fontSize: "clamp(24px,3vw,30px)", margin: "0 0 8px" }}>
-        Referral emails
+        {activeSourceMeta.label}
       </h1>
-      <p style={{ fontSize: 13.5, color: "var(--ds-ink-500)", lineHeight: 1.6, margin: "0 0 24px", maxWidth: 560 }}>
-        For every real application, we look for a hiring manager, recruiter, or someone else at the
-        company and draft a short referral-request email — real contacts, found automatically, never
-        sent without your say-so unless you turn that on below.
+      <p style={{ fontSize: 13.5, color: "var(--ds-ink-500)", lineHeight: 1.6, margin: "0 0 20px", maxWidth: 600 }}>
+        {activeSourceMeta.description} Real contacts, found automatically, never sent without your say-so unless
+        you turn that on below.
       </p>
+
+      <div className="flex gap-2" style={{ marginBottom: 20 }}>
+        {SOURCES.map((s) => (
+          <button
+            key={s.key}
+            type="button"
+            onClick={() => {
+              setActiveSource(s.key);
+              setExpandedId(null);
+            }}
+            style={{
+              padding: "9px 16px",
+              borderRadius: "var(--ds-radius-md)",
+              border: activeSource === s.key ? "1px solid var(--ds-accent-primary)" : "1px solid var(--ds-border-medium)",
+              background: activeSource === s.key ? "rgba(226,116,72,0.1)" : "transparent",
+              color: activeSource === s.key ? "var(--ds-accent-primary)" : "var(--ds-ink-600)",
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
 
       <div
         className="flex items-center justify-between flex-wrap"
@@ -119,8 +176,8 @@ function OutreachPage() {
           <div style={{ fontSize: 14, fontWeight: 600 }}>Auto-send approved drafts</div>
           <div style={{ fontSize: 12.5, color: "var(--ds-ink-450)", marginTop: 2, maxWidth: 420 }}>
             {autoSend
-              ? "On — new drafts send automatically as soon as a contact is found. Turn off anytime to go back to reviewing each one."
-              : "Off — every draft waits here for you to approve before it sends. Flip this on once you trust the quality."}
+              ? "On — new drafts from both outreach systems send automatically as soon as a contact is found. Turn off anytime to go back to reviewing each one."
+              : "Off — every draft from both outreach systems waits here for you to approve before it sends. Flip this on once you trust the quality."}
           </div>
         </div>
         <button
@@ -196,7 +253,7 @@ function OutreachPage() {
         >
           {activeTab === "PENDING_REVIEW"
             ? "Nothing waiting on you right now — drafts show up here as we find contacts for jobs you've applied to."
-            : `No ${TABS.find((t) => t.key === activeTab)?.label.toLowerCase()} referrals yet.`}
+            : `No ${TABS.find((t) => t.key === activeTab)?.label.toLowerCase()} drafts yet.`}
         </div>
       )}
 
@@ -204,6 +261,7 @@ function OutreachPage() {
         {filtered.map((r) => {
           const isExpanded = expandedId === r.id;
           const badge = statusBadgeColor(r.status);
+          const mailType = "mail_type" in r ? r.mail_type : null;
           return (
             <div
               key={r.id}
@@ -222,21 +280,38 @@ function OutreachPage() {
                     · {r.company_name} — {r.job_title}
                   </span>
                 </div>
-                <span
-                  className="flex-shrink-0"
-                  style={{
-                    fontSize: 10.5,
-                    fontWeight: 700,
-                    textTransform: "uppercase",
-                    letterSpacing: 0.4,
-                    padding: "3px 8px",
-                    borderRadius: 999,
-                    background: badge.bg,
-                    color: badge.fg,
-                  }}
-                >
-                  {r.status.replace("_", " ")}
-                </span>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  {mailType && (
+                    <span
+                      style={{
+                        fontSize: 10.5,
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        letterSpacing: 0.4,
+                        padding: "3px 8px",
+                        borderRadius: 999,
+                        background: "rgba(139,123,192,0.14)",
+                        color: "#6C5CA8",
+                      }}
+                    >
+                      {mailTypeLabel(mailType)}
+                    </span>
+                  )}
+                  <span
+                    style={{
+                      fontSize: 10.5,
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      letterSpacing: 0.4,
+                      padding: "3px 8px",
+                      borderRadius: 999,
+                      background: badge.bg,
+                      color: badge.fg,
+                    }}
+                  >
+                    {r.status.replace("_", " ")}
+                  </span>
+                </div>
               </div>
               <div style={{ fontSize: 12, color: "var(--ds-ink-450)", marginTop: 2 }}>
                 {r.contact_email}

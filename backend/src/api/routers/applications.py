@@ -16,6 +16,7 @@ from src.applications.question_engine import QuestionEngine
 from src.applications.rag import RAGClient
 from src.applications.resume_selector import ResumeSelector
 from src.referrals.apply_integration import find_and_draft_referral
+from src.referrals.hr_pitch_integration import find_and_draft_hr_pitch
 from src.resume_intelligence.cover_letter.auto_generate import generate_and_store_cover_letter
 from src.runtime.auth.dependencies import CurrentUser, get_current_user
 from src.utils.llm_router import LLMRouter
@@ -105,6 +106,18 @@ def apply_to_job_endpoint(
             company_name=job_row.get("canonical_name", ""),
             job_description=job_row.get("description") or "",
             company_domain=job_row.get("company_domain") or "",
+        )
+        # Second, independent outreach system -- see hr_pitch_integration.py.
+        # Runs alongside the cold-referral-ask above, not instead of it.
+        background_tasks.add_task(
+            find_and_draft_hr_pitch,
+            user_id=current_user.user_id,
+            job_id=job_id,
+            job_title=job_row.get("title", ""),
+            company_name=job_row.get("canonical_name", ""),
+            job_description=job_row.get("description") or "",
+            company_domain=job_row.get("company_domain") or "",
+            apply_url=job_row.get("apply_url") or "",
         )
         if db_status == "SUBMITTED":
             # Paid-tier only (gated inside generate_and_store_cover_letter).
