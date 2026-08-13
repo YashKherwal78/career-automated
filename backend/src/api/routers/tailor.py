@@ -329,25 +329,12 @@ def _load_ai_preferences(candidate_id: str, db) -> tuple[str, str]:
 
 
 def _has_cover_letter_access(current_user: "CurrentUser", db) -> bool:
-    """Pro-tier gate, same 'paid' check billing.py's GET /subscription
-    uses — kept as a local query rather than an HTTP call to that router
-    to avoid a service-to-service round trip for a single boolean."""
-    if current_user.email in FREE_ACCESS_EMAILS:
-        return True
-    try:
-        cursor = db.cursor()
-        cursor.execute(
-            """
-            SELECT 1 FROM public.user_subscriptions
-            WHERE user_id = %s AND status = 'paid'
-            ORDER BY paid_at DESC LIMIT 1
-            """,
-            (current_user.user_id,),
-        )
-        return cursor.fetchone() is not None
-    except Exception:
-        logger.warning("Subscription lookup failed for user_id=%s", current_user.user_id, exc_info=True)
-        return False
+    """Pro-tier gate. Delegates to src.billing.access.has_paid_access --
+    the same check now also used by the auto-apply pipeline to decide
+    whether to generate a cover letter for a real submission, so this and
+    that stay in sync instead of drifting as two copies of the same query."""
+    from src.billing.access import has_paid_access
+    return has_paid_access(current_user.user_id, current_user.email)
 
 
 # ---------------------------------------------------------------------------

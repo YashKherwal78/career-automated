@@ -39,6 +39,32 @@ function Spinner() {
   );
 }
 
+interface GeneratedCoverLetter {
+  id: string;
+  job_id: string;
+  company_name: string;
+  job_title: string;
+  cover_letter_text: string;
+  word_count: number | null;
+  created_at: string;
+}
+
+function useGeneratedCoverLetters() {
+  const { session } = useAuth();
+  return useQuery({
+    queryKey: ["generated-cover-letters"],
+    queryFn: async (): Promise<GeneratedCoverLetter[]> => {
+      const res = await fetch(`${API_BASE}/applications/cover-letters`, {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (!res.ok) throw new Error("Failed to load generated cover letters");
+      const data = await res.json();
+      return data.items || [];
+    },
+    enabled: !!session,
+  });
+}
+
 function useBaseResume() {
   const { session } = useAuth();
   return useQuery({
@@ -77,6 +103,8 @@ function CoverLetterPage() {
   });
 
   const { data: baseResume, isLoading: baseResumeLoading } = useBaseResume();
+  const { data: generatedLetters = [] } = useGeneratedCoverLetters();
+  const [expandedGeneratedId, setExpandedGeneratedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (genPhase !== "generating") return;
@@ -184,8 +212,8 @@ function CoverLetterPage() {
 
   return (
     <div
-      className="flex items-center justify-center"
-      style={{ minHeight: "100vh", padding: "clamp(32px,5vw,72px)" }}
+      className="flex flex-col items-center"
+      style={{ minHeight: "100vh", padding: "clamp(32px,5vw,72px)", gap: 24 }}
     >
       <div
         style={{
@@ -441,6 +469,75 @@ function CoverLetterPage() {
           </div>
         )}
       </div>
+
+      {generatedLetters.length > 0 && (
+        <div style={{ width: "100%", maxWidth: 640 }}>
+          <div
+            className="uppercase font-bold"
+            style={{
+              fontSize: 12,
+              letterSpacing: "var(--ds-tracking-wide)",
+              color: "var(--ds-ink-400)",
+              marginBottom: 10,
+            }}
+          >
+            Generated for your applications ({generatedLetters.length})
+          </div>
+          <div className="flex flex-col" style={{ gap: 10 }}>
+            {generatedLetters.map((letter) => {
+              const isExpanded = expandedGeneratedId === letter.id;
+              return (
+                <div
+                  key={letter.id}
+                  style={{
+                    background: "rgba(255,255,255,0.55)",
+                    border: "1px solid rgba(255,255,255,0.6)",
+                    borderRadius: "var(--ds-radius-lg)",
+                    padding: "14px 16px",
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setExpandedGeneratedId(isExpanded ? null : letter.id)}
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      textAlign: "left",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: 0,
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div style={{ fontSize: 13.5, fontWeight: 600 }}>
+                        {letter.job_title}
+                        <span style={{ color: "var(--ds-ink-450)", fontWeight: 500 }}> · {letter.company_name}</span>
+                      </div>
+                      <span style={{ fontSize: 11.5, color: "var(--ds-ink-400)", flexShrink: 0, marginLeft: 10 }}>
+                        {isExpanded ? "Hide ↑" : "View →"}
+                      </span>
+                    </div>
+                  </button>
+                  {isExpanded && (
+                    <div
+                      style={{
+                        marginTop: 12,
+                        fontSize: 13,
+                        lineHeight: 1.7,
+                        color: "var(--ds-text-primary)",
+                        whiteSpace: "pre-wrap",
+                      }}
+                    >
+                      {letter.cover_letter_text}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

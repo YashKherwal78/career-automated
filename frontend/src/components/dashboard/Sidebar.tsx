@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { name: "Dashboard", to: "/dashboard" as const },
   { name: "Jobs", to: "/dashboard/jobs" as const },
   { name: "Tailoring", to: "/dashboard/resume-tailor" as const },
+  { name: "Cover Letter", to: "/dashboard/cover-letter" as const },
   { name: "Resume", to: "/dashboard/resume" as const },
   { name: "Applications", to: "/dashboard/applications" as const },
   { name: "Outreach", to: "/dashboard/outreach" as const },
@@ -102,6 +103,56 @@ function NavIcon({ name, active, pressed }: { name: string; active: boolean; pre
         <div
           className="absolute rounded-[1px]"
           style={{ top: 10, left: 2, width: 5, height: 1.4, background: color }}
+        />
+      </div>
+    );
+  }
+  if (name === "Cover Letter") {
+    // A folded letter: rectangle with a diagonal crease line, distinct
+    // from Outreach's envelope (this is a document, not mail).
+    return (
+      <div
+        className="relative rounded-[2px]"
+        style={{
+          width: 14,
+          height: 16,
+          border: `2px solid ${color}`,
+          transition: "transform 160ms cubic-bezier(0.4,0,0.2,1)",
+          transform: pressed ? "rotate(-4deg)" : "rotate(0deg)",
+        }}
+      >
+        <div
+          className="absolute"
+          style={{
+            top: 2,
+            left: 2,
+            width: 8,
+            height: 1.4,
+            background: color,
+            borderRadius: 1,
+          }}
+        />
+        <div
+          className="absolute"
+          style={{
+            top: 5.5,
+            left: 2,
+            width: 8,
+            height: 1.4,
+            background: color,
+            borderRadius: 1,
+          }}
+        />
+        <div
+          className="absolute"
+          style={{
+            top: 9,
+            left: 2,
+            width: 5,
+            height: 1.4,
+            background: color,
+            borderRadius: 1,
+          }}
         />
       </div>
     );

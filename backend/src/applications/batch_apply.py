@@ -17,6 +17,7 @@ from src.api.db import get_connection, is_postgres
 from src.applications.apply_service import apply_to_job
 from src.applications.resume_selector import ResumeSelector
 from src.referrals.apply_integration import find_and_draft_referral
+from src.resume_intelligence.cover_letter.auto_generate import generate_and_store_cover_letter
 from src.system.logger import setup_logger
 
 logger = setup_logger("batch_apply")
@@ -209,6 +210,23 @@ def run_batch(
                 company_name=job.get("canonical_name", ""),
                 job_description=job.get("description") or "",
                 company_domain=job.get("company_domain") or "",
+            )
+
+        if db_status == "SUBMITTED":
+            # Paid-tier only (gated inside); best-effort, non-fatal, same
+            # pattern as the referral draft above -- a cover-letter LLM
+            # call failing must never affect a submission that already
+            # succeeded. No email available in this worker context (no
+            # request/session here), so the FREE_ACCESS_EMAILS comp
+            # exemption doesn't apply from this call site -- only the real
+            # 'paid' subscription check does.
+            generate_and_store_cover_letter(
+                user_id=user_id,
+                email=None,
+                job_id=job_id,
+                job_title=job["title"],
+                company_name=job.get("canonical_name", ""),
+                job_description=job.get("description") or "",
             )
 
         status["completed"] = i + 1

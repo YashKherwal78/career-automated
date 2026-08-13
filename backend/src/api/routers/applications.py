@@ -16,6 +16,7 @@ from src.applications.question_engine import QuestionEngine
 from src.applications.rag import RAGClient
 from src.applications.resume_selector import ResumeSelector
 from src.referrals.apply_integration import find_and_draft_referral
+from src.resume_intelligence.cover_letter.auto_generate import generate_and_store_cover_letter
 from src.runtime.auth.dependencies import CurrentUser, get_current_user
 from src.utils.llm_router import LLMRouter
 
@@ -105,6 +106,17 @@ def apply_to_job_endpoint(
             job_description=job_row.get("description") or "",
             company_domain=job_row.get("company_domain") or "",
         )
+        if db_status == "SUBMITTED":
+            # Paid-tier only (gated inside generate_and_store_cover_letter).
+            background_tasks.add_task(
+                generate_and_store_cover_letter,
+                user_id=current_user.user_id,
+                email=current_user.email,
+                job_id=job_id,
+                job_title=job_row.get("title", ""),
+                company_name=job_row.get("canonical_name", ""),
+                job_description=job_row.get("description") or "",
+            )
 
     return {
         "status": result.status,
@@ -354,6 +366,43 @@ def needs_review(current_user: CurrentUser = Depends(get_current_user)):
             "apply_url": d.get("apply_url") or "",
         })
     return {"items": items}
+
+
+@router.get("/cover-letters")
+def list_generated_cover_letters(current_user: CurrentUser = Depends(get_current_user)):
+    """Cover letters the auto-apply pipeline generated for this user's real
+    (non-test-mode) submissions -- see
+    resume_intelligence/cover_letter/auto_generate.py. Paid-tier only at
+    generation time, so an empty list here just as plausibly means "free
+    tier" or "no real submissions yet" as it does "feature broken"."""
+    ph = "%s" if is_postgres() else "?"
+    with get_connection() as conn:
+        cur = conn.execute(
+            f"""
+            SELECT id, job_id, company_name, job_title, cover_letter_text, word_count, created_at
+            FROM public.generated_cover_letters
+            WHERE user_id = {ph}::uuid
+            ORDER BY created_at DESC
+            LIMIT 100
+            """,
+            (current_user.user_id,),
+        )
+        rows = cur.fetchall()
+
+    return {
+        "items": [
+            {
+                "id": str((r if isinstance(r, dict) else dict(r)).get("id")),
+                "job_id": str((r if isinstance(r, dict) else dict(r)).get("job_id")),
+                "company_name": (r if isinstance(r, dict) else dict(r)).get("company_name") or "",
+                "job_title": (r if isinstance(r, dict) else dict(r)).get("job_title") or "",
+                "cover_letter_text": (r if isinstance(r, dict) else dict(r)).get("cover_letter_text") or "",
+                "word_count": (r if isinstance(r, dict) else dict(r)).get("word_count"),
+                "created_at": str((r if isinstance(r, dict) else dict(r)).get("created_at")),
+            }
+            for r in rows
+        ]
+    }
 
 
 @router.get("/captcha/active")
