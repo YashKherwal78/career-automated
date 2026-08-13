@@ -99,7 +99,7 @@ class JobRepository(BaseRepository, IJobRepository):
     def get_jobs_from_precomputed(self, page: int, page_size: int, user_id: str, min_score: float = None,
                                    location: str = None, provider: str = None, company: str = None,
                                    title: str = None, remote_type: str = None, employment_type: str = None,
-                                   min_salary: float = None, pipeline: str = "A", conn=None):
+                                   min_salary: float = None, pipeline: str = "A", q: str = None, conn=None):
         """
         Serves scored jobs from user_job_scores (populated by the background
         JobScoringWorker against the full active-jobs pool) instead of live-
@@ -107,7 +107,7 @@ class JobRepository(BaseRepository, IJobRepository):
         this user doesn't have enough precomputed coverage yet, signaling
         the caller to fall back to the live path.
         """
-        from src.api.db import json_extract
+        from src.api.db import json_extract, is_postgres
         import json
 
         p = conn.dialect.placeholder()
@@ -121,25 +121,42 @@ class JobRepository(BaseRepository, IJobRepository):
         """
         params = [user_id]
 
+        # pipeline "A" (ATS-sourced) / "B" (external boards) used to be a
+        # user-facing tab split; the dashboard now shows one unified list
+        # (job.provider still tells the frontend which source a given row
+        # came from, e.g. for an "external" badge), so "ALL" -- no split --
+        # is the default and only mode actually used today. A/B are kept
+        # for any caller that still wants the old split (e.g. scripts).
         job_board_providers = ["linkedin", "google_jobs", "wellfound", "indeed"]
-        provider_placeholders = ",".join([p] * len(job_board_providers))
-        if pipeline == "B":
-            where_clause += f" AND n.provider IN ({provider_placeholders})"
-        else:
-            where_clause += f" AND n.provider NOT IN ({provider_placeholders})"
-        params.extend(job_board_providers)
+        if pipeline in ("A", "B"):
+            provider_placeholders = ",".join([p] * len(job_board_providers))
+            if pipeline == "B":
+                where_clause += f" AND n.provider IN ({provider_placeholders})"
+            else:
+                where_clause += f" AND n.provider NOT IN ({provider_placeholders})"
+            params.extend(job_board_providers)
 
+        ilike_op = "ILIKE" if is_postgres() else "LIKE"
         if provider:
             where_clause += f" AND n.provider = {p}"
             params.append(provider)
         if company:
-            where_clause += f" AND (n.company_id LIKE {p} OR COALESCE(i.canonical_name, i2.canonical_name, {json_company}, '') LIKE {p})"
+            where_clause += f" AND (n.company_id {ilike_op} {p} OR COALESCE(i.canonical_name, i2.canonical_name, {json_company}, '') {ilike_op} {p})"
             params.extend([f"%{company}%", f"%{company}%"])
         if title:
-            where_clause += f" AND n.title LIKE {p}"
+            where_clause += f" AND n.title {ilike_op} {p}"
             params.append(f"%{title}%")
+        if q:
+            # Single free-text search box on the frontend -- covers title OR
+            # company, unlike the separate `title`/`company` params above
+            # (which the dashboard's dedicated role dropdown and location box
+            # still use). Previously the search box only ever populated
+            # `company`, so typing a job title into it silently matched
+            # nothing -- confirmed real, not a hypothetical.
+            where_clause += f" AND (n.title {ilike_op} {p} OR n.company_id {ilike_op} {p} OR COALESCE(i.canonical_name, i2.canonical_name, {json_company}, '') {ilike_op} {p})"
+            params.extend([f"%{q}%", f"%{q}%", f"%{q}%"])
         if location:
-            where_clause += f" AND n.location LIKE {p}"
+            where_clause += f" AND n.location {ilike_op} {p}"
             params.append(f"%{location}%")
         if remote_type:
             where_clause += f" AND n.remote_type = {p}"
@@ -185,8 +202,8 @@ class JobRepository(BaseRepository, IJobRepository):
             r["application_status"] = "NEW"
         return rows
 
-    def get_jobs(self, page: int=1, page_size: int=50, provider: str=None, company: str=None, title: str=None, status: str="ACTIVE", min_score: float=None, pipeline: str="A", location: str=None, remote_type: str=None, employment_type: str=None, seniority: str=None, min_salary: float=None, sort_by: str="newest", user_id: str=None, tx=None):
-        from src.api.db import json_extract
+    def get_jobs(self, page: int=1, page_size: int=50, provider: str=None, company: str=None, title: str=None, status: str="ACTIVE", min_score: float=None, pipeline: str="A", location: str=None, remote_type: str=None, employment_type: str=None, seniority: str=None, min_salary: float=None, sort_by: str="newest", user_id: str=None, q: str=None, tx=None):
+        from src.api.db import json_extract, is_postgres
         import json
         with self.transaction() as conn:
             if sort_by == "score" and user_id:
@@ -194,7 +211,7 @@ class JobRepository(BaseRepository, IJobRepository):
                     page=page, page_size=page_size, user_id=user_id, min_score=min_score,
                     location=location, provider=provider, company=company, title=title,
                     remote_type=remote_type, employment_type=employment_type,
-                    min_salary=min_salary, pipeline=pipeline, conn=conn,
+                    min_salary=min_salary, pipeline=pipeline, q=q, conn=conn,
                 )
                 if precomputed is not None:
                     return precomputed
@@ -214,26 +231,31 @@ class JobRepository(BaseRepository, IJobRepository):
             """
             params = [status]
 
-            job_board_providers = ["linkedin", "google_jobs", "wellfound", "indeed"]
-            provider_placeholders = ",".join([p] * len(job_board_providers))
-            if pipeline == "B":
-                base_query += f" AND n.provider IN ({provider_placeholders})"
-                params.extend(job_board_providers)
-            else:
-                base_query += f" AND n.provider NOT IN ({provider_placeholders})"
-                params.extend(job_board_providers)
+            if pipeline in ("A", "B"):
+                job_board_providers = ["linkedin", "google_jobs", "wellfound", "indeed"]
+                provider_placeholders = ",".join([p] * len(job_board_providers))
+                if pipeline == "B":
+                    base_query += f" AND n.provider IN ({provider_placeholders})"
+                    params.extend(job_board_providers)
+                else:
+                    base_query += f" AND n.provider NOT IN ({provider_placeholders})"
+                    params.extend(job_board_providers)
 
+            ilike_op = "ILIKE" if is_postgres() else "LIKE"
             if provider:
                 base_query += f" AND n.provider = {p}"
                 params.append(provider)
             if company:
-                base_query += f" AND (n.company_id LIKE {p} OR COALESCE(i.canonical_name, i2.canonical_name, {json_company}, '') LIKE {p})"
+                base_query += f" AND (n.company_id {ilike_op} {p} OR COALESCE(i.canonical_name, i2.canonical_name, {json_company}, '') {ilike_op} {p})"
                 params.extend([f"%{company}%", f"%{company}%"])
             if title:
-                base_query += f" AND n.title LIKE {p}"
+                base_query += f" AND n.title {ilike_op} {p}"
                 params.append(f"%{title}%")
+            if q:
+                base_query += f" AND (n.title {ilike_op} {p} OR n.company_id {ilike_op} {p} OR COALESCE(i.canonical_name, i2.canonical_name, {json_company}, '') {ilike_op} {p})"
+                params.extend([f"%{q}%", f"%{q}%", f"%{q}%"])
             if location:
-                base_query += f" AND n.location LIKE {p}"
+                base_query += f" AND n.location {ilike_op} {p}"
                 params.append(f"%{location}%")
             if remote_type:
                 base_query += f" AND n.remote_type = {p}"

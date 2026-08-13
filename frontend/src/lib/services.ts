@@ -57,6 +57,7 @@ export interface JobService {
   getJobs(filters?: {
     company?: string;
     title?: string;
+    q?: string;
     provider?: string;
     min_score?: number;
     page?: number;
@@ -71,6 +72,7 @@ export interface JobService {
   getBoardJobs(filters?: {
     company?: string;
     title?: string;
+    q?: string;
     provider?: string;
     min_score?: number;
     page?: number;
@@ -409,6 +411,7 @@ export class ApiJobService implements JobService {
     const params = new URLSearchParams();
     if (filters?.company) params.append("company", filters.company);
     if (filters?.title) params.append("title", filters.title);
+    if (filters?.q) params.append("q", filters.q);
     if (filters?.provider) params.append("provider", filters.provider);
     if (filters?.min_score) params.append("min_score", String(filters.min_score));
     if (filters?.page) params.append("page", String(filters.page));

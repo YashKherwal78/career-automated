@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useDashboard } from "../../components/dashboard/DashboardContext";
 import { LoadingSkeleton } from "../../components/dashboard/CommonComponents";
 import { CompanyLogo } from "../../components/dashboard/CompanyLogo";
-import { Search, MapPin, Laptop, SlidersHorizontal, ArrowUpDown } from "lucide-react";
+import { Search, MapPin, ArrowUpDown } from "lucide-react";
 import { Job } from "../../lib/services";
 
 export const Route = createFileRoute("/dashboard/jobs")({
@@ -13,19 +13,22 @@ export const Route = createFileRoute("/dashboard/jobs")({
   component: JobsPage,
 });
 
+// Providers sourced from external job boards rather than a company's own
+// ATS -- used only to label a row "External", not to split the list (the
+// dashboard shows one unified feed, not separate tabs).
+const JOB_BOARD_PROVIDERS = new Set(["linkedin", "google_jobs", "wellfound", "indeed"]);
+
 function JobsPage() {
-  const { jobService, pipelineService, analyticsService } = useDashboard();
+  const { jobService } = useDashboard();
   const searchParams = useSearch({ from: "/dashboard/jobs" });
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState<"pipeline_a" | "pipeline_b">("pipeline_a");
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [remoteFilter, setRemoteFilter] = useState("");
-  const [providerFilter, setProviderFilter] = useState("");
   const [sortField, setSortField] = useState<"intent_score" | "posted_at">("posted_at");
   const [applyMode, setApplyMode] = useState<"automatic" | "assisted">("automatic");
 
@@ -46,59 +49,17 @@ function JobsPage() {
     { label: "Associate Product Manager", value: "Associate Product Manager" },
   ];
 
-  // Statistics state
-  const [stats, setStats] = useState({
-    activeJobs: 0,
-    companiesTracked: 0,
-    newJobsToday: 0,
-    lastUpdated: "Never",
-    pipelineStatus: "UNKNOWN"
-  });
-
   const loadData = async (showLoading = false) => {
     if (showLoading) setLoading(true);
     try {
-      // 1. Load KPI metrics
-      let companiesCount = 0;
-      let activeJobsCount = 0;
-      let lastUpdatedText = "Never";
-      let statusText = "UNKNOWN";
-
-      try {
-        const pipeStatus = await pipelineService.getPipelineStatus();
-        companiesCount = pipeStatus.companies || 0;
-        activeJobsCount = pipeStatus.jobs || 0;
-        statusText = pipeStatus.workers ? (pipeStatus.workers.crawler || "Stopped") : "Stopped";
-      } catch (err) {
-        console.error("Failed to load pipeline stats:", err);
-      }
-
-      // Check current timestamp
-      const now = new Date();
-      lastUpdatedText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-      setStats({
-        activeJobs: activeJobsCount,
-        companiesTracked: companiesCount,
-        newJobsToday: Math.floor(activeJobsCount * 0.12) || 42, // Simulated new jobs metric
-        lastUpdated: lastUpdatedText,
-        pipelineStatus: statusText.toUpperCase()
-      });
-
-      // 2. Load Jobs
       const filters = {
-        company: search || undefined,
+        q: search || undefined,
         title: roleFilter || undefined,
-        provider: providerFilter || undefined,
         location: locationFilter || undefined,
         remote_type: remoteFilter || undefined,
-        sort_by: sortField === "intent_score" ? "score" : "newest"
+        sort_by: sortField === "intent_score" ? "score" : "newest",
       };
-
-      const data = activeTab === "pipeline_a" 
-        ? await jobService.getJobs(filters)
-        : await jobService.getBoardJobs(filters);
-      
+      const data = await jobService.getJobs(filters);
       setJobs(data);
     } catch (e) {
       console.error(e);
@@ -110,15 +71,15 @@ function JobsPage() {
   // Initial load
   useEffect(() => {
     loadData(true);
-  }, [activeTab, search, roleFilter, providerFilter, locationFilter, remoteFilter, sortField]);
+  }, [search, roleFilter, locationFilter, remoteFilter, sortField]);
 
-  // Live Auto-Refresh (SSE-like Poll every 30s)
+  // Live Auto-Refresh (poll every 30s)
   useEffect(() => {
     const interval = setInterval(() => {
       loadData(false);
     }, 30000);
     return () => clearInterval(interval);
-  }, [activeTab, search, roleFilter, providerFilter, locationFilter, remoteFilter, sortField]);
+  }, [search, roleFilter, locationFilter, remoteFilter, sortField]);
 
   // Navigate to job detail if selected via search params
   useEffect(() => {
@@ -130,56 +91,8 @@ function JobsPage() {
   return (
     <div className="p-8 space-y-6 relative min-h-screen">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight text-ink">Continuous Live Job Feed</h1>
-          <p className="mt-1 text-xs text-ink-soft">
-            Authority jobs crawled, normalized, and updated continuously in the background.
-          </p>
-        </div>
-      </div>
-
-      {/* KPI Counters Bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-        <div className="glass-card rounded-2xl p-4 border border-white/50 bg-white/40 shadow-sm flex flex-col justify-between">
-          <span className="text-[10px] uppercase font-bold text-ink-soft">Active Jobs</span>
-          <span className="text-xl font-display font-semibold text-ink mt-1">{stats.activeJobs}</span>
-        </div>
-        <div className="glass-card rounded-2xl p-4 border border-white/50 bg-white/40 shadow-sm flex flex-col justify-between">
-          <span className="text-[10px] uppercase font-bold text-ink-soft">Companies</span>
-          <span className="text-xl font-display font-semibold text-ink mt-1">{stats.companiesTracked}</span>
-        </div>
-        <div className="glass-card rounded-2xl p-4 border border-white/50 bg-white/40 shadow-sm flex flex-col justify-between">
-          <span className="text-[10px] uppercase font-bold text-ink-soft">New Jobs Today</span>
-          <span className="text-xl font-display font-semibold text-[color:var(--peach-deep)] mt-1">+{stats.newJobsToday}</span>
-        </div>
-        <div className="glass-card rounded-2xl p-4 border border-white/50 bg-white/40 shadow-sm flex flex-col justify-between">
-          <span className="text-[10px] uppercase font-bold text-ink-soft">Last Updated</span>
-          <span className="text-sm font-display font-semibold text-ink mt-2">{stats.lastUpdated}</span>
-        </div>
-        <div className="glass-card rounded-2xl p-4 border border-white/50 bg-white/40 shadow-sm flex flex-col justify-between col-span-2 sm:col-span-1">
-          <span className="text-[10px] uppercase font-bold text-ink-soft">Pipeline Status</span>
-          <span className={`inline-flex items-center gap-1 text-xs font-semibold mt-2 w-max px-2.5 py-0.5 rounded-full ${stats.pipelineStatus === "RUNNING" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"}`}>
-            <span className={`h-1.5 w-1.5 rounded-full ${stats.pipelineStatus === "RUNNING" ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`}></span>
-            {stats.pipelineStatus}
-          </span>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex border-b border-white/20">
-        <button
-          onClick={() => setActiveTab("pipeline_a")}
-          className={`pb-3 px-6 text-sm font-medium transition-colors border-b-2 -mb-[2px] ${activeTab === "pipeline_a" ? "border-[color:var(--peach-deep)] text-[color:var(--peach-deep)] font-semibold" : "border-transparent text-ink-soft hover:text-ink"}`}
-        >
-          CareerAutomated Jobs (Pipeline A)
-        </button>
-        <button
-          onClick={() => setActiveTab("pipeline_b")}
-          className={`pb-3 px-6 text-sm font-medium transition-colors border-b-2 -mb-[2px] ${activeTab === "pipeline_b" ? "border-[color:var(--peach-deep)] text-[color:var(--peach-deep)] font-semibold" : "border-transparent text-ink-soft hover:text-ink"}`}
-        >
-          LinkedIn & Job Boards (Pipeline B)
-        </button>
+      <div>
+        <h1 className="font-display text-2xl font-bold tracking-tight text-ink">Jobs</h1>
       </div>
 
       {/* Filters Bar */}
@@ -216,10 +129,10 @@ function JobsPage() {
           </span>
           <input
             type="text"
-            placeholder="Location..."
+            placeholder="Location — India, Remote, US…"
             value={locationFilter}
             onChange={(e) => setLocationFilter(e.target.value)}
-            className="pl-9 pr-4 py-1.5 w-40 rounded-xl bg-white/50 border border-white/60 focus:outline-none focus:border-[color:var(--peach-deep)] transition-colors"
+            className="pl-9 pr-4 py-1.5 w-52 rounded-xl bg-white/50 border border-white/60 focus:outline-none focus:border-[color:var(--peach-deep)] transition-colors"
           />
         </div>
 
@@ -235,31 +148,6 @@ function JobsPage() {
           <option value="onsite">Onsite</option>
         </select>
 
-        {/* Provider/ATS */}
-        <select
-          value={providerFilter}
-          onChange={(e) => setProviderFilter(e.target.value)}
-          className="px-3 py-1.5 rounded-xl bg-white/50 border border-white/60 focus:outline-none text-ink-soft focus:border-[color:var(--peach-deep)] cursor-pointer"
-        >
-          {activeTab === "pipeline_a" ? (
-            <>
-              <option value="">ATS Provider</option>
-              <option value="greenhouse">Greenhouse</option>
-              <option value="lever">Lever</option>
-              <option value="workday">Workday</option>
-              <option value="ashby">Ashby</option>
-              <option value="smartrecruiters">SmartRecruiters</option>
-            </>
-          ) : (
-            <>
-              <option value="">Job Board</option>
-              <option value="linkedin">LinkedIn</option>
-              <option value="google_jobs">Google Jobs</option>
-              <option value="wellfound">Wellfound</option>
-            </>
-          )}
-        </select>
-
         {/* Sort */}
         <button
           onClick={() => setSortField(sortField === "intent_score" ? "posted_at" : "intent_score")}
@@ -270,7 +158,7 @@ function JobsPage() {
         </button>
       </div>
 
-      {/* Jobs Grid / Table */}
+      {/* Jobs Table */}
       {loading ? (
         <LoadingSkeleton type="table" count={10} />
       ) : jobs.length === 0 ? (
@@ -288,7 +176,6 @@ function JobsPage() {
                   <th className="pb-3 font-medium">Location</th>
                   <th className="pb-3 font-medium">Salary Range</th>
                   <th className="pb-3 font-medium">Remote</th>
-                  <th className="pb-3 font-medium">Source</th>
                   <th className="pb-3 font-medium">Resume Match</th>
                   <th className="pb-3 font-medium"></th>
                 </tr>
@@ -300,7 +187,7 @@ function JobsPage() {
                       <div className="flex items-center gap-2.5">
                         <CompanyLogo name={job.canonical_name} domain={job.company_domain} size={24} radius={6} fontSize={10.5} />
                         <span>{job.canonical_name}</span>
-                        {activeTab === "pipeline_b" && (
+                        {JOB_BOARD_PROVIDERS.has((job.provider || "").toLowerCase()) && (
                           <span className="ml-1 text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100">EXTERNAL</span>
                         )}
                       </div>
@@ -308,12 +195,11 @@ function JobsPage() {
                     <td className="py-4 text-ink-soft font-medium">{job.title}</td>
                     <td className="py-4 text-ink-soft">{job.location || "Remote"}</td>
                     <td className="py-4 text-ink-soft">
-                      {job.salary_min && job.salary_max 
-                        ? `₹${(job.salary_min/100000).toFixed(1)}L - ₹${(job.salary_max/100000).toFixed(1)}L` 
+                      {job.salary_min && job.salary_max
+                        ? `₹${(job.salary_min/100000).toFixed(1)}L - ₹${(job.salary_max/100000).toFixed(1)}L`
                         : "Competitive"}
                     </td>
                     <td className="py-4 text-ink-soft capitalize">{job.remote || "Onsite"}</td>
-                    <td className="py-4 uppercase text-ink-soft">{job.provider}</td>
                     <td className="py-4 font-semibold text-[color:var(--peach-deep)]">
                       {job.intent_score != null
                         ? `${Math.round(job.intent_score * 100)}%`

@@ -13,6 +13,7 @@ def get_jobs(
     provider: Optional[str] = None,
     company: Optional[str] = None,
     title: Optional[str] = None,
+    q: Optional[str] = None,
     status: str = 'ACTIVE',
     min_score: Optional[float] = None,
     location: Optional[str] = None,
@@ -30,9 +31,14 @@ def get_jobs(
         provider=provider,
         company=company,
         title=title,
+        q=q,
         status=status,
         min_score=min_score,
-        pipeline="A",
+        # Unified list -- no more ATS-vs-job-board tab split on the
+        # dashboard, so this endpoint now returns everything active
+        # instead of pipeline "A" (ATS-only). /boards below (pipeline "B")
+        # is kept for any caller that still wants the split.
+        pipeline="ALL",
         location=location,
         remote_type=remote_type,
         employment_type=employment_type,
@@ -49,6 +55,7 @@ def get_board_jobs(
     provider: Optional[str] = None,
     company: Optional[str] = None,
     title: Optional[str] = None,
+    q: Optional[str] = None,
     status: str = 'ACTIVE',
     min_score: Optional[float] = None,
     location: Optional[str] = None,
@@ -66,6 +73,7 @@ def get_board_jobs(
         provider=provider,
         company=company,
         title=title,
+        q=q,
         status=status,
         min_score=min_score,
         pipeline="B",
