@@ -291,6 +291,38 @@ def _load_candidate_memory(candidate_id: str, db) -> Dict[str, Any]:
             if degree and institution:
                 facts.append(f"Education: {degree}, {institution}.")
 
+        # The four facts above are meta-summary only (role count, latest
+        # title, a flattened skill list, a degree line) -- they carry no
+        # quantified achievements, so a generator asked to write from only
+        # these ends up padding with plausible-sounding but ungrounded
+        # narrative instead of the candidate's real, specific work. Pull
+        # the actual bullet_points/achievements the profile has (same
+        # source and shape src/referrals/hr_referral_pitch.py's
+        # _load_profile_facts already reads for outreach emails) so
+        # downstream generators (cover letter, tailoring) have real
+        # material to draw from, not just facts to name-drop.
+        for exp in experience:
+            role = exp.get("role") or exp.get("title") or ""
+            company = exp.get("company") or ""
+            prefix = f"At {company} ({role}): " if (role or company) else ""
+            for bullet in (exp.get("bullet_points") or []):
+                if bullet:
+                    facts.append(f"{prefix}{bullet}")
+            for achievement in (exp.get("achievements") or []):
+                if achievement:
+                    facts.append(f"{prefix}{achievement}")
+
+        for proj in (profile.get("projects") or []):
+            name = proj.get("name") or ""
+            prefix = f"Project {name}: " if name else ""
+            for bullet in (proj.get("bullet_points") or []):
+                if bullet:
+                    facts.append(f"{prefix}{bullet}")
+
+        for achievement in (profile.get("achievements") or []):
+            if isinstance(achievement, str) and achievement:
+                facts.append(achievement)
+
         return {"global": facts} if facts else {}
     except Exception:
         logger.warning("Candidate memory derivation failed for candidate_id=%s", candidate_id, exc_info=True)

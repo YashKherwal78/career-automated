@@ -13,11 +13,54 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 from typing import Any, Optional
 
 from src.resume_intelligence.cover_letter.models import CoverLetterInput, CoverLetterResult
 
 logger = logging.getLogger("CoverLetterGenerator")
+
+# Prompt instructions alone don't reliably keep the model off generic
+# corporate filler (confirmed here the same way it was confirmed for
+# src/referrals/hr_referral_pitch.py's outreach emails: repeated live
+# generations still produced "leveraged" etc. despite an explicit ban) —
+# swap in a plainer synonym instead of deleting, since these words usually
+# sit inside an otherwise fine, information-bearing sentence in a letter
+# this short, where dropping the word would leave a grammar gap.
+_BUZZWORD_REPLACEMENTS = {
+    r"\bleveraging\b": "using",
+    r"\bleveraged\b": "used",
+    r"\bleverage\b": "use",
+}
+
+_BUZZWORD_RE = [
+    (re.compile(pattern, re.IGNORECASE), repl)
+    for pattern, repl in _BUZZWORD_REPLACEMENTS.items()
+]
+
+
+def _strip_buzzwords(text: str) -> str:
+    for pattern, repl in _BUZZWORD_RE:
+        text = pattern.sub(repl, text)
+    return text
+
+
+def _normalize_whitespace(text: str) -> str:
+    """The model sometimes emits the JSON string value with embedded
+    newlines and leading spaces per line (looks fine in the raw JSON,
+    renders as broken ragged indentation once displayed as a letter) --
+    collapse each paragraph back to a single line, keep real paragraph
+    breaks (blank lines) as-is."""
+    paragraphs = [p.strip() for p in text.split("\n\n")]
+    cleaned = []
+    for para in paragraphs:
+        # A paragraph that itself contains single newlines (the broken
+        # case) gets its lines joined with spaces; a paragraph that was
+        # already one line is unaffected.
+        joined = " ".join(line.strip() for line in para.splitlines() if line.strip())
+        if joined:
+            cleaned.append(joined)
+    return "\n\n".join(cleaned)
 
 
 class _LLMCaller:
@@ -67,13 +110,13 @@ _SYSTEM_PROMPT = """You write short, specific cover letters using the Problem-So
 
 Structure (strict):
 1. Opening (1-2 sentences): name the SPECIFIC need or challenge implied by the job description. Never open with "I am writing to apply for" or "I am excited about this opportunity."
-2. Body (2-3 short paragraphs): position the candidate's real, quantified achievements (given to you as resume_facts) as the direct answer to that need. Use only the facts provided — never invent metrics, employers, or outcomes not present in resume_facts or jd_profile.
-3. Close (1-2 sentences): confident, specific next step. No desperation ("I would be grateful", "please consider"), no generic enthusiasm ("passionate about", "great fit", "cutting-edge").
+2. Body (2-3 short paragraphs): position the candidate's real, quantified achievements (given to you as resume_facts) as the direct answer to that need. Use only the facts provided — never invent metrics, employers, or outcomes not present in resume_facts or jd_profile. Pick the 2-4 resume_facts most relevant to THIS specific job — do not just list facts in the order given.
+3. Close (1 sentence): a specific next step, tied to something concrete from this letter (the exact problem named in the opening, or the exact fact used in the body) — not a generic restatement of readiness. No desperation ("I would be grateful", "please consider"), no generic enthusiasm ("passionate about", "great fit", "cutting-edge").
 
 Hard rules:
 - Write in FIRST PERSON, as the candidate speaking for themselves ("I built...", "I'm ready to..."). NEVER third person ("Yash built...", "He is ready..." — the candidate is not being described by someone else, they are writing this letter).
 - Maximum {max_words} words total.
-- No buzzwords: passionate, excited, great fit, cutting-edge, dynamic, synergy, team player.
+- No buzzwords or filler transitions: passionate, excited, great fit, cutting-edge, dynamic, synergy, team player, leverage, meaningful impact, drive impact, look forward to discussing. These phrases are generic enough to paste into any letter for any job — if a sentence would still make sense with the company and role swapped out, rewrite it to be specific to this one instead.
 - Every factual claim must trace to resume_facts or jd_profile — if you're not given a fact, don't state it.
 - Tone: {tone}.
 - Return ONLY valid JSON: {{"cover_letter": "..."}}. No markdown, no explanation.
@@ -158,6 +201,9 @@ class CoverLetterGenerator:
                 llm_calls_made=llm_calls_made,
                 is_fallback=True,
             )
+
+        text = _normalize_whitespace(text)
+        text = _strip_buzzwords(text)
 
         word_count = len(text.split())
         return CoverLetterResult(
