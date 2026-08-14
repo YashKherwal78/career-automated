@@ -97,7 +97,12 @@ def apply_to_job_endpoint(
         )
         conn.commit()
 
-    if not body.test_mode:
+    if not body.test_mode and db_status == "SUBMITTED":
+        # Outreach (and the cover letter below) only fire once the
+        # application actually went out -- this used to gate only on
+        # `not test_mode`, so a real-mode attempt that ended in
+        # REVIEW_REQUIRED/FAILED could still send a cold email referencing
+        # an application that was never actually submitted.
         background_tasks.add_task(
             find_and_draft_referral,
             user_id=current_user.user_id,
@@ -119,17 +124,16 @@ def apply_to_job_endpoint(
             company_domain=job_row.get("company_domain") or "",
             apply_url=job_row.get("apply_url") or "",
         )
-        if db_status == "SUBMITTED":
-            # Paid-tier only (gated inside generate_and_store_cover_letter).
-            background_tasks.add_task(
-                generate_and_store_cover_letter,
-                user_id=current_user.user_id,
-                email=current_user.email,
-                job_id=job_id,
-                job_title=job_row.get("title", ""),
-                company_name=job_row.get("canonical_name", ""),
-                job_description=job_row.get("description") or "",
-            )
+        # Paid-tier only (gated inside generate_and_store_cover_letter).
+        background_tasks.add_task(
+            generate_and_store_cover_letter,
+            user_id=current_user.user_id,
+            email=current_user.email,
+            job_id=job_id,
+            job_title=job_row.get("title", ""),
+            company_name=job_row.get("canonical_name", ""),
+            job_description=job_row.get("description") or "",
+        )
 
     return {
         "status": result.status,

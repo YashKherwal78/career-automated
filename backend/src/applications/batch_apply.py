@@ -200,7 +200,12 @@ def run_batch(
         except Exception:
             pass
 
-        if live:
+        if live and db_status == "SUBMITTED":
+            # Outreach only fires once the application itself actually went
+            # out (really_submitted, not just a live/non-test batch run) --
+            # this used to gate on `live` alone, so a job that ended
+            # REVIEW_REQUIRED or FAILED in a real batch could still trigger
+            # a cold email referencing an application that was never sent.
             # Best-effort, non-fatal by design (see apply_integration.py) --
             # a referral-discovery failure must never affect the batch's own
             # progress/results.
