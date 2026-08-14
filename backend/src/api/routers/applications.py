@@ -233,7 +233,7 @@ def autofill_answers(
     plain extracted data (label/type/options), never a live Page object.
     """
     engine = QuestionEngine(
-        profile_manager=ProfileManager(),
+        profile_manager=ProfileManager(user_id=current_user.user_id),
         rag_client=RAGClient(),
         llm_client=LLMRouter(),
         company_context=body.company_name,

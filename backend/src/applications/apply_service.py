@@ -56,7 +56,7 @@ def apply_to_job(job_row: Dict[str, Any], test_mode: bool = True, user_id: Optio
 
     resume_path, _role_family = ResumeSelector().get_resume(mapped_job, user_id=user_id)
 
-    profile_manager = ProfileManager()
+    profile_manager = ProfileManager(user_id=user_id)
     rag_client = RAGClient()
     llm_router = LLMRouter()
 

@@ -83,7 +83,7 @@ def find_and_draft_referral(
             contact=contact,
             job_title=job_title,
             company_name=company_name,
-            profile_manager=ProfileManager(),
+            profile_manager=ProfileManager(user_id=user_id),
             rag_client=RAGClient(),
             llm_client=LLMRouter(),
         )
