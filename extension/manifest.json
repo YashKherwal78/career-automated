@@ -4,6 +4,12 @@
   "version": "0.2.0",
   "description": "Autofills ATS job application forms using your CareerAutomated profile. Runs in your own browser so CAPTCHAs are just yours to solve normally — you review and click submit.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAu9qps2kvTqJh/nrk8TH6MOjGgO5kjlcvDyXjrny0tmHUiMtUfDufcEDmFphzkxnweKX+Qy9ASCnySLvEczjTexyvaXG4KYE/H9LPVfY55QPoGVA69df/9F/jkFtKWqgXmpaOo1lM1HDbe7WGu3xJpD+AkSzLZLvEvYJrIkRkGbZ/dnOfShBKmMKg9vV/H+ysunLzr1U0LcAqYkKERHM5SrzvGh2DH4YclEliSrlYwk8nbnDCWsIHK0bChOiqEwk0JMErmAfmNEbpju9zU+iGyygPx1By5JQ0UvvvX4C4w4zzbFh4AWwt1ZA2sMz5AWExtyKsSdh4AmF3bQf8P8C4UwIDAQAB",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "permissions": ["storage", "windows"],
   "externally_connectable": {
     "matches": ["https://*.careerautomated.in/*", "http://localhost:5173/*"]
@@ -19,7 +25,13 @@
     "http://localhost:5173/*"
   ],
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
   "background": {
     "service_worker": "background.js"
