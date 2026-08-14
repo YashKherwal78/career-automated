@@ -1,10 +1,11 @@
 import { createFileRoute, Link, Outlet, useNavigate, useSearch } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDashboard } from "../../components/dashboard/DashboardContext";
 import { LoadingSkeleton } from "../../components/dashboard/CommonComponents";
 import { CompanyLogo } from "../../components/dashboard/CompanyLogo";
 import { BackgroundApplyButton } from "../../components/dashboard/BackgroundApplyButton";
 import { isExtensionInstalled } from "../../lib/extensionBridge";
+import { Trie } from "../../lib/trie";
 import { Search, MapPin, ArrowUpDown } from "lucide-react";
 import { Job } from "../../lib/services";
 
@@ -27,7 +28,16 @@ function JobsPage() {
 
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  // `searchInput` is what the box displays and drives the instant
+  // trie-based autocomplete; `search` is the debounced value that actually
+  // triggers a query. Without the split, every keystroke re-fired the full
+  // network request and cleared the table into a loading skeleton mid-type.
+  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
+  const [titleTrie, setTitleTrie] = useState<Trie | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchBoxRef = useRef<HTMLDivElement>(null);
   const [roleFilter, setRoleFilter] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [remoteFilter, setRemoteFilter] = useState("");
@@ -54,7 +64,41 @@ function JobsPage() {
       .then((p) => setApplyMode(p.apply_mode))
       .catch(() => {});
     isExtensionInstalled().then(setHasExtension);
+    // Fetched once per page load, not per keystroke -- the endpoint itself
+    // is server-side cached too (30 min), this just avoids re-fetching on
+    // every render.
+    jobService
+      .getTitleSuggestions()
+      .then((titles) => setTitleTrie(Trie.fromTitles(titles)))
+      .catch(() => {});
   }, [jobService]);
+
+  // Debounce: wait for a pause in typing before actually querying.
+  useEffect(() => {
+    const handle = setTimeout(() => setSearch(searchInput), 300);
+    return () => clearTimeout(handle);
+  }, [searchInput]);
+
+  // Instant, local, no network -- recomputed on every keystroke against
+  // the trie built above.
+  useEffect(() => {
+    if (!titleTrie || !searchInput.trim()) {
+      setSuggestions([]);
+      return;
+    }
+    setSuggestions(titleTrie.suggest(searchInput));
+  }, [titleTrie, searchInput]);
+
+  // Close the suggestions dropdown on outside click.
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (searchBoxRef.current && !searchBoxRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   const ROLE_OPTIONS = [
     { label: "All Roles", value: "" },
@@ -115,17 +159,36 @@ function JobsPage() {
       {/* Filters Bar */}
       <div className="glass-card rounded-2xl p-4 border border-white/50 bg-white/40 shadow-sm flex flex-wrap items-center gap-4 text-xs">
         {/* Search */}
-        <div className="relative flex-1 min-w-[200px]">
+        <div className="relative flex-1 min-w-[200px]" ref={searchBoxRef}>
           <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search className="h-3.5 w-3.5 text-ink-soft" />
           </span>
           <input
             type="text"
             placeholder="Search title or company..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onFocus={() => setShowSuggestions(true)}
             className="w-full pl-9 pr-4 py-1.5 rounded-xl bg-white/50 border border-white/60 focus:outline-none focus:border-[color:var(--peach-deep)] transition-colors"
           />
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1.5 rounded-xl bg-white border border-white/60 shadow-lg z-20 overflow-hidden">
+              {suggestions.map((title) => (
+                <button
+                  key={title}
+                  type="button"
+                  onClick={() => {
+                    setSearchInput(title);
+                    setSearch(title);
+                    setShowSuggestions(false);
+                  }}
+                  className="w-full text-left px-3.5 py-2 text-xs text-ink hover:bg-[color:var(--peach-light)]/30 transition-colors"
+                >
+                  {title}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Role */}

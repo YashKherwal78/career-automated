@@ -86,6 +86,7 @@ export interface JobService {
   }): Promise<Job[]>;
   getJob(jobId: string): Promise<Job>;
   getRecentJobs(): Promise<Job[]>;
+  getTitleSuggestions(): Promise<string[]>;
   applyToJob(jobId: string): Promise<{
     status: string;
     really_submitted: boolean;
@@ -501,6 +502,13 @@ export class ApiJobService implements JobService {
     return this.getJobs({ page_size: 10 });
   }
 
+  async getTitleSuggestions(): Promise<string[]> {
+    const res = await authFetch(`${API_BASE}/jobs/title-suggestions`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.titles || [];
+  }
+
   async applyToJob(
     jobId: string,
   ): Promise<{ status: string; really_submitted: boolean; failure_reason: string | null }> {
@@ -699,6 +707,9 @@ export class MockJobService implements JobService {
   }
   async getJob(): Promise<Job> {
     return this.mockJobs[0];
+  }
+  async getTitleSuggestions(): Promise<string[]> {
+    return this.mockJobs.map((j) => j.title);
   }
   async getRecentJobs(): Promise<Job[]> {
     return this.mockJobs;

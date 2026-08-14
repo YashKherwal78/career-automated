@@ -48,6 +48,16 @@ def get_jobs(
         user_id=current_user.user_id,
     )
 
+@router.get("/title-suggestions")
+def get_title_suggestions(
+    repos: RepositoryManager = Depends(get_repos),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    """Distinct active job titles for the frontend's client-side trie --
+    instant search-box autocomplete with zero round-trip per keystroke."""
+    return {"titles": repos.job.get_title_suggestions()}
+
+
 @router.get("/boards")
 def get_board_jobs(
     page: int = Query(1, ge=1),

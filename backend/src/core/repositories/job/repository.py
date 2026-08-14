@@ -96,6 +96,38 @@ class JobRepository(BaseRepository, IJobRepository):
     # the bounded live-scoring path instead so they see something immediately.
     _PRECOMPUTED_MIN_COVERAGE = 20
 
+    def get_title_suggestions(self, limit: int = 3000) -> List[str]:
+        """Distinct active job titles for the frontend's client-side trie
+        (instant prefix-autocomplete in the search box, no round-trip per
+        keystroke). Cached in-process for 30 min -- this is a suggestion
+        list, not a live result set, so staleness of a few minutes is fine
+        and far cheaper than a DISTINCT scan over 1.4M+ rows on every
+        dashboard page load. Ordered by frequency so common/real titles
+        (not one-off typo'd postings) surface first when the trie has to
+        truncate suggestions."""
+        now = time.time()
+        cached = getattr(self, "_title_suggestions_cache", None)
+        if cached and (now - cached[0]) < 1800:
+            return cached[1]
+        with self.transaction() as conn:
+            p = conn.dialect.placeholder()
+            rows = conn.execute(
+                f"""
+                SELECT title FROM (
+                    SELECT title, COUNT(*) as c
+                    FROM normalized_jobs
+                    WHERE status = 'ACTIVE' AND title IS NOT NULL AND title <> ''
+                    GROUP BY title
+                    ORDER BY c DESC
+                    LIMIT {p}
+                ) t
+                """,
+                (limit,),
+            ).fetchall()
+            titles = [r["title"] if hasattr(r, "keys") else r[0] for r in rows]
+        self._title_suggestions_cache = (now, titles)
+        return titles
+
     def get_jobs_from_precomputed(self, page: int, page_size: int, user_id: str, min_score: float = None,
                                    location: str = None, provider: str = None, company: str = None,
                                    title: str = None, remote_type: str = None, employment_type: str = None,
