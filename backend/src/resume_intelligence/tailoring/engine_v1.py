@@ -72,6 +72,10 @@ from src.resume_intelligence.tailoring.relevance_reorder import (
     compute_reorder_permutation,
 )
 from src.resume_intelligence.tailoring.diff_reporter import SemanticDiffReporter
+from src.resume_intelligence.tailoring.keyword_expansion import (
+    find_related_keywords,
+    apply_keyword_additions,
+)
 from src.resume_intelligence.evidence.candidate_memory import CandidateMemory
 
 logger = logging.getLogger("TailoringEngineV1")
@@ -325,6 +329,27 @@ def _apply_confidence_filter(
                 confidence_map[key] = op.confidence
 
     return final_ops, kept_original_map, confidence_map
+
+
+# ---------------------------------------------------------------------------
+# Skill-term extraction (for keyword_expansion adjacency lookups)
+# ---------------------------------------------------------------------------
+
+def _extract_skill_terms(skills_block: str) -> List[str]:
+    """Flat list of skill names out of the Jake-style categorized skills
+    block (`\\textbf{Category:} skill1, skill2, ... \\\\`). Comma-split
+    within each category's text, stripping the LaTeX category label and
+    trailing line-break markers."""
+    terms: List[str] = []
+    for line in skills_block.split("\\\\"):
+        text = re.sub(r"\\textbf\{[^}]*\}", "", line)
+        text = re.sub(r"\\[a-zA-Z]+(\{[^}]*\})?", "", text)  # strip other macros
+        text = text.replace("{", "").replace("}", "")
+        for part in text.split(","):
+            term = part.strip().strip(":")
+            if term and len(term) < 60:
+                terms.append(term)
+    return terms
 
 
 # ---------------------------------------------------------------------------
@@ -668,6 +693,39 @@ class TailoringEngineV1:
 
         diff_log = diff_reporter.generate(tree, patched_bullets, kept_map, conf_map)
 
+        # ── Phase 15b: Related-keyword expansion ─────────────────────────────
+        # Closes the "candidate lists AWS, JD wants Azure" gap that
+        # keyword_coverage below can only measure, never fix. Zero LLM
+        # calls (static adjacency lookup); fails closed -- any addition
+        # whose target line can't be found in the actual skills text is
+        # dropped rather than risking a malformed .tex. See
+        # keyword_expansion.py for the adjacency rules and why this is
+        # deliberately conservative (never invents unrelated skills).
+        keyword_expansions: List[Dict[str, str]] = []
+        try:
+            skills_block = tree.skills_block
+            if skills_block and skills_block in tailored_tex:
+                candidate_skills = _extract_skill_terms(skills_block)
+                jd_required = [
+                    s.get("normalized_name") or s.get("name") or ""
+                    for s in (inp.jd_profile.get("required_skills") or [])
+                    if isinstance(s, dict)
+                ] or [s for s in (inp.jd_profile.get("required_skills") or []) if isinstance(s, str)]
+                candidate_additions = find_related_keywords(candidate_skills, jd_required)
+                if candidate_additions:
+                    new_skills_block, applied = apply_keyword_additions(skills_block, candidate_additions)
+                    if applied:
+                        tailored_tex = tailored_tex.replace(skills_block, new_skills_block, 1)
+                        keyword_expansions = [
+                            {"keyword": a.keyword, "because_of": a.because_of} for a in applied
+                        ]
+                        logger.info(
+                            "TailoringEngineV1: added %d related keyword(s) to skills section: %s",
+                            len(applied), keyword_expansions,
+                        )
+        except Exception as e:
+            logger.warning("TailoringEngineV1: keyword expansion skipped (%s)", e)
+
         # ── Compute keyword coverage & TailoringEffectivenessScore ──────────────
         keyword_coverage = self._compute_keyword_coverage(tailored_tex, inp.jd_profile)
         effectiveness = self._compute_effectiveness_score(diff_log, policy_report, keyword_coverage)
@@ -707,6 +765,7 @@ class TailoringEngineV1:
             policy_report=policy_report,
             effectiveness_score=effectiveness,
             keyword_coverage=keyword_coverage,
+            keyword_expansions=keyword_expansions,
             llm_calls_made=calls_made,
             version_metadata=VersionMetadata(
                 prompt_version=self.VERSION,

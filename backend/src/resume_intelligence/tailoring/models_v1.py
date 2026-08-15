@@ -447,6 +447,12 @@ class TailoringResult(BaseModel):
     keyword_coverage: float = 0.0
     """Fraction of jd_profile.ats_keywords present in tailored output, 0.0–1.0."""
 
+    keyword_expansions: List[Dict[str, str]] = Field(default_factory=list)
+    """Related-JD-keyword additions made to the skills section, e.g.
+    [{"keyword": "Azure", "because_of": "AWS EC2"}] -- see
+    keyword_expansion.py. Empty when no adjacent gap was found or the
+    candidate's skills section didn't match the expected line format."""
+
     llm_calls_made: int = 0
     """Bounded by MAX_SECTION_CALLS = 5."""
 
