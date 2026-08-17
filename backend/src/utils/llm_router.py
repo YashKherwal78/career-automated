@@ -160,7 +160,7 @@ class LLMRouter:
         raise Exception(f"All OpenRouter fallback models failed. Last error: {last_error}")
 
     def _call_groq(self, messages: List[Dict], temperature: float, response_format: Optional[Dict], intent: str = "utility"):
-        candidate_models = ["qwen/qwen3.6-27b", "openai/gpt-oss-120b", "groq/compound-mini"] if intent not in ("reasoning", "utility") else ["openai/gpt-oss-120b", "qwen/qwen3.6-27b"]
+        candidate_models = ["openai/gpt-oss-120b", "qwen/qwen3.6-27b", "groq/compound-mini"]
         last_exc = None
         for model_name in candidate_models:
             try:
