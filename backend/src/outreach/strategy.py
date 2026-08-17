@@ -45,7 +45,7 @@ def generate_email_strategy(groq_client: Groq, company_name: str, job_descriptio
     
     try:
         response = groq_client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model="qwen/qwen3.6-27b",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.2,
             response_format={"type": "json_object"}
