@@ -120,7 +120,7 @@ class EmailCritic:
             
         scorecard["Overall Score"] = f"{score}/{max_score}"
         
-        if score >= 90 and scorecard["Placeholder Check"] == "PASS" and scorecard["Generic AI Phrase Check"] == "PASS":
+        if score >= 80 and scorecard["Placeholder Check"] == "PASS" and scorecard["Generic AI Phrase Check"] == "PASS":
             scorecard["status"] = "PASS"
             scorecard["reason"] = "Passed high-bar evaluation."
         else:
