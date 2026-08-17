@@ -104,7 +104,8 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
     def is_already_contacted(self, email: str) -> bool:
         conn = sqlite3.connect(Config.DATABASE_PATH)
         cursor = conn.cursor()
-        cursor.execute("SELECT id FROM outreach_log WHERE email = ?", (email,))
+        clean_email = email.strip().lower()
+        cursor.execute("SELECT id FROM outreach_log WHERE LOWER(TRIM(email)) = ?", (clean_email,))
         row = cursor.fetchone()
         conn.close()
         return bool(row)
@@ -113,9 +114,9 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
         conn = sqlite3.connect(Config.DATABASE_PATH)
         cursor = conn.cursor()
         cursor.execute("""
-            INSERT INTO outreach_log (email, recruiter_name, company, role, subject, body, status)
+            INSERT OR REPLACE INTO outreach_log (email, recruiter_name, company, role, subject, body, status)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (email, name, company, role, subject, body, status))
+        """, (email.strip(), name, company, role, subject, body, status))
         conn.commit()
         conn.close()
 
