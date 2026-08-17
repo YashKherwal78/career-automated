@@ -157,12 +157,18 @@ export function JobDetailModal({
           )}
         </div>
         <div className="flex flex-col gap-1.5" style={{ marginTop: 20 }}>
-        <div className="flex gap-2.5">
+        {/* flex-wrap: on a phone-width modal, 4 fixed-padding buttons in a
+            single no-wrap row overflowed the card -- "Cover letter" was
+            entirely off-screen and unreachable, "Tailor for this role" was
+            text-clipped. Wrapping keeps every action reachable regardless
+            of viewport width instead of relying on undiscoverable
+            horizontal scroll. */}
+        <div className="flex flex-wrap gap-2.5">
           <button
             type="button"
             onClick={onToggleQueue}
             disabled={queued}
-            className="font-semibold transition-transform active:scale-[0.98]"
+            className="flex-shrink-0 font-semibold transition-transform active:scale-[0.98]"
             style={{
               padding: "13px 20px",
               borderRadius: "var(--ds-radius-md)",

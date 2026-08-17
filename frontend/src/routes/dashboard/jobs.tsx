@@ -247,7 +247,12 @@ function JobsPage() {
         </div>
       ) : (
         <div className="glass-card rounded-3xl p-6 border border-white/50 bg-white/40 shadow-sm">
-          <div className="overflow-x-auto">
+          {/* Desktop/tablet: full table. A 7-column table has no honest
+              mobile rendering (confirmed live: Resume Match + View Details
+              were pushed off the 390px viewport, discoverable only via an
+              unlabeled horizontal scroll) -- hidden below md, replaced by
+              the stacked cards underneath instead of trying to cram it in. */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-white/20 text-ink-soft">
@@ -306,6 +311,64 @@ function JobsPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile: stacked cards, same data/actions as the table above. */}
+          <div className="md:hidden flex flex-col gap-3">
+            {jobs.map((job) => (
+              <div key={job.job_id} className="rounded-2xl border border-white/50 bg-white/50 p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <CompanyLogo name={job.canonical_name} domain={job.company_domain} size={28} radius={7} fontSize={11} />
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-semibold text-ink text-xs">{job.canonical_name}</span>
+                        {JOB_BOARD_PROVIDERS.has((job.provider || "").toLowerCase()) && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100">EXTERNAL</span>
+                        )}
+                      </div>
+                      <div className="text-ink-soft text-xs font-medium mt-0.5">{job.title}</div>
+                    </div>
+                  </div>
+                  <div className="flex-shrink-0 text-right">
+                    <div className="font-semibold text-[color:var(--peach-deep)] text-xs">
+                      {job.intent_score != null
+                        ? `${Math.round(job.intent_score * 100)}%`
+                        : job.job_score
+                        ? `${job.job_score}%`
+                        : "—"}
+                    </div>
+                    <div className="text-[9px] text-ink-soft">match</div>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-ink-soft">
+                  <span>{job.location || "Remote"}</span>
+                  <span className="capitalize">{job.remote || "Onsite"}</span>
+                  <span>
+                    {job.salary_min && job.salary_max
+                      ? `₹${(job.salary_min / 100000).toFixed(1)}L - ₹${(job.salary_max / 100000).toFixed(1)}L`
+                      : "Competitive"}
+                  </span>
+                </div>
+
+                <div className="mt-3 flex items-center gap-1.5">
+                  {applyMode === "assisted" && job.apply_url && (
+                    <BackgroundApplyButton
+                      jobId={job.job_id}
+                      applyUrl={job.apply_url}
+                      hasExtension={!!hasExtension}
+                    />
+                  )}
+                  <Link
+                    to={`/dashboard/jobs/${job.job_id}`}
+                    className="btn-peach px-3 py-1.5 text-xs rounded-xl flex-1 text-center"
+                  >
+                    View Details
+                  </Link>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
