@@ -63,6 +63,18 @@ def _normalize_whitespace(text: str) -> str:
     return "\n\n".join(cleaned)
 
 
+# Same fallback chain LLMRouter (src/utils/llm_router.py) uses for Groq --
+# kept as a literal copy rather than an import for the same reason this
+# whole class is a separate copy (see docstring below). A single
+# hardcoded model with no fallback is exactly how this generator went
+# down in production: llama-3.3-70b-versatile got deprecated by Groq
+# (404), and separately, whichever model IS current can still hit Groq's
+# free-tier daily token cap mid-session (429) -- confirmed both, live,
+# the same night. Falling through this list turns either into "slightly
+# slower" instead of "cover letter generation is down".
+_FALLBACK_MODELS = ["openai/gpt-oss-120b", "qwen/qwen3.6-27b", "groq/compound-mini"]
+
+
 class _LLMCaller:
     """Same provider-agnostic Groq/OpenAI adapter pattern as the tailoring
     engine's LLMCaller — kept as a separate small copy rather than a shared
@@ -89,21 +101,35 @@ class _LLMCaller:
         if self._client is None:
             logger.warning("CoverLetterGenerator: LLM client unavailable for provider '%s'", self.provider)
             return None
-        try:
-            response = self._client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ],
-                temperature=0.4,
-                max_tokens=700,
-                response_format={"type": "json_object"},
-            )
-            return response.choices[0].message.content or None
-        except Exception as exc:
-            logger.error("CoverLetterGenerator LLM error (%s/%s): %s", self.provider, self.model, exc)
-            return None
+
+        # Requested model first, then the fallback chain (skipping the
+        # requested model if it's already in there, so a caller who passed
+        # a non-default model still gets the same resilience).
+        models_to_try = [self.model] + [m for m in _FALLBACK_MODELS if m != self.model]
+
+        last_exc: Optional[Exception] = None
+        for model in models_to_try:
+            try:
+                response = self._client.chat.completions.create(
+                    model=model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    temperature=0.4,
+                    max_tokens=700,
+                    response_format={"type": "json_object"},
+                )
+                return response.choices[0].message.content or None
+            except Exception as exc:
+                last_exc = exc
+                logger.warning(
+                    "CoverLetterGenerator LLM error (%s/%s), trying next fallback: %s",
+                    self.provider, model, exc,
+                )
+        if last_exc:
+            logger.error("CoverLetterGenerator: all models exhausted, provider='%s': %s", self.provider, last_exc)
+        return None
 
 
 _SYSTEM_PROMPT = """You write short, specific cover letters using the Problem-Solution format.

@@ -53,7 +53,11 @@ class TailorRequest(BaseModel):
     role_title: Optional[str] = None
     confidence_threshold: float = Field(default=0.70, ge=0.0, le=1.0)
     llm_provider: str = "groq"
-    llm_model: str = "llama-3.3-70b-versatile"
+    # llama-3.3-70b-versatile was deprecated/removed by Groq (confirmed
+    # live: 404 model_not_found) -- this default is explicitly passed
+    # through to TailoringInput below, so fixing models_v1.py's own
+    # default alone wasn't enough.
+    llm_model: str = "openai/gpt-oss-120b"
 
 
 class TailorResponse(BaseModel):

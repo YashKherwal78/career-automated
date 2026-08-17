@@ -115,6 +115,13 @@ class LLMCaller:
                 return None
         return None
 
+    # Same fallback chain LLMRouter (src/utils/llm_router.py) uses --
+    # confirmed live this same session: a hardcoded single Groq model with
+    # no fallback means a Groq-side deprecation (404) or the free-tier
+    # daily token cap (429) takes down tailoring entirely instead of just
+    # trying the next model.
+    _GROQ_FALLBACK_MODELS = ["openai/gpt-oss-120b", "qwen/qwen3.6-27b", "groq/compound-mini"]
+
     def call(self, prompt: str) -> str:
         if self._client is None:
             logger.warning("LLMCaller: provider '%s' client unavailable — returning empty response", self.provider)
@@ -122,23 +129,33 @@ class LLMCaller:
 
         try:
             if self.provider == "groq":
-                response = self._client.chat.completions.create(
-                    model=self.model,
-                    messages=[
-                        {
-                            "role": "system",
-                            "content": (
-                                "You are a precise resume editor. "
-                                "Return ONLY valid JSON. No markdown code blocks. No explanation."
-                            ),
-                        },
-                        {"role": "user", "content": prompt},
-                    ],
-                    temperature=0.2,
-                    max_tokens=2048,
-                    response_format={"type": "json_object"},
-                )
-                return response.choices[0].message.content or "{}"
+                models_to_try = [self.model] + [m for m in self._GROQ_FALLBACK_MODELS if m != self.model]
+                last_exc: Optional[Exception] = None
+                for model in models_to_try:
+                    try:
+                        response = self._client.chat.completions.create(
+                            model=model,
+                            messages=[
+                                {
+                                    "role": "system",
+                                    "content": (
+                                        "You are a precise resume editor. "
+                                        "Return ONLY valid JSON. No markdown code blocks. No explanation."
+                                    ),
+                                },
+                                {"role": "user", "content": prompt},
+                            ],
+                            temperature=0.2,
+                            max_tokens=2048,
+                            response_format={"type": "json_object"},
+                        )
+                        return response.choices[0].message.content or "{}"
+                    except Exception as exc:
+                        last_exc = exc
+                        logger.warning("LLMCaller error (groq/%s), trying next fallback: %s", model, exc)
+                if last_exc:
+                    raise last_exc
+                return "{}"
             elif self.provider == "openai":
                 response = self._client.chat.completions.create(
                     model=self.model,

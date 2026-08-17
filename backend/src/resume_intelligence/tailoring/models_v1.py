@@ -141,7 +141,9 @@ class TailoringInput(BaseModel):
 
     confidence_threshold: float = DEFAULT_CONFIDENCE_THRESHOLD
     llm_provider: str = "groq"
-    llm_model: str = "llama-3.3-70b-versatile"
+    # See cover_letter/models.py's identical fix -- llama-3.3-70b-versatile
+    # was deprecated/removed by Groq (confirmed live: 404 model_not_found).
+    llm_model: str = "openai/gpt-oss-120b"
     job_id: str = ""
     mutation_budget: MutationBudget = Field(default_factory=MutationBudget)
 

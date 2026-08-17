@@ -43,7 +43,12 @@ class CoverLetterInput(BaseModel):
 
     max_words: int = DEFAULT_MAX_WORDS
     llm_provider: str = "groq"
-    llm_model: str = "llama-3.3-70b-versatile"
+    # llama-3.3-70b-versatile was deprecated/removed by Groq (confirmed
+    # live: 404 model_not_found) -- matches LLMRouter's current primary
+    # candidate (llm_router.py's candidate_models[0]), which this
+    # generator doesn't route through (deliberately separate client, see
+    # generator.py's docstring) so it never picked up that fix.
+    llm_model: str = "openai/gpt-oss-120b"
 
 
 class CoverLetterResult(BaseModel):
