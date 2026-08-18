@@ -343,6 +343,17 @@ class ZohoRecruitSignature(ATSDetector):
     def get_reason(self) -> str:
         return "Matched Zoho Recruit domain or HTML signature"
 
+class GoogleFormsSignature(ATSDetector):
+    @property
+    def provider_id(self) -> str:
+        return 'google_forms'
+
+    def detect(self, url: str, response: Response) -> bool:
+        return "forms.gle/" in url or "docs.google.com/forms/" in url
+
+    def extract_canonical_url(self, url: str, response: Response) -> str:
+        return url
+
 class DetectorRegistry:
     """Central registry of ATS detectors."""
     _detectors = [
@@ -361,7 +372,8 @@ class DetectorRegistry:
         DarwinboxSignature(),
         FreshteamSignature(),
         KekaSignature(),
-        ZohoRecruitSignature()
+        ZohoRecruitSignature(),
+        GoogleFormsSignature()
     ]
     
     @classmethod
