@@ -176,3 +176,38 @@ class LLMRouter:
                 last_exc = e
                 logger.info(f"[LLMRouter] Groq model {model_name} failed: {e}. Trying next candidate...")
         raise last_exc or Exception("All Groq candidate models failed.")
+
+    def chat_completion_vision(self, image_bytes: bytes, mime_type: str, prompt: str, response_format: Optional[Dict] = None) -> FakeResponse:
+        """Gemini-only — the only client wired into this router with a
+        multimodal API. Raises if Gemini isn't configured; callers must
+        handle that (there is no cross-provider vision fallback here)."""
+        if not self.gemini_client:
+            raise Exception("Gemini client not initialized — chat_completion_vision requires GEMINI_API_KEY.")
+
+        mime_out = "text/plain"
+        if response_format and response_format.get("type") == "json_object":
+            mime_out = "application/json"
+
+        config = genai_types.GenerateContentConfig(
+            temperature=0.1,
+            response_mime_type=mime_out,
+        )
+
+        model_name = "gemini-2.0-flash"
+        start_time = time.time()
+        response = self.gemini_client.models.generate_content(
+            model=model_name,
+            contents=[
+                genai_types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
+                prompt,
+            ],
+            config=config,
+        )
+        latency = time.time() - start_time
+
+        tokens = 0
+        if hasattr(response, "usage_metadata") and response.usage_metadata:
+            tokens = response.usage_metadata.total_token_count
+
+        log_llm_usage("vision_extraction", "gemini", model_name, tokens, latency, 0)
+        return FakeResponse(response.text, tokens)
