@@ -208,10 +208,12 @@ function NavIcon({ name, active, pressed }: { name: string; active: boolean; pre
     );
   }
   if (name === "Outreach") {
-    // Simple envelope: rectangle + a "V" fold line, flap lifts slightly on press.
+    // Envelope: outlined rectangle + a thin "V" fold line (two angled bars
+    // meeting at bottom-center), matching the outline style of the other
+    // nav icons instead of a solid filled flap.
     return (
       <div
-        className="relative rounded-[2px]"
+        className="relative rounded-[2px] overflow-hidden"
         style={{
           width: 16,
           height: 12,
@@ -223,23 +225,34 @@ function NavIcon({ name, active, pressed }: { name: string; active: boolean; pre
         <div
           className="absolute"
           style={{
-            top: pressed ? -1 : 0,
-            left: 0,
-            width: 0,
-            height: 0,
-            borderLeft: "8px solid transparent",
-            borderRight: "8px solid transparent",
-            borderTop: `6px solid ${color}`,
-            transition: "top 160ms cubic-bezier(0.4,0,0.2,1)",
+            top: -1,
+            left: -1,
+            width: 9,
+            height: 1.6,
+            background: color,
+            transformOrigin: "left top",
+            transform: "rotate(37deg)",
+          }}
+        />
+        <div
+          className="absolute"
+          style={{
+            top: -1,
+            right: -1,
+            width: 9,
+            height: 1.6,
+            background: color,
+            transformOrigin: "right top",
+            transform: "rotate(-37deg)",
           }}
         />
       </div>
     );
   }
-  // Settings gear
+  // Settings gear — real cog silhouette (Material Design "settings" path,
+  // Apache-2.0) instead of a radial starburst, which read as a sun/flower.
   return (
     <div
-      className="relative"
       style={{
         width: 20,
         height: 20,
@@ -247,42 +260,13 @@ function NavIcon({ name, active, pressed }: { name: string; active: boolean; pre
         transition: "transform 220ms cubic-bezier(0.4,0,0.2,1)",
       }}
     >
-      {[0, 60, 120, 180, 240, 300].map((deg) => (
-        <div
-          key={deg}
-          className="absolute rounded-[1px]"
-          style={{
-            top: "50%",
-            left: "50%",
-            width: 3.5,
-            height: 5,
-            background: color,
-            transform: `translate(-50%,-50%) rotate(${deg}deg) translateY(-9px)`,
-          }}
+      <svg width="20" height="20" viewBox="0 0 24 24" fill={color}>
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M19.14,12.94c0.04,-0.3,0.06,-0.61,0.06,-0.94c0,-0.32,-0.02,-0.64,-0.07,-0.94l2.03,-1.58c0.18,-0.14,0.23,-0.41,0.12,-0.61l-1.92,-3.32c-0.12,-0.22,-0.37,-0.29,-0.59,-0.22l-2.39,0.96c-0.5,-0.38,-1.03,-0.7,-1.62,-0.94L14.4,2.81c-0.04,-0.24,-0.24,-0.41,-0.48,-0.41h-3.84c-0.24,0,-0.43,0.17,-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22,-0.08,-0.47,0,-0.59,0.22L2.74,8.87C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58c-0.18,0.14,-0.23,0.41,-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39,-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44,-0.17,0.47,-0.41l0.36,-2.54c0.59,-0.24,1.13,-0.56,1.62,-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59,-0.22l1.92,-3.32c0.12,-0.22,0.07,-0.47,-0.12,-0.61L19.14,12.94zM12,15.6c-1.98,0,-3.6,-1.62,-3.6,-3.6s1.62,-3.6,3.6,-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"
         />
-      ))}
-      <div
-        className="absolute rounded-full box-border"
-        style={{
-          top: "50%",
-          left: "50%",
-          width: 12,
-          height: 12,
-          margin: "-6px 0 0 -6px",
-          border: `2.5px solid ${color}`,
-        }}
-      />
-      <div
-        className="absolute rounded-full"
-        style={{
-          top: "50%",
-          left: "50%",
-          width: 3,
-          height: 3,
-          margin: "-1.5px 0 0 -1.5px",
-          background: color,
-        }}
-      />
+      </svg>
     </div>
   );
 }

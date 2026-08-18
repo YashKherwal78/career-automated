@@ -195,7 +195,10 @@ function ResumeTailorPage() {
         >
           Tailoring
         </div>
-        <div className="flex items-start justify-between" style={{ marginBottom: 20 }}>
+        <div
+          className="flex flex-col sm:flex-row sm:items-start sm:justify-between"
+          style={{ marginBottom: 20, gap: 8 }}
+        >
           <h1
             className="font-[var(--ds-font-display)] font-semibold"
             style={{ fontSize: "clamp(26px,3vw,34px)", margin: 0, maxWidth: 440 }}
