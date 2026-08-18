@@ -1169,6 +1169,27 @@ def test_get_submit_button_locator_finds_submit_span():
     handler._get_submit_button_locator()
 
     page.get_by_role.assert_called_with("button", name="Submit")
+
+
+def test_extract_questions_tags_file_upload_items_instead_of_input():
+    page = MagicMock()
+    item = MagicMock()
+    item.locator.return_value.first.text_content.return_value = "Attach your resume"
+    item.get_by_role.side_effect = lambda role, **kwargs: (
+        MagicMock(count=MagicMock(return_value=1)) if role == "button" else MagicMock(all=MagicMock(return_value=[]))
+    )
+    page.locator.return_value.all.return_value = [item]
+
+    handler = GoogleFormsHandler(
+        page=page, job_title="Backend Engineer", company_name="Acme", location="Remote",
+        resume_path="/tmp/resume.pdf", test_mode=True, execution_dir="/tmp/exec",
+        profile_manager=MagicMock(), rag_client=MagicMock(), llm_client=MagicMock(),
+    )
+    handler.active_context = page
+
+    questions = handler._extract_questions()
+
+    assert questions[0]["widget_type"] == "file_upload"
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -1180,6 +1201,8 @@ Expected: FAIL with `ModuleNotFoundError: No module named 'src.applications.hand
 
 ```python
 # backend/src/applications/handlers/google_forms.py
+import re
+
 from src.applications.handlers.base_handler import BaseATSHandler
 from src.system.logger import setup_logger
 
@@ -1245,15 +1268,30 @@ class GoogleFormsHandler(BaseATSHandler):
 
             widget_type = "input"
             options = []
-            for role, mapped in _WIDGET_TYPE_BY_ROLE.items():
-                role_items = item.get_by_role(role).all()
-                if role_items:
-                    widget_type = mapped
-                    options = [el.get_attribute("aria-label") or el.text_content() or "" for el in role_items]
-                    break
+            if item.get_by_role("button", name=re.compile("add file", re.I)).count() > 0:
+                # Google Forms' native file-upload question opens a real
+                # Google Drive picker dialog -- not something this handler
+                # can drive (no Drive auth context, no stable DOM to
+                # automate against). Tagging it "file_upload" rather than
+                # letting it fall through to "input" matters: "input" would
+                # have QuestionEngine type a text answer into what's
+                # actually an upload button, silently mis-answering instead
+                # of failing safely. _interact_widget (base_handler.py) has
+                # no case for "file_upload", so it naturally no-ops via
+                # _interact_custom_dropdown's default False return --
+                # required file-upload questions surface as a missing
+                # field (REVIEW_REQUIRED) instead of a fabricated answer.
+                widget_type = "file_upload"
             else:
-                if item.locator("textarea").count() > 0:
-                    widget_type = "textarea"
+                for role, mapped in _WIDGET_TYPE_BY_ROLE.items():
+                    role_items = item.get_by_role(role).all()
+                    if role_items:
+                        widget_type = mapped
+                        options = [el.get_attribute("aria-label") or el.text_content() or "" for el in role_items]
+                        break
+                else:
+                    if item.locator("textarea").count() > 0:
+                        widget_type = "textarea"
 
             questions.append({
                 "container": item,
@@ -1338,7 +1376,7 @@ class GoogleFormsAdapter(BaseAdapter):
 - [ ] **Step 5: Run test to verify it passes**
 
 Run: `cd backend && python -m pytest tests/test_google_forms_handler.py -v`
-Expected: PASS (2 passed)
+Expected: PASS (3 passed)
 
 - [ ] **Step 6: Register in the dispatcher**
 
