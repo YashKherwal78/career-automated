@@ -101,6 +101,28 @@ function CareerProfilePage() {
   const [showReplaceModal, setShowReplaceModal] = useState(false);
   const [replaceState, setReplaceState] = useState<"idle" | "uploading" | "error">("idle");
   const [replaceError, setReplaceError] = useState<string | null>(null);
+  const [viewingResume, setViewingResume] = useState(false);
+  const [viewResumeError, setViewResumeError] = useState<string | null>(null);
+
+  const viewBaseResumePdf = async () => {
+    setViewingResume(true);
+    setViewResumeError(null);
+    try {
+      const res = await fetch(`${API_BASE}/candidate/base-resume/pdf`, {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (!res.ok) throw new Error("Failed to load resume PDF");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (err) {
+      console.error("Base resume PDF view failed:", err);
+      setViewResumeError("Couldn't open the resume. Please try again.");
+    } finally {
+      setViewingResume(false);
+    }
+  };
 
   const { data: baseResume } = useQuery({
     queryKey: ["base-resume"],
@@ -399,18 +421,26 @@ function CareerProfilePage() {
           </div>
           <div className="flex items-center gap-3">
             {baseResume?.pdfAvailable && (
-              <a
-                href={`${API_BASE}/candidate/base-resume/pdf`}
-                target="_blank"
-                rel="noreferrer"
+              <button
+                type="button"
+                onClick={viewBaseResumePdf}
+                disabled={viewingResume}
                 style={{
                   fontSize: 13,
                   fontWeight: 600,
                   color: "var(--ds-ink-700)",
+                  background: "none",
+                  border: "none",
+                  padding: 0,
+                  cursor: viewingResume ? "default" : "pointer",
+                  opacity: viewingResume ? 0.6 : 1,
                 }}
               >
-                View resume
-              </a>
+                {viewingResume ? "Opening…" : "View resume"}
+              </button>
+            )}
+            {viewResumeError && (
+              <div style={{ fontSize: 12, color: "var(--ds-error, #c0392b)" }}>{viewResumeError}</div>
             )}
             <button
               type="button"
