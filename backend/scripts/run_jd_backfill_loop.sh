@@ -4,7 +4,10 @@
 # cap on iterations is hit. Meant to run unattended via nohup on the VM.
 set -uo pipefail
 
-PROVIDERS=(workday smartrecruiters icims oracle jazzhr phenom eightfold avature)
+# phenom/eightfold/avature deliberately excluded: dry-run tested at <10%
+# real hit rate (per-tenant HTML/JSON-LD structure varies too much for a
+# single selector, and combined volume is small -- 1.5K/298/14K jobs).
+PROVIDERS=(workday smartrecruiters icims oracle jazzhr)
 BATCH=500
 MAX_ITERS=2000
 LOG=/app/jd_backfill.log
