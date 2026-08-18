@@ -13,7 +13,7 @@ from src.applications.apply_service import apply_to_job
 from src.applications.batch_apply import get_candidate_jobs, get_status, run_batch
 from src.applications.profile import ProfileManager
 from src.applications.question_engine import QuestionEngine
-from src.applications.rag import RAGClient
+from src.applications.rag import get_rag_client
 from src.applications.resume_selector import ResumeSelector
 from src.referrals.apply_integration import find_and_draft_referral
 from src.referrals.hr_pitch_integration import find_and_draft_hr_pitch
@@ -238,7 +238,7 @@ def autofill_answers(
     """
     engine = QuestionEngine(
         profile_manager=ProfileManager(user_id=current_user.user_id),
-        rag_client=RAGClient(),
+        rag_client=get_rag_client(user_id=current_user.user_id),
         llm_client=LLMRouter(),
         company_context=body.company_name,
         job_title=body.job_title,

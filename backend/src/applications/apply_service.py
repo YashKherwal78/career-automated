@@ -14,7 +14,7 @@ from src.system.logger import setup_logger
 from src.applications.dispatcher import ApplicationDispatcher
 from src.applications.adapters.base_adapter import ApplicationResult
 from src.applications.profile import ProfileManager
-from src.applications.rag import RAGClient
+from src.applications.rag import get_rag_client
 from src.applications.resume_selector import ResumeSelector
 from src.utils.llm_router import LLMRouter
 
@@ -57,7 +57,7 @@ def apply_to_job(job_row: Dict[str, Any], test_mode: bool = True, user_id: Optio
     resume_path, _role_family = ResumeSelector().get_resume(mapped_job, user_id=user_id)
 
     profile_manager = ProfileManager(user_id=user_id)
-    rag_client = RAGClient()
+    rag_client = get_rag_client(user_id=user_id)
     llm_router = LLMRouter()
 
     dispatcher = ApplicationDispatcher(

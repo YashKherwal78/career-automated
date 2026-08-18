@@ -62,7 +62,8 @@ def _cosine(a, b) -> float:
 
 
 class RAGClient:
-    def __init__(self):
+    def __init__(self, user_id: str = None):
+        self.user_id = user_id
         self.chunks = []
         self.tokenized_corpus = []
         self.bm25 = None
@@ -73,10 +74,134 @@ class RAGClient:
         # every edge is a literal substring match against text that also
         # backs a retrievable chunk. See _build_entity_graph.
         self.entity_to_chunks: dict[str, set[int]] = {}
+        self._explicit_entities: set[str] = None
 
-        self._load_and_chunk_from_master()
-        self._build_entity_graph()
+        if user_id:
+            # Every real call site used to construct RAGClient() with no
+            # user context at all -- meaning question_engine.py answered
+            # every applicant's essay questions (e.g. "tell me about a
+            # challenging project") from the product owner's own hardcoded
+            # yash_master_profile.md, submitted as first-person narrative
+            # under whichever user's name was actually applying. Same class
+            # of bug as ProfileManager's hardcoded identity, but for
+            # narrative content instead of contact fields -- and arguably
+            # worse, since it's fabricated first-person claims sent to a
+            # real employer under the wrong person's name.
+            self._load_and_chunk_from_profile_data(user_id)
+            self._build_entity_graph_from_skills()
+        else:
+            # Legacy path -- unchanged, still backs any call site not yet
+            # passing a user_id (there shouldn't be any live ones left; see
+            # the factory function get_rag_client() below for the
+            # cached/per-user entry point every real call site now uses).
+            self._load_and_chunk_from_master()
+            self._build_entity_graph()
+
         self._embed_chunks()
+
+    def _load_and_chunk_from_profile_data(self, user_id: str):
+        """Builds the retrievable corpus from the real, current
+        user_career_profiles.profile_data for this specific user -- same
+        source and extraction shape src/referrals/hr_referral_pitch.py's
+        _load_profile_facts already reads for outreach emails, so a
+        candidate's real achievements ground both systems consistently."""
+        try:
+            from src.api.db import get_connection
+            import json as _json
+            with get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT profile_data FROM public.user_career_profiles WHERE user_id = %s LIMIT 1",
+                    (user_id,),
+                )
+                row = cursor.fetchone()
+            if not row:
+                logger.info(f"RAGClient: no profile_data for user_id={user_id} -- empty corpus.")
+                return
+            profile_data = row["profile_data"] if hasattr(row, "keys") else row[0]
+            if not profile_data:
+                return
+            profile = _json.loads(profile_data) if isinstance(profile_data, str) else profile_data
+        except Exception as e:
+            logger.warning(f"RAGClient: profile_data load failed for user_id={user_id}: {e}")
+            return
+
+        self._profile = profile
+
+        for exp in (profile.get("experience") or []):
+            role = exp.get("role") or exp.get("title") or ""
+            company = exp.get("company") or ""
+            header = f"### Experience: {role} at {company}".strip()
+            bullets = [b for b in (exp.get("bullet_points") or []) if b]
+            bullets += [a for a in (exp.get("achievements") or []) if a]
+            if bullets:
+                self._add_chunk("internship", header + "\n" + "\n".join(f"- {b}" for b in bullets))
+
+        for proj in (profile.get("projects") or []):
+            name = proj.get("name") or ""
+            header = f"### Project: {name}".strip()
+            body_parts = []
+            if proj.get("description"):
+                body_parts.append(proj["description"])
+            body_parts += [b for b in (proj.get("bullet_points") or []) if b]
+            skills_used = proj.get("skills_demonstrated") or []
+            if skills_used:
+                body_parts.append("Stack: " + ", ".join(skills_used))
+            if body_parts:
+                self._add_chunk("project", header + "\n" + "\n".join(f"- {b}" for b in body_parts))
+
+        summary = profile.get("summary")
+        if summary:
+            self._add_chunk("skill", "### Summary\n" + summary)
+
+        skills = profile.get("skills") or {}
+        skill_lines = [
+            f"{cat.replace('_', ' ').title()}: " + ", ".join(items)
+            for cat, items in skills.items()
+            if isinstance(items, list) and items
+        ]
+        if skill_lines:
+            self._add_chunk("skill", "### Skills\n" + "\n".join(skill_lines))
+
+        achievements = [a for a in (profile.get("achievements") or []) if isinstance(a, str) and a]
+        if achievements:
+            self._add_chunk("behavioral", "### Achievements\n" + "\n".join(f"- {a}" for a in achievements))
+
+        if self.tokenized_corpus:
+            self.bm25 = BM25Okapi(self.tokenized_corpus)
+            logger.info(f"RAGClient: Initialised with {len(self.chunks)} chunks from real profile_data (user_id={user_id}).")
+
+    def _build_entity_graph_from_skills(self):
+        """Same purpose as _build_entity_graph (multi-hop recall: a query
+        mentioning one skill surfaces every chunk that mentions it, not just
+        whichever chunk BM25/embedding ranked highest alone) -- but sourced
+        from profile_data.skills' clean, structured lists instead of regex
+        over markdown formatting conventions that only exist in the one
+        static file. Structured source, so this is if anything more
+        reliable than the markdown-regex version, not a reduced substitute."""
+        profile = getattr(self, "_profile", None)
+        if not profile or not self.chunks:
+            return
+        skills = profile.get("skills") or {}
+        entities: set[str] = set()
+        for items in skills.values():
+            if isinstance(items, list):
+                for term in items:
+                    if isinstance(term, str) and 2 <= len(term) <= 40:
+                        entities.add(term)
+
+        for entity in entities:
+            entity_lower = entity.lower()
+            if len(entity_lower) < 3:
+                continue
+            matches = {
+                idx for idx, chunk in enumerate(self.chunks)
+                if entity_lower in chunk["text"].lower()
+            }
+            if matches:
+                self.entity_to_chunks[entity_lower] = matches
+
+        logger.info(f"RAGClient: Built entity graph with {len(self.entity_to_chunks)} linked terms (from profile_data.skills).")
 
     def _extract_between(self, text, start, end):
         try:
@@ -313,3 +438,51 @@ class RAGClient:
 
         scored.sort(key=lambda x: x["confidence"], reverse=True)
         return scored[:top_k_final]
+
+
+# ---------------------------------------------------------------------------
+# Cached factory -- every real call site used to write `RAGClient()` fresh,
+# which re-reads the source, re-chunks it, and (the expensive part) re-runs
+# the local ONNX embedding model over every chunk, on every single call.
+# Confirmed real waste, not hypothetical: a batch-apply run over N jobs
+# constructs one RAGClient per job for question-answering, so a 20-job batch
+# re-embedded the same ~10-30 chunks 20 times over for no reason -- the
+# candidate's profile doesn't change mid-batch. Callers should use
+# get_rag_client(user_id) instead of constructing RAGClient directly.
+# ---------------------------------------------------------------------------
+import time as _time
+import threading as _threading
+
+_RAG_CACHE: dict = {}
+_RAG_CACHE_LOCK = _threading.Lock()
+_RAG_CACHE_TTL_SECONDS = 600  # long enough to cover one batch-apply run's
+# duration (jobs are dispatched with an 8s delay_seconds between each, per
+# batch_apply.py -- a 20-job batch takes ~3min, well under this), short
+# enough that a profile edited mid-session is picked up on the next request
+# after it, not stale for the rest of the day.
+_RAG_CACHE_MAX_ENTRIES = 200  # simple cap against unbounded growth; evicts
+# the oldest entry rather than tracking real LRU order, since a client that
+# just expired naturally is the common case anyway, not an edge case worth
+# a heavier data structure for.
+
+
+def get_rag_client(user_id: str = None) -> "RAGClient":
+    """Cached, per-user RAGClient. Pass user_id for every real request --
+    None only exists for the legacy static-file path (see RAGClient.__init__),
+    which no live call site should still be using."""
+    key = user_id or "__legacy__"
+    now = _time.time()
+    with _RAG_CACHE_LOCK:
+        cached = _RAG_CACHE.get(key)
+        if cached and (now - cached[0]) < _RAG_CACHE_TTL_SECONDS:
+            return cached[1]
+
+    client = RAGClient(user_id=user_id)
+
+    with _RAG_CACHE_LOCK:
+        if len(_RAG_CACHE) >= _RAG_CACHE_MAX_ENTRIES and key not in _RAG_CACHE:
+            oldest_key = min(_RAG_CACHE, key=lambda k: _RAG_CACHE[k][0])
+            _RAG_CACHE.pop(oldest_key, None)
+        _RAG_CACHE[key] = (now, client)
+
+    return client

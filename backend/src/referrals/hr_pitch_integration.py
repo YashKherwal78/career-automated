@@ -14,7 +14,7 @@ system, stored in two separate tables).
 from src.system.logger import setup_logger
 from src.api.db import get_connection, is_postgres
 from src.applications.profile import ProfileManager
-from src.applications.rag import RAGClient
+from src.applications.rag import get_rag_client
 from src.utils.llm_router import LLMRouter
 from src.outreach.email_client import EmailClient
 from src.referrals.pipeline import run_referral_engine
@@ -66,7 +66,7 @@ def find_and_draft_hr_pitch(
             job_title=job_title,
             company_name=company_name,
             profile_manager=ProfileManager(user_id=user_id),
-            rag_client=RAGClient(),
+            rag_client=get_rag_client(user_id=user_id),
             llm_client=LLMRouter(),
             apply_url=apply_url,
             user_id=user_id,
