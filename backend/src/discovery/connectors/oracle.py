@@ -6,6 +6,7 @@ from src.discovery.registry.connector import Connector, FreshnessStrategy, Defau
 from src.discovery.pipeline.http_client import HttpClient
 from src.discovery.registry.connector_registry import ConnectorRegistry
 from src.discovery.html_text import strip_html
+from src.discovery.detail_fetch import DetailFetchThrottle, get_cached_description, cache_description
 
 logger = logging.getLogger("OracleJSONConnector")
 
@@ -35,6 +36,56 @@ class OracleJSONConnector(Connector):
                 return parts[idx + 1]
         return None
 
+    async def _fetch_description(
+        self, base_url: str, req_id: str, site_number: str, http_client: HttpClient, throttle: DetailFetchThrottle
+    ) -> Optional[str]:
+        """
+        The list endpoint (recruitingCEJobRequisitions) only returns
+        ShortDescriptionStr -- a short marketing blurb, not the real JD
+        (verified live: 711+847+1147 chars of real description/
+        responsibilities/qualifications exist but aren't in the list
+        response). The full text lives behind a second GET to
+        recruitingCEJobRequisitionDetails with expand=all (the narrower
+        expand values Oracle's own docs suggest, e.g.
+        expand=requisitionList, 400 on a live tenant -- only expand=all
+        or no expand param works).
+        """
+        if not req_id:
+            return None
+
+        cache_key = f"{site_number}:{req_id}"
+        cached = get_cached_description("oracle", cache_key)
+        if cached is not None:
+            return cached
+
+        await throttle.wait()
+        detail_url = (
+            f"{base_url}/hcmRestApi/resources/latest/recruitingCEJobRequisitionDetails"
+            f"?expand=all&finder=ById;Id=%22{req_id}%22,siteNumber={site_number}&onlyData=true"
+        )
+        try:
+            result = await http_client.fetch("GET", detail_url, headers={"Accept": "application/json"})
+        except Exception as e:
+            logger.debug("OracleJSONConnector: detail fetch failed for %s: %s", req_id, e)
+            return None
+
+        if result.status_code != 200 or not isinstance(result.payload, dict):
+            return None
+
+        items = result.payload.get("items") or []
+        item = items[0] if items else {}
+        if not isinstance(item, dict):
+            return None
+
+        parts = [
+            item.get("ExternalDescriptionStr") or "",
+            item.get("ExternalResponsibilitiesStr") or "",
+            item.get("ExternalQualificationsStr") or "",
+        ]
+        description = strip_html(" ".join(p for p in parts if p))
+        cache_description("oracle", cache_key, description)
+        return description
+
     async def sync(self, board: Board, http_client: HttpClient) -> AsyncIterator[RawJob | FetchResult]:
         """
         Oracle HCM's REST resource is recruitingCEJobRequisitions (NOT
@@ -48,6 +99,7 @@ class OracleJSONConnector(Connector):
         parsed = urlparse(board.endpoint)
         base_url = f"{parsed.scheme}://{parsed.netloc}"
         site_number = self._extract_site_number(board.endpoint) or "CX"
+        throttle = DetailFetchThrottle(requests_per_second=5.0)
 
         limit = 25
         offset = 0
@@ -92,13 +144,18 @@ class OracleJSONConnector(Connector):
                 seen.add(req_id)
                 page_count += 1
 
+                full_description = await self._fetch_description(
+                    base_url, req_id, site_number, http_client, throttle
+                )
+                description = full_description or strip_html(req.get("ShortDescriptionStr") or "")
+
                 payload = {
                     "id": req_id,
                     "title": req.get("Title") or "",
                     "location": req.get("PrimaryLocation") or "",
                     "department": req.get("Organization") or req.get("JobFamily") or "",
                     "employment_type": req.get("WorkplaceType") or "",
-                    "description": strip_html(req.get("ShortDescriptionStr") or ""),
+                    "description": description,
                     "posted_date": req.get("PostedDate") or "",
                     "url": f"{base_url}/hcmUI/CandidateExperience/en/sites/{site_number}/job/{req_id}",
                 }

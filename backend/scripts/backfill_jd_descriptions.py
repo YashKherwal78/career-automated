@@ -18,12 +18,28 @@ the exact same detail-fetch logic the live crawler would have used --
 same URL construction, same Redis cache, same throttle -- just without going
 through sync()/should_sync().
 
-For iCIMS, `apply_url` IS the job detail page URL and is passed straight
-through.
+For iCIMS/JazzHR/Phenom/Eightfold/Avature, `apply_url` IS (or resolves
+directly to) the job detail page URL and is passed straight through, with
+the job id read from `raw_payload["id"]`.
 For Workday/SmartRecruiters, the tenant/site/company slug + job id are
 derived from `apply_url` (verified against real rows: Workday's apply_url is
 https://{tenant}.wd{n}.myworkdayjobs.com/{locale}/{site}/job/..., and
 SmartRecruiters' is https://jobs.smartrecruiters.com/{slug}/{id}).
+
+Oracle is a genuinely NEW fetch (its connector never had one before this
+session): the list endpoint only returns a short marketing blurb
+(ShortDescriptionStr), the real JD lives behind
+recruitingCEJobRequisitionDetails?expand=all, keyed by requisition id +
+site number (both derivable from apply_url, which is
+{base}/hcmUI/CandidateExperience/en/sites/{site}/job/{req_id}).
+
+Same class of fix still needed but NOT covered by this script (re-fetching
+the board's *list* endpoint, not a per-job detail page, so the fix is a
+different shape per provider): BambooHR, Rippling, Personio, Pinpoint,
+Recruiterbox, join_com, SuccessFactors. Their connectors already read
+description correctly (commits 5affe1c / 5f57e69 / 75222fc) -- it's the
+same stale-pre-fix-rows problem as everything above, just needs a
+list-refetch backfill rather than a detail-fetch backfill.
 
 On a successful fetch, this also clears embedding/jd_profile/jd_hash so the
 existing EmbeddingBackfillWorker (src/workers/embedding_backfill_worker.py)
@@ -34,6 +50,11 @@ Usage:
     python3 scripts/backfill_jd_descriptions.py --provider workday --limit 500
     python3 scripts/backfill_jd_descriptions.py --provider smartrecruiters --limit 500
     python3 scripts/backfill_jd_descriptions.py --provider icims --limit 500
+    python3 scripts/backfill_jd_descriptions.py --provider oracle --limit 500
+    python3 scripts/backfill_jd_descriptions.py --provider jazzhr --limit 500
+    python3 scripts/backfill_jd_descriptions.py --provider phenom --limit 500
+    python3 scripts/backfill_jd_descriptions.py --provider eightfold --limit 500
+    python3 scripts/backfill_jd_descriptions.py --provider avature --limit 500
     python3 scripts/backfill_jd_descriptions.py --provider workday --limit 50 --dry-run
 """
 import argparse
@@ -50,8 +71,14 @@ from src.discovery.detail_fetch import DetailFetchThrottle  # noqa: E402
 from src.discovery.connectors.workday import WorkdayConnector  # noqa: E402
 from src.discovery.connectors.smartrecruiters import SmartRecruitersConnector  # noqa: E402
 from src.discovery.connectors.icims import iCIMSConnector  # noqa: E402
+from src.discovery.connectors.oracle import OracleJSONConnector  # noqa: E402
+from src.discovery.connectors.jazzhr import JazzHRConnector  # noqa: E402
+from src.discovery.connectors.phenom import PhenomConnector  # noqa: E402
+from src.discovery.connectors.eightfold import EightfoldConnector  # noqa: E402
+from src.discovery.connectors.avature import AvatureConnector  # noqa: E402
 
 CONCURRENCY = 8
+_JOB_URL_ID_HEADERS = {"User-Agent": "Mozilla/5.0"}
 
 
 def _workday_targets(apply_url: str, raw_payload: dict) -> tuple[str, str] | None:
@@ -81,6 +108,30 @@ def _smartrecruiters_targets(apply_url: str, raw_payload: dict) -> tuple[str, st
     return path_segments[0], job_id
 
 
+def _oracle_targets(apply_url: str, raw_payload: dict) -> tuple[str, str, str] | None:
+    """Returns (base_url, req_id, site_number) from
+    {base}/hcmUI/CandidateExperience/en/sites/{site}/job/{req_id}."""
+    req_id = str(raw_payload.get("id") or "")
+    parts = urlsplit(apply_url)
+    path_segments = [p for p in parts.path.split("/") if p]
+    if not req_id or "sites" not in path_segments or not parts.netloc:
+        return None
+    idx = path_segments.index("sites")
+    if idx + 1 >= len(path_segments):
+        return None
+    site_number = path_segments[idx + 1]
+    return f"{parts.scheme}://{parts.netloc}", req_id, site_number
+
+
+def _job_url_id_targets(apply_url: str, raw_payload: dict) -> tuple[str, str] | None:
+    """For connectors whose _fetch_description just needs (job_url, ats_id):
+    JazzHR, Phenom, Eightfold."""
+    job_id = str(raw_payload.get("id") or "")
+    if not apply_url or not job_id:
+        return None
+    return apply_url, job_id
+
+
 async def _fetch_one(provider: str, connector, http_client, throttle, apply_url: str, raw_payload: dict):
     """Returns (description_or_none, url_derived: bool) -- url_derived
     distinguishes "couldn't build a detail URL from this row at all" from
@@ -102,6 +153,28 @@ async def _fetch_one(provider: str, connector, http_client, throttle, apply_url:
         if not apply_url:
             return None, False
         return await connector._fetch_description(apply_url, http_client, throttle), True
+    if provider == "oracle":
+        targets = _oracle_targets(apply_url, raw_payload)
+        if not targets:
+            return None, False
+        base_url, req_id, site_number = targets
+        return await connector._fetch_description(base_url, req_id, site_number, http_client, throttle), True
+    if provider in ("jazzhr", "phenom", "eightfold"):
+        targets = _job_url_id_targets(apply_url, raw_payload)
+        if not targets:
+            return None, False
+        job_url, job_id = targets
+        # jazzhr's signature also takes `slug` (unused beyond logging there);
+        # pass a harmless placeholder since we don't reconstruct it here.
+        if provider == "jazzhr":
+            return await connector._fetch_description(http_client, job_url, "backfill", job_id), True
+        return await connector._fetch_description(http_client, job_url, job_id), True
+    if provider == "avature":
+        targets = _job_url_id_targets(apply_url, raw_payload)
+        if not targets:
+            return None, False
+        job_url, job_id = targets
+        return await connector._fetch_description(http_client, job_url, _JOB_URL_ID_HEADERS, job_id), True
     raise ValueError(f"No backfill strategy for provider={provider!r}")
 
 
@@ -166,6 +239,11 @@ async def run(provider: str, limit: int, dry_run: bool):
         "workday": WorkdayConnector,
         "smartrecruiters": SmartRecruitersConnector,
         "icims": iCIMSConnector,
+        "oracle": OracleJSONConnector,
+        "jazzhr": JazzHRConnector,
+        "phenom": PhenomConnector,
+        "eightfold": EightfoldConnector,
+        "avature": AvatureConnector,
     }[provider]
     connector = connector_cls()
 
@@ -212,7 +290,10 @@ async def run(provider: str, limit: int, dry_run: bool):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--provider", required=True, choices=["workday", "smartrecruiters", "icims"])
+    parser.add_argument(
+        "--provider", required=True,
+        choices=["workday", "smartrecruiters", "icims", "oracle", "jazzhr", "phenom", "eightfold", "avature"],
+    )
     parser.add_argument("--limit", type=int, default=200)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()

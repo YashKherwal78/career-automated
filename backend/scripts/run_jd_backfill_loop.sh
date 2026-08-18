@@ -4,7 +4,7 @@
 # cap on iterations is hit. Meant to run unattended via nohup on the VM.
 set -uo pipefail
 
-PROVIDERS=(workday smartrecruiters icims)
+PROVIDERS=(workday smartrecruiters icims oracle jazzhr phenom eightfold avature)
 BATCH=500
 MAX_ITERS=2000
 LOG=/app/jd_backfill.log
