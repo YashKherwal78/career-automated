@@ -32,6 +32,7 @@ class ApplicationDispatcher:
         "recruiterbox": ("src.applications.adapters.trakstar_adapter", "TrakstarAdapter"),
         "workday": ("src.applications.adapters.workday_adapter", "WorkdayAdapter"),
         "successfactors": ("src.applications.adapters.successfactors_adapter", "SuccessFactorsAdapter"),
+        "google_forms": ("src.applications.adapters.google_forms_adapter", "GoogleFormsAdapter"),
     }
 
     def _get_adapter(self, connector: str):
