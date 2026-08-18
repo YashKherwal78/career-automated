@@ -653,7 +653,7 @@ git commit -m "feat(ingestion): scan Gmail job-alert emails into JobLeads"
 - Test: `backend/tests/test_jd_enrichment.py`
 
 **Interfaces:**
-- Consumes: `JobRepository.get_jobs(company=None, title=None, ..., tx=None)` (existing, `backend/src/core/repositories/job/repository.py:237`) via `RepositoryManager` (existing, `backend/src/core/repositories/manager.py`).
+- Consumes: `JobRepository.get_jobs(company=None, title=None, ..., tx=None)` (existing, `backend/src/core/repositories/job/repository.py:237`) via `RepositoryManager` (existing, `backend/src/core/repositories/manager.py`). **Confirmed by reading the source (not assumed):** called without `user_id`/`sort_by="score"`, `get_jobs` returns a **plain `list[dict]`** (each dict has a `description` key, among others) — not `{"jobs": [...]}`. Passing `user_id` would route through `get_jobs_from_precomputed` instead, a different return shape — this task deliberately never passes `user_id`, so that branch never triggers.
 - Produces: `enrich(lead: JobLead, repos=None) -> JobLead` (mutates and returns a copy with `jd_excerpt` filled in if found; unchanged otherwise). `already_applied(lead: JobLead, user_id: str) -> bool` — dedup check against `ingested_job_leads`.
 
 This task covers only fallback step 1 (internal DB match) plus the dedup table; steps 2 (form description) and 3 (web search) are wired in Task 8 (`GoogleFormsHandler`, which is the thing that actually opens the form) and Task 6 respectively, since they need capabilities this task doesn't have yet.
@@ -700,9 +700,9 @@ def _lead(**overrides):
 def test_enrich_fills_jd_from_internal_db_match():
     lead = _lead(jd_excerpt=None)
     mock_repos = MagicMock()
-    mock_repos.job.get_jobs.return_value = {
-        "jobs": [{"title": "Backend Engineer", "company": "Acme", "description": "We build widgets."}]
-    }
+    mock_repos.job.get_jobs.return_value = [
+        {"title": "Backend Engineer", "canonical_name": "Acme", "description": "We build widgets."}
+    ]
 
     enriched = enrich(lead, repos=mock_repos)
 
@@ -723,7 +723,7 @@ def test_enrich_leaves_existing_jd_untouched():
 def test_enrich_returns_lead_unchanged_when_no_db_match():
     lead = _lead(jd_excerpt=None)
     mock_repos = MagicMock()
-    mock_repos.job.get_jobs.return_value = {"jobs": []}
+    mock_repos.job.get_jobs.return_value = []
 
     enriched = enrich(lead, repos=mock_repos)
 
@@ -778,8 +778,7 @@ def enrich(lead: JobLead, repos=None) -> JobLead:
         from src.core.repositories.manager import RepositoryManager
         repos = RepositoryManager()
 
-    result = repos.job.get_jobs(company=lead.company, title=lead.role, page_size=1)
-    jobs = result.get("jobs", []) if isinstance(result, dict) else []
+    jobs = repos.job.get_jobs(company=lead.company, title=lead.role, page_size=1)
     if not jobs:
         return lead
 
@@ -1471,6 +1470,8 @@ git commit -m "feat(ingestion): web-search JD enrichment fallback (last resort)"
 - Consumes: `jd_enrichment.enrich`/`enrich_with_web_search`/`already_applied` (Tasks 5, 9), `routing.resolve_connector` (Task 7), `apply_to_job` (existing, `backend/src/applications/apply_service.py`), `screenshot_extractor.extract_from_image` (Task 3), `email_extractor.scan_job_alerts` (Task 4).
 - Produces: `run_lead(lead: JobLead, user_id: str, test_mode: bool = True) -> dict` — returns the same `result.json`-shaped dict the rest of the system already writes to `backend/executions/<run_id>/`, extended with `job_lead` and `jd_source` fields per spec §6. Writes that dict to `backend/executions/<run_id>/result.json` as a side effect.
 
+**Pre-flight correction (found during plan review, before this task was dispatched):** `apply_to_job()`'s `_map_job_row()` (`backend/src/applications/apply_service.py:23-32`, existing code) translates an incoming `job_row` into a **new dict containing only 6 fixed keys** — `id` (read from `job_row["job_id"]`, not `job_row["id"]`), `job_title`, `company_name`, `connector`, `location`, `apply_url` — before handing it to the dispatcher. Any other key on `job_row` (e.g. `execution_dir`, `description`) is silently dropped, and building `job_row` with a key literally named `"id"` (as an earlier draft of this task did) means `_map_job_row` reads a nonexistent `job_row["job_id"]` and the adapter receives `id=None`. Step 3 below builds `job_row` with the exact keys `_map_job_row` reads, and Step 3a extends `_map_job_row` itself (additively — the 6 existing keys are untouched, so no other adapter's behavior changes) so `GoogleFormsAdapter` (Task 8) actually receives `execution_dir` and `description`.
+
 - [ ] **Step 1: Write the failing test**
 
 ```python
@@ -1502,6 +1503,7 @@ def test_run_lead_calls_apply_to_job_with_mapped_job_row(mock_apply, mock_resolv
     assert called_job_row["canonical_name"] == "Acme"
     assert called_job_row["provider"] == "google_forms"
     assert called_job_row["apply_url"] == "https://forms.gle/abc123"
+    assert called_job_row["job_id"]  # non-empty — _map_job_row reads "job_id", not "id"
     assert outcome["status"] == "COMPLETED"
     assert outcome["job_lead"]["company"] == "Acme"
 
@@ -1541,7 +1543,6 @@ from src.ingestion.job_lead import JobLead
 from src.ingestion.jd_enrichment import enrich, enrich_with_web_search, already_applied
 from src.ingestion.routing import resolve_connector
 from src.applications.apply_service import apply_to_job
-from src.applications.resume_selector import ResumeSelector
 
 logger = setup_logger("ingestion_pipeline")
 
@@ -1578,7 +1579,7 @@ def run_lead(lead: JobLead, user_id: str, test_mode: bool = True) -> dict:
             jd_source = "web_search"
 
     job_row = {
-        "id": str(uuid.uuid4()),
+        "job_id": str(uuid.uuid4()),
         "title": lead.role,
         "canonical_name": lead.company,
         "provider": connector,
@@ -1618,6 +1619,49 @@ def run_lead(lead: JobLead, user_id: str, test_mode: bool = True) -> dict:
 
 Run: `cd backend && python -m pytest tests/test_pipeline.py -v`
 Expected: PASS (3 passed)
+
+- [ ] **Step 4a: Extend `_map_job_row` so `execution_dir`/`description` survive into the adapter**
+
+Modify `backend/src/applications/apply_service.py` — add two keys to the dict `_map_job_row` returns (the 6 existing keys are unchanged, so this is additive and safe for the other 15 adapters, which simply won't set these two on their own `job_row`s):
+
+```python
+def _map_job_row(job_row: Dict[str, Any]) -> Dict[str, Any]:
+    """`repos.job.get_job()` returns `job_id`/`title`/`provider`/
+    `canonical_name`; the dispatcher/adapters expect `id`/`job_title`/
+    `connector`/`company_name`. Translate field names only — no new data.
+    `execution_dir`/`description` pass through unchanged when present (used
+    by GoogleFormsAdapter; no other adapter sets them today)."""
+    return {
+        "id": job_row.get("job_id"),
+        "job_title": job_row.get("title", ""),
+        "company_name": job_row.get("canonical_name", ""),
+        "connector": (job_row.get("provider") or "").lower().strip(),
+        "location": job_row.get("location", ""),
+        "apply_url": job_row.get("apply_url", ""),
+        "execution_dir": job_row.get("execution_dir", ""),
+        "description": job_row.get("description", ""),
+    }
+```
+
+Add a test to `backend/tests/test_pipeline.py` covering this directly (it's `apply_service.py`'s function, not `pipeline.py`'s, but belongs with the rest of this task's verification since nothing else in the plan exercises it):
+
+```python
+def test_map_job_row_passes_through_execution_dir_and_description():
+    from src.applications.apply_service import _map_job_row
+
+    mapped = _map_job_row({
+        "job_id": "abc-123", "title": "Backend Engineer", "canonical_name": "Acme",
+        "provider": "google_forms", "location": "Remote", "apply_url": "https://forms.gle/abc123",
+        "execution_dir": "/tmp/exec/run-1", "description": "We build widgets.",
+    })
+
+    assert mapped["id"] == "abc-123"
+    assert mapped["execution_dir"] == "/tmp/exec/run-1"
+    assert mapped["description"] == "We build widgets."
+```
+
+Run: `cd backend && python -m pytest tests/test_pipeline.py -v`
+Expected: PASS (4 passed)
 
 - [ ] **Step 5: Write the CLI script**
 
@@ -1673,7 +1717,8 @@ if __name__ == "__main__":
 - [ ] **Step 6: Commit**
 
 ```bash
-git add backend/src/ingestion/pipeline.py backend/scripts/run_google_forms_batch.py backend/tests/test_pipeline.py
+git add backend/src/ingestion/pipeline.py backend/src/applications/apply_service.py \
+        backend/scripts/run_google_forms_batch.py backend/tests/test_pipeline.py
 git commit -m "feat(ingestion): pipeline orchestrator + CLI to batch-run screenshots"
 ```
 
