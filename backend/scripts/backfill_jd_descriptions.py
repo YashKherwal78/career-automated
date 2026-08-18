@@ -33,13 +33,15 @@ recruitingCEJobRequisitionDetails?expand=all, keyed by requisition id +
 site number (both derivable from apply_url, which is
 {base}/hcmUI/CandidateExperience/en/sites/{site}/job/{req_id}).
 
+BambooHR/Rippling/join_com also already had a working per-job detail
+fetch (5affe1c / 5f57e69) and fit the same per-job-URL pattern as the
+providers above -- apply_url + raw_payload["id"]/["idParam"] is enough to
+reconstruct the detail call.
+
 Same class of fix still needed but NOT covered by this script (re-fetching
-the board's *list* endpoint, not a per-job detail page, so the fix is a
-different shape per provider): BambooHR, Rippling, Personio, Pinpoint,
-Recruiterbox, join_com, SuccessFactors. Their connectors already read
-description correctly (commits 5affe1c / 5f57e69 / 75222fc) -- it's the
-same stale-pre-fix-rows problem as everything above, just needs a
-list-refetch backfill rather than a detail-fetch backfill.
+the board's *list* endpoint once and matching by id, not a per-job detail
+page -- see backfill_board_wide_descriptions.py for that shape): Personio,
+Pinpoint, Recruiterbox, SuccessFactors.
 
 On a successful fetch, this also clears embedding/jd_profile/jd_hash so the
 existing EmbeddingBackfillWorker (src/workers/embedding_backfill_worker.py)
@@ -55,6 +57,9 @@ Usage:
     python3 scripts/backfill_jd_descriptions.py --provider phenom --limit 500
     python3 scripts/backfill_jd_descriptions.py --provider eightfold --limit 500
     python3 scripts/backfill_jd_descriptions.py --provider avature --limit 500
+    python3 scripts/backfill_jd_descriptions.py --provider bamboohr --limit 500
+    python3 scripts/backfill_jd_descriptions.py --provider rippling --limit 500
+    python3 scripts/backfill_jd_descriptions.py --provider join_com --limit 500
     python3 scripts/backfill_jd_descriptions.py --provider workday --limit 50 --dry-run
 """
 import argparse
@@ -76,6 +81,9 @@ from src.discovery.connectors.jazzhr import JazzHRConnector  # noqa: E402
 from src.discovery.connectors.phenom import PhenomConnector  # noqa: E402
 from src.discovery.connectors.eightfold import EightfoldConnector  # noqa: E402
 from src.discovery.connectors.avature import AvatureConnector  # noqa: E402
+from src.discovery.connectors.bamboohr import BambooHRConnector  # noqa: E402
+from src.discovery.connectors.rippling import RipplingConnector  # noqa: E402
+from src.discovery.connectors.join_com import JoinComConnector  # noqa: E402
 
 CONCURRENCY = 8
 _JOB_URL_ID_HEADERS = {"User-Agent": "Mozilla/5.0"}
@@ -125,11 +133,36 @@ def _oracle_targets(apply_url: str, raw_payload: dict) -> tuple[str, str, str] |
 
 def _job_url_id_targets(apply_url: str, raw_payload: dict) -> tuple[str, str] | None:
     """For connectors whose _fetch_description just needs (job_url, ats_id):
-    JazzHR, Phenom, Eightfold."""
+    JazzHR, Phenom, Eightfold, BambooHR (careers_url positionally == job_url)."""
     job_id = str(raw_payload.get("id") or "")
     if not apply_url or not job_id:
         return None
     return apply_url, job_id
+
+
+def _rippling_targets(apply_url: str, raw_payload: dict) -> tuple[str, str] | None:
+    """Returns (slug, ats_id) from https://ats.rippling.com/{slug}/jobs/{uuid}."""
+    ats_id = str(raw_payload.get("id") or "")
+    parts = urlsplit(apply_url)
+    path_segments = [p for p in parts.path.split("/") if p]
+    if not ats_id or len(path_segments) < 1:
+        return None
+    return path_segments[0], ats_id
+
+
+def _join_com_targets(apply_url: str, raw_payload: dict) -> tuple[str, str] | None:
+    """Returns (company_id, id_param) from
+    https://join.com/companies/{company_id}/{id_param} -- apply_url is
+    already in exactly this shape (verified against real rows)."""
+    id_param = str(raw_payload.get("idParam") or "")
+    parts = urlsplit(apply_url)
+    path_segments = [p for p in parts.path.split("/") if p]
+    if not id_param or "companies" not in path_segments:
+        return None
+    idx = path_segments.index("companies")
+    if idx + 1 >= len(path_segments):
+        return None
+    return path_segments[idx + 1], id_param
 
 
 async def _fetch_one(provider: str, connector, http_client, throttle, apply_url: str, raw_payload: dict):
@@ -175,10 +208,35 @@ async def _fetch_one(provider: str, connector, http_client, throttle, apply_url:
             return None, False
         job_url, job_id = targets
         return await connector._fetch_description(http_client, job_url, _JOB_URL_ID_HEADERS, job_id), True
+    if provider == "bamboohr":
+        targets = _job_url_id_targets(apply_url, raw_payload)
+        if not targets:
+            return None, False
+        careers_url, job_id = targets
+        slug = urlsplit(apply_url).netloc.split(".bamboohr.com")[0]
+        return await connector._fetch_description(http_client, careers_url, slug, job_id), True
+    if provider == "rippling":
+        targets = _rippling_targets(apply_url, raw_payload)
+        if not targets:
+            return None, False
+        slug, ats_id = targets
+        return await connector._fetch_description(http_client, slug, ats_id), True
+    if provider == "join_com":
+        targets = _join_com_targets(apply_url, raw_payload)
+        if not targets:
+            return None, False
+        company_id, id_param = targets
+        return await connector._fetch_description(company_id, id_param, http_client, throttle), True
     raise ValueError(f"No backfill strategy for provider={provider!r}")
 
 
-def _fetch_rows(provider: str, limit: int):
+def _fetch_rows(provider: str, limit: int, offset: int = 0):
+    """offset matters: rows that fail to fetch a description stay in the
+    WHERE-empty set forever, so LIMIT alone (no offset) would return the
+    exact same top rows on every call and the caller would burn requests
+    retrying permanently-dead postings in an infinite loop. Callers doing
+    a full-backlog sweep MUST advance offset each batch (see
+    run_jd_backfill_loop.sh)."""
     import json as _json
     conn = get_connection()
     try:
@@ -190,7 +248,7 @@ def _fetch_rows(provider: str, limit: int):
               AND (description IS NULL OR description = '')
               AND apply_url IS NOT NULL AND apply_url != ''
             ORDER BY normalized_at DESC
-            LIMIT %s
+            LIMIT %s OFFSET %s
             """ if is_postgres() else
             """
             SELECT job_id, apply_url, raw_payload_json FROM normalized_jobs
@@ -198,9 +256,9 @@ def _fetch_rows(provider: str, limit: int):
               AND (description IS NULL OR description = '')
               AND apply_url IS NOT NULL AND apply_url != ''
             ORDER BY normalized_at DESC
-            LIMIT ?
+            LIMIT ? OFFSET ?
             """,
-            (provider, limit),
+            (provider, limit, offset),
         )
         rows = cur.fetchall()
         out = []
@@ -234,7 +292,7 @@ def _write_result(job_id: str, description: str):
         conn.close()
 
 
-async def run(provider: str, limit: int, dry_run: bool):
+async def run(provider: str, limit: int, dry_run: bool, offset: int = 0):
     connector_cls = {
         "workday": WorkdayConnector,
         "smartrecruiters": SmartRecruitersConnector,
@@ -244,10 +302,13 @@ async def run(provider: str, limit: int, dry_run: bool):
         "phenom": PhenomConnector,
         "eightfold": EightfoldConnector,
         "avature": AvatureConnector,
+        "bamboohr": BambooHRConnector,
+        "rippling": RipplingConnector,
+        "join_com": JoinComConnector,
     }[provider]
     connector = connector_cls()
 
-    rows = _fetch_rows(provider, limit)
+    rows = _fetch_rows(provider, limit, offset)
     print(f"[{provider}] {len(rows)} candidate rows (empty description, ACTIVE, has apply_url)")
     if not rows:
         return
@@ -292,9 +353,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--provider", required=True,
-        choices=["workday", "smartrecruiters", "icims", "oracle", "jazzhr", "phenom", "eightfold", "avature"],
+        choices=[
+            "workday", "smartrecruiters", "icims", "oracle", "jazzhr", "phenom", "eightfold",
+            "avature", "bamboohr", "rippling", "join_com",
+        ],
     )
     parser.add_argument("--limit", type=int, default=200)
+    parser.add_argument("--offset", type=int, default=0)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
-    asyncio.run(run(args.provider, args.limit, args.dry_run))
+    asyncio.run(run(args.provider, args.limit, args.dry_run, args.offset))
