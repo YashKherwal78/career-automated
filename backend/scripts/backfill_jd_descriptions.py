@@ -82,22 +82,26 @@ def _smartrecruiters_targets(apply_url: str, raw_payload: dict) -> tuple[str, st
 
 
 async def _fetch_one(provider: str, connector, http_client, throttle, apply_url: str, raw_payload: dict):
+    """Returns (description_or_none, url_derived: bool) -- url_derived
+    distinguishes "couldn't build a detail URL from this row at all" from
+    "built a URL fine but the fetch itself came back empty/non-200", so the
+    caller's stats don't lump unrelated failure modes together."""
     if provider == "workday":
         targets = _workday_targets(apply_url, raw_payload)
         if not targets:
-            return None
+            return None, False
         cxs_base, external_path = targets
-        return await connector._fetch_description(cxs_base, external_path, http_client, throttle)
+        return await connector._fetch_description(cxs_base, external_path, http_client, throttle), True
     if provider == "smartrecruiters":
         targets = _smartrecruiters_targets(apply_url, raw_payload)
         if not targets:
-            return None
+            return None, False
         slug, job_id = targets
-        return await connector._fetch_description(slug, job_id, http_client, throttle)
+        return await connector._fetch_description(slug, job_id, http_client, throttle), True
     if provider == "icims":
         if not apply_url:
-            return None
-        return await connector._fetch_description(apply_url, http_client, throttle)
+            return None, False
+        return await connector._fetch_description(apply_url, http_client, throttle), True
     raise ValueError(f"No backfill strategy for provider={provider!r}")
 
 
@@ -171,7 +175,7 @@ async def run(provider: str, limit: int, dry_run: bool):
         return
 
     sem = asyncio.Semaphore(CONCURRENCY)
-    stats = {"fetched": 0, "empty": 0, "unparseable_url": 0, "error": 0}
+    stats = {"fetched": 0, "empty": 0, "unparseable_url": 0, "fetch_failed": 0, "error": 0}
 
     async with HttpClient() as http_client:
         throttle = DetailFetchThrottle(requests_per_second=5.0)
@@ -179,7 +183,7 @@ async def run(provider: str, limit: int, dry_run: bool):
         async def handle(row):
             async with sem:
                 try:
-                    description = await _fetch_one(
+                    description, url_derived = await _fetch_one(
                         provider, connector, http_client, throttle,
                         row["apply_url"], row["raw_payload"],
                     )
@@ -189,7 +193,7 @@ async def run(provider: str, limit: int, dry_run: bool):
                     return
 
                 if description is None:
-                    stats["unparseable_url"] += 1
+                    stats["unparseable_url" if not url_derived else "fetch_failed"] += 1
                     return
                 if not description.strip():
                     stats["empty"] += 1
