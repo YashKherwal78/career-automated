@@ -18,7 +18,8 @@ from pydantic import BaseModel, Field
 # consistently best-performing structure across 80+ studies is
 # Problem-Solution: name the employer's specific need first, then position
 # the candidate's quantified experience as the fix — not a life story.
-DEFAULT_MAX_WORDS = 250
+DEFAULT_MIN_WORDS = 200
+DEFAULT_MAX_WORDS = 350
 
 
 class CoverLetterInput(BaseModel):
@@ -41,6 +42,7 @@ class CoverLetterInput(BaseModel):
     """Reuses the same Settings > AI Preferences value tailoring already
     reads, for a consistent voice across tailored resume + cover letter."""
 
+    min_words: int = DEFAULT_MIN_WORDS
     max_words: int = DEFAULT_MAX_WORDS
     llm_provider: str = "groq"
     # llama-3.3-70b-versatile was deprecated/removed by Groq (confirmed
@@ -51,10 +53,42 @@ class CoverLetterInput(BaseModel):
     llm_model: str = "openai/gpt-oss-120b"
 
 
+class RoleIntent(BaseModel):
+    """What the JD analysis step determined the employer is actually hiring
+    for -- distinct from a keyword bag. Returned alongside the letter for
+    observability (why these facts, not others, got selected)."""
+    role_category: str = ""
+    """One short label, e.g. "AI Product Enablement" -- not a generic
+    bucket like "AI" or "Engineering". See generator.py's ROLE_CATEGORIES
+    for the reference list this is drawn from (not restricted to it)."""
+    primary_function: str = ""
+    top_competencies: List[str] = Field(default_factory=list)
+    """3-5 competencies, most important first."""
+
+
+class RankedFact(BaseModel):
+    fact: str
+    relevance_score: float = 0.0
+    why: str = ""
+
+
 class CoverLetterResult(BaseModel):
     cover_letter_text: str
+    cover_letter_tex: str = ""
+    """Full standalone .tex document -- lets the frontend offer a LaTeX
+    download and drives PDF compilation, without a second round-trip that
+    re-sends the letter text and risks it drifting from what's on screen."""
     word_count: int
     llm_calls_made: int = 0
     is_fallback: bool = False
     """True if the LLM call failed and this is a safe, honest fallback
     (never a hallucinated placeholder pretending to be a real letter)."""
+
+    role_intent: Optional[RoleIntent] = None
+    ranked_facts: List[RankedFact] = Field(default_factory=list)
+    """Every candidate fact considered, with its relevance score against
+    role_intent -- not just the ones that made the cut. Auditability: shows
+    why the 2-3 facts used were chosen over the rest, not just what was
+    chosen. Empty if the role-intent/ranking step failed and generation
+    fell back to using resume_facts in given order (still grounded, just
+    not intent-ranked -- see generator.py)."""

@@ -88,7 +88,9 @@ function CoverLetterPage() {
   const [genPhase, setGenPhase] = useState<GenPhase>("idle");
   const [lineIndex, setLineIndex] = useState(0);
   const [letterText, setLetterText] = useState<string | null>(null);
+  const [letterTex, setLetterTex] = useState<string | null>(null);
   const [wordCount, setWordCount] = useState(0);
+  const [pdfState, setPdfState] = useState<"idle" | "loading" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [companyName, setCompanyName] = useState("");
@@ -147,6 +149,7 @@ function CoverLetterPage() {
       }
       const data = await response.json();
       setLetterText(data.cover_letter_text);
+      setLetterTex(data.cover_letter_tex || null);
       setWordCount(data.word_count);
       setGenPhase("done");
     } catch (err) {
@@ -178,6 +181,54 @@ function CoverLetterPage() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  const downloadAsTex = () => {
+    if (!letterTex) return;
+    const blob = new Blob([letterTex], { type: "application/x-tex" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `cover_letter_${jobId || "custom"}.tex`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadAsPdf = async () => {
+    if (!letterTex) return;
+    setPdfState("loading");
+    try {
+      const response = await fetch(`${API_BASE}/resume/cover-letter/pdf`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ cover_letter_tex: letterTex }),
+      });
+      if (!response.ok) {
+        // PDF compilation failing must never take away the text/LaTeX
+        // outputs that already succeeded -- surface a clear error here,
+        // don't touch genPhase (letter stays fully usable via copy/.txt/.tex).
+        setPdfState("error");
+        return;
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Cover Letter.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setPdfState("idle");
+    } catch (err) {
+      console.error("Cover letter PDF download failed:", err);
+      setPdfState("error");
+    }
   };
 
   const baseBtnStyle: React.CSSProperties = {
@@ -393,6 +444,31 @@ function CoverLetterPage() {
             <div style={{ fontSize: 11.5, color: "var(--ds-ink-400)", marginBottom: 12, textAlign: "right" }}>
               {wordCount} words
             </div>
+
+            {/* Primary: PDF -- the actual submission-ready document. */}
+            <button
+              type="button"
+              onClick={downloadAsPdf}
+              disabled={!letterTex || pdfState === "loading"}
+              className="transition-transform active:scale-[0.98]"
+              style={{
+                ...baseBtnStyle,
+                width: "100%",
+                marginBottom: 10,
+                background: letterTex ? "var(--ds-accent-primary)" : "var(--ds-cream-300)",
+                color: letterTex ? "var(--ds-text-on-brand)" : "var(--ds-ink-400)",
+                cursor: letterTex && pdfState !== "loading" ? "pointer" : "default",
+              }}
+            >
+              {pdfState === "loading" ? "Compiling PDF…" : "↓ Download Cover Letter PDF"}
+            </button>
+            {pdfState === "error" && (
+              <div style={{ fontSize: 12, color: "#B4392C", marginBottom: 10, textAlign: "center" }}>
+                PDF compilation failed — the text and LaTeX below still work. Try again, or use those instead.
+              </div>
+            )}
+
+            {/* Secondary: LaTeX source, and copy. */}
             <div className="flex gap-2.5">
               <button
                 type="button"
@@ -409,11 +485,26 @@ function CoverLetterPage() {
               </button>
               <button
                 type="button"
+                onClick={downloadAsTex}
+                disabled={!letterTex}
+                className="flex-1 transition-transform active:scale-[0.98]"
+                style={{
+                  ...baseBtnStyle,
+                  background: "transparent",
+                  border: "1px solid var(--ds-border-medium)",
+                  color: letterTex ? "var(--ds-ink-700)" : "var(--ds-ink-400)",
+                  cursor: letterTex ? "pointer" : "default",
+                }}
+              >
+                Download .tex
+              </button>
+              <button
+                type="button"
                 onClick={downloadAsText}
                 className="flex-1 transition-transform active:scale-[0.98]"
                 style={{ ...baseBtnStyle, background: "var(--ds-ink-900)", color: "#FFFDFA" }}
               >
-                ↓ Download .txt
+                ↓ .txt
               </button>
             </div>
             <button

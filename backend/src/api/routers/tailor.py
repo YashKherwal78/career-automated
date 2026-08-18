@@ -12,6 +12,7 @@ POST /resume/tailor/preview
 
 from __future__ import annotations
 
+import json
 import logging
 from typing import Any, Dict, Optional
 
@@ -90,7 +91,9 @@ class CoverLetterResponse(BaseModel):
     job_id: str
     candidate_id: str
     cover_letter_text: str
+    cover_letter_tex: str = ""
     word_count: int
+    role_intent: Optional[Dict[str, Any]] = None
     llm_calls_made: int
 
 
@@ -330,6 +333,31 @@ def _load_candidate_memory(candidate_id: str, db) -> Dict[str, Any]:
         return {"global": facts} if facts else {}
     except Exception:
         logger.warning("Candidate memory derivation failed for candidate_id=%s", candidate_id, exc_info=True)
+        return {}
+
+
+def _load_personal_info(candidate_id: str, db) -> Dict[str, str]:
+    """Real name/phone for the cover letter PDF's letterhead -- without
+    this, the letterhead used the email's local-part as a name
+    ("yash.kherwal78") and never showed a phone number at all."""
+    try:
+        cursor = db.cursor()
+        cursor.execute(
+            "SELECT profile_data FROM public.user_career_profiles WHERE user_id = %s LIMIT 1",
+            (candidate_id,),
+        )
+        row = cursor.fetchone()
+        profile_data = row["profile_data"] if row else None
+        if not profile_data:
+            return {}
+        profile = json.loads(profile_data) if isinstance(profile_data, str) else profile_data
+        personal = profile.get("personal_info") or {}
+        return {
+            "full_name": personal.get("full_name") or "",
+            "phone": personal.get("phone") or "",
+        }
+    except Exception:
+        logger.warning("Personal info load failed for candidate_id=%s", candidate_id, exc_info=True)
         return {}
 
 
@@ -576,6 +604,7 @@ def generate_cover_letter(
     )
     effective_job_id, jd_profile = _resolve_jd_profile(tailor_request, db)
     candidate_memory = _load_candidate_memory(request.candidate_id, db)
+    personal_info = _load_personal_info(request.candidate_id, db)
     writing_tone, _ = _load_ai_preferences(request.candidate_id, db)
     resume_facts = candidate_memory.get("global", [])
 
@@ -584,8 +613,9 @@ def generate_cover_letter(
 
     generator = CoverLetterGenerator()
     inp = CoverLetterInput(
-        candidate_name=current_user.email.split("@")[0],
+        candidate_name=personal_info.get("full_name") or current_user.email.split("@")[0],
         candidate_email=current_user.email,
+        candidate_phone=personal_info.get("phone") or "",
         jd_profile=jd_profile,
         resume_facts=resume_facts,
         company_name=company_name,
@@ -604,6 +634,52 @@ def generate_cover_letter(
         job_id=effective_job_id,
         candidate_id=request.candidate_id,
         cover_letter_text=result.cover_letter_text,
+        cover_letter_tex=result.cover_letter_tex,
         word_count=result.word_count,
+        role_intent=result.role_intent.model_dump() if result.role_intent else None,
         llm_calls_made=result.llm_calls_made,
+    )
+
+
+class CoverLetterPdfRequest(BaseModel):
+    cover_letter_tex: str
+
+
+@router.post("/cover-letter/pdf", status_code=status.HTTP_200_OK)
+def compile_cover_letter_pdf(
+    request: CoverLetterPdfRequest,
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    """
+    Compiles a cover letter's .tex (as returned by POST /cover-letter) into
+    a PDF and streams it back. Same ephemeral-by-design pattern as
+    /tailor/pdf -- nothing written to permanent storage, reuses the same
+    pdflatex wrapper so a failure here is a normal HTTP error the frontend
+    can show, not a crash, and never affects the already-returned text/tex.
+    """
+    import shutil
+    import tempfile
+
+    from src.resume_intelligence.cover_letter.pdf_renderer import compile_pdf
+
+    if not request.cover_letter_tex.strip():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No cover letter .tex provided.")
+
+    tmp_dir = tempfile.mkdtemp(prefix="cover_letter_")
+    try:
+        pdf_path = compile_pdf(request.cover_letter_tex, tmp_dir, filename_prefix="cover_letter")
+        if pdf_path is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="PDF compilation failed for this cover letter. The text and LaTeX source are still available.",
+            )
+        with open(pdf_path, "rb") as f:
+            pdf_bytes = f.read()
+    finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=cover_letter.pdf"},
     )
