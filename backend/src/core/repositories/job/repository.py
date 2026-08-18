@@ -551,16 +551,37 @@ class JobRepository(BaseRepository, IJobRepository):
             )
             return [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
 
-    def store_job_embeddings(self, job_id_to_vector: dict, tx=None) -> None:
+    def store_job_embeddings(self, job_id_to_vector: dict, job_id_to_profile: dict = None, tx=None) -> None:
+        """job_id_to_profile is optional: {job_id: (jd_profile_json_str, jd_hash, jie_version)}.
+        normalized_jobs.jd_profile exists in the schema but nothing ever
+        wrote to it (confirmed live: 0 of 1.4M+ active jobs had it
+        populated) -- every tailoring/cover-letter request re-parsed the
+        same job's JD from scratch instead of reading a cached result.
+        The embedding backfill worker already visits every job exactly
+        once, so populating jd_profile in the same pass is close to free
+        and fixes both gaps together."""
         if not job_id_to_vector:
             return
+        job_id_to_profile = job_id_to_profile or {}
         with self.transaction() as conn:
             p = conn.dialect.placeholder()
             for job_id, vec in job_id_to_vector.items():
-                conn.execute(
-                    f"UPDATE normalized_jobs SET embedding = {p}::vector WHERE job_id = {p}",
-                    (self._vector_literal(vec), job_id),
-                )
+                profile = job_id_to_profile.get(job_id)
+                if profile:
+                    jd_profile_json, jd_hash, jie_version = profile
+                    conn.execute(
+                        f"""UPDATE normalized_jobs
+                            SET embedding = {p}::vector, jd_profile = {p}::jsonb,
+                                jd_hash = {p}, jd_parser = 'JDExtractor', jd_version = {p},
+                                jd_parsed_at = NOW()
+                            WHERE job_id = {p}""",
+                        (self._vector_literal(vec), jd_profile_json, jd_hash, jie_version, job_id),
+                    )
+                else:
+                    conn.execute(
+                        f"UPDATE normalized_jobs SET embedding = {p}::vector WHERE job_id = {p}",
+                        (self._vector_literal(vec), job_id),
+                    )
 
     def get_candidate_embedding(self, user_id: str, tx=None):
         """Returns the stored embedding vector (as a string) for this user's

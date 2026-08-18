@@ -2,6 +2,7 @@ import time
 import logging
 from src.workers.worker_base import BaseWorker
 from src.discovery.embeddings import embed_batch, job_embedding_text
+from src.discovery.jie.extractor import JDExtractor, JIE_VERSION
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("EmbeddingBackfillWorker")
@@ -16,10 +17,17 @@ class EmbeddingBackfillWorker(BaseWorker):
     computes and stores a semantic embedding for every active job that
     doesn't have one yet, so get_jobs_by_vector_similarity() can search
     the full pool via pgvector instead of a bounded recent-jobs window.
+
+    Also runs JDExtractor once per job here (structured technologies/
+    skills/responsibilities feed both a better embedding -- see
+    job_embedding_text's docstring -- and get cached to normalized_jobs.
+    jd_profile, a column that existed in the schema but nothing ever
+    wrote to before this).
     """
 
     def __init__(self):
         super().__init__("EmbeddingBackfillWorker")
+        self._extractor = JDExtractor()
 
     def run(self):
         logger.info("EmbeddingBackfillWorker started.")
@@ -32,11 +40,32 @@ class EmbeddingBackfillWorker(BaseWorker):
                     time.sleep(IDLE_SLEEP_SECONDS)
                     continue
 
-                texts = [job_embedding_text(j["title"], j["description"]) for j in batch]
+                texts = []
+                job_id_to_profile = {}
+                for j in batch:
+                    structured = None
+                    try:
+                        structured = self._extractor.extract(title=j["title"] or "", jd_text=j["description"] or "")
+                    except Exception as e:
+                        logger.warning(f"JDExtractor failed for job_id={j['job_id']}: {e}")
+
+                    if structured:
+                        texts.append(job_embedding_text(
+                            j["title"], j["description"],
+                            technologies=structured.technologies,
+                            skills=structured.skills,
+                            responsibilities=structured.responsibilities,
+                        ))
+                        job_id_to_profile[j["job_id"]] = (
+                            structured.model_dump_json(), structured.jd_hash, JIE_VERSION,
+                        )
+                    else:
+                        texts.append(job_embedding_text(j["title"], j["description"]))
+
                 vectors = embed_batch(texts)
 
                 job_id_to_vector = {j["job_id"]: v for j, v in zip(batch, vectors)}
-                self.repos.job.store_job_embeddings(job_id_to_vector)
+                self.repos.job.store_job_embeddings(job_id_to_vector, job_id_to_profile)
 
                 total_embedded += len(batch)
                 self.heartbeat(jobs_processed=len(batch))

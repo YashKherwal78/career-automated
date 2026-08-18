@@ -47,13 +47,45 @@ def embed_batch(texts: List[str]) -> List[List[float]]:
     return [v.tolist() for v in vectors]
 
 
-def job_embedding_text(title: str, description: str) -> str:
-    """What actually gets embedded for a job — title weighted by repetition
-    since it's the strongest relevance signal and descriptions can be long
-    enough to dilute it otherwise."""
+def job_embedding_text(
+    title: str,
+    description: str,
+    technologies: List[str] = None,
+    skills: List[str] = None,
+    responsibilities: List[str] = None,
+) -> str:
+    """What actually gets embedded for a job.
+
+    bge-small-en-v1.5 has a real effective context of ~512 tokens (roughly
+    2000 characters of English text) -- text past that point contributes
+    nothing to the embedding, it's silently dropped by the tokenizer, not
+    just "given less weight". A 10-15k character raw job description
+    frequently opens with generic company-mission boilerplate ("we're
+    building a safer world...") before any real technical content --
+    confirmed on real postings -- so truncating raw title+description
+    alone can mean the actual skills/responsibilities the posting cares
+    about never reach the model at all.
+
+    Structured fields (technologies/skills/responsibilities, from
+    src.discovery.jie.extractor.JDExtractor) are front-loaded when given,
+    ahead of the raw description, so the dense, already-extracted signal
+    survives truncation even when the raw text wouldn't have. Optional and
+    backward compatible: callers with just title/description (or an
+    extraction that returned nothing) get the previous behavior.
+    """
     title = (title or "").strip()
     description = (description or "").strip()
-    return f"{title}. {title}. {description}"[:8000]
+
+    parts = [title, title]
+    if technologies:
+        parts.append("Technologies: " + ", ".join(technologies[:15]))
+    if skills:
+        parts.append("Skills: " + ", ".join(skills[:15]))
+    if responsibilities:
+        parts.append("Responsibilities: " + " ".join(responsibilities[:5]))
+    parts.append(description)
+
+    return ". ".join(p for p in parts if p)[:8000]
 
 
 def candidate_embedding_text(profile_data: dict) -> str:
