@@ -21,7 +21,7 @@ def test_chat_completion_vision_calls_gemini_with_image_and_text_parts(monkeypat
     assert result.choices[0].message.content == '{"company": "Acme"}'
     assert result.usage.total_tokens == 42
     call_kwargs = fake_client.models.generate_content.call_args.kwargs
-    assert call_kwargs["model"] == "gemini-2.0-flash"
+    assert call_kwargs["model"] == "gemini-3.6-flash"
     assert call_kwargs["config"].response_mime_type == "application/json"
 
 
