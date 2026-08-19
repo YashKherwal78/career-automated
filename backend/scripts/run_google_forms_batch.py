@@ -19,6 +19,12 @@ from src.ingestion.screenshot_extractor import extract_from_image
 from src.ingestion.pipeline import run_lead
 
 IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg", ".webp")
+# Phone camera exports and a lot of screenshot tools write ".PNG"/".JPG".
+# glob is case-sensitive on Linux (and on case-sensitive macOS volumes), so
+# without these the batch silently found zero images.
+_GLOB_EXTENSIONS = tuple(dict.fromkeys(
+    [e for e in IMAGE_EXTENSIONS] + [e.upper() for e in IMAGE_EXTENSIONS]
+))
 
 
 def main():
@@ -28,7 +34,11 @@ def main():
     parser.add_argument("--live", action="store_true", help="Submit for real (default: dry-run)")
     args = parser.parse_args()
 
-    paths = [p for ext in IMAGE_EXTENSIONS for p in glob.glob(os.path.join(args.folder, f"*{ext}"))]
+    # dict.fromkeys de-dups while preserving order, for case-insensitive
+    # filesystems where "*.png" and "*.PNG" return the same file twice.
+    paths = list(dict.fromkeys(
+        p for ext in _GLOB_EXTENSIONS for p in glob.glob(os.path.join(args.folder, f"*{ext}"))
+    ))
     print(f"Found {len(paths)} images in {args.folder}")
 
     for path in paths:

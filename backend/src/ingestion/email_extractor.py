@@ -1,6 +1,6 @@
 import re
 import time
-from typing import List, Optional
+from typing import List
 
 from src.system.logger import setup_logger
 from src.api.db import get_connection, is_postgres
@@ -19,22 +19,48 @@ DEFAULT_SENDER_ALLOWLIST = [
 _URL_RE = re.compile(r"https?://\S+")
 
 
-def _parse_email_body(body: str) -> Optional[dict]:
-    """Best-effort parse: first URL in the body is the apply link; company/
-    role are read from `Role at Company` or `Role - Company` patterns in the
-    body text. Returns None if no URL is found at all."""
-    urls = _URL_RE.findall(body)
-    if not urls:
-        return None
-    apply_link = urls[0].rstrip(").,")
+_ROLE_AT_COMPANY_RE = re.compile(r"([A-Za-z0-9 /&+\-]+?)\s+(?:at|@|-)\s+([A-Za-z0-9 &.,'\-]+)")
 
-    role, company = "", ""
-    text_without_urls = _URL_RE.sub("", body).strip()
-    match = re.search(r"([A-Za-z0-9 /&+\-]+?)\s+(?:at|@|-)\s+([A-Za-z0-9 &.,'\-]+)", text_without_urls)
-    if match:
-        role, company = match.group(1).strip(), match.group(2).strip()
 
-    return {"role": role, "company": company, "apply_link": apply_link}
+def _parse_segment(segment: str):
+    """Reads `Role at Company` / `Role - Company` out of the text immediately
+    preceding an apply link. The LAST match in the segment wins: in a digest,
+    the listing nearest the link is the one that link belongs to, while the
+    first match is whatever job was listed before it."""
+    text = _URL_RE.sub("", segment).strip()
+    matches = list(_ROLE_AT_COMPANY_RE.finditer(text))
+    if not matches:
+        return "", ""
+    match = matches[-1]
+    return match.group(1).strip(), match.group(2).strip()
+
+
+def _parse_email_body(body: str) -> List[dict]:
+    """Best-effort parse of EVERY lead in the message body.
+
+    This used to return only the first URL's lead. A job-alert email is
+    almost always a digest listing several roles, so every job past the first
+    was silently discarded -- and because the message was then marked
+    processed, they were discarded permanently. Each URL now becomes its own
+    lead, attributed from the text that precedes it. Returns [] when the body
+    has no URL at all."""
+    leads = []
+    seen_urls = set()
+    cursor = 0
+
+    for match in _URL_RE.finditer(body):
+        apply_link = match.group(0).rstrip(").,")
+        segment = body[cursor:match.start()]
+        cursor = match.end()
+
+        if apply_link in seen_urls:
+            continue
+        seen_urls.add(apply_link)
+
+        role, company = _parse_segment(segment)
+        leads.append({"role": role, "company": company, "apply_link": apply_link})
+
+    return leads
 
 
 def _is_processed(conn, message_id: str) -> bool:
@@ -63,19 +89,34 @@ def scan_job_alerts(sender_allowlist: List[str] = None, since_days: int = 3) -> 
             if _is_processed(conn, raw["message_id"]):
                 continue
 
-            parsed = _parse_email_body(raw["body"])
-            if parsed:
+            parsed_leads = _parse_email_body(raw["body"])
+            if not parsed_leads:
+                # Deliberately NOT marked processed. Marking on failure burns
+                # the message permanently: a later parser improvement could
+                # extract it, but scan_job_alerts would never look at it
+                # again. Leaving it unprocessed costs one cheap re-parse per
+                # scan and keeps the message recoverable.
+                logger.info(f"[email_extractor] no URL found in {raw['message_id']} -- leaving unprocessed for retry")
+                continue
+
+            extracted = 0
+            for parsed in parsed_leads:
                 lead = JobLead(
                     company=parsed["company"], role=parsed["role"], apply_link=parsed["apply_link"],
                     location=None, jd_excerpt=None, source="email", source_ref=raw["message_id"],
                 )
                 if lead.is_valid():
                     leads.append(lead)
+                    extracted += 1
                 else:
                     logger.info(f"[email_extractor] incomplete parse for {raw['message_id']}: {parsed}")
-            else:
-                logger.info(f"[email_extractor] no URL found in {raw['message_id']}")
 
-            _mark_processed(conn, raw["message_id"], raw["sender"], raw["subject"])
+            if extracted:
+                _mark_processed(conn, raw["message_id"], raw["sender"], raw["subject"])
+            else:
+                logger.info(
+                    f"[email_extractor] {raw['message_id']} had {len(parsed_leads)} link(s) but no "
+                    f"complete lead -- leaving unprocessed for retry"
+                )
 
     return leads

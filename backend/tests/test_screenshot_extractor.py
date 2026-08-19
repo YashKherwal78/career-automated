@@ -54,3 +54,12 @@ def test_extract_from_image_returns_none_on_unparseable_json(tmp_path):
     lead = extract_from_image(str(img), llm_router=router)
 
     assert lead is None
+
+
+def test_extract_from_image_returns_none_for_an_unreadable_file():
+    """The open() was outside the try, so a missing/unreadable file raised
+    instead of returning None -- contradicting this function's own contract
+    and killing a whole batch run over one bad image."""
+    from src.ingestion.screenshot_extractor import extract_from_image
+
+    assert extract_from_image("/nonexistent/definitely-not-here.png", llm_router=MagicMock()) is None

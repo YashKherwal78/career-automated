@@ -27,10 +27,13 @@ def extract_from_image(image_path: str, llm_router: Optional[LLMRouter] = None) 
     mime_type, _ = mimetypes.guess_type(image_path)
     mime_type = mime_type or "image/png"
 
-    with open(image_path, "rb") as f:
-        image_bytes = f.read()
-
+    # Inside the try, not before it: a missing/unreadable file is exactly the
+    # "bad extraction" this function promises never to raise out of, and a
+    # batch run over a folder shouldn't die on one unreadable image.
     try:
+        with open(image_path, "rb") as f:
+            image_bytes = f.read()
+
         response = router.chat_completion_vision(
             image_bytes=image_bytes,
             mime_type=mime_type,
