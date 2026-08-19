@@ -90,6 +90,41 @@ def test_extract_questions_tags_file_upload_items_instead_of_input():
     assert questions[0]["widget_type"] == "file_upload"
 
 
+def test_file_upload_question_blocks_submission_end_to_end():
+    """The tagging test above only proves _extract_questions() labels the item
+    "file_upload". This one walks the whole path that label is supposed to
+    trigger — QuestionClassifier.classify -> engine.answer -> _interact_widget
+    -> _interact_custom_dropdown's default False -> safe_to_submit False — with
+    a confident answer mocked in, so the question is NOT skipped as
+    unanswerable. It's what would catch a regression if QuestionClassifier
+    started escalating/short-circuiting this label, or if _interact_widget grew
+    a case that silently accepted "file_upload".
+    """
+    page = MagicMock()
+    handler = _make_handler(page)
+    handler.active_context = page
+    # Optional, not required — a file upload blocks submission either way
+    # (see the comment at the tagging site in google_forms.py).
+    handler._extract_questions = lambda: [{
+        "container": MagicMock(),
+        "question": "Attach your resume",
+        "raw_label": "Attach your resume",
+        "is_required": False,
+        "widget_type": "file_upload",
+        "options": [],
+        "placeholder": "",
+    }]
+    handler._advance_to_next_page = lambda: False
+    handler.engine.answer = MagicMock(return_value="/tmp/resume.pdf")
+
+    telemetry = {"question_count": 0, "llm_question_count": 0, "profile_question_count": 0}
+    safe_to_submit = handler._process_custom_fields(telemetry)
+
+    assert handler.engine.answer.called, "file_upload must reach the engine, not be short-circuited"
+    assert safe_to_submit is False
+    assert telemetry["interaction_log"][-1]["Verification Result"] is False
+
+
 def test_process_custom_fields_walks_every_section_extracting_each_exactly_once():
     """The whole point of the multi-page override: base_handler's execute()
     calls _process_custom_fields() once per retry cycle, so without this

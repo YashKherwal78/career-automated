@@ -107,8 +107,19 @@ class GoogleFormsHandler(BaseATSHandler):
                 # of failing safely. _interact_widget (base_handler.py) has
                 # no case for "file_upload", so it naturally no-ops via
                 # _interact_custom_dropdown's default False return --
-                # required file-upload questions surface as a missing
-                # field (REVIEW_REQUIRED) instead of a fabricated answer.
+                # file-upload questions surface as a failed interaction
+                # (REVIEW_REQUIRED) instead of a fabricated answer.
+                #
+                # Note this blocks submission for ANY file-upload question,
+                # required or optional -- unlike the unanswerable/escalated
+                # paths in _process_custom_fields, which skip optional
+                # questions and continue. That's because the block happens at
+                # the *interaction* stage (a False from _interact_widget sets
+                # safe_to_submit = False unconditionally, base_handler.py:402-405),
+                # which never consults is_required. Deliberate: an application
+                # that silently skipped the resume attachment is worse than one
+                # that asks a human to finish it, and a form owner who added an
+                # upload item almost always wants the file.
                 widget_type = "file_upload"
             else:
                 for role, mapped in _WIDGET_TYPE_BY_ROLE.items():
