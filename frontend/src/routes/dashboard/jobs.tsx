@@ -158,6 +158,11 @@ function JobsPage() {
 
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  // A failed request and a genuinely empty result used to render the exact
+  // same "No jobs matched your filter criteria" text -- the error was only
+  // ever visible in the browser console. Kept separate so a real fetch
+  // failure says so, instead of looking identical to zero real matches.
+  const [loadError, setLoadError] = useState<string | null>(null);
   // `searchInput` is what the box displays and drives the instant
   // trie-based autocomplete; `search` is the debounced value that actually
   // triggers a query. Without the split, every keystroke re-fired the full
@@ -262,6 +267,7 @@ function JobsPage() {
       };
       const data = await jobService.getJobs(filters);
       setJobs(data);
+      setLoadError(null);
       // Keep the current selection if it's still in the list; otherwise
       // default to the top match rather than leaving the pane empty.
       setSelectedJobId((current) => {
@@ -270,6 +276,7 @@ function JobsPage() {
       });
     } catch (e) {
       console.error(e);
+      setLoadError(e instanceof Error ? e.message : "Couldn't load jobs.");
     } finally {
       if (showLoading) setLoading(false);
     }
@@ -445,6 +452,18 @@ function JobsPage() {
 
       {loading ? (
         <LoadingSkeleton type="table" count={10} />
+      ) : loadError ? (
+        <div className="text-center py-12 glass-card rounded-3xl p-6 border border-white/50 bg-white/40">
+          <p className="text-xs" style={{ color: "#C0392B" }}>Couldn't load jobs: {loadError}</p>
+          <button
+            type="button"
+            onClick={() => loadData(true)}
+            className="mt-3 font-semibold"
+            style={{ fontSize: 12.5, color: "var(--ds-accent-primary)" }}
+          >
+            Try again
+          </button>
+        </div>
       ) : jobs.length === 0 ? (
         <div className="text-center py-12 glass-card rounded-3xl p-6 border border-white/50 bg-white/40">
           <p className="text-xs text-ink-soft">No jobs matched your filter criteria.</p>
