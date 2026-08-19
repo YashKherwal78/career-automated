@@ -78,64 +78,71 @@ function UploadJobSection() {
   };
 
   return (
-    <div className="glass-card rounded-3xl p-5 border border-white/50 bg-white/40 shadow-sm">
-      <div className="flex items-start gap-4 flex-wrap md:flex-nowrap">
+    <div className="glass-card rounded-3xl p-4 md:p-5 border border-white/50 bg-white/40 shadow-sm space-y-4">
+      <div className="flex items-start gap-3 md:gap-4">
         <div
           className="flex items-center justify-center flex-shrink-0"
-          style={{ width: 44, height: 44, borderRadius: "var(--ds-radius-lg)", background: "var(--ds-brand-orange-tint-08)", color: "var(--ds-brand-orange-text)" }}
+          style={{ width: 40, height: 40, borderRadius: "var(--ds-radius-lg)", background: "var(--ds-brand-orange-tint-08)", color: "var(--ds-brand-orange-text)" }}
         >
-          <UploadCloud size={20} />
+          <UploadCloud size={18} />
         </div>
-        <div className="flex-1 min-w-[220px]">
+        <div className="flex-1 min-w-0">
           <div
             className="uppercase font-bold"
             style={{ fontSize: 11, letterSpacing: 0.6, color: "var(--ds-brand-orange-text)", marginBottom: 3 }}
           >
             Upload job
           </div>
-          <h2 className="font-[var(--ds-font-display)] font-semibold" style={{ fontSize: 16.5, marginBottom: 3 }}>
+          <h2 className="font-[var(--ds-font-display)] font-semibold" style={{ fontSize: 16, marginBottom: 3 }}>
             Saw a role on LinkedIn? Screenshot it.
           </h2>
-          <p style={{ margin: 0, fontSize: 13, color: "var(--ds-ink-500)", maxWidth: 480 }}>
+          <p style={{ margin: 0, fontSize: 13, color: "var(--ds-ink-500)" }}>
             Drop a screenshot of any job post — we'll pull out the company, role, and how to apply, and
             add it here so you can review it like any other match.
           </p>
-          {uploads.length > 0 && (
-            <div className="flex flex-wrap gap-2" style={{ marginTop: 10 }}>
-              {uploads.map((u) => (
-                <span
-                  key={u.id}
-                  className="inline-flex items-center gap-1.5"
-                  style={{
-                    fontSize: 11.5, color: "var(--ds-ink-600)", background: "var(--ds-cream-100)",
-                    border: "1px solid var(--ds-border-hairline)", borderRadius: "var(--ds-radius-pill)",
-                    padding: "5px 10px 5px 6px",
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 6, height: 6, borderRadius: "50%", flexShrink: 0,
-                      background: u.state === "processing" ? "var(--ds-amber-500)" : u.state === "done" ? "#6B8F5E" : "#C24E22",
-                    }}
-                  />
-                  {u.state === "processing" && `${u.fileName} · extracting…`}
-                  {u.state === "done" && u.result?.success && `${u.result.company} — ${u.result.role} · extracted ✓`}
-                  {u.state === "error" && (u.result?.message || "Couldn't read this screenshot")}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className="flex-shrink-0" style={{ width: 240 }}>
-          <DsDropzone
-            label="Drop a job screenshot"
-            hint="or click to browse"
-            filetypes={["PNG", "JPG", "WEBP"]}
-            accept=".png,.jpg,.jpeg,.webp"
-            onFile={handleFile}
-          />
         </div>
       </div>
+
+      {uploads.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {uploads.map((u) => (
+            <span
+              key={u.id}
+              className="inline-flex items-center gap-1.5"
+              style={{
+                fontSize: 11.5, color: "var(--ds-ink-600)", background: "var(--ds-cream-100)",
+                border: "1px solid var(--ds-border-hairline)", borderRadius: "var(--ds-radius-pill)",
+                padding: "5px 10px 5px 6px", maxWidth: "100%",
+              }}
+            >
+              <span
+                style={{
+                  width: 6, height: 6, borderRadius: "50%", flexShrink: 0,
+                  background: u.state === "processing" ? "var(--ds-amber-500)" : u.state === "done" ? "#6B8F5E" : "#C24E22",
+                }}
+              />
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {u.state === "processing" && `${u.fileName} · extracting…`}
+                {u.state === "done" && u.result?.success && `${u.result.company} — ${u.result.role} · extracted ✓`}
+                {u.state === "error" && (u.result?.message || "Couldn't read this screenshot")}
+              </span>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Full width at every size, not squeezed into a fixed sidebar box --
+          DsDropzone is built as a standalone full-width target (see its own
+          padding/icon sizing), the same as the resume-upload page uses it.
+          Forcing it into a narrow fixed column made it disproportionately
+          tall and, on a phone, left an orphaned gap next to it. */}
+      <DsDropzone
+        label="Drop a job screenshot"
+        hint="or click to browse"
+        filetypes={["PNG", "JPG", "WEBP"]}
+        accept=".png,.jpg,.jpeg,.webp"
+        onFile={handleFile}
+      />
     </div>
   );
 }
@@ -310,7 +317,7 @@ function JobsPage() {
   };
 
   return (
-    <div className="p-8 space-y-6 relative min-h-screen">
+    <div className="p-4 md:p-8 space-y-5 md:space-y-6 relative min-h-screen">
       {/* Header */}
       <div>
         <h1 className="font-display text-2xl font-bold tracking-tight text-ink">Jobs</h1>
@@ -331,7 +338,7 @@ function JobsPage() {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             onFocus={() => setShowSuggestions(true)}
-            className="w-full pl-9 pr-4 py-1.5 rounded-xl bg-white/50 border border-white/60 focus:outline-none focus:border-[color:var(--peach-deep)] transition-colors"
+            className="w-full pl-9 pr-4 py-2 sm:py-1.5 rounded-xl bg-white/50 border border-white/60 focus:outline-none focus:border-[color:var(--peach-deep)] transition-colors"
           />
           {showSuggestions && suggestions.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-1.5 rounded-xl bg-white border border-white/60 shadow-lg z-20 overflow-hidden">
@@ -357,7 +364,7 @@ function JobsPage() {
         <select
           value={roleFilter}
           onChange={(e) => setRoleFilter(e.target.value)}
-          className="px-3 py-1.5 rounded-xl bg-white/50 border border-white/60 focus:outline-none text-ink-soft focus:border-[color:var(--peach-deep)] cursor-pointer"
+          className="flex-1 sm:flex-none min-w-[130px] sm:min-w-0 px-3 py-2 sm:py-1.5 rounded-xl bg-white/50 border border-white/60 focus:outline-none text-ink-soft focus:border-[color:var(--peach-deep)] cursor-pointer"
         >
           {ROLE_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -365,7 +372,7 @@ function JobsPage() {
         </select>
 
         {/* Location */}
-        <div className="relative">
+        <div className="relative flex-1 sm:flex-none min-w-[130px] sm:min-w-0">
           <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <MapPin className="h-3.5 w-3.5 text-ink-soft" />
           </span>
@@ -374,7 +381,7 @@ function JobsPage() {
             placeholder="Location — India, Remote, US…"
             value={locationFilter}
             onChange={(e) => setLocationFilter(e.target.value)}
-            className="pl-9 pr-4 py-1.5 w-52 rounded-xl bg-white/50 border border-white/60 focus:outline-none focus:border-[color:var(--peach-deep)] transition-colors"
+            className="pl-9 pr-4 py-2 sm:py-1.5 w-full sm:w-52 rounded-xl bg-white/50 border border-white/60 focus:outline-none focus:border-[color:var(--peach-deep)] transition-colors"
           />
         </div>
 
@@ -382,7 +389,7 @@ function JobsPage() {
         <select
           value={remoteFilter}
           onChange={(e) => setRemoteFilter(e.target.value)}
-          className="px-3 py-1.5 rounded-xl bg-white/50 border border-white/60 focus:outline-none text-ink-soft focus:border-[color:var(--peach-deep)] cursor-pointer"
+          className="flex-1 sm:flex-none min-w-[130px] sm:min-w-0 px-3 py-2 sm:py-1.5 rounded-xl bg-white/50 border border-white/60 focus:outline-none text-ink-soft focus:border-[color:var(--peach-deep)] cursor-pointer"
         >
           <option value="">Remote Type</option>
           <option value="remote">Remote</option>
@@ -393,7 +400,7 @@ function JobsPage() {
         {/* Sort */}
         <button
           onClick={() => setSortField(sortField === "intent_score" ? "posted_at" : "intent_score")}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/60 bg-white/50 text-ink-soft hover:bg-white/80 transition-colors"
+          className="flex-1 sm:flex-none flex items-center justify-center sm:justify-start gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl border border-white/60 bg-white/50 text-ink-soft hover:bg-white/80 transition-colors"
         >
           <ArrowUpDown className="h-3.5 w-3.5" />
           <span>Sort: {sortField === "intent_score" ? "Intent Match" : "Date Posted"}</span>
