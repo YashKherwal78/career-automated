@@ -15,7 +15,7 @@ markdown fences, no commentary:
 {
   "company": "<company name, or empty string if not visible>",
   "role": "<job title/role, or empty string if not visible>",
-  "apply_link": "<the URL to apply, or empty string if none is visible>",
+  "apply_link": "<how to apply -- the URL to apply if one is given, OR the email address if the post instead says something like \\"email your CV/resume to jobs@company.com\\" or \\"send your resume to us at ...\\" -- put whichever one is actually present here as a plain string (URL or bare email address, no \\"mailto:\\" prefix), or empty string if neither is visible>",
   "location": "<location if mentioned, else null>",
   "jd_excerpt": "<any job description text visible in the image (caption, bullet points), else null>",
   "confidence": <float 0.0-1.0, your confidence that company/role/apply_link are all correct>

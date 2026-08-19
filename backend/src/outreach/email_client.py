@@ -34,41 +34,45 @@ class EmailClient:
         self.imap_server = "imap.gmail.com"
         
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=2, min=4, max=15), retry=tenacity.retry_if_exception(retry_if_transient_error))
-    def send_email(self, to_email: str, subject: str, body: str, resume_path: str = None, dry_run: bool = False) -> bool:
-        if resume_path:
-            if not os.path.exists(resume_path):
-                raise ResumeAttachmentError(f"Resume path does not exist: {resume_path}")
-            if os.path.getsize(resume_path) == 0:
-                raise ResumeAttachmentError(f"Resume file is empty: {resume_path}")
-                
+    def send_email(self, to_email: str, subject: str, body: str, resume_path: str = None, extra_attachment_path: str = None, dry_run: bool = False) -> bool:
+        for path in (resume_path, extra_attachment_path):
+            if path:
+                if not os.path.exists(path):
+                    raise ResumeAttachmentError(f"Attachment path does not exist: {path}")
+                if os.path.getsize(path) == 0:
+                    raise ResumeAttachmentError(f"Attachment file is empty: {path}")
+
         banned_placeholders = ["[recruiter name]", "[name]", "{name}", "{recruiter}", "[first name]", "{first name}", "hi ,", "hello ,", "dear ,"]
         body_lower = body.lower()
         for ph in banned_placeholders:
             if ph in body_lower:
                 raise ValueError(f"Unresolved placeholder detected before send: {ph}")
-                
+
         if dry_run:
-            logger.info(f"[DRY RUN] Would send to: {to_email} | Subject: {subject} | Attachment: {resume_path}")
+            logger.info(f"[DRY RUN] Would send to: {to_email} | Subject: {subject} | Attachments: {[p for p in (resume_path, extra_attachment_path) if p]}")
             return True
-            
+
         try:
             msg = MIMEMultipart()
             msg['From'] = self.email_address
             msg['To'] = to_email
             msg['Subject'] = subject
             msg.attach(MIMEText(body, 'plain'))
-            
-            if resume_path:
+
+            attached_count = 0
+            for path in (resume_path, extra_attachment_path):
+                if not path:
+                    continue
                 from email.mime.application import MIMEApplication
-                with open(resume_path, 'rb') as f:
-                    part = MIMEApplication(f.read(), Name=os.path.basename(resume_path))
-                part['Content-Disposition'] = f'attachment; filename="{os.path.basename(resume_path)}"'
+                with open(path, 'rb') as f:
+                    part = MIMEApplication(f.read(), Name=os.path.basename(path))
+                part['Content-Disposition'] = f'attachment; filename="{os.path.basename(path)}"'
                 msg.attach(part)
-                
-                # Check MIME payload
-                if len(msg.get_payload()) < 2:
-                    raise ResumeAttachmentError("MIME payload does not contain the attachment.")
-            
+                attached_count += 1
+
+            if attached_count and len(msg.get_payload()) < 1 + attached_count:
+                raise ResumeAttachmentError("MIME payload does not contain every attachment.")
+
             with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=30) as server:
                 server.starttls()
                 server.login(self.email_address, self.password)
