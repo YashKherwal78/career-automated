@@ -199,13 +199,50 @@ class IntentFilter:
         "senior", "junior", "sr", "jr", "i", "ii", "iii",
     }
 
+    # Profession nouns generic enough that sharing ONLY these with a role
+    # isn't real signal -- e.g. a resume-derived role "AI Product Manager
+    # Intern" strips to {"ai", "product", "manager"}, and a job titled
+    # plain "Product Manager" shares "product"+"manager" (2 tokens, 67%
+    # overlap) without ever containing "ai" -- the one word that actually
+    # distinguished the original role from a generic PM posting. Confirmed
+    # live: this let a single AI-qualified internship title make bare
+    # "Product Manager"/"Software Development Manager" postings outscore
+    # actual AI engineering roles for an AI/ML candidate. Tokens in this
+    # set don't count toward "the role's real qualifier was matched" --
+    # see the qualifier-token split below.
+    _GENERIC_PROFESSION_NOUNS = {
+        "manager", "engineer", "analyst", "developer", "scientist",
+        "director", "specialist", "architect", "consultant", "designer",
+    }
+
+    # Resume-derived roles are frequently noun-phrase department names
+    # ("Software Development Intern", "Engineering Intern") rather than
+    # person-noun job titles ("Developer", "Engineer") -- confirmed live:
+    # neither "development" nor "engineering" is in _GENERIC_PROFESSION_
+    # NOUNS, so a candidate whose only two non-PM internships were titled
+    # exactly that way got ZERO title-relevance credit for "Software
+    # Engineer"/"AI Engineer" postings, even the fallback bucket. Maps the
+    # common noun-phrase form to its person-noun equivalent before any
+    # token-set comparison so both forms are treated as the same word.
+    _ROLE_WORD_NORMALIZATION = {
+        "engineering": "engineer", "development": "developer",
+        "science": "scientist", "analysis": "analyst",
+        "management": "manager", "design": "designer",
+        "architecture": "architect", "consulting": "consultant",
+    }
+
+    def _normalize_role_tokens(self, tokens: set) -> set:
+        return {self._ROLE_WORD_NORMALIZATION.get(t, t) for t in tokens}
+
     def _title_role_score(self, title_lower: str, profile: CandidateProfile) -> float:
         """Return 0.0–1.0 based on how well the job title matches target roles."""
         # Hard penalty for obvious wrong-domain titles
         if any(wd in title_lower for wd in self._WRONG_DOMAIN_SIGNALS):
             return 0.05
 
-        title_tokens = set(title_lower.replace(",", " ").replace("/", " ").split())
+        title_tokens = self._normalize_role_tokens(
+            set(title_lower.replace(",", " ").replace("/", " ").split())
+        )
 
         best = 0.0
         for role in profile.target_roles:
@@ -222,9 +259,9 @@ class IntentFilter:
             # role like "AI Product Manager Intern" that isn't a canonical
             # role family) — fall back to token overlap: how many of the
             # role's meaningful words actually show up in this title.
-            role_tokens = {
+            role_tokens = self._normalize_role_tokens({
                 t for t in role_lower.replace(",", " ").split() if t not in self._ROLE_STOPWORDS
-            }
+            })
             # Require at least 2 meaningful tokens before trusting the
             # overlap ratio. A role like "Engineering Intern" strips down to
             # the single token {"engineering"} once "intern" is removed as a
@@ -241,7 +278,29 @@ class IntentFilter:
                 # 50% ratio from "Development" alone, which matched every
                 # "Business Development Manager"/"Development Officer"
                 # sales posting that shares nothing else with the role.
-                if len(shared) >= 2 and overlap >= 0.6:
+                #
+                # qualifier_tokens are whatever's left after stripping the
+                # generic profession noun(s) — the part of the role that
+                # actually says WHAT KIND of manager/engineer/etc it was
+                # (e.g. "ai" + "product" out of "ai product manager"). If
+                # the role has qualifier tokens at all, ALL of them must
+                # appear in the title for the high-confidence tier —
+                # sharing only the generic noun ("Manager") is downgraded
+                # to the mid tier at best, same as a role with no shared
+                # qualifier at all. A role with no qualifier tokens (e.g.
+                # "Software Development Intern" -> {"software",
+                # "development"}, neither a generic noun) keeps the prior
+                # any-2-shared behavior since there's no distinguishing
+                # word to require in the first place.
+                qualifier_tokens = role_tokens - self._GENERIC_PROFESSION_NOUNS
+                if qualifier_tokens:
+                    if qualifier_tokens.issubset(title_tokens) and len(shared) >= 2 and overlap >= 0.6:
+                        best = max(best, 0.85)
+                    elif (qualifier_tokens & title_tokens) and len(shared) >= 2 and overlap >= 0.34:
+                        best = max(best, 0.5)
+                    elif len(shared) >= 2 and overlap >= 0.6:
+                        best = max(best, 0.3)
+                elif len(shared) >= 2 and overlap >= 0.6:
                     best = max(best, 0.85)
                 elif len(shared) >= 2 and overlap >= 0.34:
                     best = max(best, 0.5)
@@ -255,12 +314,24 @@ class IntentFilter:
         # postings purely because those titles contain "manager"/"analyst" —
         # words that carry zero signal outside the roles the candidate
         # actually targets.
+        #
+        # role.split()[-1] (the literal last word) previously meant every
+        # resume-derived role ending in a suffix like "Intern" — which is
+        # all of them, for e.g. "Software Development Intern"/"Engineering
+        # Intern" — always extracted "intern" itself, never the real
+        # profession noun, so this bucket silently never fired for roles
+        # with that shape. Scanning ALL of the role's stopword-stripped
+        # tokens (not just the last raw word) fixes that.
         if best == 0.0:
-            target_profession_words = {
-                role.lower().split()[-1]
-                for role in profile.target_roles
-                if role.strip()
-            } & {"engineer", "analyst", "manager", "developer", "scientist"}
+            target_profession_words = set()
+            for role in profile.target_roles:
+                if not role.strip():
+                    continue
+                role_tokens = self._normalize_role_tokens({
+                    t for t in role.lower().replace(",", " ").split()
+                    if t not in self._ROLE_STOPWORDS
+                })
+                target_profession_words |= role_tokens & self._GENERIC_PROFESSION_NOUNS
             if any(g in title_lower for g in target_profession_words):
                 best = 0.3  # plausible but not targeted
 
