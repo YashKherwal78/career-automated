@@ -66,26 +66,36 @@ function formatExperience(min?: number | null, max?: number | null): string {
   return `Up to ${max} yrs`;
 }
 
-type ApplyStatus = {
+export type ApplyStatus = {
   state: "applying" | "applied" | "review_required" | "failed";
   message?: string;
 };
 
-export function JobDetailModal({
-  job,
-  queued,
-  applyStatus,
-  onToggleQueue,
-  onClose,
-  showMatch = true,
-}: {
+export interface JobDetailContentProps {
   job: Job;
   queued: boolean;
   applyStatus?: ApplyStatus;
   onToggleQueue: () => void;
-  onClose: () => void;
   showMatch?: boolean;
-}) {
+  /** Modal usage needs its own close affordance rendered inside the header;
+   * the split-view panel (jobs.tsx) doesn't -- deselecting is just clicking
+   * another row, there's nothing to "close". */
+  onClose?: () => void;
+}
+
+// The shared body: header, stats, actions, About/Match/Skills/Salary
+// accordion. Used both inside DsModal (JobDetailModal, below -- dashboard
+// home page and the mobile /dashboard/jobs/$jobId route) and directly,
+// unwrapped, in the Jobs page's split-view detail pane -- a modal makes no
+// sense there since the detail pane is always on screen, not an overlay.
+export function JobDetailContent({
+  job,
+  queued,
+  applyStatus,
+  onToggleQueue,
+  showMatch = true,
+  onClose,
+}: JobDetailContentProps) {
   const salary = formatSalary(job);
   const breakdown = job.score_breakdown || [];
   const structured = breakdown.length > 0 && typeof breakdown[0] === "object";
@@ -101,9 +111,9 @@ export function JobDetailModal({
     : [];
 
   return (
-    <DsModal onClose={onClose} maxWidth={560}>
+    <>
       <div style={{ padding: "26px 28px 22px", position: "relative" }}>
-        <DsModalCloseButton onClose={onClose} />
+        {onClose && <DsModalCloseButton onClose={onClose} />}
         <div
           className="uppercase font-bold"
           style={{
@@ -369,6 +379,39 @@ export function JobDetailModal({
       )}
 
       <div style={{ height: 8 }} />
+    </>
+  );
+}
+
+// Thin modal wrapper around JobDetailContent -- kept for the two call
+// sites that genuinely need an overlay: the Dashboard home page, and the
+// mobile /dashboard/jobs/$jobId route (the Jobs page's desktop split view
+// renders JobDetailContent directly, no modal, see jobs.tsx).
+export function JobDetailModal({
+  job,
+  queued,
+  applyStatus,
+  onToggleQueue,
+  onClose,
+  showMatch = true,
+}: {
+  job: Job;
+  queued: boolean;
+  applyStatus?: ApplyStatus;
+  onToggleQueue: () => void;
+  onClose: () => void;
+  showMatch?: boolean;
+}) {
+  return (
+    <DsModal onClose={onClose} maxWidth={560}>
+      <JobDetailContent
+        job={job}
+        queued={queued}
+        applyStatus={applyStatus}
+        onToggleQueue={onToggleQueue}
+        onClose={onClose}
+        showMatch={showMatch}
+      />
     </DsModal>
   );
 }
