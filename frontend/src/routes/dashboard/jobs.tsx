@@ -33,6 +33,22 @@ function formatExperience(min?: number | null, max?: number | null): string {
   return `Up to ${max} yrs`;
 }
 
+// Pure, per-row helper -- same category as formatExperience above, not new
+// page-level state. Deliberately not touching how `jobs` itself is loaded
+// or held in state (the split-view redesign that broke the list did that,
+// via a derived selectedJobId/selectedJob pair); this only decides what
+// color/label a row's own already-known score gets.
+function matchPercent(job: Job): number | null {
+  if (job.intent_score != null) return Math.round(job.intent_score * 100);
+  if (job.job_score) return job.job_score;
+  return null;
+}
+function matchTone(pct: number) {
+  if (pct >= 85) return { bg: "rgba(107,143,94,0.14)", fg: "#4E6E42" };
+  if (pct >= 70) return { bg: "rgba(217,164,65,0.16)", fg: "#8A6414" };
+  return { bg: "var(--ds-cream-200)", fg: "var(--ds-ink-500)" };
+}
+
 // ---------------------------------------------------------------------
 // Upload Job — screenshot a job post, we extract company/role/apply link.
 // Extraction-only: this shows the candidate what we read off the image,
@@ -395,132 +411,157 @@ function JobsPage() {
           <p className="text-xs text-ink-soft">No jobs matched your filter criteria.</p>
         </div>
       ) : (
-        <div className="glass-card rounded-3xl p-6 border border-white/50 bg-white/40 shadow-sm">
+        <div className="glass-card rounded-3xl border border-white/50 bg-white/40 shadow-sm overflow-hidden">
           {/* Desktop/tablet: full table. A 7-column table has no honest
               mobile rendering (confirmed live: Resume Match + View Details
               were pushed off the 390px viewport, discoverable only via an
               unlabeled horizontal scroll) -- hidden below md, replaced by
               the stacked cards underneath instead of trying to cram it in. */}
           <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-white/20 text-ink-soft">
-                  <th className="pb-3 font-medium">Company</th>
-                  <th className="pb-3 font-medium">Position</th>
-                  <th className="pb-3 font-medium">Location</th>
-                  <th className="pb-3 font-medium">Experience</th>
-                  <th className="pb-3 font-medium">Salary Range</th>
-                  <th className="pb-3 font-medium">Remote</th>
-                  <th className="pb-3 font-medium">Resume Match</th>
-                  <th className="pb-3 font-medium"></th>
+                <tr style={{ borderBottom: "1px solid var(--ds-border-hairline)" }}>
+                  {["Company", "Position", "Location", "Experience", "Salary Range", "Remote", "Resume Match", ""].map((h) => (
+                    <th
+                      key={h}
+                      className="uppercase font-bold"
+                      style={{ padding: "16px 20px 14px", fontSize: 10.5, letterSpacing: 0.5, color: "var(--ds-ink-400)" }}
+                    >
+                      {h}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {jobs.map((job) => (
-                  <tr key={job.job_id} className="border-b border-white/10 hover:bg-white/30 transition-colors">
-                    <td className="py-4 font-semibold text-ink">
-                      <div className="flex items-center gap-2.5">
-                        <CompanyLogo name={job.canonical_name} domain={job.company_domain} size={24} radius={6} fontSize={10.5} />
-                        <span>{job.canonical_name}</span>
-                        {JOB_BOARD_PROVIDERS.has((job.provider || "").toLowerCase()) && (
-                          <span className="ml-1 text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100">EXTERNAL</span>
+                {jobs.map((job) => {
+                  const pct = matchPercent(job);
+                  const tone = pct != null ? matchTone(pct) : null;
+                  return (
+                    <tr key={job.job_id} className="transition-colors hover:bg-white/50" style={{ borderBottom: "1px solid var(--ds-border-hairline)" }}>
+                      <td style={{ padding: "16px 20px" }}>
+                        <div className="flex items-center gap-3">
+                          <CompanyLogo name={job.canonical_name} domain={job.company_domain} size={30} radius={8} fontSize={12} />
+                          <span className="font-semibold" style={{ fontSize: 13, color: "var(--ds-ink-900)" }}>{job.canonical_name}</span>
+                          {JOB_BOARD_PROVIDERS.has((job.provider || "").toLowerCase()) && (
+                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100">EXTERNAL</span>
+                          )}
+                        </div>
+                      </td>
+                      <td style={{ padding: "16px 20px", fontSize: 13, color: "var(--ds-ink-700)" }}>{job.title}</td>
+                      <td style={{ padding: "16px 20px", fontSize: 13, color: "var(--ds-ink-600)" }}>{job.location || "Remote"}</td>
+                      <td style={{ padding: "16px 20px", fontSize: 13, color: "var(--ds-ink-600)" }}>{formatExperience(job.experience_min, job.experience_max)}</td>
+                      <td style={{ padding: "16px 20px", fontSize: 13, color: "var(--ds-ink-600)" }}>
+                        {job.salary_min && job.salary_max
+                          ? `₹${(job.salary_min/100000).toFixed(1)}L - ₹${(job.salary_max/100000).toFixed(1)}L`
+                          : "Competitive"}
+                      </td>
+                      <td className="capitalize" style={{ padding: "16px 20px", fontSize: 13, color: "var(--ds-ink-600)" }}>{job.remote || "Onsite"}</td>
+                      <td style={{ padding: "16px 20px" }}>
+                        {pct != null ? (
+                          <span
+                            className="font-semibold"
+                            style={{ fontSize: 12, padding: "4px 11px", borderRadius: "var(--ds-radius-pill)", background: tone!.bg, color: tone!.fg }}
+                          >
+                            {pct}%
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: 13, color: "var(--ds-ink-400)" }}>—</span>
                         )}
-                      </div>
-                    </td>
-                    <td className="py-4 text-ink-soft font-medium">{job.title}</td>
-                    <td className="py-4 text-ink-soft">{job.location || "Remote"}</td>
-                    <td className="py-4 text-ink-soft">{formatExperience(job.experience_min, job.experience_max)}</td>
-                    <td className="py-4 text-ink-soft">
-                      {job.salary_min && job.salary_max
-                        ? `₹${(job.salary_min/100000).toFixed(1)}L - ₹${(job.salary_max/100000).toFixed(1)}L`
-                        : "Competitive"}
-                    </td>
-                    <td className="py-4 text-ink-soft capitalize">{job.remote || "Onsite"}</td>
-                    <td className="py-4 font-semibold text-[color:var(--peach-deep)]">
-                      {job.intent_score != null
-                        ? `${Math.round(job.intent_score * 100)}%`
-                        : job.job_score
-                        ? `${job.job_score}%`
-                        : "—"}
-                      <span className="ml-1 text-[9px] text-ink-soft font-normal">intent</span>
-                    </td>
-                    <td className="py-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {applyMode === "assisted" && job.apply_url && (
-                          <BackgroundApplyButton
-                            jobId={job.job_id}
-                            applyUrl={job.apply_url}
-                            hasExtension={!!hasExtension}
-                          />
-                        )}
-                        <Link to={`/dashboard/jobs/${job.job_id}`} className="btn-peach px-3 py-1.5 text-xs rounded-xl">
-                          View Details
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td style={{ padding: "16px 20px" }}>
+                        <div className="flex items-center justify-end gap-1.5">
+                          {applyMode === "assisted" && job.apply_url && (
+                            <BackgroundApplyButton
+                              jobId={job.job_id}
+                              applyUrl={job.apply_url}
+                              hasExtension={!!hasExtension}
+                            />
+                          )}
+                          <Link
+                            to={`/dashboard/jobs/${job.job_id}`}
+                            className="font-semibold"
+                            style={{
+                              padding: "8px 16px", borderRadius: "var(--ds-radius-lg)", fontSize: 12.5,
+                              background: "var(--ds-accent-primary)", color: "var(--ds-text-on-brand)",
+                            }}
+                          >
+                            View Details
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
 
           {/* Mobile: stacked cards, same data/actions as the table above. */}
-          <div className="md:hidden flex flex-col gap-3">
-            {jobs.map((job) => (
-              <div key={job.job_id} className="rounded-2xl border border-white/50 bg-white/50 p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <CompanyLogo name={job.canonical_name} domain={job.company_domain} size={28} radius={7} fontSize={11} />
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-semibold text-ink text-xs">{job.canonical_name}</span>
+          <div className="md:hidden">
+            {jobs.map((job, i) => {
+              const pct = matchPercent(job);
+              const tone = pct != null ? matchTone(pct) : null;
+              return (
+                <div
+                  key={job.job_id}
+                  style={{ padding: "14px 16px", borderTop: i === 0 ? "none" : "1px solid var(--ds-border-hairline)" }}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <CompanyLogo name={job.canonical_name} domain={job.company_domain} size={30} radius={8} fontSize={12} />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-semibold truncate" style={{ fontSize: 13, color: "var(--ds-ink-900)" }}>
+                          {job.canonical_name}
+                        </span>
                         {JOB_BOARD_PROVIDERS.has((job.provider || "").toLowerCase()) && (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100">EXTERNAL</span>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100 flex-shrink-0">EXTERNAL</span>
                         )}
                       </div>
-                      <div className="text-ink-soft text-xs font-medium mt-0.5">{job.title}</div>
+                      <div className="truncate" style={{ fontSize: 12.5, color: "var(--ds-ink-600)" }}>{job.title}</div>
                     </div>
+                    {pct != null && (
+                      <span
+                        className="font-semibold flex-shrink-0"
+                        style={{ fontSize: 11, padding: "3px 9px", borderRadius: "var(--ds-radius-pill)", background: tone!.bg, color: tone!.fg }}
+                      >
+                        {pct}%
+                      </span>
+                    )}
                   </div>
-                  <div className="flex-shrink-0 text-right">
-                    <div className="font-semibold text-[color:var(--peach-deep)] text-xs">
-                      {job.intent_score != null
-                        ? `${Math.round(job.intent_score * 100)}%`
-                        : job.job_score
-                        ? `${job.job_score}%`
-                        : "—"}
-                    </div>
-                    <div className="text-[9px] text-ink-soft">match</div>
+
+                  <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1" style={{ fontSize: 11.5, color: "var(--ds-ink-450)" }}>
+                    <span>{job.location || "Remote"}</span>
+                    <span className="capitalize">{job.remote || "Onsite"}</span>
+                    <span>{formatExperience(job.experience_min, job.experience_max)}</span>
+                    <span>
+                      {job.salary_min && job.salary_max
+                        ? `₹${(job.salary_min / 100000).toFixed(1)}L - ₹${(job.salary_max / 100000).toFixed(1)}L`
+                        : "Competitive"}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 flex items-center gap-1.5">
+                    {applyMode === "assisted" && job.apply_url && (
+                      <BackgroundApplyButton
+                        jobId={job.job_id}
+                        applyUrl={job.apply_url}
+                        hasExtension={!!hasExtension}
+                      />
+                    )}
+                    <Link
+                      to={`/dashboard/jobs/${job.job_id}`}
+                      className="flex-1 text-center font-semibold"
+                      style={{
+                        padding: "10px 14px", borderRadius: "var(--ds-radius-lg)",
+                        background: "var(--ds-accent-primary)", color: "var(--ds-text-on-brand)", fontSize: 13,
+                      }}
+                    >
+                      View Details
+                    </Link>
                   </div>
                 </div>
-
-                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-ink-soft">
-                  <span>{job.location || "Remote"}</span>
-                  <span className="capitalize">{job.remote || "Onsite"}</span>
-                  <span>{formatExperience(job.experience_min, job.experience_max)}</span>
-                  <span>
-                    {job.salary_min && job.salary_max
-                      ? `₹${(job.salary_min / 100000).toFixed(1)}L - ₹${(job.salary_max / 100000).toFixed(1)}L`
-                      : "Competitive"}
-                  </span>
-                </div>
-
-                <div className="mt-3 flex items-center gap-1.5">
-                  {applyMode === "assisted" && job.apply_url && (
-                    <BackgroundApplyButton
-                      jobId={job.job_id}
-                      applyUrl={job.apply_url}
-                      hasExtension={!!hasExtension}
-                    />
-                  )}
-                  <Link
-                    to={`/dashboard/jobs/${job.job_id}`}
-                    className="btn-peach px-3 py-1.5 text-xs rounded-xl flex-1 text-center"
-                  >
-                    View Details
-                  </Link>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
