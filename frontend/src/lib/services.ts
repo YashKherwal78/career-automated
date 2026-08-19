@@ -15,6 +15,11 @@ export interface Job {
   apply_url: string;
   description?: string;
   application_status?: string;
+  // Extracted by JDExtractor at embedding time -- both null means either
+  // "not processed yet" or "no explicit number in the JD text" (that
+  // extractor has weak recall on this field), not "0 years required".
+  experience_min?: number | null;
+  experience_max?: number | null;
 }
 
 export interface Company {

@@ -21,6 +21,16 @@ export const Route = createFileRoute("/dashboard/jobs")({
 // dashboard shows one unified feed, not separate tabs).
 const JOB_BOARD_PROVIDERS = new Set(["linkedin", "google_jobs", "wellfound", "indeed"]);
 
+// Both null means either "not extracted yet" or "the JD never stated a
+// number" (JDExtractor has weak recall here) -- shown as "Not specified",
+// never as "0 years", since that would misrepresent unknown as junior.
+function formatExperience(min?: number | null, max?: number | null): string {
+  if (min == null && max == null) return "Not specified";
+  if (min != null && max != null && max !== min) return `${min}–${max} yrs`;
+  if (min != null) return `${min}+ yrs`;
+  return `Up to ${max} yrs`;
+}
+
 function JobsPage() {
   const { jobService } = useDashboard();
   const searchParams = useSearch({ from: "/dashboard/jobs" });
@@ -259,6 +269,7 @@ function JobsPage() {
                   <th className="pb-3 font-medium">Company</th>
                   <th className="pb-3 font-medium">Position</th>
                   <th className="pb-3 font-medium">Location</th>
+                  <th className="pb-3 font-medium">Experience</th>
                   <th className="pb-3 font-medium">Salary Range</th>
                   <th className="pb-3 font-medium">Remote</th>
                   <th className="pb-3 font-medium">Resume Match</th>
@@ -279,6 +290,7 @@ function JobsPage() {
                     </td>
                     <td className="py-4 text-ink-soft font-medium">{job.title}</td>
                     <td className="py-4 text-ink-soft">{job.location || "Remote"}</td>
+                    <td className="py-4 text-ink-soft">{formatExperience(job.experience_min, job.experience_max)}</td>
                     <td className="py-4 text-ink-soft">
                       {job.salary_min && job.salary_max
                         ? `₹${(job.salary_min/100000).toFixed(1)}L - ₹${(job.salary_max/100000).toFixed(1)}L`
@@ -345,6 +357,7 @@ function JobsPage() {
                 <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-ink-soft">
                   <span>{job.location || "Remote"}</span>
                   <span className="capitalize">{job.remote || "Onsite"}</span>
+                  <span>{formatExperience(job.experience_min, job.experience_max)}</span>
                   <span>
                     {job.salary_min && job.salary_max
                       ? `₹${(job.salary_min / 100000).toFixed(1)}L - ₹${(job.salary_max / 100000).toFixed(1)}L`

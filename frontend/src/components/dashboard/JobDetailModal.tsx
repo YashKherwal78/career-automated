@@ -56,6 +56,16 @@ function formatSalary(job: Job): string | null {
   return fmt(job.salary_min || job.salary_max || 0) + " / year";
 }
 
+// Both null means either "not extracted yet" or "the JD never stated a
+// number" (JDExtractor has weak recall here) -- shown as "Not specified",
+// never as "0 years", since that would misrepresent unknown as junior.
+function formatExperience(min?: number | null, max?: number | null): string {
+  if (min == null && max == null) return "Not specified";
+  if (min != null && max != null && max !== min) return `${min}–${max} yrs`;
+  if (min != null) return `${min}+ yrs`;
+  return `Up to ${max} yrs`;
+}
+
 type ApplyStatus = {
   state: "applying" | "applied" | "review_required" | "failed";
   message?: string;
@@ -152,6 +162,30 @@ export function JobDetailModal({
               </div>
               <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ds-ink-800)" }}>
                 {salary}
+              </div>
+            </div>
+          )}
+          <div>
+            <div
+              className="uppercase font-bold"
+              style={{ fontSize: 11, color: "var(--ds-ink-400)", marginBottom: 4 }}
+            >
+              Experience
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ds-ink-800)" }}>
+              {formatExperience(job.experience_min, job.experience_max)}
+            </div>
+          </div>
+          {job.remote && (
+            <div>
+              <div
+                className="uppercase font-bold"
+                style={{ fontSize: 11, color: "var(--ds-ink-400)", marginBottom: 4 }}
+              >
+                Work Type
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ds-ink-800)", textTransform: "capitalize" }}>
+                {job.remote}
               </div>
             </div>
           )}
