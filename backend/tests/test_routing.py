@@ -44,15 +44,33 @@ def test_resolve_connector_returns_verified_known_ats(mock_get, mock_is_verified
     assert "verified" in reason
 
 
-@patch("src.ingestion.routing.mark_endpoint_verified")
 @patch("src.ingestion.routing.is_endpoint_verified", return_value=False)
 @patch("src.ingestion.routing.httpx.get")
-def test_resolve_connector_verifies_unverified_known_ats(mock_get, mock_is_verified, mock_mark):
+def test_resolve_connector_refuses_to_route_unverified_known_ats(mock_get, mock_is_verified):
+    """A recognized-but-unverified endpoint used to be auto-"verified" by
+    inserting a guessed row into the live 62k-row ats_registry table (with a
+    NULL company_id, a vendor host instead of a tenant domain, and -- on
+    Postgres -- a provider_id that may violate the ats_providers FK). It now
+    stays unroutable so the lead lands in human review instead."""
     mock_get.return_value = MagicMock(status_code=200, text="grnhse.com", url="https://boards.greenhouse.io/acme")
     connector, reason = resolve_connector("https://boards.greenhouse.io/acme/jobs/1")
-    assert connector == "greenhouse"
-    assert "newly verified" in reason
-    mock_mark.assert_called_once()
+    assert connector is None
+    assert "not verified" in reason
+
+
+@patch("src.ingestion.routing.httpx.get")
+def test_resolve_connector_rejects_non_200_apply_link(mock_get):
+    """A dead posting's URL still matches the vendor pattern -- only the
+    response status tells them apart."""
+    mock_get.return_value = MagicMock(status_code=404, text="grnhse.com", url="https://boards.greenhouse.io/acme")
+    connector, reason = resolve_connector("https://boards.greenhouse.io/acme/jobs/1")
+    assert connector is None
+    assert "404" in reason
+
+
+def test_routing_does_not_import_any_ats_registry_writer():
+    import src.ingestion.routing as routing
+    assert not hasattr(routing, "mark_endpoint_verified")
 
 
 @patch("src.ingestion.routing.httpx.get")
