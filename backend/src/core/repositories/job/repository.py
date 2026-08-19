@@ -599,7 +599,7 @@ class JobRepository(BaseRepository, IJobRepository):
                         f"""UPDATE normalized_jobs
                             SET embedding = {p}::vector, jd_profile = {p}::jsonb,
                                 jd_hash = {p}, jd_parser = 'JDExtractor', jd_version = {p},
-                                jd_parsed_at = NOW(), experience_min = {p}, experience_max = {p}
+                                jd_parsed_at = EXTRACT(epoch FROM NOW()), experience_min = {p}, experience_max = {p}
                             WHERE job_id = {p}""",
                         (self._vector_literal(vec), jd_profile_json, jd_hash, jie_version,
                          experience_min, experience_max, job_id),
