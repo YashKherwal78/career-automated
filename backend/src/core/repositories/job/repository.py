@@ -592,6 +592,67 @@ class JobRepository(BaseRepository, IJobRepository):
             )
             return [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
 
+    def get_jobs_missing_embedding_v2(self, limit: int = 500, tx=None) -> List[dict]:
+        """Same idea as get_jobs_missing_embedding, targeting the parallel
+        nomic-embed column (migration 045) instead -- a separate backlog,
+        since embedding_v2 starts NULL for every job regardless of whether
+        the bge-small `embedding` is already populated."""
+        with self.transaction() as conn:
+            batch_limit = conn.dialect.create_limit(limit)
+            c = conn.execute(
+                f"""
+                SELECT job_id, title, description, jd_profile FROM normalized_jobs
+                WHERE status = 'ACTIVE' AND embedding_v2 IS NULL
+                {batch_limit}
+                """
+            )
+            return [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
+
+    def store_job_embeddings_v2(self, job_id_to_vector: dict, tx=None) -> None:
+        """Writes embedding_v2 only -- doesn't touch jd_profile/experience_min
+        etc (those are already populated via the v1 backfill worker; this
+        is purely the second vector column)."""
+        if not job_id_to_vector:
+            return
+        with self.transaction() as conn:
+            p = conn.dialect.placeholder()
+            for job_id, vec in job_id_to_vector.items():
+                conn.execute(
+                    f"UPDATE normalized_jobs SET embedding_v2 = {p}::vector WHERE job_id = {p}",
+                    (self._vector_literal(vec), job_id),
+                )
+
+    def get_candidate_embedding_v2(self, user_id: str, tx=None):
+        with self.transaction() as conn:
+            p = conn.dialect.placeholder()
+            row = conn.execute(
+                f"SELECT embedding_v2::text as embedding_v2 FROM public.user_career_profiles WHERE user_id = {p}",
+                (user_id,),
+            ).fetchone()
+            if row and row["embedding_v2"]:
+                return row["embedding_v2"]
+            return None
+
+    def store_candidate_embedding_v2(self, user_id: str, vec: List[float], tx=None) -> None:
+        with self.transaction() as conn:
+            p = conn.dialect.placeholder()
+            conn.execute(
+                f"UPDATE public.user_career_profiles SET embedding_v2 = {p}::vector WHERE user_id = {p}",
+                (self._vector_literal(vec), user_id),
+            )
+
+    def get_candidate_ids_missing_embedding_v2(self, limit: int = 200, tx=None) -> List[dict]:
+        with self.transaction() as conn:
+            batch_limit = conn.dialect.create_limit(limit)
+            c = conn.execute(
+                f"""
+                SELECT user_id, profile_data FROM public.user_career_profiles
+                WHERE embedding_v2 IS NULL AND profile_data IS NOT NULL
+                {batch_limit}
+                """
+            )
+            return [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
+
     def store_job_embeddings(self, job_id_to_vector: dict, job_id_to_profile: dict = None, tx=None) -> None:
         """job_id_to_profile is optional: {job_id: (jd_profile_json_str, jd_hash, jie_version,
         experience_min, experience_max)}. experience_min/max may be None (JDExtractor
