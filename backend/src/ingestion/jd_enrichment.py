@@ -1,9 +1,11 @@
+import asyncio
 import dataclasses
 from typing import Optional
 
 from src.system.logger import setup_logger
 from src.api.db import get_connection, is_postgres
 from src.ingestion.job_lead import JobLead
+from src.discovery.providers.search_engine_provider import YahooBackend
 
 logger = setup_logger("jd_enrichment")
 
@@ -41,3 +43,30 @@ def already_applied(lead: JobLead, user_id: str) -> bool:
             (user_id, lead.company, lead.role),
         )
         return cur.fetchone() is not None
+
+
+def enrich_with_web_search(lead: JobLead) -> JobLead:
+    """Last-resort JD enrichment (spec §2 step 3) -- only called by the
+    pipeline after both the internal DB match and the Google Form's own
+    description text have come up empty, to minimize paid/rate-limited
+    search calls."""
+    if lead.jd_excerpt:
+        return lead
+
+    backend = YahooBackend()
+    query = f"{lead.company} {lead.role} job description"
+    try:
+        urls = asyncio.run(backend.search(query))
+    except Exception as e:
+        logger.info(f"[jd_enrichment] web search failed for {query}: {e}")
+        return lead
+
+    if not urls:
+        return lead
+
+    # Storing the found URL as the excerpt seed is deliberately conservative
+    # here -- fetching and extracting full page text is Task 8/10's
+    # GoogleFormsHandler's territory (it already has an HTTP-capable
+    # Playwright context); this function's job is only to decide whether a
+    # plausible JD source exists at all, not to scrape it.
+    return dataclasses.replace(lead, jd_excerpt=f"(found via web search: {urls[0]})")
