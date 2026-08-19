@@ -96,6 +96,22 @@ def get_board_jobs(
         user_id=current_user.user_id,
     )
 
+@router.get("/semantic-search")
+def semantic_search_jobs(
+    k: int = Query(50, ge=1, le=500),
+    repos: RepositoryManager = Depends(get_repos),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    """Ranks jobs purely by embedding cosine similarity to this candidate's
+    profile embedding (user_career_profiles.embedding), across the entire
+    ACTIVE pool -- not the recency-bounded window /jobs uses, and no
+    keyword/rule filtering applied. Each result carries vector_similarity
+    (0-1, higher = closer) so callers/UI can show or threshold on it.
+    Returns an empty list (not an error) if the candidate has no profile
+    embedding yet -- store_candidate_embedding runs on profile save."""
+    return {"jobs": repos.job.get_jobs_by_vector_similarity(current_user.user_id, k=k)}
+
+
 @router.get("/{job_id}")
 def get_job(job_id: str, repos: RepositoryManager = Depends(get_repos)):
     from fastapi import HTTPException
