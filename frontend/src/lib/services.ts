@@ -146,7 +146,7 @@ export interface ActiveCaptcha {
   active: boolean;
   session_id?: string;
   job_id?: string;
-  reason?: "captcha" | "final_review";
+  reason?: "captcha" | "final_review" | "google_connect";
 }
 
 export class CaptchaService {
@@ -172,6 +172,17 @@ export class CaptchaService {
     });
     if (!res.ok) throw new Error(`Click failed (${res.status})`);
   }
+  // Types into whatever field currently has focus on the live page --
+  // only the google_connect flow needs this (email/password/2FA entry);
+  // plain CAPTCHA/final_review sessions never call it.
+  async type(sessionId: string, text: string): Promise<void> {
+    const res = await authFetch(`${API_BASE}/applications/captcha/${sessionId}/type`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+    if (!res.ok) throw new Error(`Type failed (${res.status})`);
+  }
   async resolved(sessionId: string): Promise<void> {
     const res = await authFetch(`${API_BASE}/applications/captcha/${sessionId}/resolved`, { method: "POST" });
     if (!res.ok) throw new Error(`Resolved signal failed (${res.status})`);
@@ -179,6 +190,31 @@ export class CaptchaService {
   async skip(sessionId: string): Promise<void> {
     const res = await authFetch(`${API_BASE}/applications/captcha/${sessionId}/skip`, { method: "POST" });
     if (!res.ok) throw new Error(`Skip signal failed (${res.status})`);
+  }
+}
+
+export interface GoogleConnectStatus {
+  connected: boolean;
+}
+
+// Establishes the persisted, signed-in Google session GoogleFormsAdapter
+// reuses for sign-in-gated Google Forms (see backend google_connect.py /
+// google_session.py) -- separate service from CaptchaService even though
+// the live-view mechanics underneath are shared, since "is my Google
+// account connected" is its own concern from "is a CAPTCHA active".
+export class GoogleConnectService {
+  async start(): Promise<void> {
+    const res = await authFetch(`${API_BASE}/applications/google/connect`, { method: "POST" });
+    if (!res.ok) throw new Error(`Couldn't start Google connect (${res.status})`);
+  }
+  async status(): Promise<GoogleConnectStatus> {
+    const res = await authFetch(`${API_BASE}/applications/google/connect/status`);
+    if (!res.ok) throw new Error(`Google connect status fetch failed (${res.status})`);
+    return res.json();
+  }
+  async disconnect(): Promise<void> {
+    const res = await authFetch(`${API_BASE}/applications/google/connect/disconnect`, { method: "POST" });
+    if (!res.ok) throw new Error(`Disconnect failed (${res.status})`);
   }
 }
 
@@ -861,5 +897,8 @@ export class ServiceRegistry {
 
   static getCaptchaService(): CaptchaService {
     return new CaptchaService();
+  }
+  static getGoogleConnectService(): GoogleConnectService {
+    return new GoogleConnectService();
   }
 }

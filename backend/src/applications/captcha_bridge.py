@@ -86,6 +86,23 @@ def request_click(session_id: str, x: float, y: float, timeout: float = 8.0) -> 
         return False
 
 
+def request_type(session_id: str, text: str, timeout: float = 8.0) -> bool:
+    """Types into whatever element currently has focus on the live page --
+    there's no click-target coordinate for typing the way there is for
+    request_click, so the operator is expected to have already clicked the
+    field first. Needed for the google_connect flow (email/password/2FA
+    entry); unused by the plain CAPTCHA/final_review reasons, which never
+    need real text input."""
+    session = get_session(session_id)
+    if not session:
+        return False
+    session["cmd_queue"].put({"type": "type", "text": text})
+    try:
+        return bool(session["result_queue"].get(timeout=timeout))
+    except queue.Empty:
+        return False
+
+
 def signal_resolved(session_id: str) -> bool:
     session = get_session(session_id)
     if not session:
@@ -127,6 +144,12 @@ def wait_for_human(session_id: str, page, timeout_seconds: int = 600) -> bool:
             elif ctype == "click":
                 try:
                     page.mouse.click(cmd["x"], cmd["y"])
+                    session["result_queue"].put(True)
+                except Exception:
+                    session["result_queue"].put(False)
+            elif ctype == "type":
+                try:
+                    page.keyboard.type(cmd["text"])
                     session["result_queue"].put(True)
                 except Exception:
                     session["result_queue"].put(False)

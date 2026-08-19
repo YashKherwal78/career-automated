@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../lib/auth";
 import { supabase } from "../../lib/supabase";
 import { API_BASE } from "../../lib/api";
@@ -297,6 +297,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function SettingsPage() {
   const { profile, user, session, logout } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { settings, update: updateSetting, saveState } = useSettingsPersistence(session);
   const { data: subscription } = useQuery({
@@ -304,6 +305,42 @@ function SettingsPage() {
     queryFn: () => ServiceRegistry.getBillingService().getSubscription(),
     staleTime: 60_000,
   });
+  const { data: googleConnect } = useQuery({
+    queryKey: ["google-connect-status"],
+    queryFn: () => ServiceRegistry.getGoogleConnectService().status(),
+    staleTime: 30_000,
+  });
+  const [connectStarting, setConnectStarting] = useState(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
+  const [disconnecting, setDisconnecting] = useState(false);
+
+  const startGoogleConnect = async () => {
+    setConnectStarting(true);
+    setConnectError(null);
+    try {
+      await ServiceRegistry.getGoogleConnectService().start();
+      // The live view (mounted globally, see CaptchaLiveView) polls for an
+      // active session every 4s on its own -- nudge that poll now instead
+      // of making the user wait up to 4s for it to notice.
+      queryClient.invalidateQueries({ queryKey: ["captcha-active"] });
+    } catch (e) {
+      setConnectError(e instanceof Error ? e.message : "Couldn't start — try again.");
+    } finally {
+      setConnectStarting(false);
+    }
+  };
+
+  const disconnectGoogle = async () => {
+    setDisconnecting(true);
+    try {
+      await ServiceRegistry.getGoogleConnectService().disconnect();
+      queryClient.invalidateQueries({ queryKey: ["google-connect-status"] });
+    } catch (e) {
+      console.error("Google disconnect failed:", e);
+    } finally {
+      setDisconnecting(false);
+    }
+  };
   const {
     preferredRole,
     experienceLevel,
@@ -521,6 +558,57 @@ function SettingsPage() {
                 : "Sign out everywhere"}
           </button>
         </Row>
+        <Row>
+          <RowLabel
+            label="Google Forms sign-in"
+            sub={
+              googleConnect?.connected
+                ? "Connected — used to submit Google Forms that require signing in"
+                : "Some job posts use a Google Form that requires signing in. Connect once so those go through automatically instead of needing your review."
+            }
+          />
+          {googleConnect?.connected ? (
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <span
+                className="font-bold"
+                style={{ fontSize: 11.5, color: "var(--ds-sage-text)", letterSpacing: 0.3 }}
+              >
+                Connected
+              </span>
+              <button
+                type="button"
+                onClick={disconnectGoogle}
+                disabled={disconnecting}
+                style={{
+                  fontSize: 13, fontWeight: 600, color: "#B4392C",
+                  background: "none", border: "none",
+                  cursor: disconnecting ? "default" : "pointer",
+                }}
+              >
+                {disconnecting ? "Disconnecting…" : "Disconnect"}
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={startGoogleConnect}
+              disabled={connectStarting}
+              className="flex-shrink-0"
+              style={{
+                fontSize: 13, fontWeight: 600, color: "var(--ds-accent-primary)",
+                background: "none", border: "none",
+                cursor: connectStarting ? "default" : "pointer",
+              }}
+            >
+              {connectStarting ? "Opening…" : "Connect"}
+            </button>
+          )}
+        </Row>
+        {connectError && (
+          <Row>
+            <p style={{ fontSize: 12.5, color: "#B4392C", margin: 0 }}>{connectError}</p>
+          </Row>
+        )}
       </Section>
 
       <Section title="Career">

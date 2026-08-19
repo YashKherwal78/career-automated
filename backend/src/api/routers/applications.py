@@ -483,3 +483,42 @@ def captcha_skip(session_id: str, current_user: CurrentUser = Depends(get_curren
     _require_own_session(session_id, current_user)
     captcha_bridge.signal_skip(session_id)
     return {"ok": True}
+
+
+class CaptchaType(BaseModel):
+    text: str
+
+
+@router.post("/captcha/{session_id}/type")
+def captcha_type(session_id: str, body: CaptchaType, current_user: CurrentUser = Depends(get_current_user)):
+    """Types into whatever field currently has focus on the live page --
+    the google_connect flow's email/password/2FA entry needs real text
+    input, not just clicks."""
+    _require_own_session(session_id, current_user)
+    ok = captcha_bridge.request_type(session_id, body.text)
+    return {"ok": ok}
+
+
+@router.post("/google/connect")
+def start_google_connect(current_user: CurrentUser = Depends(get_current_user)):
+    """Launches a live, human-driven Google login (see google_connect.py)
+    so future sign-in-gated Google Forms can be submitted using the
+    resulting session instead of hitting REVIEW_REQUIRED every time."""
+    if captcha_bridge.get_active_session_id_for_user(current_user.user_id):
+        raise HTTPException(status_code=409, detail="Another live session is already active for this account.")
+    from src.applications.google_connect import start_connect_flow
+    start_connect_flow(current_user.user_id)
+    return {"ok": True}
+
+
+@router.get("/google/connect/status")
+def google_connect_status(current_user: CurrentUser = Depends(get_current_user)):
+    from src.applications import google_session
+    return {"connected": google_session.has_session(current_user.user_id)}
+
+
+@router.post("/google/connect/disconnect")
+def disconnect_google(current_user: CurrentUser = Depends(get_current_user)):
+    from src.applications import google_session
+    google_session.delete_session(current_user.user_id)
+    return {"ok": True}
