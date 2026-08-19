@@ -697,6 +697,117 @@ class JobRepository(BaseRepository, IJobRepository):
             c = conn.execute(query, tuple(params))
             return [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
 
+    def get_jobs_by_hybrid_search(
+        self, user_id: str, k: int = 500, max_experience_years: float = None, tx=None
+    ) -> List[dict]:
+        """
+        Reciprocal rank fusion (k=60, same as the RAG system's hybrid
+        retrieval) of two independent rankings:
+          - vector: cosine similarity, same as get_jobs_by_vector_similarity
+          - lexical: BM25-style full-text search against search_vector
+            (migration 044), using the candidate's own profile text as an
+            OR-query of its distinct terms (via tsvector_to_array) rather
+            than plainto_tsquery's implicit AND -- no job shares literally
+            every word of a full profile, but ts_rank still rewards jobs
+            that share MORE and RARER terms, the same IDF-driven behavior
+            real BM25 has. This is what recovers exact/rare-term matches
+            (a specific tool, framework, certification) that pure semantic
+            similarity blurs into a general topical neighborhood.
+
+        Only jobs with BOTH embedding and search_vector populated are
+        eligible -- both backfills need to have reached a job before it can
+        appear here. Falls back to [] (not an error) if the candidate has
+        no profile embedding yet, same as get_jobs_by_vector_similarity.
+        """
+        from src.api.db import json_extract
+        from src.discovery.embeddings import candidate_embedding_text
+
+        embedding = self.get_candidate_embedding(user_id)
+        if not embedding:
+            return []
+
+        with self.transaction() as conn:
+            p = conn.dialect.placeholder()
+            profile_row = conn.execute(
+                f"SELECT profile_data FROM public.user_career_profiles WHERE user_id = {p}",
+                (user_id,),
+            ).fetchone()
+            profile_data = {}
+            if profile_row:
+                raw = profile_row["profile_data"] if hasattr(profile_row, "keys") else profile_row[0]
+                if isinstance(raw, str):
+                    raw = json.loads(raw) if raw else {}
+                profile_data = raw or {}
+            query_text = candidate_embedding_text(profile_data) if profile_data else ""
+
+            json_company = json_extract('n.raw_payload_json', '$.company')
+            candidate_pool_limit = conn.dialect.create_limit(500)
+            exp_clause = ""
+            exp_params: list = []
+            if max_experience_years is not None:
+                exp_clause = (
+                    f" AND ((n.experience_min IS NOT NULL AND n.experience_min <= {p})"
+                    f" OR (n.experience_min IS NULL AND n.title !~* {p}))"
+                )
+                exp_params = [max_experience_years, self._SQL_SENIOR_TITLE_PATTERN]
+
+            query = f"""
+                WITH vec AS (
+                    SELECT n.job_id, ROW_NUMBER() OVER (ORDER BY n.embedding <=> {p}::vector) AS rnk
+                    FROM normalized_jobs n
+                    WHERE n.status = 'ACTIVE' AND n.embedding IS NOT NULL{exp_clause}
+                    ORDER BY n.embedding <=> {p}::vector
+                    {candidate_pool_limit}
+                ),
+                lex_query AS (
+                    SELECT to_tsquery('english', string_agg(lexeme, ' | ')) AS q
+                    FROM unnest(tsvector_to_array(to_tsvector('english', {p}))) AS lexeme
+                ),
+                lex AS (
+                    SELECT n.job_id,
+                           ROW_NUMBER() OVER (ORDER BY ts_rank_cd(n.search_vector, lex_query.q) DESC) AS rnk
+                    FROM normalized_jobs n, lex_query
+                    WHERE n.status = 'ACTIVE' AND n.search_vector IS NOT NULL
+                          AND lex_query.q IS NOT NULL AND n.search_vector @@ lex_query.q{exp_clause}
+                    ORDER BY ts_rank_cd(n.search_vector, lex_query.q) DESC
+                    {candidate_pool_limit}
+                ),
+                fused AS (
+                    SELECT COALESCE(vec.job_id, lex.job_id) AS job_id,
+                           COALESCE(1.0 / (60 + vec.rnk), 0) + COALESCE(1.0 / (60 + lex.rnk), 0) AS rrf_score
+                    FROM vec FULL OUTER JOIN lex ON vec.job_id = lex.job_id
+                )
+                SELECT COALESCE(i.canonical_name, i2.canonical_name, {json_company}, n.company_id) AS canonical_name,
+                       COALESCE(i.domain, i2.domain) AS company_domain,
+                       n.job_id, n.title, n.provider,
+                       n.location, n.remote_type as remote, n.employment_type,
+                       n.salary_min, n.salary_max, n.posted_at, n.apply_url,
+                       n.description, n.status, n.experience_min, n.experience_max,
+                       fused.rrf_score,
+                       1 - (n.embedding <=> {p}::vector) AS vector_similarity
+                FROM fused
+                JOIN normalized_jobs n ON n.job_id = fused.job_id
+                {self._COMPANY_JOIN}
+                ORDER BY fused.rrf_score DESC
+                {conn.dialect.create_limit(k)}
+            """
+            # Placeholder order must match the query string left-to-right
+            # exactly: vec CTE has TWO embedding placeholders (the window
+            # function's ORDER BY and the CTE's own outer ORDER BY -- the
+            # latter is required for LIMIT to actually keep the closest
+            # rows, since LIMIT without ORDER BY on the CTE's SELECT would
+            # return an arbitrary 500 rows regardless of their computed
+            # rnk), with exp_params sitting between them (inside the WHERE
+            # clause) when present.
+            params = (
+                [embedding] + exp_params + [embedding] +  # vec CTE (window + outer ORDER BY)
+                [query_text] +                             # lex_query CTE
+                exp_params +                                # lex CTE
+                [embedding]                                 # final SELECT's vector_similarity
+            )
+            c = conn.execute(query, tuple(params))
+            return [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
+
     def get_job(self, job_id: str, tx=None) -> dict | None:
         from src.api.db import json_extract
         import json

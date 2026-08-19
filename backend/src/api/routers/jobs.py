@@ -189,6 +189,28 @@ def semantic_search_jobs(
     }
 
 
+@router.get("/hybrid-search")
+def hybrid_search_jobs(
+    k: int = Query(50, ge=1, le=500),
+    max_experience_years: Optional[float] = None,
+    repos: RepositoryManager = Depends(get_repos),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    """Reciprocal rank fusion of vector similarity + BM25-style full-text
+    search (normalized_jobs.search_vector, migration 044) -- recovers
+    exact/rare-term matches (a specific tool, framework, certification)
+    that pure semantic similarity blurs into a general topical
+    neighborhood, same reasoning the RAG system's hybrid retrieval
+    already uses. Each result carries both rrf_score and vector_similarity
+    so callers/UI can show either. Returns an empty list (not an error) if
+    the candidate has no profile embedding yet."""
+    return {
+        "jobs": repos.job.get_jobs_by_hybrid_search(
+            current_user.user_id, k=k, max_experience_years=max_experience_years
+        )
+    }
+
+
 @router.get("/{job_id}")
 def get_job(job_id: str, repos: RepositoryManager = Depends(get_repos)):
     from fastapi import HTTPException
