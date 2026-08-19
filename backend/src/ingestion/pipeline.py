@@ -6,7 +6,7 @@ import dataclasses
 
 from src.system.logger import setup_logger
 from src.ingestion.job_lead import JobLead
-from src.ingestion.jd_enrichment import enrich, enrich_with_web_search, already_applied
+from src.ingestion.jd_enrichment import enrich, enrich_with_web_search, already_applied, record_lead
 from src.ingestion.routing import resolve_connector
 from src.applications.apply_service import apply_to_job
 
@@ -29,6 +29,25 @@ def _write_result(run_id: str, outcome: dict) -> dict:
     return outcome
 
 
+def _finish(run_id: str, outcome: dict, lead: JobLead, user_id: str) -> dict:
+    """Single terminal exit for run_lead: persist the audit record AND the
+    dedup row. `ingested_job_leads` was previously created and read from
+    (already_applied) but never written to, so deduplication was a permanent
+    no-op -- a --live re-run over the same screenshot folder would resubmit
+    every application. Every branch goes through here, including
+    SKIPPED_DUPLICATE, so the table doubles as a complete audit trail."""
+    record_lead(
+        lead,
+        user_id=user_id,
+        connector=outcome.get("connector"),
+        jd_source=outcome.get("jd_source", "none"),
+        result_status=outcome.get("status", "UNKNOWN"),
+        really_submitted=bool(outcome.get("really_submitted", False)),
+        execution_run_id=run_id,
+    )
+    return _write_result(run_id, outcome)
+
+
 def run_lead(lead: JobLead, user_id: str, test_mode: bool = True) -> dict:
     run_id = f"leads_{lead.source}_{uuid.uuid4().hex[:8]}"
 
@@ -44,8 +63,9 @@ def run_lead(lead: JobLead, user_id: str, test_mode: bool = True) -> dict:
             "status": "SKIPPED_DUPLICATE",
             "job_lead": dataclasses.asdict(lead),
             "jd_source": "none",
+            "really_submitted": False,
         }
-        return _write_result(run_id, outcome)
+        return _finish(run_id, outcome, lead, user_id)
 
     lead = enrich(lead)
     jd_source = "db_match" if lead.jd_excerpt else "none"
@@ -64,15 +84,19 @@ def run_lead(lead: JobLead, user_id: str, test_mode: bool = True) -> dict:
             "failure_reason": f"Could not route apply link: {reason}",
             "job_lead": dataclasses.asdict(lead),
             "jd_source": jd_source,
+            "really_submitted": False,
         }
-        return _write_result(run_id, outcome)
+        return _finish(run_id, outcome, lead, user_id)
 
     if not lead.jd_excerpt and connector != "google_forms":
-        # Only google_forms gets the form-description fallback (Task 8's
-        # GoogleFormsHandler.read_form_description, called from inside
-        # GoogleFormsAdapter.apply() -- not reachable from here without
-        # opening a browser session redundantly), so any other connector
-        # goes straight to the web-search fallback.
+        # google_forms is the one connector that runs the rest of the
+        # fallback chain itself: GoogleFormsAdapter.resolve_jd() reads the
+        # form's own description (step 2) while the browser is already on the
+        # page, and only then falls back to the web search (step 3). Doing
+        # step 3 here for google_forms would spend a search call that step 2
+        # usually makes unnecessary, and step 2 isn't reachable from here
+        # without opening a browser session redundantly. Every other
+        # connector has no step 2, so it goes straight to the web search.
         lead = enrich_with_web_search(lead)
         if lead.jd_excerpt:
             jd_source = "web_search"
@@ -104,7 +128,9 @@ def run_lead(lead: JobLead, user_id: str, test_mode: bool = True) -> dict:
         "submitted_answers": result.submitted_answers,
         "failure_reason": result.failure_reason,
         "job_lead": dataclasses.asdict(lead),
-        "jd_source": jd_source,
+        # The google_forms adapter runs steps 2 and 3 of the enrichment chain
+        # itself, so it knows better than we do which one produced the JD.
+        "jd_source": getattr(result, "jd_source", "") or jd_source,
     }
 
-    return _write_result(run_id, outcome)
+    return _finish(run_id, outcome, lead, user_id)

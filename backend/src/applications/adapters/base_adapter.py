@@ -28,8 +28,13 @@ def derive_diagnosis(telemetry: dict) -> str:
 
 
 class ApplicationResult:
-    def __init__(self, status: str, confirmation_url: str = "", screenshot_path: str = "", submitted_answers: Dict[str, Any] = None, failure_reason: str = "", really_submitted: bool = False):
+    def __init__(self, status: str, confirmation_url: str = "", screenshot_path: str = "", submitted_answers: Dict[str, Any] = None, failure_reason: str = "", really_submitted: bool = False, jd_source: str = ""):
         self.status = status # COMPLETED, FAILED, REVIEW_REQUIRED
+        # Which JD-enrichment step actually produced the job description this
+        # application was answered from ("db_match"/"form_description"/
+        # "web_search"/"none"). Only adapters that run the fallback chain
+        # themselves set it; empty means "the caller's own accounting stands".
+        self.jd_source = jd_source
         self.confirmation_url = confirmation_url
         self.screenshot_path = screenshot_path
         self.submitted_answers = submitted_answers or {}
