@@ -4,11 +4,26 @@ from typing import Any, Dict, Tuple
 from src.applications.adapters.base_adapter import BaseAdapter, ApplicationResult, derive_diagnosis
 from src.applications.browser_launcher import LaunchedBrowser
 from src.applications.handlers.google_forms import GoogleFormsHandler
+from src.applications import google_session
 from src.ingestion.job_lead import JobLead
 from src.ingestion.jd_enrichment import enrich_with_web_search
 from src.system.logger import setup_logger
 
 logger = setup_logger("google_forms_adapter")
+
+
+def _is_google_signin_page(page) -> bool:
+    """A sign-in-gated Google Form redirects the browser to
+    accounts.google.com before any form content ever loads -- checked via
+    URL/title only (no locator reads), so this is cheap and can't itself
+    time out or misfire on a slow-rendering but perfectly normal form."""
+    try:
+        if "accounts.google.com" in (page.url or "").lower():
+            return True
+        title = (page.title() or "").lower()
+        return "sign in" in title and "google" in title
+    except Exception:
+        return False
 
 # Match pipeline.EXECUTIONS_DIR: backend/executions, resolved absolutely from
 # this file rather than from the process's cwd. A relative "executions/job_x"
@@ -89,10 +104,48 @@ class GoogleFormsAdapter(BaseAdapter):
         execution_dir = job.get("execution_dir") or os.path.join(_EXECUTIONS_DIR, f"job_{job.get('id')}")
         os.makedirs(execution_dir, exist_ok=True)
 
-        with LaunchedBrowser() as lb:
+        saved_session = google_session.get_session(user_id)
+
+        with LaunchedBrowser(storage_state=saved_session) as lb:
             page = lb.page
             try:
                 page.goto(job.get("apply_url") or job.get("job_url"), timeout=30000)
+
+                if _is_google_signin_page(page):
+                    # No amount of retrying fixes this without the
+                    # candidate signing in -- surface it as REVIEW_REQUIRED
+                    # with a reason that tells them exactly what to do,
+                    # rather than falling through into a handler that would
+                    # just find zero questions and fail opaquely.
+                    if saved_session:
+                        # The session we loaded didn't actually sign us in
+                        # (expired, revoked, or invalidated by a password
+                        # change) -- clear it so Settings shows "not
+                        # connected" instead of a connection that silently
+                        # stopped working.
+                        google_session.delete_session(user_id)
+                        reason = (
+                            "Your connected Google session expired — reconnect it in "
+                            "Settings, then this application will go through on the next run."
+                        )
+                    else:
+                        reason = (
+                            "This form requires signing in with your Google account — "
+                            "connect it once in Settings, then this application will go "
+                            "through on the next run."
+                        )
+                    logger.info(f"[GoogleFormsAdapter] Sign-in gate hit for job {job.get('id')} (had_saved_session={bool(saved_session)}).")
+                    screenshot_path = os.path.join(execution_dir, "google_signin_gate.png")
+                    try:
+                        page.screenshot(path=screenshot_path)
+                    except Exception:
+                        screenshot_path = ""
+                    return ApplicationResult(
+                        status="REVIEW_REQUIRED",
+                        screenshot_path=screenshot_path,
+                        submitted_answers={},
+                        failure_reason=reason,
+                    )
 
                 handler = GoogleFormsHandler(
                     page=page,

@@ -7,6 +7,11 @@ import { DsButton } from "../ds/Button";
 // no matter which page you're on when a background application hits a
 // CAPTCHA -- these are time-boxed (10 min server-side timeout) so it needs
 // to be findable immediately, not tucked into one specific page.
+//
+// Also the surface for the google_connect flow (Settings > "Connect Google
+// account" kicks it off server-side) -- same live screenshot/click relay,
+// plus a text-type input since logging into Google needs real keystrokes,
+// not just clicks.
 export function CaptchaLiveView() {
   const queryClient = useQueryClient();
   const { data: active } = useQuery({
@@ -18,6 +23,8 @@ export function CaptchaLiveView() {
   const sessionId = active?.active ? active.session_id : null;
   const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [typeText, setTypeText] = useState("");
+  const [typing, setTyping] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const prevUrlRef = useRef<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -56,6 +63,20 @@ export function CaptchaLiveView() {
   if (!active?.active || !sessionId) return null;
 
   const isFinalReview = active.reason === "final_review";
+  const isGoogleConnect = active.reason === "google_connect";
+
+  const sendType = async () => {
+    if (!typeText.trim() || typing) return;
+    setTyping(true);
+    try {
+      await ServiceRegistry.getCaptchaService().type(sessionId, typeText);
+      setTypeText("");
+    } catch (err) {
+      console.error("Google connect type relay failed:", err);
+    } finally {
+      setTyping(false);
+    }
+  };
 
   const handleImageClick = async (e: React.MouseEvent<HTMLImageElement>) => {
     if (!imgRef.current || busy) return;
@@ -80,6 +101,10 @@ export function CaptchaLiveView() {
       if (action === "resolved") await ServiceRegistry.getCaptchaService().resolved(sessionId);
       else await ServiceRegistry.getCaptchaService().skip(sessionId);
       queryClient.invalidateQueries({ queryKey: ["captcha-active"] });
+      // Settings polls this separately for "Connected"/"Not connected" --
+      // invalidate it immediately rather than waiting on its own refetch
+      // interval, so the status there updates the moment this closes.
+      if (isGoogleConnect) queryClient.invalidateQueries({ queryKey: ["google-connect-status"] });
     } catch (e) {
       console.error(`Captcha ${action} signal failed:`, e);
     } finally {
@@ -114,12 +139,18 @@ export function CaptchaLiveView() {
         <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
           <div>
             <div className="font-[var(--ds-font-display)] font-semibold" style={{ fontSize: 17 }}>
-              {isFinalReview ? "Ready for your final review" : "CAPTCHA needs you"}
+              {isGoogleConnect
+                ? "Connect your Google account"
+                : isFinalReview
+                  ? "Ready for your final review"
+                  : "CAPTCHA needs you"}
             </div>
             <p style={{ fontSize: 13, color: "var(--ds-ink-500)", margin: "4px 0 0" }}>
-              {isFinalReview
-                ? "The application is fully filled in and ready to go. Take a look, and confirm to submit it."
-                : "An application in progress hit a CAPTCHA — everything else is already filled in. Click on it below to solve it, then confirm."}
+              {isGoogleConnect
+                ? "Log into your Google account below — click a field, type below and hit Send, and get through any verification step. We only save the resulting sign-in, never your password."
+                : isFinalReview
+                  ? "The application is fully filled in and ready to go. Take a look, and confirm to submit it."
+                  : "An application in progress hit a CAPTCHA — everything else is already filled in. Click on it below to solve it, then confirm."}
             </p>
           </div>
         </div>
@@ -158,18 +189,42 @@ export function CaptchaLiveView() {
           )}
         </div>
 
+        {isGoogleConnect && (
+          <div className="flex gap-2" style={{ marginBottom: 16 }}>
+            <input
+              type="text"
+              value={typeText}
+              onChange={(e) => setTypeText(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && sendType()}
+              placeholder="Click a field on the page above, then type here…"
+              style={{
+                flex: 1,
+                padding: "10px 12px",
+                borderRadius: "var(--ds-radius-md)",
+                border: "1px solid var(--ds-border-medium)",
+                fontSize: 13.5,
+              }}
+            />
+            <DsButton variant="outline" size="md" disabled={typing || !typeText.trim()} onClick={sendType}>
+              Send
+            </DsButton>
+          </div>
+        )}
+
         <div className="flex items-center justify-between flex-wrap gap-3">
           <p style={{ fontSize: 11.5, color: "var(--ds-ink-450)", margin: 0 }}>
-            {isFinalReview
-              ? "Click on the image above if you need to fix anything. Updates about once a second."
-              : "Click directly on the CAPTCHA in the image above to interact with it. Updates about once a second."}
+            {isGoogleConnect
+              ? "Click the page above to focus a field, use Send to type into it, and click any buttons directly. Updates about once a second."
+              : isFinalReview
+                ? "Click on the image above if you need to fix anything. Updates about once a second."
+                : "Click directly on the CAPTCHA in the image above to interact with it. Updates about once a second."}
           </p>
           <div className="flex gap-2.5">
             <DsButton variant="outline" size="md" disabled={busy} onClick={() => finish("skip")}>
-              {isFinalReview ? "Don't submit — send to review instead" : "Skip — send to review instead"}
+              {isGoogleConnect ? "Cancel" : isFinalReview ? "Don't submit — send to review instead" : "Skip — send to review instead"}
             </DsButton>
             <DsButton variant="primary" size="md" disabled={busy} onClick={() => finish("resolved")}>
-              {isFinalReview ? "Looks good — submit it" : "I solved it — continue"}
+              {isGoogleConnect ? "I'm signed in — save this" : isFinalReview ? "Looks good — submit it" : "I solved it — continue"}
             </DsButton>
           </div>
         </div>

@@ -71,6 +71,15 @@ class LaunchedBrowser:
     with the stealth patches pre-applied, so adapters don't each repeat
     (and potentially drift on) the same launch boilerplate."""
 
+    def __init__(self, storage_state: dict = None):
+        # A saved Google session (google_session.py) -- when present, the
+        # new context starts already signed in, the same way a real
+        # returning visitor's browser would via its cookies. None (the
+        # default, and the only thing every other adapter passes) is a
+        # completely ordinary fresh context, unchanged from before this
+        # parameter existed.
+        self._storage_state = storage_state
+
     def __enter__(self):
         _ensure_virtual_display()
         self._pw = sync_playwright().start()
@@ -78,10 +87,10 @@ class LaunchedBrowser:
             headless=False,
             args=["--disable-blink-features=AutomationControlled"],
         )
-        self.context = self.browser.new_context(
-            viewport={"width": 1280, "height": 800},
-            user_agent=USER_AGENT,
-        )
+        context_kwargs = {"viewport": {"width": 1280, "height": 800}, "user_agent": USER_AGENT}
+        if self._storage_state:
+            context_kwargs["storage_state"] = self._storage_state
+        self.context = self.browser.new_context(**context_kwargs)
         self.context.add_init_script(_STEALTH_INIT_SCRIPT)
         self.page = self.context.new_page()
         return self
