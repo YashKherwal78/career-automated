@@ -72,9 +72,9 @@ function JobsListSkeleton() {
 
 // ---------------------------------------------------------------------
 // Upload Job — screenshot a job post, we extract company/role/apply link.
-// Extraction-only. Its own modal, opened from a header button -- reads
-// and writes only local `uploads` state, never touches the jobs
-// list/selection state below.
+// Extraction-only. Its own modal, opened from the horizontal promo card
+// below the page title -- reads and writes only local `uploads` state,
+// never touches the jobs list/selection state below.
 // ---------------------------------------------------------------------
 type UploadEntry = { id: string; fileName: string; state: "processing" | "done" | "error"; result?: JobScreenshotUploadResult };
 
@@ -315,30 +315,48 @@ function JobsPage() {
   };
 
   return (
-    <div className="p-4 md:p-8 space-y-5 md:space-y-6 relative min-h-screen">
+    <div className="p-4 md:p-8 space-y-4 md:space-y-6 relative min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <h1 className="font-display text-2xl font-bold tracking-tight text-ink">Jobs</h1>
-        <button
-          type="button"
-          onClick={() => setShowUploadModal(true)}
-          className="flex items-center gap-2 font-semibold"
-          style={{
-            padding: "9px 16px", borderRadius: "var(--ds-radius-lg)",
-            border: "1px solid var(--ds-border-medium)", background: "var(--ds-surface-card)",
-            color: "var(--ds-ink-700)", fontSize: 13,
-          }}
+      <h1 className="font-display text-xl md:text-2xl font-bold tracking-tight text-ink">Jobs</h1>
+
+      {/* Upload promo -- explains the screenshot-upload feature and opens
+          the upload modal on click/tap. Sole entry point for that flow
+          (the old small header button was folded into this). */}
+      <button
+        type="button"
+        onClick={() => setShowUploadModal(true)}
+        className="w-full flex items-center gap-3 text-left glass-card rounded-2xl border border-white/50 bg-white/40 shadow-sm hover:bg-white/60 active:scale-[0.995] transition-all"
+        style={{ padding: "13px 14px" }}
+      >
+        <div
+          className="flex items-center justify-center flex-shrink-0"
+          style={{ width: 38, height: 38, borderRadius: "var(--ds-radius-lg)", background: "var(--ds-brand-orange-tint-08)", color: "var(--ds-brand-orange-text)" }}
         >
-          <UploadCloud size={16} style={{ color: "var(--ds-brand-orange-text)" }} />
-          Upload job
-        </button>
-      </div>
+          <UploadCloud size={17} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="font-semibold" style={{ fontSize: 13.5, color: "var(--ds-ink-900)" }}>
+            Saw a role on LinkedIn or elsewhere?
+          </div>
+          <div className="truncate" style={{ fontSize: 12, color: "var(--ds-ink-500)" }}>
+            Upload a screenshot — we'll pull out the company, role, and how to apply.
+          </div>
+        </div>
+        <span className="flex-shrink-0 font-semibold" style={{ fontSize: 12.5, color: "var(--ds-accent-primary)" }}>
+          Upload →
+        </span>
+      </button>
 
       {showUploadModal && <UploadJobModal onClose={() => setShowUploadModal(false)} />}
 
-      {/* Filters Bar */}
-      <div className="glass-card rounded-2xl p-4 border border-white/50 bg-white/40 shadow-sm flex flex-wrap items-center gap-4 text-xs">
-        <div className="relative flex-1 min-w-[200px]" ref={searchBoxRef}>
+      {/* Filters Bar -- search full-width on its own row, then two 2-up
+          grids on mobile (Role/Location, Remote/Sort) so every control
+          gets a predictable, tappable width instead of flex-wrap
+          reshuffling row breaks at arbitrary points. `md:contents` drops
+          the grid wrapper at desktop, letting the same controls flow as
+          a single flex row instead of duplicating markup per breakpoint. */}
+      <div className="glass-card rounded-2xl p-3 md:p-4 border border-white/50 bg-white/40 shadow-sm flex flex-col md:flex-row md:flex-wrap md:items-center gap-2.5 md:gap-4 text-xs">
+        <div className="relative" ref={searchBoxRef}>
           <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search className="h-3.5 w-3.5 text-ink-soft" />
           </span>
@@ -348,7 +366,7 @@ function JobsPage() {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             onFocus={() => setShowSuggestions(true)}
-            className="w-full pl-9 pr-4 py-2 sm:py-1.5 rounded-xl bg-white/50 border border-white/60 focus:outline-none focus:border-[color:var(--peach-deep)] transition-colors"
+            className="w-full md:min-w-[200px] md:flex-1 pl-9 pr-4 py-2.5 md:py-1.5 rounded-xl bg-white/50 border border-white/60 focus:outline-none focus:border-[color:var(--peach-deep)] transition-colors"
           />
           {showSuggestions && suggestions.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-1.5 rounded-xl bg-white border border-white/60 shadow-lg z-20 overflow-hidden">
@@ -370,47 +388,51 @@ function JobsPage() {
           )}
         </div>
 
-        <select
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
-          className="flex-1 sm:flex-none min-w-[130px] sm:min-w-0 px-3 py-2 sm:py-1.5 rounded-xl bg-white/50 border border-white/60 focus:outline-none text-ink-soft focus:border-[color:var(--peach-deep)] cursor-pointer"
-        >
-          {ROLE_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
+        <div className="grid grid-cols-2 gap-2.5 md:contents">
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            className="w-full md:w-auto md:min-w-[130px] px-3 py-2.5 md:py-1.5 rounded-xl bg-white/50 border border-white/60 focus:outline-none text-ink-soft focus:border-[color:var(--peach-deep)] cursor-pointer"
+          >
+            {ROLE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
 
-        <div className="relative flex-1 sm:flex-none min-w-[130px] sm:min-w-0">
-          <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <MapPin className="h-3.5 w-3.5 text-ink-soft" />
-          </span>
-          <input
-            type="text"
-            placeholder="Location — India, Remote, US…"
-            value={locationFilter}
-            onChange={(e) => setLocationFilter(e.target.value)}
-            className="pl-9 pr-4 py-2 sm:py-1.5 w-full sm:w-52 rounded-xl bg-white/50 border border-white/60 focus:outline-none focus:border-[color:var(--peach-deep)] transition-colors"
-          />
+          <div className="relative">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <MapPin className="h-3.5 w-3.5 text-ink-soft" />
+            </span>
+            <input
+              type="text"
+              placeholder="Location"
+              value={locationFilter}
+              onChange={(e) => setLocationFilter(e.target.value)}
+              className="pl-9 pr-3 py-2.5 md:py-1.5 w-full md:w-52 rounded-xl bg-white/50 border border-white/60 focus:outline-none focus:border-[color:var(--peach-deep)] transition-colors"
+            />
+          </div>
         </div>
 
-        <select
-          value={remoteFilter}
-          onChange={(e) => setRemoteFilter(e.target.value)}
-          className="flex-1 sm:flex-none min-w-[130px] sm:min-w-0 px-3 py-2 sm:py-1.5 rounded-xl bg-white/50 border border-white/60 focus:outline-none text-ink-soft focus:border-[color:var(--peach-deep)] cursor-pointer"
-        >
-          <option value="">Remote Type</option>
-          <option value="remote">Remote</option>
-          <option value="hybrid">Hybrid</option>
-          <option value="onsite">Onsite</option>
-        </select>
+        <div className="grid grid-cols-2 gap-2.5 md:contents">
+          <select
+            value={remoteFilter}
+            onChange={(e) => setRemoteFilter(e.target.value)}
+            className="w-full md:w-auto md:min-w-[130px] px-3 py-2.5 md:py-1.5 rounded-xl bg-white/50 border border-white/60 focus:outline-none text-ink-soft focus:border-[color:var(--peach-deep)] cursor-pointer"
+          >
+            <option value="">Remote Type</option>
+            <option value="remote">Remote</option>
+            <option value="hybrid">Hybrid</option>
+            <option value="onsite">Onsite</option>
+          </select>
 
-        <button
-          onClick={() => setSortField(sortField === "intent_score" ? "posted_at" : "intent_score")}
-          className="flex-1 sm:flex-none flex items-center justify-center sm:justify-start gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl border border-white/60 bg-white/50 text-ink-soft hover:bg-white/80 transition-colors"
-        >
-          <ArrowUpDown className="h-3.5 w-3.5" />
-          <span>Sort: {sortField === "intent_score" ? "Intent Match" : "Date Posted"}</span>
-        </button>
+          <button
+            onClick={() => setSortField(sortField === "intent_score" ? "posted_at" : "intent_score")}
+            className="flex items-center justify-center md:justify-start gap-1.5 px-3 py-2.5 md:py-1.5 rounded-xl border border-white/60 bg-white/50 text-ink-soft hover:bg-white/80 transition-colors"
+          >
+            <ArrowUpDown className="h-3.5 w-3.5 flex-shrink-0" />
+            <span className="truncate">Sort: {sortField === "intent_score" ? "Intent Match" : "Date Posted"}</span>
+          </button>
+        </div>
       </div>
 
       {loading ? (
