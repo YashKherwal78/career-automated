@@ -48,6 +48,17 @@ existing EmbeddingBackfillWorker (src/workers/embedding_backfill_worker.py)
 naturally re-embeds the job from its real description on its next pass --
 no duplicate embedding logic needed here.
 
+For workday/smartrecruiters/icims/oracle, a failed fetch also gets one
+extra lightweight check (_check_confirmed_dead) against a per-provider
+signal that's empirically confirmed to mean "this posting genuinely no
+longer exists" (Workday 422, SmartRecruiters 404/RESOURCE_NOT_FOUND,
+iCIMS 404/410, Oracle 200-with-empty-items) -- not just "the fetch
+failed for some reason". Confirmed dead postings get status='CLOSED'
+instead of sitting ACTIVE with an empty description forever, which is
+the single biggest lever for raising overall JD-coverage%: a lot of the
+"missing description" backlog is old jobs that are simply gone, not
+jobs a better fetcher could ever recover.
+
 Usage:
     python3 scripts/backfill_jd_descriptions.py --provider workday --limit 500
     python3 scripts/backfill_jd_descriptions.py --provider smartrecruiters --limit 500
@@ -66,6 +77,7 @@ import argparse
 import asyncio
 import os
 import sys
+import time
 from urllib.parse import urlsplit
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -163,6 +175,61 @@ def _join_com_targets(apply_url: str, raw_payload: dict) -> tuple[str, str] | No
     if idx + 1 >= len(path_segments):
         return None
     return path_segments[idx + 1], id_param
+
+
+async def _check_confirmed_dead(provider: str, http_client, apply_url: str, raw_payload: dict) -> bool:
+    """A separate, minimal-cost direct request (bypassing the connector's
+    own error-swallowing _fetch_description) purely to read the raw
+    status code/payload shape for a DEFINITIVE "this posting no longer
+    exists" signal -- empirically confirmed per provider against real
+    live/dead postings (2026-08-19), not inferred from "any failure":
+      workday: 422 on the exact detail URL that returns 200 for other
+        jobs on the same tenant/site (a wrong site/tenant guess would 422
+        for EVERY job on that board, not just one -- so a single-job 422
+        on an otherwise-working board is job-specific, i.e. real).
+      smartrecruiters: 404 with errorCode RESOURCE_NOT_FOUND (verified
+        against a deliberately-fake job id).
+      icims: 404 or 410 on the job detail page (410 verified live on a
+        real expired posting, with "no longer"/"not found" body text).
+      oracle: 200 but items: [] (verified against a deliberately-fake
+        requisition id -- Oracle's finder returns an empty result set
+        rather than a 404).
+    Only called after the main fetch already failed, so this never adds
+    cost to rows that succeed."""
+    try:
+        if provider == "workday":
+            targets = _workday_targets(apply_url, raw_payload)
+            if not targets:
+                return False
+            cxs_base, external_path = targets
+            r = await http_client.fetch("GET", f"{cxs_base}{external_path}", headers={"Accept": "application/json"})
+            return r.status_code == 422
+        if provider == "smartrecruiters":
+            targets = _smartrecruiters_targets(apply_url, raw_payload)
+            if not targets:
+                return False
+            slug, job_id = targets
+            r = await http_client.fetch("GET", f"https://api.smartrecruiters.com/v1/companies/{slug}/postings/{job_id}")
+            return r.status_code == 404
+        if provider == "icims":
+            if not apply_url:
+                return False
+            r = await http_client.fetch("GET", apply_url, headers={"User-Agent": "Mozilla/5.0"})
+            return r.status_code in (404, 410)
+        if provider == "oracle":
+            targets = _oracle_targets(apply_url, raw_payload)
+            if not targets:
+                return False
+            base_url, req_id, site_number = targets
+            url = (
+                f"{base_url}/hcmRestApi/resources/latest/recruitingCEJobRequisitionDetails"
+                f"?expand=all&finder=ById;Id=%22{req_id}%22,siteNumber={site_number}&onlyData=true"
+            )
+            r = await http_client.fetch("GET", url, headers={"Accept": "application/json"})
+            return r.status_code == 200 and isinstance(r.payload, dict) and not (r.payload.get("items") or [])
+    except Exception:
+        return False
+    return False
 
 
 async def _fetch_one(provider: str, connector, http_client, throttle, apply_url: str, raw_payload: dict):
@@ -292,6 +359,25 @@ def _write_result(job_id: str, description: str):
         conn.close()
 
 
+def _mark_closed(job_id: str):
+    """The provider's own API gave a definitive "this posting no longer
+    exists" signal (see _check_confirmed_dead) -- mark it CLOSED instead
+    of leaving it ACTIVE with an empty description forever. status='ACTIVE'
+    already gates nearly every query in the app (matching, scoring,
+    embedding backfill), so this alone removes it from all of that."""
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        ph = "%s" if is_postgres() else "?"
+        cur.execute(
+            f"UPDATE normalized_jobs SET status = 'CLOSED', closed_at = {ph} WHERE job_id = {ph}",
+            (str(time.time()), job_id),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
 async def run(provider: str, limit: int, dry_run: bool, offset: int = 0):
     connector_cls = {
         "workday": WorkdayConnector,
@@ -314,7 +400,7 @@ async def run(provider: str, limit: int, dry_run: bool, offset: int = 0):
         return
 
     sem = asyncio.Semaphore(CONCURRENCY)
-    stats = {"fetched": 0, "empty": 0, "unparseable_url": 0, "fetch_failed": 0, "error": 0}
+    stats = {"fetched": 0, "empty": 0, "unparseable_url": 0, "fetch_failed": 0, "confirmed_closed": 0, "error": 0}
 
     async with HttpClient() as http_client:
         throttle = DetailFetchThrottle(requests_per_second=5.0)
@@ -332,6 +418,13 @@ async def run(provider: str, limit: int, dry_run: bool, offset: int = 0):
                     return
 
                 if description is None:
+                    if url_derived and await _check_confirmed_dead(
+                        provider, http_client, row["apply_url"], row["raw_payload"]
+                    ):
+                        stats["confirmed_closed"] += 1
+                        if not dry_run:
+                            _mark_closed(row["job_id"])
+                        return
                     stats["unparseable_url" if not url_derived else "fetch_failed"] += 1
                     return
                 if not description.strip():
