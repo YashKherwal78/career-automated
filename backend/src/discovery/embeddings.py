@@ -47,6 +47,58 @@ def embed_batch(texts: List[str]) -> List[List[float]]:
     return [v.tolist() for v in vectors]
 
 
+# ── v2: nomic-embed-text-v1.5 ────────────────────────────────────────────
+# Parallel model, NOT a replacement -- stored in embedding_v2 (migration
+# 045), separate column from the bge-small `embedding` above. 768 dims,
+# 8192-token context (vs bge-small's 512) -- the real fix for JDs getting
+# truncated before the model sees the actual skills/responsibilities
+# section (front-loading structured signal in job_embedding_text worked
+# around this for bge-small; v2 doesn't need the workaround, though
+# keeping the front-loaded order doesn't hurt).
+#
+# Nomic requires a task prefix prepended to the raw text before embedding
+# -- this is a real, documented model requirement (trained expecting it),
+# not optional: "search_document: " for the side being searched FOR (job
+# postings), "search_query: " for the side doing the searching (candidate
+# profile). Get this backwards and retrieval quality measurably degrades
+# even though nothing errors -- there's no exception to catch a mixed-up
+# prefix, so every call site here is explicit about which one it uses
+# instead of a shared default.
+EMBEDDING_V2_DIM = 768
+_MODEL_V2_NAME = "nomic-ai/nomic-embed-text-v1.5"
+
+_model_v2 = None
+
+
+def _get_model_v2():
+    global _model_v2
+    if _model_v2 is None:
+        from fastembed import TextEmbedding
+        logger.info(f"Loading embedding model {_MODEL_V2_NAME} (first call — downloads once, then cached on disk)...")
+        _model_v2 = TextEmbedding(model_name=_MODEL_V2_NAME)
+    return _model_v2
+
+
+def embed_batch_v2_documents(texts: List[str]) -> List[List[float]]:
+    """Embeds job-side text (the side being searched FOR) with nomic-embed
+    -- prepends 'search_document: ' per the model's required convention."""
+    model = _get_model_v2()
+    safe_texts = [f"search_document: {t.strip()}" if t and t.strip() else "search_document: " for t in texts]
+    vectors = list(model.embed(safe_texts))
+    return [v.tolist() for v in vectors]
+
+
+def embed_text_v2_query(text: str) -> List[float]:
+    """Embeds candidate-side text (the side doing the searching) with
+    nomic-embed -- prepends 'search_query: ', the OTHER prefix. Singular
+    (not batch) since this only ever runs once per profile save, unlike
+    the job-side bulk backfill."""
+    model = _get_model_v2()
+    safe_text = text.strip() if text and text.strip() else ""
+    vectors = list(model.embed([f"search_query: {safe_text}"]))
+    return vectors[0].tolist()
+
+
 def job_embedding_text(
     title: str,
     description: str,

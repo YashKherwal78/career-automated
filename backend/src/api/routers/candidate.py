@@ -154,11 +154,26 @@ def update_career_profile(
         try:
             from src.discovery.embeddings import embed_text, candidate_embedding_text
             from src.core.repositories.job.repository import JobRepository
-            vec = embed_text(candidate_embedding_text(payload.dict()))
+            profile_text = candidate_embedding_text(payload.dict())
+            vec = embed_text(profile_text)
             JobRepository().store_candidate_embedding(current_user.user_id, vec)
         except Exception as embed_err:
             import logging
             logging.getLogger("candidate").warning(f"Candidate embedding update failed: {embed_err}")
+
+        # Best-effort, same reasoning as above: also keep the parallel
+        # nomic-embed-text-v1.5 column (embedding_v2, migration 045)
+        # current. Separate try/except so a v2 failure (e.g. the heavier
+        # model still downloading on first use) never blocks the v1
+        # embedding that live search actually depends on today.
+        try:
+            from src.discovery.embeddings import embed_text_v2_query, candidate_embedding_text
+            from src.core.repositories.job.repository import JobRepository
+            vec_v2 = embed_text_v2_query(candidate_embedding_text(payload.dict()))
+            JobRepository().store_candidate_embedding_v2(current_user.user_id, vec_v2)
+        except Exception as embed_v2_err:
+            import logging
+            logging.getLogger("candidate").warning(f"Candidate embedding_v2 update failed: {embed_v2_err}")
 
         return {"status": "success", "completeness_score": score, "candidate_score": candidate_strength}
     except Exception as e:
