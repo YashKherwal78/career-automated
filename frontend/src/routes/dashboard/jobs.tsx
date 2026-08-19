@@ -6,6 +6,7 @@ import { CompanyLogo } from "../../components/dashboard/CompanyLogo";
 import { BackgroundApplyButton } from "../../components/dashboard/BackgroundApplyButton";
 import { JobDetailContent, type ApplyStatus } from "../../components/dashboard/JobDetailModal";
 import { DsDropzone } from "../../components/ds/Dropzone";
+import { DsModal, DsModalCloseButton } from "../../components/ds/Modal";
 import { isExtensionInstalled } from "../../lib/extensionBridge";
 import { Trie } from "../../lib/trie";
 import { Search, MapPin, ArrowUpDown, UploadCloud } from "lucide-react";
@@ -51,10 +52,15 @@ function matchPercent(job: Job): number | null {
 // Extraction-only: this shows the candidate what we read off the image,
 // it does not enrich/route/apply on its own (see backend
 // jobs.upload_job_screenshot's docstring for why that's a deliberate line).
+//
+// Its own modal/dashboard rather than a permanently-visible card on the
+// jobs list -- the card version cost real vertical space on every visit
+// to the page (worst on a phone) for a rarely-used action, pushing the
+// actual job list further down every single time.
 // ---------------------------------------------------------------------
 type UploadEntry = { id: string; fileName: string; state: "processing" | "done" | "error"; result?: JobScreenshotUploadResult };
 
-function UploadJobSection() {
+function UploadJobModal({ onClose }: { onClose: () => void }) {
   const { jobService } = useDashboard();
   const [uploads, setUploads] = useState<UploadEntry[]>([]);
 
@@ -78,72 +84,70 @@ function UploadJobSection() {
   };
 
   return (
-    <div className="glass-card rounded-3xl p-4 md:p-5 border border-white/50 bg-white/40 shadow-sm space-y-4">
-      <div className="flex items-start gap-3 md:gap-4">
-        <div
-          className="flex items-center justify-center flex-shrink-0"
-          style={{ width: 40, height: 40, borderRadius: "var(--ds-radius-lg)", background: "var(--ds-brand-orange-tint-08)", color: "var(--ds-brand-orange-text)" }}
-        >
-          <UploadCloud size={18} />
-        </div>
-        <div className="flex-1 min-w-0">
+    <DsModal onClose={onClose} maxWidth={520}>
+      <div className="p-5 md:p-6 space-y-4" style={{ position: "relative" }}>
+        <DsModalCloseButton onClose={onClose} />
+        <div className="flex items-start gap-3 md:gap-4" style={{ paddingRight: 28 }}>
           <div
-            className="uppercase font-bold"
-            style={{ fontSize: 11, letterSpacing: 0.6, color: "var(--ds-brand-orange-text)", marginBottom: 3 }}
+            className="flex items-center justify-center flex-shrink-0"
+            style={{ width: 40, height: 40, borderRadius: "var(--ds-radius-lg)", background: "var(--ds-brand-orange-tint-08)", color: "var(--ds-brand-orange-text)" }}
           >
-            Upload job
+            <UploadCloud size={18} />
           </div>
-          <h2 className="font-[var(--ds-font-display)] font-semibold" style={{ fontSize: 16, marginBottom: 3 }}>
-            Saw a role on LinkedIn? Screenshot it.
-          </h2>
-          <p style={{ margin: 0, fontSize: 13, color: "var(--ds-ink-500)" }}>
-            Drop a screenshot of any job post — we'll pull out the company, role, and how to apply, and
-            add it here so you can review it like any other match.
-          </p>
-        </div>
-      </div>
-
-      {uploads.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {uploads.map((u) => (
-            <span
-              key={u.id}
-              className="inline-flex items-center gap-1.5"
-              style={{
-                fontSize: 11.5, color: "var(--ds-ink-600)", background: "var(--ds-cream-100)",
-                border: "1px solid var(--ds-border-hairline)", borderRadius: "var(--ds-radius-pill)",
-                padding: "5px 10px 5px 6px", maxWidth: "100%",
-              }}
+          <div className="flex-1 min-w-0">
+            <div
+              className="uppercase font-bold"
+              style={{ fontSize: 11, letterSpacing: 0.6, color: "var(--ds-brand-orange-text)", marginBottom: 3 }}
             >
-              <span
-                style={{
-                  width: 6, height: 6, borderRadius: "50%", flexShrink: 0,
-                  background: u.state === "processing" ? "var(--ds-amber-500)" : u.state === "done" ? "#6B8F5E" : "#C24E22",
-                }}
-              />
-              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {u.state === "processing" && `${u.fileName} · extracting…`}
-                {u.state === "done" && u.result?.success && `${u.result.company} — ${u.result.role} · extracted ✓`}
-                {u.state === "error" && (u.result?.message || "Couldn't read this screenshot")}
-              </span>
-            </span>
-          ))}
+              Upload job
+            </div>
+            <h2 className="font-[var(--ds-font-display)] font-semibold" style={{ fontSize: 16, marginBottom: 3 }}>
+              Saw a role on LinkedIn? Screenshot it.
+            </h2>
+            <p style={{ margin: 0, fontSize: 13, color: "var(--ds-ink-500)" }}>
+              Drop a screenshot of any job post — we'll pull out the company, role, and how to apply, and
+              add it here so you can review it like any other match.
+            </p>
+          </div>
         </div>
-      )}
 
-      {/* Full width at every size, not squeezed into a fixed sidebar box --
-          DsDropzone is built as a standalone full-width target (see its own
-          padding/icon sizing), the same as the resume-upload page uses it.
-          Forcing it into a narrow fixed column made it disproportionately
-          tall and, on a phone, left an orphaned gap next to it. */}
-      <DsDropzone
-        label="Drop a job screenshot"
-        hint="or click to browse"
-        filetypes={["PNG", "JPG", "WEBP"]}
-        accept=".png,.jpg,.jpeg,.webp"
-        onFile={handleFile}
-      />
-    </div>
+        {uploads.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {uploads.map((u) => (
+              <span
+                key={u.id}
+                className="inline-flex items-center gap-1.5"
+                style={{
+                  fontSize: 11.5, color: "var(--ds-ink-600)", background: "var(--ds-cream-100)",
+                  border: "1px solid var(--ds-border-hairline)", borderRadius: "var(--ds-radius-pill)",
+                  padding: "5px 10px 5px 6px", maxWidth: "100%",
+                }}
+              >
+                <span
+                  style={{
+                    width: 6, height: 6, borderRadius: "50%", flexShrink: 0,
+                    background: u.state === "processing" ? "var(--ds-amber-500)" : u.state === "done" ? "#6B8F5E" : "#C24E22",
+                  }}
+                />
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {u.state === "processing" && `${u.fileName} · extracting…`}
+                  {u.state === "done" && u.result?.success && `${u.result.company} — ${u.result.role} · extracted ✓`}
+                  {u.state === "error" && (u.result?.message || "Couldn't read this screenshot")}
+                </span>
+              </span>
+            ))}
+          </div>
+        )}
+
+        <DsDropzone
+          label="Drop a job screenshot"
+          hint="or click to browse"
+          filetypes={["PNG", "JPG", "WEBP"]}
+          accept=".png,.jpg,.jpeg,.webp"
+          onFile={handleFile}
+        />
+      </div>
+    </DsModal>
   );
 }
 
@@ -183,6 +187,7 @@ function JobsPage() {
   // resolves to false safely on any browser without extension support at
   // all (mobile Safari/Chrome), so this never throws there.
   const [hasExtension, setHasExtension] = useState<boolean | undefined>(undefined);
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   // Desktop split-view selection + per-job apply state -- local, not
   // route-driven, since the detail pane is always on screen rather than an
@@ -319,11 +324,24 @@ function JobsPage() {
   return (
     <div className="p-4 md:p-8 space-y-5 md:space-y-6 relative min-h-screen">
       {/* Header */}
-      <div>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <h1 className="font-display text-2xl font-bold tracking-tight text-ink">Jobs</h1>
+        <button
+          type="button"
+          onClick={() => setShowUploadModal(true)}
+          className="flex items-center gap-2 font-semibold"
+          style={{
+            padding: "9px 16px", borderRadius: "var(--ds-radius-lg)",
+            border: "1px solid var(--ds-border-medium)", background: "var(--ds-surface-card)",
+            color: "var(--ds-ink-700)", fontSize: 13,
+          }}
+        >
+          <UploadCloud size={16} style={{ color: "var(--ds-brand-orange-text)" }} />
+          Upload job
+        </button>
       </div>
 
-      <UploadJobSection />
+      {showUploadModal && <UploadJobModal onClose={() => setShowUploadModal(false)} />}
 
       {/* Filters Bar */}
       <div className="glass-card rounded-2xl p-4 border border-white/50 bg-white/40 shadow-sm flex flex-wrap items-center gap-4 text-xs">
