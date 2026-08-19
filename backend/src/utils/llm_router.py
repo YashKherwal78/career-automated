@@ -51,7 +51,7 @@ class LLMRouter:
         self.groq_manager = GroqManager()
         
         self.gemini_client = None
-        gemini_key = os.environ.get("GEMINI_API_KEY")
+        gemini_key = os.environ.get("GEMINI_API_KEY") or getattr(Config, "GEMINI_API_KEY", "")
         if gemini_key and genai:
             try:
                 self.gemini_client = genai.Client(api_key=gemini_key)
@@ -59,16 +59,19 @@ class LLMRouter:
                 logger.info(f"[LLMRouter] Failed to initialize Gemini Client: {e}")
 
         self.openrouter_client = None
-        or_key = os.environ.get("OPENROUTER_API_KEY")
+        or_key = os.environ.get("OPENROUTER_API_KEY") or getattr(Config, "OPENROUTER_API_KEY", "")
         if or_key and OpenAI:
-            self.openrouter_client = OpenAI(
-                base_url="https://openrouter.ai/api/v1",
-                api_key=or_key
-            )
+            try:
+                self.openrouter_client = OpenAI(
+                    base_url="https://openrouter.ai/api/v1",
+                    api_key=or_key
+                )
+            except Exception as e:
+                logger.info(f"[LLMRouter] Failed to initialize OpenRouter Client: {e}")
 
         self.routes = {
-            "outreach": ["gemini", "openrouter", "groq"],
-            "reasoning": ["openrouter", "gemini", "groq"],
+            "outreach": ["groq", "gemini", "openrouter"],
+            "reasoning": ["groq", "gemini", "openrouter"],
             "utility": ["groq", "gemini", "openrouter"]
         }
 
@@ -122,7 +125,7 @@ class LLMRouter:
             response_mime_type=mime_type
         )
         
-        model_name = "gemini-2.0-flash"
+        model_name = "gemini-3.6-flash"
         response = self.gemini_client.models.generate_content(
             model=model_name,
             contents=prompt,
@@ -160,7 +163,7 @@ class LLMRouter:
         raise Exception(f"All OpenRouter fallback models failed. Last error: {last_error}")
 
     def _call_groq(self, messages: List[Dict], temperature: float, response_format: Optional[Dict], intent: str = "utility"):
-        candidate_models = ["openai/gpt-oss-120b", "qwen/qwen3.6-27b", "groq/compound-mini"]
+        candidate_models = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768", "gemma2-9b-it"]
         last_exc = None
         for model_name in candidate_models:
             try:
@@ -193,7 +196,7 @@ class LLMRouter:
             response_mime_type=mime_out,
         )
 
-        model_name = "gemini-2.0-flash"
+        model_name = "gemini-3.6-flash"
         start_time = time.time()
         response = self.gemini_client.models.generate_content(
             model=model_name,
