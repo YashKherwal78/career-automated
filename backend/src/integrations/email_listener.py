@@ -79,6 +79,62 @@ class EmailListener:
             
         return None
         
+    def search_job_alerts(self, sender_allowlist: list, since_days: int = 3) -> list:
+        """Read-only scan for job-alert emails from a known sender allowlist,
+        within the last `since_days` days. Returns [{message_id, sender,
+        subject, body}, ...] — no filtering/dedup here, that's the caller's
+        job (see src.ingestion.email_extractor.scan_job_alerts)."""
+        import datetime
+
+        results = []
+        try:
+            mail = self._connect()
+            since_date = (datetime.date.today() - datetime.timedelta(days=since_days)).strftime("%d-%b-%Y")
+
+            for sender in sender_allowlist:
+                status, messages = mail.search(None, f'(FROM "{sender}" SINCE "{since_date}")')
+                if status != 'OK':
+                    continue
+                for email_id in messages[0].split():
+                    status, msg_data = mail.fetch(email_id, '(RFC822)')
+                    if status != 'OK':
+                        continue
+                    for response_part in msg_data:
+                        if not isinstance(response_part, tuple):
+                            continue
+                        msg = email.message_from_bytes(response_part[1])
+                        message_id = msg.get("Message-ID", email_id.decode())
+                        subject_raw, encoding = decode_header(msg.get("Subject", ""))[0]
+                        subject = subject_raw.decode(encoding or "utf-8") if isinstance(subject_raw, bytes) else subject_raw
+
+                        body = ""
+                        if msg.is_multipart():
+                            for part in msg.walk():
+                                if part.get_content_type() == "text/plain":
+                                    try:
+                                        body += part.get_payload(decode=True).decode(errors="ignore")
+                                    except Exception:
+                                        pass
+                        else:
+                            try:
+                                body = msg.get_payload(decode=True).decode(errors="ignore")
+                            except Exception:
+                                pass
+
+                        results.append({
+                            "message_id": message_id,
+                            "sender": sender,
+                            "subject": subject,
+                            "body": body,
+                        })
+
+            mail.close()
+            mail.logout()
+        except Exception as e:
+            logger.info(f"EmailListener.search_job_alerts Error: {e}")
+
+        return results
+
     def get_magic_link(self, sender_domain: str) -> str:
         """
         Connects in read-only mode and searches for a magic verification link.

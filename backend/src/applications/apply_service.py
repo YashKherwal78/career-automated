@@ -24,7 +24,9 @@ logger = setup_logger("apply_service")
 def _map_job_row(job_row: Dict[str, Any]) -> Dict[str, Any]:
     """`repos.job.get_job()` returns `job_id`/`title`/`provider`/
     `canonical_name`; the dispatcher/adapters expect `id`/`job_title`/
-    `connector`/`company_name`. Translate field names only — no new data."""
+    `connector`/`company_name`. Translate field names only — no new data.
+    `execution_dir`/`description` pass through unchanged when present (used
+    by GoogleFormsAdapter; no other adapter sets them today)."""
     return {
         "id": job_row.get("job_id"),
         "job_title": job_row.get("title", ""),
@@ -32,6 +34,8 @@ def _map_job_row(job_row: Dict[str, Any]) -> Dict[str, Any]:
         "connector": (job_row.get("provider") or "").lower().strip(),
         "location": job_row.get("location", ""),
         "apply_url": job_row.get("apply_url", ""),
+        "execution_dir": job_row.get("execution_dir", ""),
+        "description": job_row.get("description", ""),
     }
 
 
