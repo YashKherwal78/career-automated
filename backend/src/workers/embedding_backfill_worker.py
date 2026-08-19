@@ -57,6 +57,8 @@ class EmbeddingBackfillWorker(BaseWorker):
                             technologies=structured.technologies,
                             skills=structured.skills,
                             responsibilities=structured.responsibilities,
+                            experience_min=structured.experience_min,
+                            experience_max=structured.experience_max,
                         ))
                         job_id_to_profile[j["job_id"]] = (
                             structured.model_dump_json(), structured.jd_hash, JIE_VERSION,

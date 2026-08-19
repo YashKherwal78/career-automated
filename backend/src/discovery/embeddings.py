@@ -53,6 +53,8 @@ def job_embedding_text(
     technologies: List[str] = None,
     skills: List[str] = None,
     responsibilities: List[str] = None,
+    experience_min: int = None,
+    experience_max: int = None,
 ) -> str:
     """What actually gets embedded for a job.
 
@@ -72,6 +74,17 @@ def job_embedding_text(
     survives truncation even when the raw text wouldn't have. Optional and
     backward compatible: callers with just title/description (or an
     extraction that returned nothing) get the previous behavior.
+
+    experience_min/max add a soft semantic signal, NOT a filter -- a job
+    embedding that says "Experience required: 5-8 years" naturally lands
+    further from a junior candidate's profile embedding than one that
+    doesn't mention seniority at all, which helps ranking even for jobs a
+    hard experience filter doesn't directly touch. This does NOT replace
+    max_experience_years as a real SQL WHERE clause (see
+    JobRepository.get_jobs_by_vector_similarity's docstring) -- embeddings
+    can't guarantee a hard cutoff, only nudge relative distance. Only
+    meaningful if candidate_embedding_text below also states years of
+    experience -- the model needs both sides for this to do anything.
     """
     title = (title or "").strip()
     description = (description or "").strip()
@@ -83,6 +96,13 @@ def job_embedding_text(
         parts.append("Skills: " + ", ".join(skills[:15]))
     if responsibilities:
         parts.append("Responsibilities: " + " ".join(responsibilities[:5]))
+    if experience_min is not None or experience_max is not None:
+        if experience_min is not None and experience_max is not None and experience_max != experience_min:
+            parts.append(f"Experience required: {experience_min}-{experience_max} years")
+        elif experience_min is not None:
+            parts.append(f"Experience required: {experience_min}+ years")
+        else:
+            parts.append(f"Experience required: up to {experience_max} years")
     parts.append(description)
 
     return ". ".join(p for p in parts if p)[:8000]
@@ -91,9 +111,23 @@ def job_embedding_text(
 def candidate_embedding_text(profile_data: dict) -> str:
     """What gets embedded for a candidate — most-recent role + skills +
     summary, mirroring the fields that actually carry job-relevant signal
-    rather than embedding the entire raw resume text verbatim."""
+    rather than embedding the entire raw resume text verbatim.
+
+    Years of experience is front-loaded (like job_embedding_text's
+    "Experience required: ..." line) so the two sides can actually be
+    compared -- a job embedding that mentions seniority has nothing to
+    land near/far from if the candidate side never mentions it."""
     parts = []
     personal = profile_data.get("personal_info") or {}
+
+    try:
+        from src.discovery.jie.candidate_profile import CandidateProfile as _CP
+        years = _CP._estimate_years_experience(profile_data.get("experience") or [])
+        if years > 0:
+            parts.append(f"{years} years of experience")
+    except Exception:
+        pass
+
     if profile_data.get("summary"):
         parts.append(str(profile_data["summary"]))
 
