@@ -1,3 +1,4 @@
+import re
 import httpx
 from urllib.parse import urlparse
 from typing import Optional, Tuple
@@ -10,8 +11,25 @@ logger = setup_logger("routing")
 
 _google_forms = GoogleFormsSignature()
 
+# A bare "jobs@acme.com" or "mailto:jobs@acme.com" apply_link means the
+# posting says "email your CV to us" instead of giving a link/form.
+# Deliberately excludes "/" and ":" from the local/domain parts so a URL
+# with an email-shaped query param (?ref=jobs@acme.com) never matches --
+# the WHOLE apply_link has to be an email, not merely contain one.
+_EMAIL_RE = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
+
+
+def _is_email_address(apply_link: str) -> bool:
+    candidate = apply_link[len("mailto:"):] if apply_link.lower().startswith("mailto:") else apply_link
+    return bool(_EMAIL_RE.match(candidate.strip()))
+
 
 def resolve_connector(apply_link: str) -> Tuple[Optional[str], str]:
+    # No fetch needed -- same free short-circuit as the Google Forms check
+    # below, just checking the string shape instead of a URL pattern.
+    if _is_email_address(apply_link):
+        return "email_apply", "email_apply"
+
     # GoogleFormsSignature.detect() is purely URL-pattern based (it ignores
     # the response argument entirely), so it can answer before we spend a
     # network round-trip -- and using the detector rather than an ad-hoc

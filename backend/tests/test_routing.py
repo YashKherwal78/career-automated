@@ -79,3 +79,26 @@ def test_resolve_connector_returns_none_for_unrecognized_url(mock_get):
     connector, reason = resolve_connector("https://example.com/apply")
     assert connector is None
     assert reason == "unrecognized URL"
+
+
+@patch("src.ingestion.routing.httpx.get")
+def test_resolve_connector_routes_a_bare_email_address_without_fetching(mock_get):
+    connector, reason = resolve_connector("jobs@acme.com")
+    assert connector == "email_apply"
+    assert reason == "email_apply"
+    mock_get.assert_not_called()
+
+
+@patch("src.ingestion.routing.httpx.get")
+def test_resolve_connector_routes_a_mailto_link_without_fetching(mock_get):
+    connector, reason = resolve_connector("mailto:jobs@acme.com")
+    assert connector == "email_apply"
+    assert reason == "email_apply"
+    mock_get.assert_not_called()
+
+
+@patch("src.ingestion.routing.httpx.get")
+def test_resolve_connector_does_not_misroute_a_url_as_email(mock_get):
+    mock_get.return_value = MagicMock(status_code=200, text="nothing recognizable here", url="https://example.com/apply")
+    connector, reason = resolve_connector("https://example.com/apply?ref=jobs@acme.com")
+    assert connector != "email_apply"

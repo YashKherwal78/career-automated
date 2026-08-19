@@ -33,6 +33,7 @@ class ApplicationDispatcher:
         "workday": ("src.applications.adapters.workday_adapter", "WorkdayAdapter"),
         "successfactors": ("src.applications.adapters.successfactors_adapter", "SuccessFactorsAdapter"),
         "google_forms": ("src.applications.adapters.google_forms_adapter", "GoogleFormsAdapter"),
+        "email_apply": ("src.applications.adapters.email_apply_adapter", "EmailApplyAdapter"),
     }
 
     def _get_adapter(self, connector: str):
