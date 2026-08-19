@@ -1,10 +1,74 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, UploadFile, File, HTTPException, status
 from typing import Optional
 from src.api.dependencies import get_repos
 from src.core.repositories.manager import RepositoryManager
 from src.runtime.auth.dependencies import get_current_user, CurrentUser
 
 router = APIRouter()
+
+
+@router.post("/upload-screenshot")
+def upload_job_screenshot(
+    file: UploadFile = File(...),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    """Upload a screenshot of a job post (a LinkedIn post, a tweet, anything
+    with a role/company/apply-info visible) and get back the company, role,
+    location, and apply link the vision model pulled out of it -- the same
+    extraction the screenshot-batch CLI pipeline uses
+    (src.ingestion.screenshot_extractor.extract_from_image), just triggered
+    from the dashboard instead of a folder of files on disk.
+
+    Deliberately extraction-only: this does not enrich the JD, route to a
+    connector, or apply. It answers "what did we read off this image" so
+    the candidate can see the upload actually worked; applying is a
+    separate, explicit action elsewhere in the product."""
+    import os
+    import tempfile
+    import uuid
+
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    allowed_extensions = {".png", ".jpg", ".jpeg", ".webp"}
+    if ext not in allowed_extensions:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Only PNG, JPG, and WEBP screenshots are supported. Got: {ext or 'unknown'}",
+        )
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
+        import shutil
+        shutil.copyfileobj(file.file, tmp)
+        tmp_path = tmp.name
+
+    try:
+        from src.ingestion.screenshot_extractor import extract_from_image
+        from src.ingestion.job_lead import JobLead
+        from src.ingestion.jd_enrichment import record_lead
+
+        lead: Optional[JobLead] = extract_from_image(tmp_path)
+        run_id = f"upload_{uuid.uuid4().hex[:12]}"
+
+        if lead is None:
+            return {
+                "success": False,
+                "message": "Couldn't read a job posting out of that screenshot -- try a clearer or fuller screenshot of the post.",
+            }
+
+        record_lead(
+            lead, user_id=current_user.user_id, connector="", jd_source="none",
+            result_status="EXTRACTED_ONLY", really_submitted=False, execution_run_id=run_id,
+        )
+
+        return {
+            "success": True,
+            "company": lead.company,
+            "role": lead.role,
+            "apply_link": lead.apply_link,
+            "location": lead.location,
+            "jd_excerpt": lead.jd_excerpt,
+        }
+    finally:
+        os.unlink(tmp_path)
 
 @router.get("")
 def get_jobs(

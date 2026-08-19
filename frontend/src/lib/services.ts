@@ -22,6 +22,16 @@ export interface Job {
   experience_max?: number | null;
 }
 
+export interface JobScreenshotUploadResult {
+  success: boolean;
+  company?: string;
+  role?: string;
+  apply_link?: string;
+  location?: string | null;
+  jd_excerpt?: string | null;
+  message?: string;
+}
+
 export interface Company {
   company_id: string;
   company_name: string;
@@ -92,6 +102,7 @@ export interface JobService {
   getJob(jobId: string): Promise<Job>;
   getRecentJobs(): Promise<Job[]>;
   getTitleSuggestions(): Promise<string[]>;
+  uploadJobScreenshot(file: File): Promise<JobScreenshotUploadResult>;
   applyToJob(jobId: string): Promise<{
     status: string;
     really_submitted: boolean;
@@ -514,6 +525,23 @@ export class ApiJobService implements JobService {
     return data.titles || [];
   }
 
+  async uploadJobScreenshot(file: File): Promise<JobScreenshotUploadResult> {
+    const formData = new FormData();
+    formData.append("file", file);
+    // Long timeout: this runs a real vision-LLM call server-side, not a
+    // simple file write -- the fast JOBS_TIMEOUT_MS default would abort a
+    // slow-but-successful extraction mid-flight.
+    const res = await authFetch(`${API_BASE}/jobs/upload-screenshot`, {
+      method: "POST",
+      body: formData,
+    }, APPLY_TIMEOUT_MS);
+    if (!res.ok) {
+      const detail = await res.json().catch(() => null);
+      throw new Error(detail?.detail || `Upload failed (${res.status})`);
+    }
+    return res.json();
+  }
+
   async applyToJob(
     jobId: string,
   ): Promise<{ status: string; really_submitted: boolean; failure_reason: string | null }> {
@@ -718,6 +746,16 @@ export class MockJobService implements JobService {
   }
   async getRecentJobs(): Promise<Job[]> {
     return this.mockJobs;
+  }
+  async uploadJobScreenshot(): Promise<JobScreenshotUploadResult> {
+    return {
+      success: true,
+      company: "Stripe",
+      role: "Software Engineer",
+      apply_link: "https://stripe.com",
+      location: "Bangalore",
+      jd_excerpt: "We are looking for a Software Engineer to help scale our payment systems.",
+    };
   }
   async applyToJob(): Promise<{ status: string; really_submitted: boolean; failure_reason: string | null }> {
     return { status: "COMPLETED", really_submitted: true, failure_reason: null };

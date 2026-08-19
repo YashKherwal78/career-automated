@@ -4,10 +4,12 @@ import { useDashboard } from "../../components/dashboard/DashboardContext";
 import { LoadingSkeleton } from "../../components/dashboard/CommonComponents";
 import { CompanyLogo } from "../../components/dashboard/CompanyLogo";
 import { BackgroundApplyButton } from "../../components/dashboard/BackgroundApplyButton";
+import { JobDetailContent, type ApplyStatus } from "../../components/dashboard/JobDetailModal";
+import { DsDropzone } from "../../components/ds/Dropzone";
 import { isExtensionInstalled } from "../../lib/extensionBridge";
 import { Trie } from "../../lib/trie";
-import { Search, MapPin, ArrowUpDown } from "lucide-react";
-import { Job } from "../../lib/services";
+import { Search, MapPin, ArrowUpDown, UploadCloud } from "lucide-react";
+import { Job, JobScreenshotUploadResult } from "../../lib/services";
 
 export const Route = createFileRoute("/dashboard/jobs")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -29,6 +31,113 @@ function formatExperience(min?: number | null, max?: number | null): string {
   if (min != null && max != null && max !== min) return `${min}–${max} yrs`;
   if (min != null) return `${min}+ yrs`;
   return `Up to ${max} yrs`;
+}
+
+function formatSalaryShort(job: Job): string {
+  if (job.salary_min && job.salary_max) {
+    return `₹${(job.salary_min / 100000).toFixed(1)}L - ₹${(job.salary_max / 100000).toFixed(1)}L`;
+  }
+  return "Competitive";
+}
+
+function matchPercent(job: Job): number | null {
+  if (job.intent_score != null) return Math.round(job.intent_score * 100);
+  if (job.job_score) return job.job_score;
+  return null;
+}
+
+// ---------------------------------------------------------------------
+// Upload Job — screenshot a job post, we extract company/role/apply link.
+// Extraction-only: this shows the candidate what we read off the image,
+// it does not enrich/route/apply on its own (see backend
+// jobs.upload_job_screenshot's docstring for why that's a deliberate line).
+// ---------------------------------------------------------------------
+type UploadEntry = { id: string; fileName: string; state: "processing" | "done" | "error"; result?: JobScreenshotUploadResult };
+
+function UploadJobSection() {
+  const { jobService } = useDashboard();
+  const [uploads, setUploads] = useState<UploadEntry[]>([]);
+
+  const handleFile = async (file: File) => {
+    const id = `${Date.now()}-${file.name}`;
+    setUploads((prev) => [{ id, fileName: file.name, state: "processing" as const }, ...prev].slice(0, 6));
+    try {
+      const result = await jobService.uploadJobScreenshot(file);
+      setUploads((prev) =>
+        prev.map((u) => (u.id === id ? { ...u, state: result.success ? "done" : "error", result } : u)),
+      );
+    } catch (e) {
+      setUploads((prev) =>
+        prev.map((u) =>
+          u.id === id
+            ? { ...u, state: "error", result: { success: false, message: e instanceof Error ? e.message : "Upload failed." } }
+            : u,
+        ),
+      );
+    }
+  };
+
+  return (
+    <div className="glass-card rounded-3xl p-5 border border-white/50 bg-white/40 shadow-sm">
+      <div className="flex items-start gap-4 flex-wrap md:flex-nowrap">
+        <div
+          className="flex items-center justify-center flex-shrink-0"
+          style={{ width: 44, height: 44, borderRadius: "var(--ds-radius-lg)", background: "var(--ds-brand-orange-tint-08)", color: "var(--ds-brand-orange-text)" }}
+        >
+          <UploadCloud size={20} />
+        </div>
+        <div className="flex-1 min-w-[220px]">
+          <div
+            className="uppercase font-bold"
+            style={{ fontSize: 11, letterSpacing: 0.6, color: "var(--ds-brand-orange-text)", marginBottom: 3 }}
+          >
+            Upload job
+          </div>
+          <h2 className="font-[var(--ds-font-display)] font-semibold" style={{ fontSize: 16.5, marginBottom: 3 }}>
+            Saw a role on LinkedIn? Screenshot it.
+          </h2>
+          <p style={{ margin: 0, fontSize: 13, color: "var(--ds-ink-500)", maxWidth: 480 }}>
+            Drop a screenshot of any job post — we'll pull out the company, role, and how to apply, and
+            add it here so you can review it like any other match.
+          </p>
+          {uploads.length > 0 && (
+            <div className="flex flex-wrap gap-2" style={{ marginTop: 10 }}>
+              {uploads.map((u) => (
+                <span
+                  key={u.id}
+                  className="inline-flex items-center gap-1.5"
+                  style={{
+                    fontSize: 11.5, color: "var(--ds-ink-600)", background: "var(--ds-cream-100)",
+                    border: "1px solid var(--ds-border-hairline)", borderRadius: "var(--ds-radius-pill)",
+                    padding: "5px 10px 5px 6px",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 6, height: 6, borderRadius: "50%", flexShrink: 0,
+                      background: u.state === "processing" ? "var(--ds-amber-500)" : u.state === "done" ? "#6B8F5E" : "#C24E22",
+                    }}
+                  />
+                  {u.state === "processing" && `${u.fileName} · extracting…`}
+                  {u.state === "done" && u.result?.success && `${u.result.company} — ${u.result.role} · extracted ✓`}
+                  {u.state === "error" && (u.result?.message || "Couldn't read this screenshot")}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="flex-shrink-0" style={{ width: 240 }}>
+          <DsDropzone
+            label="Drop a job screenshot"
+            hint="or click to browse"
+            filetypes={["PNG", "JPG", "WEBP"]}
+            accept=".png,.jpg,.jpeg,.webp"
+            onFile={handleFile}
+          />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function JobsPage() {
@@ -67,6 +176,15 @@ function JobsPage() {
   // resolves to false safely on any browser without extension support at
   // all (mobile Safari/Chrome), so this never throws there.
   const [hasExtension, setHasExtension] = useState<boolean | undefined>(undefined);
+
+  // Desktop split-view selection + per-job apply state -- local, not
+  // route-driven, since the detail pane is always on screen rather than an
+  // overlay a URL can point at. Mobile still navigates to
+  // /dashboard/jobs/$jobId (see the row Links below), which the Outlet
+  // renders as the existing full-screen modal.
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [queuedMap, setQueuedMap] = useState<Record<string, boolean>>({});
+  const [applyStatusMap, setApplyStatusMap] = useState<Record<string, ApplyStatus | undefined>>({});
 
   useEffect(() => {
     jobService
@@ -132,6 +250,12 @@ function JobsPage() {
       };
       const data = await jobService.getJobs(filters);
       setJobs(data);
+      // Keep the current selection if it's still in the list; otherwise
+      // default to the top match rather than leaving the pane empty.
+      setSelectedJobId((current) => {
+        if (current && data.some((j) => j.job_id === current)) return current;
+        return data[0]?.job_id ?? null;
+      });
     } catch (e) {
       console.error(e);
     } finally {
@@ -159,12 +283,40 @@ function JobsPage() {
     }
   }, [searchParams.select, navigate]);
 
+  const selectedJob = jobs.find((j) => j.job_id === selectedJobId) || null;
+
+  const handleToggleQueue = async (job: Job) => {
+    if (queuedMap[job.job_id]) return;
+    setQueuedMap((m) => ({ ...m, [job.job_id]: true }));
+    setApplyStatusMap((m) => ({ ...m, [job.job_id]: { state: "applying" } }));
+    try {
+      const result = await jobService.applyToJob(job.job_id);
+      if (result.really_submitted) {
+        setApplyStatusMap((m) => ({ ...m, [job.job_id]: { state: "applied" } }));
+      } else if (result.status === "REVIEW_REQUIRED") {
+        setApplyStatusMap((m) => ({
+          ...m,
+          [job.job_id]: { state: "review_required", message: result.failure_reason || "Needs your review before it can be submitted." },
+        }));
+      } else {
+        setApplyStatusMap((m) => ({
+          ...m,
+          [job.job_id]: { state: "failed", message: result.failure_reason || "Couldn't complete this application." },
+        }));
+      }
+    } catch (e) {
+      setApplyStatusMap((m) => ({ ...m, [job.job_id]: { state: "failed", message: "Something went wrong — try again." } }));
+    }
+  };
+
   return (
     <div className="p-8 space-y-6 relative min-h-screen">
       {/* Header */}
       <div>
         <h1 className="font-display text-2xl font-bold tracking-tight text-ink">Jobs</h1>
       </div>
+
+      <UploadJobSection />
 
       {/* Filters Bar */}
       <div className="glass-card rounded-2xl p-4 border border-white/50 bg-white/40 shadow-sm flex flex-wrap items-center gap-4 text-xs">
@@ -248,7 +400,6 @@ function JobsPage() {
         </button>
       </div>
 
-      {/* Jobs Table */}
       {loading ? (
         <LoadingSkeleton type="table" count={10} />
       ) : jobs.length === 0 ? (
@@ -256,76 +407,87 @@ function JobsPage() {
           <p className="text-xs text-ink-soft">No jobs matched your filter criteria.</p>
         </div>
       ) : (
-        <div className="glass-card rounded-3xl p-6 border border-white/50 bg-white/40 shadow-sm">
-          {/* Desktop/tablet: full table. A 7-column table has no honest
-              mobile rendering (confirmed live: Resume Match + View Details
-              were pushed off the 390px viewport, discoverable only via an
-              unlabeled horizontal scroll) -- hidden below md, replaced by
-              the stacked cards underneath instead of trying to cram it in. */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-white/20 text-ink-soft">
-                  <th className="pb-3 font-medium">Company</th>
-                  <th className="pb-3 font-medium">Position</th>
-                  <th className="pb-3 font-medium">Location</th>
-                  <th className="pb-3 font-medium">Experience</th>
-                  <th className="pb-3 font-medium">Salary Range</th>
-                  <th className="pb-3 font-medium">Remote</th>
-                  <th className="pb-3 font-medium">Resume Match</th>
-                  <th className="pb-3 font-medium"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {jobs.map((job) => (
-                  <tr key={job.job_id} className="border-b border-white/10 hover:bg-white/30 transition-colors">
-                    <td className="py-4 font-semibold text-ink">
-                      <div className="flex items-center gap-2.5">
-                        <CompanyLogo name={job.canonical_name} domain={job.company_domain} size={24} radius={6} fontSize={10.5} />
-                        <span>{job.canonical_name}</span>
-                        {JOB_BOARD_PROVIDERS.has((job.provider || "").toLowerCase()) && (
-                          <span className="ml-1 text-[9px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-100">EXTERNAL</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-4 text-ink-soft font-medium">{job.title}</td>
-                    <td className="py-4 text-ink-soft">{job.location || "Remote"}</td>
-                    <td className="py-4 text-ink-soft">{formatExperience(job.experience_min, job.experience_max)}</td>
-                    <td className="py-4 text-ink-soft">
-                      {job.salary_min && job.salary_max
-                        ? `₹${(job.salary_min/100000).toFixed(1)}L - ₹${(job.salary_max/100000).toFixed(1)}L`
-                        : "Competitive"}
-                    </td>
-                    <td className="py-4 text-ink-soft capitalize">{job.remote || "Onsite"}</td>
-                    <td className="py-4 font-semibold text-[color:var(--peach-deep)]">
-                      {job.intent_score != null
-                        ? `${Math.round(job.intent_score * 100)}%`
-                        : job.job_score
-                        ? `${job.job_score}%`
-                        : "—"}
-                      <span className="ml-1 text-[9px] text-ink-soft font-normal">intent</span>
-                    </td>
-                    <td className="py-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {applyMode === "assisted" && job.apply_url && (
-                          <BackgroundApplyButton
-                            jobId={job.job_id}
-                            applyUrl={job.apply_url}
-                            hasExtension={!!hasExtension}
-                          />
-                        )}
-                        <Link to={`/dashboard/jobs/${job.job_id}`} className="btn-peach px-3 py-1.5 text-xs rounded-xl">
-                          View Details
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <>
+          {/* Desktop/tablet: split view — a compact list on the left, full
+              detail always visible on the right. Replaces the old 8-column
+              table entirely (that table, not just the mobile view, was the
+              actual source of horizontal crowding); nothing overlays
+              anything here, so the detail pane gets real width instead of
+              being squeezed into a modal. */}
+          <div className="hidden md:grid gap-4" style={{ gridTemplateColumns: "340px 1fr", alignItems: "start" }}>
+            <div
+              className="glass-card rounded-3xl border border-white/50 bg-white/40 shadow-sm overflow-y-auto"
+              style={{ maxHeight: "calc(100vh - 320px)" }}
+            >
+              <div
+                className="flex items-center justify-between uppercase font-bold"
+                style={{ padding: "14px 16px 10px", fontSize: 11, letterSpacing: 0.5, color: "var(--ds-ink-400)" }}
+              >
+                <span>{jobs.length} open roles</span>
+              </div>
+              {jobs.map((job) => {
+                const pct = matchPercent(job);
+                const isSelected = job.job_id === selectedJobId;
+                return (
+                  <div
+                    key={job.job_id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedJobId(job.job_id)}
+                    onKeyDown={(e) => e.key === "Enter" && setSelectedJobId(job.job_id)}
+                    className="cursor-pointer transition-colors"
+                    style={{
+                      padding: "13px 16px",
+                      borderTop: "1px solid var(--ds-border-hairline)",
+                      background: isSelected ? "var(--ds-brand-orange-tint-08)" : "transparent",
+                      borderLeft: isSelected ? "3px solid var(--ds-accent-primary)" : "3px solid transparent",
+                    }}
+                  >
+                    <div className="flex items-center gap-2" style={{ marginBottom: 6 }}>
+                      <CompanyLogo name={job.canonical_name} domain={job.company_domain} size={22} radius={6} fontSize={9.5} />
+                      <span className="font-semibold truncate" style={{ fontSize: 12.5, color: "var(--ds-ink-900)", flex: 1, minWidth: 0 }}>
+                        {job.canonical_name}
+                      </span>
+                      {pct != null && (
+                        <span
+                          className="font-semibold flex-shrink-0"
+                          style={{
+                            fontSize: 10.5, padding: "2px 7px", borderRadius: "var(--ds-radius-pill)",
+                            background: pct >= 85 ? "rgba(107,143,94,0.14)" : pct >= 70 ? "rgba(217,164,65,0.16)" : "var(--ds-cream-200)",
+                            color: pct >= 85 ? "#4E6E42" : pct >= 70 ? "#8A6414" : "var(--ds-ink-500)",
+                          }}
+                        >
+                          {pct}%
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 12.5, color: "var(--ds-ink-800)", marginBottom: 3 }}>{job.title}</div>
+                    <div className="flex gap-1.5" style={{ fontSize: 11, color: "var(--ds-ink-450)" }}>
+                      <span>{job.location || "Remote"}</span>
+                      <span>·</span>
+                      <span className="capitalize">{job.remote || "Onsite"}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="glass-card rounded-3xl border border-white/50 bg-white/40 shadow-sm">
+              {selectedJob ? (
+                <JobDetailContent
+                  job={selectedJob}
+                  queued={!!queuedMap[selectedJob.job_id]}
+                  applyStatus={applyStatusMap[selectedJob.job_id]}
+                  onToggleQueue={() => handleToggleQueue(selectedJob)}
+                />
+              ) : (
+                <div className="p-8 text-center text-xs text-ink-soft">Select a role to see details.</div>
+              )}
+            </div>
           </div>
 
-          {/* Mobile: stacked cards, same data/actions as the table above. */}
+          {/* Mobile: stacked cards, tapping navigates to the full-screen
+              detail route (unchanged from before). */}
           <div className="md:hidden flex flex-col gap-3">
             {jobs.map((job) => (
               <div key={job.job_id} className="rounded-2xl border border-white/50 bg-white/50 p-4">
@@ -344,11 +506,7 @@ function JobsPage() {
                   </div>
                   <div className="flex-shrink-0 text-right">
                     <div className="font-semibold text-[color:var(--peach-deep)] text-xs">
-                      {job.intent_score != null
-                        ? `${Math.round(job.intent_score * 100)}%`
-                        : job.job_score
-                        ? `${job.job_score}%`
-                        : "—"}
+                      {matchPercent(job) != null ? `${matchPercent(job)}%` : "—"}
                     </div>
                     <div className="text-[9px] text-ink-soft">match</div>
                   </div>
@@ -358,11 +516,7 @@ function JobsPage() {
                   <span>{job.location || "Remote"}</span>
                   <span className="capitalize">{job.remote || "Onsite"}</span>
                   <span>{formatExperience(job.experience_min, job.experience_max)}</span>
-                  <span>
-                    {job.salary_min && job.salary_max
-                      ? `₹${(job.salary_min / 100000).toFixed(1)}L - ₹${(job.salary_max / 100000).toFixed(1)}L`
-                      : "Competitive"}
-                  </span>
+                  <span>{formatSalaryShort(job)}</span>
                 </div>
 
                 <div className="mt-3 flex items-center gap-1.5">
@@ -383,10 +537,10 @@ function JobsPage() {
               </div>
             ))}
           </div>
-        </div>
+        </>
       )}
 
-      {/* Slide-out details drawer injected via Outlet */}
+      {/* Mobile full-screen detail, injected via Outlet */}
       <Outlet />
     </div>
   );
