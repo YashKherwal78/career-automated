@@ -594,14 +594,25 @@ class JobRepository(BaseRepository, IJobRepository):
             for job_id, vec in job_id_to_vector.items():
                 profile = job_id_to_profile.get(job_id)
                 if profile:
+                    # jie_version (e.g. "3.0.0") is JDExtractor's own semver,
+                    # not the same thing as jd_version -- that column is an
+                    # INTEGER schema-format marker (migration 008, DEFAULT
+                    # 2) for the stored jd_profile JSON shape. Passing the
+                    # semver string into an integer column crashed every
+                    # write with "invalid input syntax for type integer:
+                    # '3.0.0'" (confirmed live -- this had been failing
+                    # since jd_profile writes were introduced, well before
+                    # tonight's separate jd_parsed_at type-mismatch bug).
+                    # jd_parser carries the real version for traceability
+                    # instead; jd_version is left at its schema default.
                     jd_profile_json, jd_hash, jie_version, experience_min, experience_max = profile
                     conn.execute(
                         f"""UPDATE normalized_jobs
                             SET embedding = {p}::vector, jd_profile = {p}::jsonb,
-                                jd_hash = {p}, jd_parser = 'JDExtractor', jd_version = {p},
+                                jd_hash = {p}, jd_parser = {p},
                                 jd_parsed_at = EXTRACT(epoch FROM NOW()), experience_min = {p}, experience_max = {p}
                             WHERE job_id = {p}""",
-                        (self._vector_literal(vec), jd_profile_json, jd_hash, jie_version,
+                        (self._vector_literal(vec), jd_profile_json, jd_hash, f"JDExtractor-{jie_version}",
                          experience_min, experience_max, job_id),
                     )
                 else:
