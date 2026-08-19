@@ -435,6 +435,25 @@ class JobRepository(BaseRepository, IJobRepository):
     )
     _SQL_REMOTE_LOCATION_PATTERN = r"\yremote\y|\ywork from home\y|\ywfh\y"
 
+    # Postgres's ts_rank/ts_rank_cd is NOT true BM25 -- it has no corpus-
+    # wide IDF (inverse document frequency), so a common word scores
+    # comparably to a rare, actually-discriminating one. Confirmed live
+    # (2026-08-20): "Investment Banking Associate - Energy (Oil & Gas)"
+    # ranked #2 in a hybrid search for an AI/ML profile purely via a
+    # lex-only match on {develop, experi, intern, manag, product, skill,
+    # solut, year} -- every one of those is generic resume/JD boilerplate,
+    # zero domain signal. This is a starter, hand-picked exclusion list
+    # from that real failure, NOT a substitute for real BM25 (a proper
+    # fix would use a corpus-frequency-aware extension like ParadeDB's
+    # pg_search, or a precomputed document-frequency table) -- needs real
+    # tuning against more queries, flagged explicitly rather than shipped
+    # as if it were solved.
+    _BM25_BOILERPLATE_STEMS = {
+        "experi", "year", "skill", "intern", "manag", "develop", "solut",
+        "also", "use", "work", "team", "role", "compani", "requir",
+        "abil", "strong", "excel", "opportun",
+    }
+
     def get_unscored_job_batch(
         self,
         user_id: str,
@@ -751,6 +770,11 @@ class JobRepository(BaseRepository, IJobRepository):
                 )
                 exp_params = [max_experience_years, self._SQL_SENIOR_TITLE_PATTERN]
 
+            # Fixed, code-owned constant list (not user input) -- safe to
+            # inline as SQL literals directly, same as any other constant
+            # embedded in these query strings.
+            boilerplate_sql = ", ".join(f"'{w}'" for w in self._BM25_BOILERPLATE_STEMS)
+
             query = f"""
                 WITH vec AS (
                     SELECT n.job_id, ROW_NUMBER() OVER (ORDER BY n.embedding <=> {p}::vector) AS rnk
@@ -762,6 +786,7 @@ class JobRepository(BaseRepository, IJobRepository):
                 lex_query AS (
                     SELECT to_tsquery('english', string_agg(lexeme, ' | ')) AS q
                     FROM unnest(tsvector_to_array(to_tsvector('english', {p}))) AS lexeme
+                    WHERE lexeme NOT IN ({boilerplate_sql})
                 ),
                 lex AS (
                     SELECT n.job_id,
