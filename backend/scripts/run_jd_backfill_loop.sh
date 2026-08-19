@@ -14,8 +14,14 @@ set -uo pipefail
 PER_JOB_PROVIDERS=(workday smartrecruiters icims oracle jazzhr bamboohr rippling join_com)
 BOARD_WIDE_PROVIDERS=(pinpoint recruiterbox successfactors)
 
+# Capped well below "full exhaustion" for the largest providers (Workday
+# alone has ~250K+ empty rows, 500+ batches to fully drain) so a single
+# pass through the provider list makes real progress on every provider
+# instead of the loop spending 12+ hours stuck on Workday before ever
+# touching JazzHR/BambooHR/Pinpoint/etc. Re-running the script (or a cron)
+# picks up where offset left off relative to whatever's still empty.
 BATCH=500
-MAX_ITERS=2000
+MAX_ITERS=300
 LOG=/app/jd_backfill.log
 
 echo "$(date -u +%FT%TZ) starting JD backfill loop" >> "$LOG"
