@@ -22,6 +22,7 @@ def get_jobs(
     seniority: Optional[str] = None,
     min_salary: Optional[float] = None,
     sort_by: str = "score",
+    max_experience_years: Optional[float] = None,
     repos: RepositoryManager = Depends(get_repos),
     current_user: CurrentUser = Depends(get_current_user),
 ):
@@ -45,6 +46,7 @@ def get_jobs(
         seniority=seniority,
         min_salary=min_salary,
         sort_by=sort_by,
+        max_experience_years=max_experience_years,
         user_id=current_user.user_id,
     )
 
@@ -74,6 +76,7 @@ def get_board_jobs(
     seniority: Optional[str] = None,
     min_salary: Optional[float] = None,
     sort_by: str = "newest",
+    max_experience_years: Optional[float] = None,
     repos: RepositoryManager = Depends(get_repos),
     current_user: CurrentUser = Depends(get_current_user),
 ):
@@ -93,23 +96,33 @@ def get_board_jobs(
         seniority=seniority,
         min_salary=min_salary,
         sort_by=sort_by,
+        max_experience_years=max_experience_years,
         user_id=current_user.user_id,
     )
 
 @router.get("/semantic-search")
 def semantic_search_jobs(
     k: int = Query(50, ge=1, le=500),
+    max_experience_years: Optional[float] = None,
     repos: RepositoryManager = Depends(get_repos),
     current_user: CurrentUser = Depends(get_current_user),
 ):
     """Ranks jobs purely by embedding cosine similarity to this candidate's
     profile embedding (user_career_profiles.embedding), across the entire
-    ACTIVE pool -- not the recency-bounded window /jobs uses, and no
-    keyword/rule filtering applied. Each result carries vector_similarity
-    (0-1, higher = closer) so callers/UI can show or threshold on it.
-    Returns an empty list (not an error) if the candidate has no profile
-    embedding yet -- store_candidate_embedding runs on profile save."""
-    return {"jobs": repos.job.get_jobs_by_vector_similarity(current_user.user_id, k=k)}
+    ACTIVE pool -- not the recency-bounded window /jobs uses. No keyword/
+    rule filtering applied EXCEPT max_experience_years, which is a real SQL
+    WHERE clause (see get_jobs_by_vector_similarity's docstring for why
+    this can't be a similarity/embedding thing -- a hard cutoff needs a
+    hard filter, not a nudge in vector space). Each result carries
+    vector_similarity (0-1, higher = closer) so callers/UI can show or
+    threshold on it. Returns an empty list (not an error) if the candidate
+    has no profile embedding yet -- store_candidate_embedding runs on
+    profile save."""
+    return {
+        "jobs": repos.job.get_jobs_by_vector_similarity(
+            current_user.user_id, k=k, max_experience_years=max_experience_years
+        )
+    }
 
 
 @router.get("/{job_id}")

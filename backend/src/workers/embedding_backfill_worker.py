@@ -22,7 +22,9 @@ class EmbeddingBackfillWorker(BaseWorker):
     skills/responsibilities feed both a better embedding -- see
     job_embedding_text's docstring -- and get cached to normalized_jobs.
     jd_profile, a column that existed in the schema but nothing ever
-    wrote to before this).
+    wrote to before this). experience_min/experience_max are persisted
+    the same way so job search can filter on experience directly via SQL
+    instead of re-running JDExtractor per request.
     """
 
     def __init__(self):
@@ -58,6 +60,7 @@ class EmbeddingBackfillWorker(BaseWorker):
                         ))
                         job_id_to_profile[j["job_id"]] = (
                             structured.model_dump_json(), structured.jd_hash, JIE_VERSION,
+                            structured.experience_min, structured.experience_max,
                         )
                     else:
                         texts.append(job_embedding_text(j["title"], j["description"]))

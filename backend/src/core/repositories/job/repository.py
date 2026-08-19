@@ -131,7 +131,8 @@ class JobRepository(BaseRepository, IJobRepository):
     def get_jobs_from_precomputed(self, page: int, page_size: int, user_id: str, min_score: float = None,
                                    location: str = None, provider: str = None, company: str = None,
                                    title: str = None, remote_type: str = None, employment_type: str = None,
-                                   min_salary: float = None, pipeline: str = "A", q: str = None, conn=None):
+                                   min_salary: float = None, pipeline: str = "A", q: str = None,
+                                   max_experience_years: float = None, conn=None):
         """
         Serves scored jobs from user_job_scores (populated by the background
         JobScoringWorker against the full active-jobs pool) instead of live-
@@ -202,6 +203,20 @@ class JobRepository(BaseRepository, IJobRepository):
         if min_score is not None:
             where_clause += f" AND s.job_score >= {p}"
             params.append(min_score)
+        if max_experience_years is not None:
+            # experience_min is only populated for jobs the embedding
+            # worker has visited (JDExtractor's structured field, also
+            # weak recall -- often NULL even for a real requirement). A
+            # job with a real extracted number is filtered on it exactly;
+            # otherwise the existing senior-title heuristic already used
+            # to prioritize the scoring queue is the fallback, so this
+            # never silently passes an obviously-senior title through
+            # just because the number wasn't extracted.
+            where_clause += (
+                f" AND ((n.experience_min IS NOT NULL AND n.experience_min <= {p})"
+                f" OR (n.experience_min IS NULL AND n.title !~* {p}))"
+            )
+            params.extend([max_experience_years, self._SQL_SENIOR_TITLE_PATTERN])
 
         count_row = conn.execute(f"SELECT COUNT(*) as cnt {where_clause}", tuple(params)).fetchone()
         total_scored = count_row["cnt"] if count_row else 0
@@ -216,7 +231,7 @@ class JobRepository(BaseRepository, IJobRepository):
                    n.job_id, n.title, n.provider,
                    n.location, n.remote_type as remote, n.employment_type,
                    n.salary_min, n.salary_max, n.posted_at, n.apply_url,
-                   n.description, n.status,
+                   n.description, n.status, n.experience_min, n.experience_max,
                    s.job_score, s.intent_score, s.score_breakdown
         """
         query = f"{select_clause} {where_clause} ORDER BY s.job_score DESC, n.posted_at DESC {limit} OFFSET {offset}"
@@ -234,7 +249,7 @@ class JobRepository(BaseRepository, IJobRepository):
             r["application_status"] = "NEW"
         return rows
 
-    def get_jobs(self, page: int=1, page_size: int=50, provider: str=None, company: str=None, title: str=None, status: str="ACTIVE", min_score: float=None, pipeline: str="A", location: str=None, remote_type: str=None, employment_type: str=None, seniority: str=None, min_salary: float=None, sort_by: str="newest", user_id: str=None, q: str=None, tx=None):
+    def get_jobs(self, page: int=1, page_size: int=50, provider: str=None, company: str=None, title: str=None, status: str="ACTIVE", min_score: float=None, pipeline: str="A", location: str=None, remote_type: str=None, employment_type: str=None, seniority: str=None, min_salary: float=None, sort_by: str="newest", user_id: str=None, q: str=None, max_experience_years: float=None, tx=None):
         from src.api.db import json_extract, is_postgres
         import json
         with self.transaction() as conn:
@@ -243,7 +258,8 @@ class JobRepository(BaseRepository, IJobRepository):
                     page=page, page_size=page_size, user_id=user_id, min_score=min_score,
                     location=location, provider=provider, company=company, title=title,
                     remote_type=remote_type, employment_type=employment_type,
-                    min_salary=min_salary, pipeline=pipeline, q=q, conn=conn,
+                    min_salary=min_salary, pipeline=pipeline, q=q,
+                    max_experience_years=max_experience_years, conn=conn,
                 )
                 if precomputed is not None:
                     return precomputed
@@ -256,7 +272,7 @@ class JobRepository(BaseRepository, IJobRepository):
                        n.job_id, n.title, n.provider,
                        n.location, n.remote_type as remote, n.employment_type,
                        n.salary_min, n.salary_max, n.posted_at, n.apply_url,
-                       n.description, n.status
+                       n.description, n.status, n.experience_min, n.experience_max
                 FROM normalized_jobs n
                 {self._COMPANY_JOIN}
                 WHERE n.status = {p}
@@ -298,6 +314,12 @@ class JobRepository(BaseRepository, IJobRepository):
             if min_salary is not None:
                 base_query += f" AND (n.salary_max >= {p} OR n.salary_min >= {p})"
                 params.extend([min_salary, min_salary])
+            if max_experience_years is not None:
+                base_query += (
+                    f" AND ((n.experience_min IS NOT NULL AND n.experience_min <= {p})"
+                    f" OR (n.experience_min IS NULL AND n.title !~* {p}))"
+                )
+                params.extend([max_experience_years, self._SQL_SENIOR_TITLE_PATTERN])
 
             # Bound the candidate set to the most recent N active jobs before
             # windowing/ranking. Without this, the per-company window function
@@ -324,7 +346,7 @@ class JobRepository(BaseRepository, IJobRepository):
                        0.0 as scoring_confidence, '' as recommendation_reason,
                        'NEW' as application_status,
                        location, remote, employment_type, salary_min, salary_max,
-                       posted_at, apply_url, description, status
+                       posted_at, apply_url, description, status, experience_min, experience_max
                 FROM (
                     SELECT b.*, ROW_NUMBER() OVER (
                         PARTITION BY b.canonical_name ORDER BY b.posted_at DESC
@@ -552,14 +574,18 @@ class JobRepository(BaseRepository, IJobRepository):
             return [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
 
     def store_job_embeddings(self, job_id_to_vector: dict, job_id_to_profile: dict = None, tx=None) -> None:
-        """job_id_to_profile is optional: {job_id: (jd_profile_json_str, jd_hash, jie_version)}.
+        """job_id_to_profile is optional: {job_id: (jd_profile_json_str, jd_hash, jie_version,
+        experience_min, experience_max)}. experience_min/max may be None (JDExtractor
+        has weak recall on this field -- no explicit number in the JD text is
+        common) -- that's a real value to store, not a reason to omit the field.
         normalized_jobs.jd_profile exists in the schema but nothing ever
         wrote to it (confirmed live: 0 of 1.4M+ active jobs had it
         populated) -- every tailoring/cover-letter request re-parsed the
         same job's JD from scratch instead of reading a cached result.
         The embedding backfill worker already visits every job exactly
-        once, so populating jd_profile in the same pass is close to free
-        and fixes both gaps together."""
+        once, so populating jd_profile (and experience_min/max, so job
+        search can filter on it via SQL instead of re-running the
+        extractor per request) in the same pass is close to free."""
         if not job_id_to_vector:
             return
         job_id_to_profile = job_id_to_profile or {}
@@ -568,14 +594,15 @@ class JobRepository(BaseRepository, IJobRepository):
             for job_id, vec in job_id_to_vector.items():
                 profile = job_id_to_profile.get(job_id)
                 if profile:
-                    jd_profile_json, jd_hash, jie_version = profile
+                    jd_profile_json, jd_hash, jie_version, experience_min, experience_max = profile
                     conn.execute(
                         f"""UPDATE normalized_jobs
                             SET embedding = {p}::vector, jd_profile = {p}::jsonb,
                                 jd_hash = {p}, jd_parser = 'JDExtractor', jd_version = {p},
-                                jd_parsed_at = NOW()
+                                jd_parsed_at = NOW(), experience_min = {p}, experience_max = {p}
                             WHERE job_id = {p}""",
-                        (self._vector_literal(vec), jd_profile_json, jd_hash, jie_version, job_id),
+                        (self._vector_literal(vec), jd_profile_json, jd_hash, jie_version,
+                         experience_min, experience_max, job_id),
                     )
                 else:
                     conn.execute(
@@ -604,7 +631,9 @@ class JobRepository(BaseRepository, IJobRepository):
                 (self._vector_literal(vec), user_id),
             )
 
-    def get_jobs_by_vector_similarity(self, user_id: str, k: int = 500, tx=None) -> List[dict]:
+    def get_jobs_by_vector_similarity(
+        self, user_id: str, k: int = 500, max_experience_years: float = None, tx=None
+    ) -> List[dict]:
         """
         ANN shortlist of the k jobs semantically closest to this candidate's
         profile embedding, across the *entire* active pool — not bounded by
@@ -612,6 +641,15 @@ class JobRepository(BaseRepository, IJobRepository):
         dicts (title/description/etc, no scoring applied yet); caller runs
         HardRejectFilter/IntentFilter on this shortlist same as any other
         batch, or serves it directly ordered by vector distance.
+
+        max_experience_years, when given, excludes roles the same way the
+        rule-based paths do: keep if experience_min (extracted by
+        JDExtractor, persisted at embedding time) is known and <= the cap,
+        or if it's unknown and the title itself doesn't look senior
+        (_SQL_SENIOR_TITLE_PATTERN) -- semantic similarity alone can't
+        express a hard cutoff like this (see get_unscored_job_batch's
+        docstring for why this is a SQL filter, not an embedding
+        dimension), so it's applied here as a real WHERE clause.
         """
         from src.api.db import json_extract
         embedding = self.get_candidate_embedding(user_id)
@@ -622,21 +660,30 @@ class JobRepository(BaseRepository, IJobRepository):
             p = conn.dialect.placeholder()
             json_company = json_extract('n.raw_payload_json', '$.company')
             batch_limit = conn.dialect.create_limit(k)
+            params = [embedding]
+            exp_clause = ""
+            if max_experience_years is not None:
+                exp_clause = (
+                    f" AND ((n.experience_min IS NOT NULL AND n.experience_min <= {p})"
+                    f" OR (n.experience_min IS NULL AND n.title !~* {p}))"
+                )
+                params.extend([max_experience_years, self._SQL_SENIOR_TITLE_PATTERN])
+            params.append(embedding)
             query = f"""
                 SELECT COALESCE(i.canonical_name, i2.canonical_name, {json_company}, n.company_id) AS canonical_name,
                        COALESCE(i.domain, i2.domain) AS company_domain,
                        n.job_id, n.title, n.provider,
                        n.location, n.remote_type as remote, n.employment_type,
                        n.salary_min, n.salary_max, n.posted_at, n.apply_url,
-                       n.description, n.status,
+                       n.description, n.status, n.experience_min, n.experience_max,
                        1 - (n.embedding <=> {p}::vector) AS vector_similarity
                 FROM normalized_jobs n
                 {self._COMPANY_JOIN}
-                WHERE n.status = 'ACTIVE' AND n.embedding IS NOT NULL
+                WHERE n.status = 'ACTIVE' AND n.embedding IS NOT NULL{exp_clause}
                 ORDER BY n.embedding <=> {p}::vector
                 {batch_limit}
             """
-            c = conn.execute(query, (embedding, embedding))
+            c = conn.execute(query, tuple(params))
             return [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
 
     def get_job(self, job_id: str, tx=None) -> dict | None:
