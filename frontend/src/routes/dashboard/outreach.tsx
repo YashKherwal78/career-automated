@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, type CSSProperties, type ChangeEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ServiceRegistry, type ReferralDraft, type HrPitchDraft } from "../../lib/services";
+import { ServiceRegistry, type ReferralDraft, type HrPitchDraft, type ManualLeadInput } from "../../lib/services";
 import { DsButton } from "../../components/ds/Button";
+import { DsModal, DsModalCloseButton } from "../../components/ds/Modal";
+import { UserPlus } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/outreach")({
   head: () => ({ meta: [{ title: "Outreach — CareerAutomated" }] }),
@@ -51,6 +53,144 @@ function mailTypeLabel(mailType: HrPitchDraft["mail_type"]) {
   return mailType === "hr_pitch" ? "Direct pitch" : "Referral ask";
 }
 
+// ---------------------------------------------------------------------
+// Add lead — manual counterpart to the Jobs page's "Upload job" screenshot
+// flow: for a job/contact the automated discovery pipeline wouldn't catch
+// (a LinkedIn job with a broken Apply button, a recruiter found some other
+// way), fill in the facts by hand and get a drafted email back immediately.
+// Same shape as UploadJobModal in jobs.tsx -- own local state, opened from
+// a promo-style button, closes itself on success.
+// ---------------------------------------------------------------------
+const EMPTY_LEAD: ManualLeadInput = {
+  company_name: "",
+  job_title: "",
+  contact_email: "",
+  contact_name: "",
+  contact_role: "",
+  contact_type: "Recruiter",
+  apply_url: "",
+};
+
+function fieldStyle(): CSSProperties {
+  return {
+    width: "100%",
+    fontSize: 13.5,
+    padding: "9px 11px",
+    borderRadius: "var(--ds-radius-md)",
+    border: "1px solid var(--ds-border-medium)",
+    background: "var(--ds-surface-card)",
+    color: "var(--ds-ink-900)",
+  };
+}
+
+function AddLeadModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+  const [form, setForm] = useState<ManualLeadInput>(EMPTY_LEAD);
+  const [state, setState] = useState<"idle" | "working" | "error">("idle");
+  const [error, setError] = useState<string | null>(null);
+
+  const set = (k: keyof ManualLeadInput) => (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const canSubmit = form.company_name.trim() && form.job_title.trim() && form.contact_email.trim().includes("@");
+
+  const handleSubmit = async () => {
+    if (!canSubmit || state === "working") return;
+    setState("working");
+    setError(null);
+    try {
+      await ServiceRegistry.getHrPitchService().addManualLead(form);
+      onCreated();
+      onClose();
+    } catch (e) {
+      setState("error");
+      setError(e instanceof Error ? e.message : "Couldn't draft this one — try again.");
+    }
+  };
+
+  return (
+    <DsModal onClose={onClose} maxWidth={520}>
+      <div className="p-5 md:p-6 space-y-4" style={{ position: "relative" }}>
+        <DsModalCloseButton onClose={onClose} />
+        <div className="flex items-start gap-3 md:gap-4" style={{ paddingRight: 28 }}>
+          <div
+            className="flex items-center justify-center flex-shrink-0"
+            style={{ width: 40, height: 40, borderRadius: "var(--ds-radius-lg)", background: "var(--ds-brand-orange-tint-08)", color: "var(--ds-brand-orange-text)" }}
+          >
+            <UserPlus size={18} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div
+              className="uppercase font-bold"
+              style={{ fontSize: 11, letterSpacing: 0.6, color: "var(--ds-brand-orange-text)", marginBottom: 3 }}
+            >
+              Add lead
+            </div>
+            <h2 className="font-[var(--ds-font-display)] font-semibold" style={{ fontSize: 16, marginBottom: 3 }}>
+              Found a role and a contact yourself?
+            </h2>
+            <p style={{ margin: 0, fontSize: 13, color: "var(--ds-ink-500)" }}>
+              Fill in the company, role, and a real contact email — we'll draft the pitch right away and drop it
+              into Pending review, same as anything the automated pipeline finds.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <label style={{ fontSize: 12.5, color: "var(--ds-ink-600)" }}>
+            Company *
+            <input style={fieldStyle()} value={form.company_name} onChange={set("company_name")} placeholder="Questhiring" />
+          </label>
+          <label style={{ fontSize: 12.5, color: "var(--ds-ink-600)" }}>
+            Role *
+            <input style={fieldStyle()} value={form.job_title} onChange={set("job_title")} placeholder="AI Engineer" />
+          </label>
+        </div>
+
+        <label style={{ fontSize: 12.5, color: "var(--ds-ink-600)", display: "block" }}>
+          Contact email *
+          <input style={fieldStyle()} value={form.contact_email} onChange={set("contact_email")} placeholder="recruiter@company.com" />
+        </label>
+
+        <div className="grid grid-cols-2 gap-3">
+          <label style={{ fontSize: 12.5, color: "var(--ds-ink-600)" }}>
+            Contact name
+            <input style={fieldStyle()} value={form.contact_name} onChange={set("contact_name")} placeholder="Optional" />
+          </label>
+          <label style={{ fontSize: 12.5, color: "var(--ds-ink-600)" }}>
+            Their role
+            <input style={fieldStyle()} value={form.contact_role} onChange={set("contact_role")} placeholder="e.g. Talent Acquisition" />
+          </label>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <label style={{ fontSize: 12.5, color: "var(--ds-ink-600)" }}>
+            Contact type
+            <select style={fieldStyle()} value={form.contact_type} onChange={set("contact_type")}>
+              <option value="Recruiter">Recruiter</option>
+              <option value="Hiring Manager">Hiring Manager</option>
+              <option value="Technical IC">Technical IC / peer</option>
+            </select>
+          </label>
+          <label style={{ fontSize: 12.5, color: "var(--ds-ink-600)" }}>
+            Job posting link
+            <input style={fieldStyle()} value={form.apply_url} onChange={set("apply_url")} placeholder="Optional" />
+          </label>
+        </div>
+
+        {error && (
+          <div style={{ fontSize: 12.5, color: "#B4392C", background: "rgba(180,57,44,0.08)", borderRadius: "var(--ds-radius-md)", padding: "8px 10px" }}>
+            {error}
+          </div>
+        )}
+
+        <DsButton onClick={handleSubmit} disabled={!canSubmit || state === "working"} style={{ width: "100%" }}>
+          {state === "working" ? "Drafting…" : "Draft this email"}
+        </DsButton>
+      </div>
+    </DsModal>
+  );
+}
+
 function OutreachPage() {
   const queryClient = useQueryClient();
   const [activeSource, setActiveSource] = useState<"referral" | "hr_pitch">("referral");
@@ -77,6 +217,7 @@ function OutreachPage() {
   });
 
   const [policyUpdating, setPolicyUpdating] = useState(false);
+  const [showAddLeadModal, setShowAddLeadModal] = useState(false);
 
   const handleToggleAutoSend = async () => {
     setPolicyUpdating(true);
@@ -160,6 +301,40 @@ function OutreachPage() {
           </button>
         ))}
       </div>
+
+      {activeSource === "hr_pitch" && (
+        <button
+          type="button"
+          onClick={() => setShowAddLeadModal(true)}
+          className="w-full flex items-center gap-3 text-left glass-card rounded-2xl border border-white/50 bg-white/40 shadow-sm hover:bg-white/60 active:scale-[0.995] transition-all"
+          style={{ padding: "13px 14px", marginBottom: 20 }}
+        >
+          <div
+            className="flex items-center justify-center flex-shrink-0"
+            style={{ width: 38, height: 38, borderRadius: "var(--ds-radius-lg)", background: "var(--ds-brand-orange-tint-08)", color: "var(--ds-brand-orange-text)" }}
+          >
+            <UserPlus size={17} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-semibold" style={{ fontSize: 13.5, color: "var(--ds-ink-900)" }}>
+              Found a role and a contact yourself?
+            </div>
+            <div className="truncate" style={{ fontSize: 12, color: "var(--ds-ink-500)" }}>
+              Add the lead by hand — we'll draft the pitch right away, same as an automated find.
+            </div>
+          </div>
+          <span className="flex-shrink-0 font-semibold" style={{ fontSize: 12.5, color: "var(--ds-accent-primary)" }}>
+            Add lead →
+          </span>
+        </button>
+      )}
+
+      {showAddLeadModal && (
+        <AddLeadModal
+          onClose={() => setShowAddLeadModal(false)}
+          onCreated={() => queryClient.invalidateQueries({ queryKey: ["hr-pitch-drafts"] })}
+        />
+      )}
 
       <div
         className="flex items-center justify-between flex-wrap"

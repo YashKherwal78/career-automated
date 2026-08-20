@@ -5,12 +5,49 @@ reject shape but is a fully separate router/table -- referrals.py itself is
 untouched.
 """
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
 
 from src.api.db import get_connection, is_postgres
 from src.outreach.email_client import EmailClient
+from src.referrals.hr_pitch_integration import draft_hr_pitch_manual
 from src.runtime.auth.dependencies import CurrentUser, get_current_user
 
 router = APIRouter()
+
+
+class ManualLeadRequest(BaseModel):
+    company_name: str = Field(..., min_length=1)
+    job_title: str = Field(..., min_length=1)
+    contact_email: str = Field(..., min_length=3)
+    contact_name: str = ""
+    contact_role: str = ""
+    contact_type: str = "Recruiter"  # "Recruiter" / "Hiring Manager" -> hr_pitch; anything else -> referral_ask
+    apply_url: str = ""
+
+
+@router.post("/manual")
+def create_manual_hr_pitch(req: ManualLeadRequest, current_user: CurrentUser = Depends(get_current_user)):
+    """Add a single lead by hand -- a LinkedIn job link with a broken Apply
+    button, a recruiter contact found outside the automated discovery
+    pipeline, anything the batch pipeline wouldn't otherwise pick up.
+    Manual counterpart to POST /jobs/upload-screenshot: skip discovery,
+    take the facts as given, draft immediately, land in the same
+    PENDING_REVIEW queue as automated drafts (GET /, approve/reject below)."""
+    try:
+        return draft_hr_pitch_manual(
+            user_id=current_user.user_id,
+            company_name=req.company_name,
+            job_title=req.job_title,
+            contact_email=req.contact_email,
+            contact_name=req.contact_name,
+            contact_role=req.contact_role,
+            contact_type=req.contact_type,
+            apply_url=req.apply_url,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Draft generation failed: {e}")
 
 
 @router.get("/")
