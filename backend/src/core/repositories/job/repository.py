@@ -1,4 +1,5 @@
 import json
+import re
 import sqlite3
 import time
 from typing import List, Tuple
@@ -249,20 +250,59 @@ class JobRepository(BaseRepository, IJobRepository):
             r["application_status"] = "NEW"
         return rows
 
-    def get_jobs(self, page: int=1, page_size: int=50, provider: str=None, company: str=None, title: str=None, status: str="ACTIVE", min_score: float=None, pipeline: str="A", location: str=None, remote_type: str=None, employment_type: str=None, seniority: str=None, min_salary: float=None, sort_by: str="newest", user_id: str=None, q: str=None, max_experience_years: float=None, tx=None):
+    def get_jobs(self, page: int=1, page_size: int=50, provider: str=None, company: str=None, title: str=None, status: str="ACTIVE", min_score: float=None, pipeline: str="A", location: str=None, remote_type: str=None, employment_type: str=None, seniority: str=None, min_salary: float=None, max_salary: float=None, posted_within_days: int=None, sort_by: str="newest", user_id: str=None, q: str=None, max_experience_years: float=None, include_interns: bool=True, tx=None):
         from src.api.db import json_extract, is_postgres
         import json
         with self.transaction() as conn:
+            # 2026-08-20: ranking here now comes from hybrid search (vector +
+            # BM25 RRF) instead of JIE/IntentFilter's structured LLM scoring.
+            # IntentFilter's title-role matching was an all-or-nothing gate
+            # ("does this title match a role literally named in the
+            # candidate's target_roles?") that structurally advantaged
+            # whichever role family was most explicitly represented in a
+            # profile, over others the candidate is equally qualified for
+            # (e.g. Product Manager over AI Engineer/ML Engineer/SWE/SDE for
+            # a profile with PM-flavored resume content) -- hybrid search has
+            # no such gate, just continuous semantic+lexical similarity
+            # against the whole profile, so no role family gets an
+            # structural unfair advantage. HardRejectFilter (rule-based,
+            # no AI -- includes the senior/staff/principal title rejection)
+            # still runs below on whatever hybrid search returns; only the
+            # LLM-scored ranking is gone, not the reject rules.
             if sort_by == "score" and user_id:
-                precomputed = self.get_jobs_from_precomputed(
-                    page=page, page_size=page_size, user_id=user_id, min_score=min_score,
-                    location=location, provider=provider, company=company, title=title,
-                    remote_type=remote_type, employment_type=employment_type,
-                    min_salary=min_salary, pipeline=pipeline, q=q,
-                    max_experience_years=max_experience_years, conn=conn,
+                hybrid_jobs = self.get_jobs_by_hybrid_search(
+                    user_id, k=max(500, page * page_size), max_experience_years=max_experience_years,
+                    include_interns=include_interns, provider=provider, company=company,
+                    title=title, q=q, location=location, remote_type=remote_type,
+                    employment_type=employment_type, min_salary=min_salary, max_salary=max_salary,
+                    posted_within_days=posted_within_days, tx=conn,
                 )
-                if precomputed is not None:
-                    return precomputed
+                if hybrid_jobs:
+                    profile = self._load_profile(conn, user_id)
+                    passed, _rejected, _counts = self._hard_reject.filter_batch(hybrid_jobs, profile)
+                    for j in passed:
+                        # rrf_score is a small fraction (two RRF terms, each
+                        # <= 1/61) -- scale to a 0-100ish display range the
+                        # same shape job_score has always had. matched_terms
+                        # (real overlapping profile keywords, no LLM call)
+                        # replaces JIE's score_breakdown as the "why this
+                        # matched" signal shown to the user.
+                        j["job_score"] = round(min(j.get("rrf_score", 0.0) * 3000, 100))
+                        j["score_breakdown"] = j.get("matched_terms") or []
+                        j["match_score"] = j["job_score"]
+                        j["priority_score"] = 0.0
+                        j["scoring_confidence"] = 1.0
+                        j["recommendation_reason"] = ""
+                        j["application_status"] = "NEW"
+                    if min_score is not None:
+                        passed = [j for j in passed if j["job_score"] >= min_score]
+                    offset = (page - 1) * page_size
+                    return passed[offset: offset + page_size]
+                # No profile embedding yet for this user -- fall through to
+                # the plain recency-ordered path below (same as sort_by !=
+                # "score"); there's no per-candidate ranking signal to use
+                # until an embedding exists, and that's a real, expected
+                # state (brand-new profile), not an error.
 
             p = conn.dialect.placeholder()
             json_company = json_extract('n.raw_payload_json', '$.company')
@@ -371,23 +411,19 @@ class JobRepository(BaseRepository, IJobRepository):
                     j["score_breakdown"] = []
 
             profile = self._load_profile(conn, user_id)
-            passed, rejected, _ = self._hard_reject.filter_batch(raw_jobs, profile)
-            scored_jobs, _ = self._intent_filter.score_batch(passed, profile)
-
-            # job_score was a hardcoded 0 placeholder in the SQL — populate it
-            # for real from the computed intent_score so every consumer of
-            # this API (not just the one screen that happened to prefer
-            # intent_score client-side) shows an actual match percentage.
+            # HardRejectFilter only (rule-based, no AI) -- IntentFilter's
+            # LLM-scored ranking is gone from this path too (see the
+            # sort_by == "score" branch above for why). This branch only
+            # runs for sort_by != "score", or for a brand-new profile with
+            # no embedding yet -- no per-candidate ranking signal exists
+            # either way, so posted_at (newest first) is the real, honest
+            # ordering rather than a fake/placeholder score.
+            scored_jobs, rejected, _ = self._hard_reject.filter_batch(raw_jobs, profile)
             for j in scored_jobs:
-                j["job_score"] = round(j.get("intent_score", 0.0) * 100)
+                j["job_score"] = 0
+                j["match_score"] = 0.0
 
-            if min_score is not None:
-                scored_jobs = [j for j in scored_jobs if j.get("intent_score", 0.0) >= min_score / 100.0]
-
-            if sort_by == "score":
-                scored_jobs.sort(key=lambda x: x.get("intent_score", 0.0), reverse=True)
-            else:
-                scored_jobs.sort(key=lambda x: (x.get("posted_at") or "", x.get("intent_score", 0.0)), reverse=True)
+            scored_jobs.sort(key=lambda x: x.get("posted_at") or "", reverse=True)
 
             offset = (page - 1) * page_size
             return scored_jobs[offset : offset + page_size]
@@ -427,8 +463,16 @@ class JobRepository(BaseRepository, IJobRepository):
     # account for ~75-80% of every batch's rejections).
     _SQL_SENIOR_TITLE_PATTERN = (
         r"\ysenior\y|\ysr\y|\ystaff\y|\yprincipal\y|\ylead\y|\ydirector\y|\yvp\y|"
-        r"\yvice president\y|\yhead of\y|\yengineering manager\y|\ytechnical manager\y"
+        r"\yavp\y|\ygm\y|\yvice president\y|\yhead\y|\ymanager\y|\yarchitect\y"
     )
+    _SQL_INTERN_TITLE_PATTERN = r"\yintern\y|\yinternship\y|\ytrainee\y|\yco-op\y|\ycoop\y"
+    # Max postings from any one company in a single hybrid-search result
+    # page -- see get_jobs_by_hybrid_search's "capped" CTE. A staffing/
+    # defense contractor with many genuinely-separate but similarly-worded
+    # open reqs (confirmed real, 2026-08-20: ProSync held 4 of a
+    # candidate's top 15) shouldn't crowd out other companies just because
+    # each individual posting scores well.
+    _HYBRID_PER_COMPANY_CAP = 3
     _SQL_INDIA_LOCATION_PATTERN = (
         r"\ybangalore\y|\ybengaluru\y|\ymumbai\y|\ypune\y|\yhyderabad\y|\ychennai\y|"
         r"\ydelhi\y|\yncr\y|\ygurgaon\y|\ygurugram\y|\ynoida\y|\ykolkata\y|\yahmedabad\y|\yindia\y"
@@ -477,18 +521,27 @@ class JobRepository(BaseRepository, IJobRepository):
         added.
 
         When prioritize_by_vector is True (default) and this user has a
-        stored profile embedding, orders the batch by pgvector cosine
-        distance to that embedding -- jobs with NULL embedding (not yet
-        backfilled) sort last by default. This doesn't shrink the pool
-        HardRejectFilter/IntentFilter ultimately still scores (every active
-        job still gets covered eventually across repeated calls, same as
-        before) -- it changes the *order*, so the semantically closest jobs
-        get scored first instead of whatever order the anti-join happened
-        to return, which is the difference between a user seeing their best
-        matches in minutes vs. only once the worker's sweep happens to reach
-        them. This was previously computed, stored, and never read anywhere
-        in the live pipeline (get_jobs_by_vector_similarity below has no
-        other caller) -- this is the fix for that gap.
+        stored profile embedding, orders the batch by Reciprocal Rank
+        Fusion of vector cosine similarity AND BM25-style lexical rank
+        (search_vector, same RRF k=60 as get_jobs_by_hybrid_search) instead
+        of vector distance alone -- recovers exact/rare-term matches (a
+        specific tool, framework, certification) that pure semantic
+        similarity blurs into a general topical neighborhood, same
+        reasoning as the standalone hybrid-search endpoint. Falls back to
+        vector-only if the candidate has no profile text to build a
+        lexical query from (lex_query.q ends up NULL, COALESCE in the
+        fused CTE degrades gracefully), and to no ordering at all if the
+        candidate has no embedding yet -- same two fallback tiers as
+        before this changed from vector-only to hybrid.
+
+        This doesn't shrink the pool HardRejectFilter/IntentFilter
+        ultimately still scores (every active job still gets covered
+        eventually across repeated calls, same as before) -- it changes
+        the *order*, so the best matches (semantic OR exact-term) get
+        scored first instead of whatever order the anti-join happened to
+        return, which is the difference between a user seeing their best
+        matches in minutes vs. only once the worker's sweep happens to
+        reach them.
         """
         with self.transaction() as conn:
             p = conn.dialect.placeholder()
@@ -512,24 +565,90 @@ class JobRepository(BaseRepository, IJobRepository):
                     params.append([f"%{pl}%" for pl in preferred])
                 extra_where += f" AND ({location_clause})"
 
-            order_clause = ""
             candidate_embedding = self.get_candidate_embedding(user_id) if prioritize_by_vector else None
-            if candidate_embedding:
-                order_clause = f"ORDER BY n.embedding <=> {p}::vector"
-                params.append(candidate_embedding)
+
+            if not candidate_embedding:
+                # No embedding yet -- identical to the pre-hybrid behavior:
+                # anti-join only, no ranking.
+                query = f"""
+                    SELECT n.job_id, n.title, n.description, n.provider, n.status, n.location, n.apply_url
+                    FROM normalized_jobs n
+                    LEFT JOIN public.user_job_scores s
+                        ON s.job_id = n.job_id AND s.user_id = {p}
+                    WHERE n.status = 'ACTIVE'
+                      AND (s.job_id IS NULL OR s.profile_updated_at IS DISTINCT FROM {p}::timestamptz)
+                      {extra_where}
+                    {batch_limit}
+                """
+                c = conn.execute(query, tuple(params))
+                return [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
+
+            from src.discovery.embeddings import candidate_embedding_text
+            profile_row = conn.execute(
+                f"SELECT profile_data FROM public.user_career_profiles WHERE user_id = {p}",
+                (user_id,),
+            ).fetchone()
+            profile_data = {}
+            if profile_row:
+                raw = profile_row["profile_data"] if hasattr(profile_row, "keys") else profile_row[0]
+                if isinstance(raw, str):
+                    raw = json.loads(raw) if raw else {}
+                profile_data = raw or {}
+            query_text = candidate_embedding_text(profile_data) if profile_data else ""
+
+            candidate_pool_limit = conn.dialect.create_limit(500)
+            boilerplate_sql = ", ".join(f"'{w}'" for w in self._BM25_BOILERPLATE_STEMS)
 
             query = f"""
-                SELECT n.job_id, n.title, n.description, n.provider, n.status, n.location, n.apply_url
-                FROM normalized_jobs n
-                LEFT JOIN public.user_job_scores s
-                    ON s.job_id = n.job_id AND s.user_id = {p}
-                WHERE n.status = 'ACTIVE'
-                  AND (s.job_id IS NULL OR s.profile_updated_at IS DISTINCT FROM {p}::timestamptz)
-                  {extra_where}
-                {order_clause}
+                WITH eligible AS (
+                    SELECT n.job_id, n.title, n.description, n.provider, n.status, n.location, n.apply_url,
+                           n.embedding, n.search_vector
+                    FROM normalized_jobs n
+                    LEFT JOIN public.user_job_scores s
+                        ON s.job_id = n.job_id AND s.user_id = {p}
+                    WHERE n.status = 'ACTIVE'
+                      AND (s.job_id IS NULL OR s.profile_updated_at IS DISTINCT FROM {p}::timestamptz)
+                      {extra_where}
+                ),
+                vec AS (
+                    SELECT job_id, ROW_NUMBER() OVER (ORDER BY embedding <=> {p}::vector) AS rnk
+                    FROM eligible
+                    WHERE embedding IS NOT NULL
+                    ORDER BY embedding <=> {p}::vector
+                    {candidate_pool_limit}
+                ),
+                lex_query AS (
+                    SELECT to_tsquery('english', string_agg(lexeme, ' | ')) AS q
+                    FROM unnest(tsvector_to_array(to_tsvector('english', {p}))) AS lexeme
+                    WHERE lexeme NOT IN ({boilerplate_sql})
+                ),
+                lex AS (
+                    SELECT eligible.job_id,
+                           ROW_NUMBER() OVER (ORDER BY ts_rank_cd(eligible.search_vector, lex_query.q) DESC) AS rnk
+                    FROM eligible, lex_query
+                    WHERE eligible.search_vector IS NOT NULL
+                          AND lex_query.q IS NOT NULL AND eligible.search_vector @@ lex_query.q
+                    ORDER BY ts_rank_cd(eligible.search_vector, lex_query.q) DESC
+                    {candidate_pool_limit}
+                ),
+                fused AS (
+                    SELECT COALESCE(vec.job_id, lex.job_id) AS job_id,
+                           COALESCE(1.0 / (60 + vec.rnk), 0) + COALESCE(1.0 / (60 + lex.rnk), 0) AS rrf_score
+                    FROM vec FULL OUTER JOIN lex ON vec.job_id = lex.job_id
+                )
+                SELECT e.job_id, e.title, e.description, e.provider, e.status, e.location, e.apply_url
+                FROM fused
+                JOIN eligible e ON e.job_id = fused.job_id
+                ORDER BY fused.rrf_score DESC
                 {batch_limit}
             """
-            c = conn.execute(query, tuple(params))
+            # Placeholder order, left-to-right: eligible CTE (user_id x2),
+            # vec CTE (embedding x2: window ORDER BY + outer ORDER BY),
+            # lex_query CTE (query_text).
+            full_params = (
+                params + [candidate_embedding] * 2 + [query_text]
+            )
+            c = conn.execute(query, tuple(full_params))
             return [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
 
     def store_job_scores(self, user_id: str, profile_updated_at: str, scored: List[dict], tx=None) -> None:
@@ -778,7 +897,12 @@ class JobRepository(BaseRepository, IJobRepository):
             return [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
 
     def get_jobs_by_hybrid_search(
-        self, user_id: str, k: int = 500, max_experience_years: float = None, tx=None
+        self, user_id: str, k: int = 500, max_experience_years: float = None,
+        include_interns: bool = True, provider: str = None, company: str = None,
+        title: str = None, q: str = None, location: str = None,
+        remote_type: str = None, employment_type: str = None,
+        min_salary: float = None, max_salary: float = None,
+        posted_within_days: int = None, tx=None
     ) -> List[dict]:
         """
         Reciprocal rank fusion (k=60, same as the RAG system's hybrid
@@ -793,6 +917,18 @@ class JobRepository(BaseRepository, IJobRepository):
             real BM25 has. This is what recovers exact/rare-term matches
             (a specific tool, framework, certification) that pure semantic
             similarity blurs into a general topical neighborhood.
+
+        include_interns=False excludes titles matching
+        _SQL_INTERN_TITLE_PATTERN, same shape as the experience-based
+        senior-title exclusion below -- independent of and orthogonal to
+        max_experience_years (an intern posting can have experience_min=0
+        and still be something a user wants to filter out explicitly).
+
+        Each result also carries matched_terms -- the candidate's own
+        profile keywords that literally appear in this job's search_vector
+        (set intersection, not an LLM call) -- as a lightweight "why this
+        matched" signal now that JIE's structured score_breakdown isn't in
+        this path.
 
         Only jobs with BOTH embedding and search_vector populated are
         eligible -- both backfills need to have reached a job before it can
@@ -830,6 +966,123 @@ class JobRepository(BaseRepository, IJobRepository):
                     f" OR (n.experience_min IS NULL AND n.title !~* {p}))"
                 )
                 exp_params = [max_experience_years, self._SQL_SENIOR_TITLE_PATTERN]
+            else:
+                # Senior-title rejection must not depend on the candidate
+                # having a numeric years-of-experience preference filled in
+                # -- confirmed real: a profile with empty career_preferences
+                # (never finished onboarding) was still letting "Senior
+                # Manager, Engineering..." through because this whole
+                # exclusion previously only activated inside the
+                # max_experience_years branch above. Always exclude senior/
+                # staff/principal/etc titles by title alone when there's no
+                # numeric cap to combine it with, rather than skip the
+                # check entirely.
+                exp_clause = f" AND n.title !~* {p}"
+                exp_params = [self._SQL_SENIOR_TITLE_PATTERN]
+            if not include_interns:
+                exp_clause += f" AND n.title !~* {p}"
+                exp_params.append(self._SQL_INTERN_TITLE_PATTERN)
+
+            # Extra filters, same semantics as get_jobs_from_precomputed's
+            # equivalents -- applied pre-fusion (inside vec/lex CTEs, same
+            # place as exp_clause) rather than post-fusion, so a filtered
+            # search still draws from the full RRF-ranked pool instead of
+            # filtering an already-truncated top-500 down to near-nothing.
+            # Company matching here is company_id/raw-JSON only (no
+            # canonical_name join -- that requires _COMPANY_JOIN, which
+            # isn't available inside these CTEs); the final SELECT still
+            # displays the fully-joined canonical_name as before, this is
+            # only a minor recall difference on the company *filter* itself.
+            ilike_op = "ILIKE"
+            if provider:
+                exp_clause += f" AND n.provider = {p}"
+                exp_params.append(provider)
+            if company:
+                exp_clause += f" AND (n.company_id {ilike_op} {p} OR {json_company} {ilike_op} {p})"
+                exp_params.extend([f"%{company}%", f"%{company}%"])
+            if title:
+                exp_clause += f" AND n.title {ilike_op} {p}"
+                exp_params.append(f"%{title}%")
+            if q:
+                exp_clause += f" AND (n.title {ilike_op} {p} OR n.company_id {ilike_op} {p} OR {json_company} {ilike_op} {p})"
+                exp_params.extend([f"%{q}%", f"%{q}%", f"%{q}%"])
+            if location:
+                if location.strip().lower() == "india":
+                    # Plain word-boundary match on "India" alone misses
+                    # postings that only name a city ("Bangalore", "Pune",
+                    # no country) -- confirmed real: several actually-India
+                    # jobs don't spell out the country at all. Reuse the
+                    # same major-cities pattern get_unscored_job_batch
+                    # already relies on for this exact reason, instead of
+                    # a second, narrower ad-hoc definition.
+                    exp_clause += f" AND n.location ~* {p}"
+                    exp_params.append(self._SQL_INDIA_LOCATION_PATTERN)
+                else:
+                    # Word-boundary regex, not a plain substring ILIKE --
+                    # confirmed real: filtering on "India" matched
+                    # "Indianapolis, IN" (Indiana, USA) via '%India%', a
+                    # false positive plain substring matching can't avoid.
+                    exp_clause += f" AND n.location ~* {p}"
+                    exp_params.append(rf"\y{re.escape(location)}\y")
+            if remote_type:
+                exp_clause += f" AND n.remote_type = {p}"
+                exp_params.append(remote_type)
+            if employment_type:
+                exp_clause += f" AND n.employment_type = {p}"
+                exp_params.append(employment_type)
+            if min_salary is not None:
+                exp_clause += f" AND (n.salary_max >= {p} OR n.salary_min >= {p})"
+                exp_params.extend([min_salary, min_salary])
+            if max_salary is not None:
+                # Mirrors min_salary's OR-across-either-column shape, but a
+                # NULL salary_min shouldn't silently fail a max-salary cap
+                # (a job with only salary_max populated is still a real
+                # candidate for "show me roles under X") -- coalesce the
+                # missing side to the one that IS present instead of
+                # requiring both.
+                exp_clause += (
+                    f" AND COALESCE(n.salary_min, n.salary_max) <= {p}"
+                )
+                exp_params.append(max_salary)
+            if posted_within_days is not None:
+                # Standard "date posted" filter every major job board
+                # exposes (24h/week/month) -- this system never had an
+                # equivalent despite storing posted_at.
+                #
+                # posted_at is TEXT, not a real timestamp column (pre-
+                # existing schema quirk), and confirmed real on this data:
+                # only 54% of active rows are actual ISO dates. The other
+                # 46% split between empty string (25%) and relative text
+                # from a scraper that never resolved it to an absolute date
+                # ("Posted 4 Days Ago", "Posted Today", "Posted 30+ Days
+                # Ago"). A naive ::timestamptz cast either throws on the
+                # non-date rows (Postgres aborts the whole query on one bad
+                # cast) or, if guarded, silently excludes ~46% of the pool
+                # from ever matching a date filter. Handle both formats
+                # instead of just the ISO one; rows that are neither
+                # (empty string, unparseable) are excluded -- there's
+                # genuinely no freshness signal to filter them on.
+                # NOTE: no literal "?" characters allowed anywhere in this
+                # fragment -- confirmed real: CompatCursor.execute() (see
+                # src/runtime/postgres/connection.py) does a blind
+                # query.replace("?", "%s") to translate this codebase's
+                # dialect-agnostic "?" placeholder convention to Postgres's
+                # "%s" at execute time. A regex "Days?" quantifier's "?" got
+                # swept up in that same replace, turning into TWO extra
+                # unbound %s placeholders (one per exp_clause use, vec+lex)
+                # with no parameter behind them -- "Days{{0,1}}" is the
+                # same POSIX-regex meaning without the character that
+                # collides with this layer's own placeholder syntax.
+                exp_clause += f"""
+                    AND (
+                        (n.posted_at ~ '^[0-9]{{4}}-[0-9]{{2}}-[0-9]{{2}}'
+                            AND n.posted_at::timestamptz >= NOW() - ({p} || ' days')::interval)
+                        OR n.posted_at ~* '^Posted Today'
+                        OR (n.posted_at ~* '^Posted [0-9]+ Days{{0,1}} Ago'
+                            AND (regexp_match(n.posted_at, '^Posted ([0-9]+) Days{{0,1}} Ago', 'i'))[1]::int <= {p})
+                    )
+                """
+                exp_params.extend([str(posted_within_days), posted_within_days])
 
             # Fixed, code-owned constant list (not user input) -- safe to
             # inline as SQL literals directly, same as any other constant
@@ -842,6 +1095,166 @@ class JobRepository(BaseRepository, IJobRepository):
                     FROM normalized_jobs n
                     WHERE n.status = 'ACTIVE' AND n.embedding IS NOT NULL{exp_clause}
                     ORDER BY n.embedding <=> {p}::vector
+                    {candidate_pool_limit}
+                ),
+                lex_query AS (
+                    SELECT to_tsquery('english', string_agg(lexeme, ' | ')) AS q,
+                           ARRAY_AGG(lexeme) AS terms
+                    FROM unnest(tsvector_to_array(to_tsvector('english', {p}))) AS lexeme
+                    WHERE lexeme NOT IN ({boilerplate_sql})
+                ),
+                lex AS (
+                    SELECT n.job_id,
+                           ROW_NUMBER() OVER (ORDER BY ts_rank_cd(n.search_vector, lex_query.q) DESC) AS rnk
+                    FROM normalized_jobs n, lex_query
+                    WHERE n.status = 'ACTIVE' AND n.search_vector IS NOT NULL
+                          AND lex_query.q IS NOT NULL AND n.search_vector @@ lex_query.q{exp_clause}
+                    ORDER BY ts_rank_cd(n.search_vector, lex_query.q) DESC
+                    {candidate_pool_limit}
+                ),
+                fused AS (
+                    SELECT COALESCE(vec.job_id, lex.job_id) AS job_id,
+                           COALESCE(1.0 / (60 + vec.rnk), 0) + COALESCE(1.0 / (60 + lex.rnk), 0) AS rrf_score
+                    FROM vec FULL OUTER JOIN lex ON vec.job_id = lex.job_id
+                ),
+                ranked_raw AS (
+                    SELECT COALESCE(i.canonical_name, i2.canonical_name, {json_company}, n.company_id) AS canonical_name,
+                           COALESCE(i.domain, i2.domain) AS company_domain,
+                           n.job_id, n.title, n.provider,
+                           n.location, n.remote_type as remote, n.employment_type,
+                           n.salary_min, n.salary_max, n.posted_at, n.apply_url,
+                           n.description, n.status, n.experience_min, n.experience_max,
+                           fused.rrf_score,
+                           1 - (n.embedding <=> {p}::vector) AS vector_similarity,
+                           COALESCE((
+                               SELECT ARRAY(
+                                   SELECT unnest(tsvector_to_array(n.search_vector))
+                                   INTERSECT
+                                   SELECT unnest(lex_query.terms)
+                               ) FROM lex_query
+                           ), ARRAY[]::text[]) AS matched_terms
+                    FROM fused
+                    JOIN normalized_jobs n ON n.job_id = fused.job_id
+                    {self._COMPANY_JOIN}
+                ),
+                capped AS (
+                    -- One company (e.g. a staffing/defense contractor that
+                    -- reposts many near-identical reqs -- confirmed real,
+                    -- 2026-08-20: ProSync alone held 4 of a candidate's top
+                    -- 15 hybrid results) shouldn't crowd out everyone else
+                    -- just because it has many genuinely-separate postings
+                    -- that all score similarly well. Cap per company,
+                    -- keeping each company's OWN best-ranked postings, same
+                    -- get_jobs's existing per_company_cap pattern applied
+                    -- to rrf_score instead of posted_at.
+                    SELECT *, ROW_NUMBER() OVER (
+                        PARTITION BY canonical_name ORDER BY rrf_score DESC
+                    ) AS company_rank
+                    FROM ranked_raw
+                )
+                SELECT canonical_name, company_domain, job_id, title, provider,
+                       location, remote, employment_type, salary_min, salary_max,
+                       posted_at, apply_url, description, status, experience_min,
+                       experience_max, rrf_score, vector_similarity, matched_terms
+                FROM capped
+                WHERE company_rank <= {self._HYBRID_PER_COMPANY_CAP}
+                ORDER BY rrf_score DESC
+                {conn.dialect.create_limit(k)}
+            """
+            # Placeholder order must match the query string left-to-right
+            # exactly: vec CTE has TWO embedding placeholders (the window
+            # function's ORDER BY and the CTE's own outer ORDER BY -- the
+            # latter is required for LIMIT to actually keep the closest
+            # rows, since LIMIT without ORDER BY on the CTE's SELECT would
+            # return an arbitrary 500 rows regardless of their computed
+            # rnk), with exp_params (max_experience_years + senior pattern,
+            # then intern pattern if excluded) sitting between them (inside
+            # the WHERE clause) when present.
+            params = (
+                [embedding] + exp_params + [embedding] +  # vec CTE (window + outer ORDER BY)
+                [query_text] +                             # lex_query CTE
+                exp_params +                                # lex CTE
+                [embedding]                                 # final SELECT's vector_similarity
+            )
+            c = conn.execute(query, tuple(params))
+            return [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
+
+    def get_jobs_by_hybrid_search_v2(
+        self, user_id: str, k: int = 500, max_experience_years: float = None, tx=None
+    ) -> List[dict]:
+        """
+        Same Reciprocal Rank Fusion as get_jobs_by_hybrid_search, against
+        embedding_v2 (nomic-embed-text-v1.5, 768-dim, 8192-token context)
+        instead of the live `embedding` column (bge-small, 512-token) --
+        see migration 045's docstring for why. Deliberately a SEPARATE
+        method rather than a branch inside get_jobs_by_hybrid_search: that
+        method is live and working, and this backfill is still in
+        progress (see embedding_v2_backfill_worker.py) -- callers opt into
+        this explicitly (e.g. a query param) rather than the cutover
+        happening implicitly for every caller the moment it exists.
+
+        REQUIRES the HNSW index on embedding_v2 to have been created by
+        hand first (migration 045 deliberately doesn't create it inline --
+        CREATE INDEX CONCURRENTLY can't run inside MigrationRunner's
+        transaction):
+            CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_normalized_jobs_embedding_v2_hnsw
+              ON normalized_jobs USING hnsw (embedding_v2 vector_cosine_ops) WHERE status = 'ACTIVE';
+        Without it, the `<=>` ORDER BY below is a full sequential scan
+        over every active job -- exactly the kind of unbounded CPU spike
+        that took the VM down on 2026-08-20 (see CLAUDE.md). Do not call
+        this at any real volume until that index exists.
+
+        Only jobs with BOTH embedding_v2 and search_vector populated are
+        eligible -- narrower than the v1 path today since this backfill is
+        newer and still catching up. Falls back to [] (not an error) if
+        the candidate has no embedding_v2 yet, same as the v1 methods.
+        """
+        from src.api.db import json_extract
+        from src.discovery.embeddings import candidate_embedding_text, embed_text_v2_query
+
+        embedding_v2 = self.get_candidate_embedding_v2(user_id)
+        if not embedding_v2:
+            return []
+
+        with self.transaction() as conn:
+            p = conn.dialect.placeholder()
+            profile_row = conn.execute(
+                f"SELECT profile_data FROM public.user_career_profiles WHERE user_id = {p}",
+                (user_id,),
+            ).fetchone()
+            profile_data = {}
+            if profile_row:
+                raw = profile_row["profile_data"] if hasattr(profile_row, "keys") else profile_row[0]
+                if isinstance(raw, str):
+                    raw = json.loads(raw) if raw else {}
+                profile_data = raw or {}
+            query_text = candidate_embedding_text(profile_data) if profile_data else ""
+
+            json_company = json_extract('n.raw_payload_json', '$.company')
+            candidate_pool_limit = conn.dialect.create_limit(500)
+            exp_clause = ""
+            exp_params: list = []
+            if max_experience_years is not None:
+                exp_clause = (
+                    f" AND ((n.experience_min IS NOT NULL AND n.experience_min <= {p})"
+                    f" OR (n.experience_min IS NULL AND n.title !~* {p}))"
+                )
+                exp_params = [max_experience_years, self._SQL_SENIOR_TITLE_PATTERN]
+            else:
+                # Same fix as get_jobs_by_hybrid_search: senior-title
+                # rejection must not depend on max_experience_years being
+                # supplied.
+                exp_clause = f" AND n.title !~* {p}"
+                exp_params = [self._SQL_SENIOR_TITLE_PATTERN]
+
+            boilerplate_sql = ", ".join(f"'{w}'" for w in self._BM25_BOILERPLATE_STEMS)
+
+            query = f"""
+                WITH vec AS (
+                    SELECT n.job_id, ROW_NUMBER() OVER (ORDER BY n.embedding_v2 <=> {p}::vector) AS rnk
+                    FROM normalized_jobs n
+                    WHERE n.status = 'ACTIVE' AND n.embedding_v2 IS NOT NULL{exp_clause}
+                    ORDER BY n.embedding_v2 <=> {p}::vector
                     {candidate_pool_limit}
                 ),
                 lex_query AS (
@@ -870,26 +1283,19 @@ class JobRepository(BaseRepository, IJobRepository):
                        n.salary_min, n.salary_max, n.posted_at, n.apply_url,
                        n.description, n.status, n.experience_min, n.experience_max,
                        fused.rrf_score,
-                       1 - (n.embedding <=> {p}::vector) AS vector_similarity
+                       1 - (n.embedding_v2 <=> {p}::vector) AS vector_similarity
                 FROM fused
                 JOIN normalized_jobs n ON n.job_id = fused.job_id
                 {self._COMPANY_JOIN}
                 ORDER BY fused.rrf_score DESC
                 {conn.dialect.create_limit(k)}
             """
-            # Placeholder order must match the query string left-to-right
-            # exactly: vec CTE has TWO embedding placeholders (the window
-            # function's ORDER BY and the CTE's own outer ORDER BY -- the
-            # latter is required for LIMIT to actually keep the closest
-            # rows, since LIMIT without ORDER BY on the CTE's SELECT would
-            # return an arbitrary 500 rows regardless of their computed
-            # rnk), with exp_params sitting between them (inside the WHERE
-            # clause) when present.
+            # Same placeholder-order contract as get_jobs_by_hybrid_search.
             params = (
-                [embedding] + exp_params + [embedding] +  # vec CTE (window + outer ORDER BY)
-                [query_text] +                             # lex_query CTE
-                exp_params +                                # lex CTE
-                [embedding]                                 # final SELECT's vector_similarity
+                [embedding_v2] + exp_params + [embedding_v2] +
+                [query_text] +
+                exp_params +
+                [embedding_v2]
             )
             c = conn.execute(query, tuple(params))
             return [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]

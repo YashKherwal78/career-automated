@@ -73,26 +73,42 @@ services:
       - dokploy-network
     restart: always
 
-  job_scorer:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: career_job_scorer
-    command: python3 src/workers/job_scoring_worker.py
-    environment:
-      - APP_ENV=production
-      - REDIS_URL=redis://redis:6379
-    env_file:
-      - .env
-    depends_on:
-      redis:
-        condition: service_started
-      db:
-        condition: service_healthy
-    networks:
-      - default
-      - dokploy-network
-    restart: always
+  # job_scorer (JobScoringWorker) intentionally disabled 2026-08-20: it ran
+  # IntentFilter/JDExtractor (LLM-based structured scoring) to rank jobs,
+  # which had a real, structural bias -- its title-role matching was an
+  # all-or-nothing gate on whether a job's title matched a role literally
+  # named in the candidate's profile, so whichever role family was most
+  # explicitly represented in a profile's target_roles/resume text got a
+  # built-in advantage over others the candidate was equally qualified for
+  # (e.g. Product Manager over AI Engineer/ML Engineer/SWE/SDE). Replaced by
+  # hybrid search (vector + BM25 RRF, see get_jobs_by_hybrid_search in
+  # backend/src/core/repositories/job/repository.py) as the live dashboard's
+  # ranking, which has no such role-family gate. HardRejectFilter (rule-
+  # based, no AI -- senior-title rejection, visa/clearance/location/etc.)
+  # still runs on hybrid search's results; only the LLM-scored ranking was
+  # removed. Left here, commented out, rather than deleted outright in case
+  # this needs revisiting -- do not silently re-enable without confirming
+  # the bias above has actually been addressed some other way.
+  # job_scorer:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   container_name: career_job_scorer
+  #   command: python3 src/workers/job_scoring_worker.py
+  #   environment:
+  #     - APP_ENV=production
+  #     - REDIS_URL=redis://redis:6379
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     redis:
+  #       condition: service_started
+  #     db:
+  #       condition: service_healthy
+  #   networks:
+  #     - default
+  #     - dokploy-network
+  #   restart: always
 
   db:
     image: pgvector/pgvector:pg16

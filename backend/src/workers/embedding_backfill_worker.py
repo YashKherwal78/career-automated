@@ -9,6 +9,10 @@ logger = logging.getLogger("EmbeddingBackfillWorker")
 
 BATCH_SIZE = 64
 IDLE_SLEEP_SECONDS = 60
+# See embedding_v2_backfill_worker.py's BATCH_PACING_SECONDS -- same
+# 2026-08-20 outage cause applies here (no pause between successful
+# batches let this pin sustained CPU on a shared production box).
+BATCH_PACING_SECONDS = 2
 
 
 class EmbeddingBackfillWorker(BaseWorker):
@@ -76,6 +80,8 @@ class EmbeddingBackfillWorker(BaseWorker):
                 self.heartbeat(jobs_processed=len(batch))
                 if total_embedded % (BATCH_SIZE * 50) < BATCH_SIZE:
                     logger.info(f"Embedded {total_embedded} jobs so far this run.")
+
+                time.sleep(BATCH_PACING_SECONDS)
 
             except KeyboardInterrupt:
                 break

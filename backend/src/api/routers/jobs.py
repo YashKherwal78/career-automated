@@ -85,8 +85,11 @@ def get_jobs(
     employment_type: Optional[str] = None,
     seniority: Optional[str] = None,
     min_salary: Optional[float] = None,
+    max_salary: Optional[float] = None,
+    posted_within_days: Optional[int] = None,
     sort_by: str = "score",
     max_experience_years: Optional[float] = None,
+    include_interns: bool = True,
     repos: RepositoryManager = Depends(get_repos),
     current_user: CurrentUser = Depends(get_current_user),
 ):
@@ -109,8 +112,11 @@ def get_jobs(
         employment_type=employment_type,
         seniority=seniority,
         min_salary=min_salary,
+        max_salary=max_salary,
+        posted_within_days=posted_within_days,
         sort_by=sort_by,
         max_experience_years=max_experience_years,
+        include_interns=include_interns,
         user_id=current_user.user_id,
     )
 
@@ -193,6 +199,7 @@ def semantic_search_jobs(
 def hybrid_search_jobs(
     k: int = Query(50, ge=1, le=500),
     max_experience_years: Optional[float] = None,
+    embedding_version: str = Query("v1", pattern="^(v1|v2)$"),
     repos: RepositoryManager = Depends(get_repos),
     current_user: CurrentUser = Depends(get_current_user),
 ):
@@ -203,12 +210,23 @@ def hybrid_search_jobs(
     neighborhood, same reasoning the RAG system's hybrid retrieval
     already uses. Each result carries both rrf_score and vector_similarity
     so callers/UI can show either. Returns an empty list (not an error) if
-    the candidate has no profile embedding yet."""
-    return {
-        "jobs": repos.job.get_jobs_by_hybrid_search(
+    the candidate has no profile embedding yet.
+
+    embedding_version="v2" opts into embedding_v2 (nomic-embed-text-v1.5,
+    768-dim, 8192-token context, migration 045) instead of the live
+    bge-small `embedding` column -- see get_jobs_by_hybrid_search_v2's
+    docstring. Explicit opt-in, not the default: the v2 backfill is still
+    in progress and its HNSW index must exist before calling this at any
+    real traffic volume (see CLAUDE.md)."""
+    if embedding_version == "v2":
+        jobs = repos.job.get_jobs_by_hybrid_search_v2(
             current_user.user_id, k=k, max_experience_years=max_experience_years
         )
-    }
+    else:
+        jobs = repos.job.get_jobs_by_hybrid_search(
+            current_user.user_id, k=k, max_experience_years=max_experience_years
+        )
+    return {"jobs": jobs}
 
 
 @router.get("/{job_id}")
