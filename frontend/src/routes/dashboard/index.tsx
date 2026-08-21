@@ -9,6 +9,7 @@ import { DsChip } from "../../components/ds/Chip";
 import { DsInput } from "../../components/ds/Input";
 import { DsButton } from "../../components/ds/Button";
 import { JobDetailModal } from "../../components/dashboard/JobDetailModal";
+import { useDashboard } from "../../components/dashboard/DashboardContext";
 import { CareerPreferencesModal, type CareerPreferences } from "../../components/dashboard/CareerPreferencesModal";
 import { UpgradeModal } from "../../components/dashboard/UpgradeModal";
 import { CompanyLogo } from "../../components/dashboard/CompanyLogo";
@@ -31,6 +32,7 @@ function timeGreeting(): string {
 function DashboardHome() {
   const { profile, session } = useAuth();
   const queryClient = useQueryClient();
+  const { includeInterns, setIncludeInterns } = useDashboard();
   const firstName = getDisplayName(profile?.full_name, profile?.email, "there").split(" ")[0];
 
   const {
@@ -38,8 +40,11 @@ function DashboardHome() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["jobs", "dashboard"],
-    queryFn: () => ServiceRegistry.getJobService().getJobs({ sort_by: "score", page_size: 100 }),
+    // includeInterns in the key -- same reasoning as jobs.tsx's effect
+    // dependency array: toggling it needs to actually trigger a refetch
+    // with the new filter, not just silently keep showing stale results.
+    queryKey: ["jobs", "dashboard", includeInterns],
+    queryFn: () => ServiceRegistry.getJobService().getJobs({ sort_by: "score", page_size: 100, include_interns: includeInterns }),
     meta: { persist: true },
   });
 
@@ -469,6 +474,14 @@ function DashboardHome() {
               }}
             />
           ))}
+          <DsChip
+            label={includeInterns ? "Internships: Shown" : "Internships: Hidden"}
+            active={!includeInterns}
+            onClick={() => {
+              setIncludeInterns(!includeInterns);
+              setPage(0);
+            }}
+          />
         </div>
 
         {filtered.length === 0 ? (

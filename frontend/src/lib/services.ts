@@ -83,6 +83,7 @@ export interface JobService {
     min_salary?: number;
     sort_by?: string;
     page_size?: number;
+    include_interns?: boolean;
   }): Promise<Job[]>;
   getBoardJobs(filters?: {
     company?: string;
@@ -284,6 +285,16 @@ export interface HrPitchDraft {
   sent_at: string | null;
 }
 
+export interface ManualLeadInput {
+  company_name: string;
+  job_title: string;
+  contact_email: string;
+  contact_name?: string;
+  contact_role?: string;
+  contact_type?: string; // "Recruiter" / "Hiring Manager" -> hr_pitch; anything else -> referral_ask
+  apply_url?: string;
+}
+
 export class HrPitchService {
   async list(): Promise<HrPitchDraft[]> {
     const res = await authFetch(`${API_BASE}/hr-pitches/`);
@@ -298,6 +309,23 @@ export class HrPitchService {
   async reject(id: string): Promise<void> {
     const res = await authFetch(`${API_BASE}/hr-pitches/${id}/reject`, { method: "POST" });
     if (!res.ok) throw new Error(`Reject failed (${res.status})`);
+  }
+  // Manual counterpart to jobService.uploadJobScreenshot -- add a single
+  // lead you already know about (a LinkedIn link with a broken Apply
+  // button, a contact found outside the automated pipeline) and get a
+  // drafted email back immediately, landing in the same PENDING_REVIEW
+  // queue as automated drafts.
+  async addManualLead(input: ManualLeadInput): Promise<HrPitchDraft> {
+    const res = await authFetch(`${API_BASE}/hr-pitches/manual`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    if (!res.ok) {
+      const detail = await res.json().catch(() => null);
+      throw new Error(detail?.detail || `Draft failed (${res.status})`);
+    }
+    return res.json();
   }
 }
 
@@ -514,6 +542,10 @@ export class ApiJobService implements JobService {
     if (filters?.seniority) params.append("seniority", filters.seniority);
     if (filters?.min_salary) params.append("min_salary", String(filters.min_salary));
     if (filters?.sort_by) params.append("sort_by", filters.sort_by);
+    // Only sent when explicitly excluding interns -- backend defaults to
+    // true, so omitting the param entirely on the common case keeps the
+    // query string clean.
+    if (filters?.include_interns === false) params.append("include_interns", "false");
     params.append("page_size", String(filters?.page_size || 100));
     return params;
   }

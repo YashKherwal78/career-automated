@@ -1,6 +1,7 @@
 from src.system.logger import setup_logger
 logger = setup_logger('engine')
 import os
+import re
 import glob
 import pandas as pd
 import sqlite3
@@ -23,6 +24,7 @@ class OutreachEngine:
         self.email_client = EmailClient()
         self.limit = 400
         self.profile_parser = ProfileParser()
+        self.contacted_in_session = set()
 
     def get_latest_excel(self):
         search_pattern = os.path.join(Config.DATA_DIR, "*.xlsx")
@@ -30,7 +32,7 @@ class OutreachEngine:
         if not files:
             return None
             
-        priority = ["clean_leads.xlsx", "leads.xlsx", "leads_cleaned.xlsx", "Gend phad HR data.xlsx"]
+        priority = ["verified_active_leads.xlsx", "clean_leads.xlsx", "leads.xlsx", "leads_cleaned.xlsx", "Gend phad HR data.xlsx"]
         for p in priority:
             for f in files:
                 if p in f: return f
@@ -38,16 +40,41 @@ class OutreachEngine:
         # Fallback to latest
         return max(files, key=os.path.getmtime)
 
-    def generate_email(self, recruiter_name, company, role, notes, domain, project, intel_dict):
-        greeting = f"Hi {recruiter_name.split()[0]}," if recruiter_name.strip() else "Hello Hiring Team,"
+    def generate_email(self, recruiter_name, company, role, notes, domain, project, intel_dict, email=""):
+        # Sanitize company and role against 'nan' or empty values
+        comp_str = str(company).strip() if company else ""
+        if not comp_str or comp_str.lower() == 'nan':
+            if domain and '.' in str(domain):
+                comp_str = str(domain).split('.')[0].replace('-', ' ').replace('_', ' ').title()
+            else:
+                comp_str = "Your Team"
+                
+        role_str = str(role).strip() if role else ""
+        if not role_str or role_str.lower() == 'nan':
+            role_str = "Engineering Team"
+
+        clean_name = str(recruiter_name).strip() if recruiter_name else ""
+        if (not clean_name or clean_name.lower() in ['nan', 'none', 'hiring team', 'talent acquisition team', 'recruiter', 'team']) and email:
+            user_part = email.split('@')[0].lower()
+            generic_words = {'careers', 'talent', 'hr', 'jobs', 'recruiting', 'contact', 'info', 'apply', 'support', 'help', 'admin'}
+            if not any(g in user_part for g in generic_words):
+                name_candidate = re.split(r'[._-]', user_part)[0]
+                if len(name_candidate) >= 3 and name_candidate.isalpha():
+                    clean_name = name_candidate.capitalize()
+
+        if clean_name and clean_name.lower() not in ['nan', 'none', 'hiring team', 'talent acquisition team', 'recruiter', 'team']:
+            first_name = re.sub(r'[^a-zA-Z]', '', clean_name.split()[0]).capitalize()
+            greeting = f"Hi {first_name}," if len(first_name) >= 2 else "Hello Hiring Team,"
+        else:
+            greeting = "Hello Hiring Team,"
         
         tailored_context = self.profile_parser.get_tailored_context(project)
         
         prompt = f"""
         {TEMPLATE_GENERATION_PROMPT}
         
-        Company: {company}
-        Recipient Role: {role if role else 'Recruiter/Hiring Manager'}
+        Company: {comp_str}
+        Recipient Role: {role_str}
         Company Domain: {domain}
         Company Intelligence: {json.dumps(intel_dict)}
         Selected Project to Highlight: {project}
@@ -79,7 +106,7 @@ class OutreachEngine:
             # Construct final template
             body = f"""{greeting}
 
-I'm a final-year IIT Roorkee student focused on AI systems and product development. {obs}
+I'm a recent IIT Roorkee graduate focused on AI systems and product development. {obs}
 
 {rel}
 
@@ -92,9 +119,10 @@ Phone: +91 9891148156
 Email: yash.kherwal78@gmail.com
 LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
 
-            subject = f"Connecting: IIT Roorkee Student & {company} Opportunities"
-            if role:
-                subject = f"Connecting: {role} / IIT Roorkee"
+            if role_str and role_str != "Engineering Team":
+                subject = f"Connecting: {role_str} / IIT Roorkee"
+            else:
+                subject = f"Connecting: IIT Roorkee Student & {comp_str} Opportunities"
 
             return subject, body
         except Exception as e:
@@ -102,23 +130,58 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
             return "", ""
 
     def is_already_contacted(self, email: str) -> bool:
-        conn = sqlite3.connect(Config.DATABASE_PATH)
-        cursor = conn.cursor()
         clean_email = email.strip().lower()
-        cursor.execute("SELECT id FROM outreach_log WHERE LOWER(TRIM(email)) = ?", (clean_email,))
-        row = cursor.fetchone()
-        conn.close()
-        return bool(row)
+        if clean_email in self.contacted_in_session:
+            return True
+            
+        db_paths = set([
+            Config.DATABASE_PATH,
+            os.path.join(Config.BASE_DIR, "data", "crm.db"),
+            os.path.join(Config.BASE_DIR, "backend", "data", "crm.db")
+        ])
+        
+        for path in db_paths:
+            if not os.path.exists(path):
+                continue
+            try:
+                conn = sqlite3.connect(path)
+                cursor = conn.cursor()
+                cursor.execute("SELECT id FROM outreach_log WHERE LOWER(TRIM(email)) = ? AND status = 'SENT'", (clean_email,))
+                row = cursor.fetchone()
+                conn.close()
+                if row:
+                    self.contacted_in_session.add(clean_email)
+                    return True
+            except Exception as e:
+                logger.info(f"Error checking duplicate in {path}: {e}")
+                
+        return False
 
     def log_outreach(self, email, name, company, role, subject, body, status):
-        conn = sqlite3.connect(Config.DATABASE_PATH)
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT OR REPLACE INTO outreach_log (email, recruiter_name, company, role, subject, body, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (email.strip(), name, company, role, subject, body, status))
-        conn.commit()
-        conn.close()
+        clean_email = email.strip().lower()
+        if status == "SENT":
+            self.contacted_in_session.add(clean_email)
+            
+        db_paths = set([
+            Config.DATABASE_PATH,
+            os.path.join(Config.BASE_DIR, "data", "crm.db"),
+            os.path.join(Config.BASE_DIR, "backend", "data", "crm.db")
+        ])
+        
+        for path in db_paths:
+            if not os.path.exists(os.path.dirname(path)):
+                continue
+            try:
+                conn = sqlite3.connect(path)
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT OR REPLACE INTO outreach_log (email, recruiter_name, company, role, subject, body, status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, (email.strip(), name, company, role, subject, body, status))
+                conn.commit()
+                conn.close()
+            except Exception as e:
+                logger.info(f"Error logging outreach in {path}: {e}")
 
     def generate_report(self, processed, sent, skipped, failures):
         report_path = os.path.join(Config.DATA_DIR, "daily_outreach_report.md")
@@ -160,9 +223,10 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
         logger.info(f"Loading {excel_path}")
         try:
             df = pd.read_excel(excel_path)
-            # Standardize columns
-            col_map = {c: c.lower().strip() for c in df.columns}
+            # Standardize columns and deduplicate headers
+            col_map = {c: str(c).lower().strip() for c in df.columns}
             df.rename(columns=col_map, inplace=True)
+            df = df.loc[:, ~df.columns.duplicated()]
             
             email_col = next((c for c in df.columns if 'email' in c), None)
             name_col = next((c for c in df.columns if 'name' in c and 'company' not in c), None)
@@ -179,13 +243,21 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
             return
             
         processed, sent, skipped, failures = 0, 0, 0, 0
+
+        def _safe_str(val):
+            if hasattr(val, 'dropna'):
+                s = val.dropna()
+                return str(s.iloc[0]).strip() if not s.empty else ""
+            if pd.isna(val):
+                return ""
+            return str(val).strip()
         
         for _, row in df.iterrows():
             if sent >= self.limit:
                 logger.info("Reached daily limit.")
                 break
                 
-            email_val = str(row.get(email_col, "")).strip()
+            email_val = _safe_str(row.get(email_col, ""))
             if not email_val or email_val.lower() == 'nan':
                 continue
                 
@@ -195,12 +267,29 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
                 skipped += 1
                 continue
                 
-            name_val = str(row.get(name_col, "")) if name_col else ""
-            company_val = str(row.get(company_col, "")) if company_col else ""
-            role_val = str(row.get(role_col, "")) if role_col else ""
-            notes_val = str(row.get(notes_col, "")) if notes_col else ""
-            
-            logger.info(f"Processing {email_val} at {company_val}...")
+            name_val = _safe_str(row.get(name_col, "")) if name_col else ""
+            company_val = _safe_str(row.get(company_col, "")) if company_col else ""
+            if not company_val or company_val.lower() == 'nan':
+                if '@' in email_val:
+                    company_val = email_val.split('@')[1].split('.')[0].replace('-', ' ').title()
+                else:
+                    company_val = "Your Team"
+
+            role_val = _safe_str(row.get(role_col, "")) if role_col else ""
+            if not role_val or role_val.lower() == 'nan':
+                role_val = "Engineering"
+            notes_val = _safe_str(row.get(notes_col, "")) if notes_col else ""
+
+            # Pre-Send Zero-Bounce Verification Guard
+            from src.outreach.email_verifier import verifier
+            v_res = verifier.verify_email(email_val)
+            if not v_res.get("deliverable", False):
+                logger.info(f"Skipping {email_val} - Dead Mailbox ({v_res.get('status')}): {v_res.get('reason')}")
+                skipped += 1
+                self.log_outreach(email_val, name_val, company_val, role_val, "", "", f"DEAD_SKIPPED: {v_res.get('status')}")
+                continue
+
+            logger.info(f"Processing verified lead {email_val} at {company_val} (Status: {v_res.get('status')})...")
             
             # 1. Company Intelligence
             intel = run_intelligence_engine(company_val)
@@ -213,7 +302,7 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
             critic_passed = False
             critic_result = {}
             for attempt in range(3):
-                subject, body = self.generate_email(name_val, company_val, role_val, notes_val, domain, project, intel)
+                subject, body = self.generate_email(name_val, company_val, role_val, notes_val, domain, project, intel, email=email_val)
                 if not body:
                     continue
                     
@@ -270,13 +359,14 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
             success = False
             attachment_status = "OK"
             try:
-                for attempt in range(3):
-                    if self.email_client.send_email(email_val, subject, body, resume_path=resume_path, dry_run=self.dry_run):
-                        success = True
-                        break
-                    time.sleep(2)
+                if self.email_client.send_email(email_val, subject, body, resume_path=resume_path, dry_run=self.dry_run):
+                    success = True
             except (ResumeAttachmentError, ValueError) as e:
                 logger.info(f"Pre-send Validation Failed: {e}")
+                attachment_status = f"FAILED: {e}"
+                success = False
+            except Exception as e:
+                logger.info(f"Send Failed for {email_val}: {e}")
                 attachment_status = f"FAILED: {e}"
                 success = False
                 
@@ -293,11 +383,18 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
             logger.info(f"Send Status: {status}")
             logger.info(f"-----------------")
             
-            if not self.dry_run or True: 
+            if not self.dry_run:
                 self.log_outreach(email_val, name_val, company_val, role_val, subject, body, status)
                 
-            if success: sent += 1
-            else: failures += 1
+            if success:
+                sent += 1
+                logger.info(f"🚀 [OUTREACH PROGRESS: {sent}/{self.limit} SUCCESSFUL MAILS SENT] (Skipped: {skipped})")
+                if not self.dry_run and sent < self.limit:
+                    sleep_sec = random.uniform(12, 25)
+                    logger.info(f"Pacing delay: sleeping {sleep_sec:.1f}s before next recipient...")
+                    time.sleep(sleep_sec)
+            else:
+                failures += 1
             
         self.generate_report(processed, sent, skipped, failures)
         logger.info("Daily Outreach V2 complete.")

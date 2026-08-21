@@ -9,6 +9,13 @@ logger = logging.getLogger("EmbeddingV2BackfillWorker")
 
 BATCH_SIZE = 32  # nomic-embed-text-v1.5 is heavier per-item than bge-small; smaller batches keep memory/latency reasonable
 IDLE_SLEEP_SECONDS = 60
+# The 2026-08-20 outage traced back to this worker running batch after
+# batch with zero pause between them, pinning 60-85% CPU continuously on a
+# shared 4-vCPU production box until the box couldn't keep up with
+# anything else (SSH included). This has no effect on total throughput
+# that matters -- backfilling 1M+ rows takes hours regardless -- but caps
+# sustained CPU so the live app always gets a slice.
+BATCH_PACING_SECONDS = 2
 
 
 class EmbeddingV2BackfillWorker(BaseWorker):
@@ -69,6 +76,8 @@ class EmbeddingV2BackfillWorker(BaseWorker):
                 self.heartbeat(jobs_processed=len(batch))
                 if total_embedded % (BATCH_SIZE * 100) < BATCH_SIZE:
                     logger.info(f"Embedded (v2) {total_embedded} jobs so far this run.")
+
+                time.sleep(BATCH_PACING_SECONDS)
 
             except KeyboardInterrupt:
                 break

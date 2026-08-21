@@ -170,7 +170,7 @@ function UploadJobModal({ onClose }: { onClose: () => void }) {
 }
 
 function JobsPage() {
-  const { jobService } = useDashboard();
+  const { jobService, includeInterns, setIncludeInterns } = useDashboard();
   const searchParams = useSearch({ from: "/dashboard/jobs" });
   const navigate = useNavigate();
 
@@ -255,6 +255,7 @@ function JobsPage() {
         location: locationFilter || undefined,
         remote_type: remoteFilter || undefined,
         sort_by: sortField === "intent_score" ? "score" : "newest",
+        include_interns: includeInterns,
       };
       const data = await jobService.getJobs(filters);
       setJobs(data);
@@ -273,14 +274,14 @@ function JobsPage() {
 
   useEffect(() => {
     loadData(true);
-  }, [search, roleFilter, locationFilter, remoteFilter, sortField]);
+  }, [search, roleFilter, locationFilter, remoteFilter, sortField, includeInterns]);
 
   useEffect(() => {
     const interval = setInterval(() => {
       loadData(false);
     }, 30000);
     return () => clearInterval(interval);
-  }, [search, roleFilter, locationFilter, remoteFilter, sortField]);
+  }, [search, roleFilter, locationFilter, remoteFilter, sortField, includeInterns]);
 
   useEffect(() => {
     if (searchParams.select) {
@@ -433,6 +434,20 @@ function JobsPage() {
             <span className="truncate">Sort: {sortField === "intent_score" ? "Intent Match" : "Date Posted"}</span>
           </button>
         </div>
+
+        <button
+          type="button"
+          onClick={() => setIncludeInterns(!includeInterns)}
+          aria-pressed={includeInterns}
+          className="flex items-center justify-center gap-1.5 px-3 py-2.5 md:py-1.5 rounded-xl border transition-colors"
+          style={{
+            borderColor: includeInterns ? "var(--ds-border-medium)" : "var(--ds-accent-primary)",
+            background: includeInterns ? "rgba(255,255,255,0.5)" : "rgba(226,116,72,0.1)",
+            color: includeInterns ? "var(--ds-ink-600)" : "var(--ds-accent-primary)",
+          }}
+        >
+          <span className="truncate">{includeInterns ? "Internships: Shown" : "Internships: Hidden"}</span>
+        </button>
       </div>
 
       {loading ? (
