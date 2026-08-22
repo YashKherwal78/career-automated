@@ -25,7 +25,12 @@ class ProfileExtractionService:
             "Enforce normalization rules:\n"
             "1. Technologies: Normalize names (e.g. 'React', 'ReactJS', 'React.js' -> 'React.js'; "
             "'Node', 'NodeJS', 'Node.js' -> 'Node.js'; 'Python3' -> 'Python').\n"
-            "2. Dates: Format consistently as 'MMM YYYY' (e.g. 'Jan 2024') or 'Present'.\n"
+            "2. Dates: Preserve the SOURCE TEXT's own granularity -- never invent a month that isn't in the "
+            "original. If the source gives 'MMM YYYY' (e.g. 'Feb 2026'), output 'MMM YYYY'. If the source gives "
+            "ONLY a bare year (e.g. education showing '2022 -- 2026' with no month anywhere), output the bare "
+            "year ('2022', '2026') -- do NOT format it as 'Jan 2022'/'Dec 2026'. Getting this wrong is a factual "
+            "error, not a style choice: it invents a specific month the candidate never stated. 'Present' stays "
+            "as 'Present' when the source uses that word (not a real date, don't invent one).\n"
             "3. Deduplication: Remove all duplicate skills.\n"
             "4. Quality: Do not hallucinate or guess fields. If not present in the text, leave it null or empty list.\n"
             "5. Maintain exactly the requested JSON output structure.\n"
@@ -122,14 +127,18 @@ class ProfileExtractionService:
                 "    }\n"
                 "  ],\n"
                 '  "skills": {\n'
-                '    "programming_languages": [string],\n'
-                '    "frameworks": [string],\n'
-                '    "libraries": [string],\n'
-                '    "databases": [string],\n'
-                '    "cloud": [string],\n'
-                '    "ai_ml": [string],\n'
-                '    "developer_tools": [string],\n'
-                '    "other": [string]\n'
+                '    "Languages & Backend": [string] (programming languages, backend frameworks, '
+                'databases, ORMs/query builders -- e.g. Python, FastAPI, PostgreSQL, Redis),\n'
+                '    "Frontend": [string] (frontend frameworks, UI libraries, styling -- e.g. React, '
+                'Tailwind CSS, Vite),\n'
+                '    "AI & Agents": [string] (AI/ML frameworks, agent frameworks, retrieval/embedding '
+                'techniques, named LLM provider APIs -- e.g. LangGraph, RAG, OpenAI API. Do NOT include '
+                'bare "LLM" alone -- name the actual provider/framework instead),\n'
+                '    "Infra & Tools": [string] (cloud platforms, deployment/CI tooling, containers, '
+                'version control, dev tools -- e.g. Docker, GCP, Git. Do NOT include build-step-only '
+                'actions like "EAS Build" or a spec/protocol name),\n'
+                '    "other": [string] (only for a genuine skill that doesn\'t fit any category above -- '
+                'this should usually be empty)\n'
                 "  },\n"
                 '  "certifications": [\n'
                 "    {\n"
@@ -189,13 +198,10 @@ class ProfileExtractionService:
             "experience": [],
             "projects": [],
             "skills": {
-                "programming_languages": [],
-                "frameworks": [],
-                "libraries": [],
-                "databases": [],
-                "cloud": [],
-                "ai_ml": [],
-                "developer_tools": [],
+                "Languages & Backend": [],
+                "Frontend": [],
+                "AI & Agents": [],
+                "Infra & Tools": [],
                 "other": []
             },
             "certifications": [],
