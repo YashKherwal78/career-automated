@@ -262,6 +262,21 @@ class ExperienceBatchPromptBuilder:
         ats_keywords = [k.get("keyword", "") for k in jd_profile.get("ats_keywords", [])][:8]
         keywords_block = ", ".join(list(dict.fromkeys(priority_keywords + ats_keywords))[:10])
 
+        # Ranked JD responsibility lines (computed deterministically in
+        # JobDescriptionParser from keyword density -- zero extra LLM call).
+        # Tells the LLM WHAT to lead a bullet with, using the JD's own
+        # wording, without a separate JD-decomposition pass.
+        primary_signals = strategy.get("primary_signals", [])
+        secondary_signals = strategy.get("secondary_signals", [])
+        signals_block = ""
+        if primary_signals:
+            signals_block = "\nWHAT THIS ROLE CARES ABOUT MOST (lead relevant bullets with these, in the JD's own words):\n"
+            signals_block += "\n".join(f"  - {s}" for s in primary_signals)
+            if secondary_signals:
+                signals_block += "\nSUPPORTING PRIORITIES (surface if a bullet naturally touches these):\n"
+                signals_block += "\n".join(f"  - {s}" for s in secondary_signals)
+            signals_block += "\n"
+
         # Build entries block
         entries_lines: List[str] = []
         for ei, entry in enumerate(entries):
@@ -292,6 +307,7 @@ You are a professional resume editor. Rewrite the experience section bullets for
 TARGET ROLE: {role_type}
 BULLET STRATEGY: {bullet_strategy}
 KEYWORDS TO WEAVE IN (only if factually supported): {keywords_block}
+{signals_block}
 
 ADDITIONAL CONTEXT (from candidate memory):
 {evidence_block}
@@ -343,6 +359,17 @@ class ProjectsBatchPromptBuilder:
         ats_keywords = [k.get("keyword", "") for k in jd_profile.get("ats_keywords", [])][:6]
         keywords_block = ", ".join(ats_keywords)
 
+        primary_signals = strategy.get("primary_signals", [])
+        secondary_signals = strategy.get("secondary_signals", [])
+        signals_block = ""
+        if primary_signals:
+            signals_block = "\nWHAT THIS ROLE CARES ABOUT MOST (lead relevant bullets with these, in the JD's own words):\n"
+            signals_block += "\n".join(f"  - {s}" for s in primary_signals)
+            if secondary_signals:
+                signals_block += "\nSUPPORTING PRIORITIES (surface if a bullet naturally touches these):\n"
+                signals_block += "\n".join(f"  - {s}" for s in secondary_signals)
+            signals_block += "\n"
+
         entries_lines: List[str] = []
         for ei, entry in enumerate(entries):
             title = entry.heading_tokens[0] if entry.heading_tokens else f"Project {ei}"
@@ -360,6 +387,7 @@ You are a professional resume editor. Rewrite the project section bullets for th
 TARGET ROLE: {role_type}
 RELEVANT PROJECT TYPES: {proj_types_block}
 KEYWORDS TO WEAVE IN (only if factually supported): {keywords_block}
+{signals_block}
 
 PROJECT ENTRIES (with bullet indices):
 {entries_block}
