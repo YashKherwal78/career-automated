@@ -288,6 +288,28 @@ def _sanitize_unicode_whitespace(text: str) -> str:
     return text
 
 
+# A literal "->"/unicode arrow character (U+2192) in stored bullet text --
+# from a source PDF that used a real arrow glyph and extracted it correctly
+# this time -- passes straight through pdflatex without erroring (unlike
+# the narrow-space case above), but with no safe glyph mapping in this
+# template's font/encoding it silently gets an unstable ToUnicode CMap
+# entry: visually may look fine but copy-paste / ATS text-layer parsing of
+# the compiled PDF sees an unrelated control byte instead of the arrow.
+# Confirmed live (2026-08-22): "pre-filter -> Random Forest" extracted from
+# the compiled PDF as "pre-filter \x19 Random Forest". Converting to the
+# LaTeX-safe \rightarrow macro up front avoids relying on font glyph
+# fallback for a character this setup was never configured to render.
+_UNSAFE_UNICODE_SYMBOLS = {
+    "→": r" $\rightarrow$ ",
+}
+
+
+def _sanitize_unicode_symbols(text: str) -> str:
+    for bad, good in _UNSAFE_UNICODE_SYMBOLS.items():
+        text = text.replace(bad, good)
+    return text
+
+
 # PDF-text-extraction artifacts: a source resume's PDF text layer can split
 # a compound word/acronym across an internal kerning or ligature boundary
 # (e.g. "VAD" in the original PDF extracts as "V AD") -- this happens at
@@ -353,6 +375,7 @@ def compile_pdf(tex_content: str, output_dir: str, filename_prefix: str = "base_
     pdf_path = os.path.join(output_dir, f"{filename_prefix}.pdf")
 
     tex_content = _sanitize_unicode_whitespace(tex_content)
+    tex_content = _sanitize_unicode_symbols(tex_content)
     tex_content = _fix_split_tokens(tex_content)
 
     with open(tex_path, "w", encoding="utf-8") as f:
