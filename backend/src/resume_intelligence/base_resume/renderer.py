@@ -317,7 +317,33 @@ _SPLIT_TOKEN_PATTERNS: dict[str, str] = {
 def _fix_split_tokens(text: str) -> str:
     for pattern, replacement in _SPLIT_TOKEN_PATTERNS.items():
         text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
-    return text
+    return _restore_dropped_arrows(text)
+
+
+# Same extraction-artifact family as _SPLIT_TOKEN_PATTERNS above, but for a
+# glyph rather than a kerned-apart word: a "(Stage A  Stage B  Stage C)"
+# pipeline/workflow notation in a source PDF renders its "->"/unicode arrow
+# as a vector glyph that many PDF text extractors drop outright, leaving a
+# bare double space between stage names. Confirmed live (2026-08-22): a
+# stored bullet's parenthetical "(rule-based pre-filter  Random Forest)"
+# lost its arrow this way and rendered with a stray double space.
+#
+# Deliberately narrow to avoid corrupting unrelated double-spaces in other
+# candidates' resumes: only fires on a run of 2+ spaces between two word
+# characters that sits INSIDE a parenthetical, not anywhere in free text --
+# a stray double space inside "(...)" is virtually always a dropped
+# pipeline-stage arrow rather than a typo, since resume bullets don't use
+# parenthetical asides that legitimately contain mid-sentence double spaces.
+_PAREN_RE = re.compile(r"\(([^()]*)\)")
+_INNER_GAP_RE = re.compile(r"(\w)\s{2,}(\w)")
+
+
+def _restore_dropped_arrows(text: str) -> str:
+    def paren_repl(match: "re.Match[str]") -> str:
+        inner = _INNER_GAP_RE.sub(r"\1 $\\rightarrow$ \2", match.group(1))
+        return f"({inner})"
+
+    return _PAREN_RE.sub(paren_repl, text)
 
 
 def compile_pdf(tex_content: str, output_dir: str, filename_prefix: str = "base_resume") -> Optional[str]:
