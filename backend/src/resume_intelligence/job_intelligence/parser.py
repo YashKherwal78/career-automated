@@ -93,10 +93,19 @@ class JobDescriptionParser:
                 )
 
         # 2. Extract Responsibilities
+        # Many scraped JDs (e.g. LinkedIn's guest job pages) come through
+        # with no preserved line breaks at all -- a single flattened
+        # paragraph. Splitting only on "\n" then treats the entire JD as
+        # one "line", making anything derived from it (below) useless.
+        # Falling back to sentence-boundary splitting when there's
+        # essentially no line structure to work with.
+        raw_lines = raw_description.split("\n")
+        candidate_lines = raw_lines if len(raw_lines) > 3 else re.split(r"(?<=[.!?])\s+(?=[A-Z])", raw_description)
+
         responsibilities = []
-        for line in raw_description.split("\n"):
+        for line in candidate_lines:
             clean_l = line.strip(" •-*")
-            if len(clean_l) > 20 and any(w in clean_l.lower() for w in ["build", "lead", "design", "develop", "manage", "drive", "deliver"]):
+            if 20 < len(clean_l) < 220 and any(w in clean_l.lower() for w in ["build", "lead", "design", "develop", "manage", "drive", "deliver"]):
                 responsibilities.append(clean_l)
 
         # 3. Infer Role Type & Resume Strategy Signals
@@ -115,6 +124,21 @@ class JobDescriptionParser:
         elif "ai" in jd_lower or "agent" in jd_lower:
             domain = "AI"
 
+        # Rank responsibility lines by how much JD-keyword weight they carry --
+        # zero-LLM, zero-fabrication: every "signal" is a line the JD itself
+        # already wrote, just ordered by relevance instead of document order.
+        # This is what determines what a bullet rewrite should LEAD with,
+        # without needing a separate LLM call to decompose the JD first.
+        keyword_weights = {kw.normalized_keyword: kw.weight for kw in ats_keywords}
+        scored_responsibilities = sorted(
+            responsibilities,
+            key=lambda line: sum(
+                weight for norm_kw, weight in keyword_weights.items()
+                if norm_kw in line.lower()
+            ),
+            reverse=True,
+        )
+
         strategy_signals = ResumeStrategySignals(
             role_type=role_type,
             primary_domain=domain,
@@ -122,7 +146,9 @@ class JobDescriptionParser:
             bullet_strategy="Emphasize system architecture, quantitative metric impact, and technical ownership.",
             preferred_ownership_style="LEAD" if "lead" in role_title.lower() else "OWNER",
             priority_keywords=[k.keyword for k in ats_keywords[:5]],
-            priority_project_types=[role_type, domain]
+            priority_project_types=[role_type, domain],
+            primary_signals=scored_responsibilities[:3],
+            secondary_signals=scored_responsibilities[3:8],
         )
 
         return StructuredJobProfile(

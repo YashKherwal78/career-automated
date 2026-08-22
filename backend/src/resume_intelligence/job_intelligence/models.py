@@ -40,6 +40,8 @@ class ResumeStrategySignals(BaseModel):
     preferred_ownership_style: str  # 'LEAD', 'OWNER', 'CONTRIBUTOR'
     priority_keywords: List[str] = Field(default_factory=list)
     priority_project_types: List[str] = Field(default_factory=list)
+    primary_signals: List[str] = Field(default_factory=list)  # top JD responsibility lines by keyword density -- what to LEAD bullets with
+    secondary_signals: List[str] = Field(default_factory=list)  # next-ranked responsibility lines -- supporting emphasis
 
 
 class StructuredJobProfile(BaseModel):
