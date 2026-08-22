@@ -259,11 +259,41 @@ def render_tex(resume: ExtendedStructuredResume, settings: RenderSettings) -> st
     return tmpl.render(resume=template_resume, settings=settings)
 
 
+# Unicode whitespace variants LLM output sometimes contains (narrow
+# no-break space, non-breaking space, thin space, zero-width space) that
+# this project's LaTeX setup has no glyph for -- pdflatex hard-errors
+# ("Unicode character ... not set up for use with LaTeX") and, combined
+# with -halt-on-error below, silently returns None with no PDF at all
+# instead of a readable error. Confirmed live (2026-08-22): a tailored
+# bullet's LLM rewrite contained a U+202F NARROW NO-BREAK SPACE and
+# compile_pdf() failed outright, even though the same content compiles
+# fine once this character is normalized to a plain space. Deliberately
+# narrow -- only whitespace-lookalikes are touched, never real content
+# (em/en dashes, smart quotes, etc. already compile fine with this
+# template's fontenc setup and aren't touched here).
+_UNSAFE_UNICODE_WHITESPACE = {
+    " ": " ",  # narrow no-break space
+    " ": " ",  # no-break space
+    " ": " ",  # thin space
+    " ": " ",  # hair space
+    "​": "",   # zero-width space
+    "﻿": "",   # zero-width no-break space / BOM
+}
+
+
+def _sanitize_unicode_whitespace(text: str) -> str:
+    for bad, good in _UNSAFE_UNICODE_WHITESPACE.items():
+        text = text.replace(bad, good)
+    return text
+
+
 def compile_pdf(tex_content: str, output_dir: str, filename_prefix: str = "base_resume") -> Optional[str]:
     """Compiles .tex to PDF via pdflatex. Returns the PDF path, or None if pdflatex failed."""
     os.makedirs(output_dir, exist_ok=True)
     tex_path = os.path.join(output_dir, f"{filename_prefix}.tex")
     pdf_path = os.path.join(output_dir, f"{filename_prefix}.pdf")
+
+    tex_content = _sanitize_unicode_whitespace(tex_content)
 
     with open(tex_path, "w", encoding="utf-8") as f:
         f.write(tex_content)
