@@ -96,7 +96,7 @@ def build_structured_resume(profile_data: Dict[str, Any]) -> ExtendedStructuredR
             url=p.get("url") or None,
         )
         for p in (profile_data.get("projects") or [])
-        if p.get("name") or p.get("title")
+        if (p.get("name") or p.get("title")) and p.get("included", True)
     ]
 
     skills_raw = profile_data.get("skills") or {}
