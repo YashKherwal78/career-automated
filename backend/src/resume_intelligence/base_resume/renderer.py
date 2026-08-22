@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import copy
 import os
+import re
 import subprocess
 from typing import Optional
 
@@ -287,6 +288,38 @@ def _sanitize_unicode_whitespace(text: str) -> str:
     return text
 
 
+# PDF-text-extraction artifacts: a source resume's PDF text layer can split
+# a compound word/acronym across an internal kerning or ligature boundary
+# (e.g. "VAD" in the original PDF extracts as "V AD") -- this happens at
+# the ProfileExtractionService step, upstream of anything this renderer
+# controls, and gets carried verbatim into stored profile text and from
+# there into every rendered resume. Confirmed live (2026-08-22): found in
+# real stored bullet_points, not something introduced by templating.
+# Deterministic string fix, not an LLM call -- extend this map as new
+# split tokens turn up in real uploads, same reasoning as
+# _UNSAFE_UNICODE_WHITESPACE above.
+_SPLIT_TOKEN_PATTERNS: dict[str, str] = {
+    r"V\s+AD\b": "VAD",
+    r"T\s+esseract\b": "Tesseract",
+    r"F\s+astAPI\b": "FastAPI",
+    r"T\s+emporal\b": "Temporal",
+    r"A\s+TS\b": "ATS",
+    r"Post\s+greSQL\b": "PostgreSQL",
+    r"Lang\s+Graph\b": "LangGraph",
+    r"Lang\s+Chain\b": "LangChain",
+    r"Play\s+wright\b": "Playwright",
+    r"Git\s+Hub\b": "GitHub",
+    r"Type\s+Script\b": "TypeScript",
+    r"Dock\s+er\b": "Docker",
+}
+
+
+def _fix_split_tokens(text: str) -> str:
+    for pattern, replacement in _SPLIT_TOKEN_PATTERNS.items():
+        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
+    return text
+
+
 def compile_pdf(tex_content: str, output_dir: str, filename_prefix: str = "base_resume") -> Optional[str]:
     """Compiles .tex to PDF via pdflatex. Returns the PDF path, or None if pdflatex failed."""
     os.makedirs(output_dir, exist_ok=True)
@@ -294,6 +327,7 @@ def compile_pdf(tex_content: str, output_dir: str, filename_prefix: str = "base_
     pdf_path = os.path.join(output_dir, f"{filename_prefix}.pdf")
 
     tex_content = _sanitize_unicode_whitespace(tex_content)
+    tex_content = _fix_split_tokens(tex_content)
 
     with open(tex_path, "w", encoding="utf-8") as f:
         f.write(tex_content)
