@@ -455,6 +455,16 @@ class TailoringResult(BaseModel):
     keyword_expansion.py. Empty when no adjacent gap was found or the
     candidate's skills section didn't match the expected line format."""
 
+    gap_report: Dict[str, Any] = Field(default_factory=dict)
+    """Deterministic (zero-LLM) JD-requirement coverage breakdown:
+    {"matched": [...], "adjacent": [...], "gaps": [...]}. Computed from the
+    same static skill-adjacency clusters keyword_expansion.py already uses
+    for additions -- an LLM self-reporting its own gap coverage is
+    unreliable (it can't be trusted to faithfully admit what it didn't
+    cover), so this is plain Python comparison against jd_profile's
+    required_skills/ats_keywords, not a model-generated claim. See
+    engine_v1._compute_gap_report."""
+
     llm_calls_made: int = 0
     """Bounded by MAX_SECTION_CALLS = 5."""
 

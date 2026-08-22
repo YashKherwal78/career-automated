@@ -148,6 +148,73 @@ _SKILL_LINE_RE = re.compile(
 )
 
 
+def compute_gap_report(
+    candidate_skills: list[str],
+    jd_required_skills: list[str],
+    applied_additions: list[KeywordAddition],
+) -> dict:
+    """Deterministic (zero-LLM) breakdown of how well candidate_skills covers
+    jd_required_skills: matched / adjacent (added to resume) / gap (nothing
+    found, not added). This is plain comparison against the same
+    SKILL_CLUSTERS adjacency table find_related_keywords already uses for
+    additions -- never an LLM's self-report of its own coverage, which
+    can't be trusted to faithfully admit what it didn't cover.
+
+    "gaps" is the actionable output: JD requirements this resume genuinely
+    doesn't support, surfaced honestly rather than silently invented or
+    silently dropped."""
+    applied_by_keyword = {_normalize(a.keyword): a for a in applied_additions}
+
+    matched: list[dict] = []
+    adjacent: list[dict] = []
+    gaps: list[dict] = []
+
+    for jd_skill in jd_required_skills:
+        jd_norm = _normalize(jd_skill)
+        if not jd_norm:
+            continue
+        # Word-boundary substring match both directions (same _terms_match
+        # helper the cluster-adjacency path already uses), not bare set
+        # membership -- a literal-equality-only check meant "llm" never
+        # matched an existing "LLM APIs" skill, wrongly reporting a gap
+        # the candidate's resume already covers. Confirmed live, 2026-08-22.
+        exact_hit = next((s for s in candidate_skills if _terms_match(jd_norm, _normalize(s))), None)
+        if exact_hit:
+            matched.append({"jd_skill": jd_skill, "matched_to": exact_hit})
+            continue
+        if jd_norm in applied_by_keyword:
+            a = applied_by_keyword[jd_norm]
+            adjacent.append({
+                "jd_skill": jd_skill,
+                "adjacent_to": a.because_of,
+                "added_to_resume": True,
+                "note": f"candidate has {a.because_of}, not {jd_skill} -- review before submitting",
+            })
+            continue
+        cluster = _cluster_for(jd_skill)
+        neighbor = None
+        if cluster:
+            neighbor = next(
+                (s for s in candidate_skills if any(_terms_match(_normalize(s), m) for m in cluster)),
+                None,
+            )
+        if neighbor:
+            adjacent.append({
+                "jd_skill": jd_skill,
+                "adjacent_to": neighbor,
+                "added_to_resume": False,
+                "note": f"candidate has {neighbor} (adjacent) but it wasn't added -- addition cap reached or skills line not found",
+            })
+        else:
+            gaps.append({
+                "jd_skill": jd_skill,
+                "in_candidate_profile": False,
+                "note": "no evidence chain -- not added, genuine gap",
+            })
+
+    return {"matched": matched, "adjacent": adjacent, "gaps": gaps}
+
+
 def apply_keyword_additions(skills_block: str, additions: list[KeywordAddition]) -> tuple[str, list[KeywordAddition]]:
     """Appends each addition's keyword onto the skill-category line whose
     existing content contains `because_of` (case-insensitive substring

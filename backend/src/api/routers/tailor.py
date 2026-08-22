@@ -83,6 +83,7 @@ class TailorResponse(BaseModel):
     integrity_passed: bool
     policy_passed: bool
     diff_summary: Dict[str, Any] = Field(default_factory=dict)
+    gap_report: Dict[str, Any] = Field(default_factory=dict)
     version_metadata: Dict[str, str] = Field(default_factory=dict)
     is_persisted: bool = False
 
@@ -543,6 +544,7 @@ def tailor_resume(request: TailorRequest, db=Depends(get_db), current_user: Curr
             "keywords_added": list({kw for d in result.diff_log for kw in d.keywords_added}),
             "xyz_compliance": result.policy_report.xyz_compliance,
         },
+        gap_report=result.gap_report,
         version_metadata={
             "prompt_version": result.version_metadata.prompt_version,
             "rules_version": result.version_metadata.rules_version,
