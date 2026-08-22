@@ -117,6 +117,35 @@ HARD CONSTRAINTS (non-negotiable):
 - If confidence < 0.70 for any bullet, set replace_with to the ORIGINAL text exactly
 """)
 
+# Confirmed real (2026-08-22): a bullet reading "Worked with engineering team
+# on AI teacher-cloning voice pipeline" got rewritten with "Architected"/
+# "Owned" as the lead verb -- upgrading a partial/supporting contribution
+# into sole-ownership language the candidate never claimed. _HARD_CONSTRAINTS
+# above already says "never invent facts" but has no explicit rule tying
+# verb choice to the ORIGINAL bullet's stated contribution level, so the
+# model filled that gap with whatever verb sounded most impressive.
+_CONTRIBUTION_LEVEL_GUARDRAIL = dedent("""\
+CONTRIBUTION LEVEL — determine this before choosing a verb for each bullet:
+
+PARTIAL — original contains: "worked with", "contributed to", "helped", "supported",
+          "collaborated", "assisted", "worked closely with"
+FULL    — original contains: "built", "designed", "owned", "architected", "implemented",
+          "led", "created", "developed", "shipped"
+UNCLEAR — cannot tell from the text — treat as PARTIAL, never guess upward
+
+If PARTIAL: lead verb must be one of Contributed, Supported, Collaborated, Assisted,
+Partnered. Do NOT use Architected, Designed, Owned, Built, Led, Spearheaded,
+Engineered, or any verb implying sole ownership — that upgrades the contribution
+level, which is fabrication even if every technical fact in the bullet stays true.
+If FULL: use a strong ownership verb as usual, still never "Was"/"Responsible for"/
+"Helped"/"Worked on".
+
+Example — original "Worked with engineering team on AI voice pipeline..." is PARTIAL:
+  correct:   "Collaborated with engineering team to define quality thresholds..."
+  WRONG:     "Architected AI voice pipeline..." (upgrades partial -> sole ownership)
+
+""")
+
 # Candidate-chosen style knobs (Settings > AI Preferences) — these only ever
 # shape prompt wording/voice, never the hard constraints above. Tone and
 # aggressiveness are deliberately independent axes (a "Bold" rewrite is still
@@ -276,6 +305,7 @@ VERB UPGRADE EXAMPLES: {verb_examples}
 ABSOLUTE RULE FOR TECH NAMES AND NUMBERS:
 Every technology name (e.g. ASTERIX, CAT048, EUROCONTROL, Tesseract, Random Forest) and every numeric metric (e.g. 500+, ~80%, 10,000+) present in the original bullet MUST be preserved in your rewritten bullet. Do NOT omit or simplify them.
 
+{_CONTRIBUTION_LEVEL_GUARDRAIL}
 CRITICAL: You must output a patch op for EVERY bullet listed above.
 Missing a bullet means the resume is incomplete. Count entries and bullets carefully.
 

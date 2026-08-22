@@ -75,6 +75,7 @@ from src.resume_intelligence.tailoring.diff_reporter import SemanticDiffReporter
 from src.resume_intelligence.tailoring.keyword_expansion import (
     find_related_keywords,
     apply_keyword_additions,
+    compute_gap_report,
 )
 from src.resume_intelligence.evidence.candidate_memory import CandidateMemory
 
@@ -354,16 +355,26 @@ def _apply_confidence_filter(
 
 def _extract_skill_terms(skills_block: str) -> List[str]:
     """Flat list of skill names out of the Jake-style categorized skills
-    block (`\\textbf{Category:} skill1, skill2, ... \\\\`). Comma-split
-    within each category's text, stripping the LaTeX category label and
-    trailing line-break markers."""
+    block. Confirmed live (2026-08-22): this template actually separates
+    items with "$\\bullet$" (e.g. `React $\\bullet$ TypeScript $\\bullet$
+    ...`), NOT commas -- comma-splitting alone left every category as one
+    unsplit blob string, silently breaking every exact-skill-match lookup
+    this feeds (gap_report, find_related_keywords) even though nothing
+    raised an error. The generic macro-strip below removes the `\\bullet`
+    command itself but leaves its surrounding math-mode `$` signs behind
+    as a bare "$$", which is what's actually split on now; comma-split is
+    kept only as a fallback for a line that has no bullet separator at
+    all (e.g. a future template variant), so "Cloudflare (R2, DNS)"-style
+    single items with a real internal comma aren't wrongly split when a
+    bullet separator IS present."""
     terms: List[str] = []
     for line in skills_block.split("\\\\"):
         text = re.sub(r"\\textbf\{[^}]*\}", "", line)
         text = re.sub(r"\\[a-zA-Z]+(\{[^}]*\})?", "", text)  # strip other macros
         text = text.replace("{", "").replace("}", "")
-        for part in text.split(","):
-            term = part.strip().strip(":")
+        parts = text.split("$$") if "$$" in text else text.split(",")
+        for part in parts:
+            term = part.strip().strip(":").strip("$").strip()
             if term and len(term) < 60:
                 terms.append(term)
     return terms
@@ -719,6 +730,7 @@ class TailoringEngineV1:
         # keyword_expansion.py for the adjacency rules and why this is
         # deliberately conservative (never invents unrelated skills).
         keyword_expansions: List[Dict[str, str]] = []
+        gap_report: Dict[str, Any] = {}
         try:
             skills_block = tree.skills_block
             if skills_block and skills_block in tailored_tex:
@@ -729,6 +741,7 @@ class TailoringEngineV1:
                     if isinstance(s, dict)
                 ] or [s for s in (inp.jd_profile.get("required_skills") or []) if isinstance(s, str)]
                 candidate_additions = find_related_keywords(candidate_skills, jd_required)
+                applied: List = []
                 if candidate_additions:
                     new_skills_block, applied = apply_keyword_additions(skills_block, candidate_additions)
                     if applied:
@@ -740,8 +753,22 @@ class TailoringEngineV1:
                             "TailoringEngineV1: added %d related keyword(s) to skills section: %s",
                             len(applied), keyword_expansions,
                         )
+                # ATS keywords (broader than required_skills -- includes JD
+                # terms not tagged as a formal "required skill") folded in
+                # too, so the gap report reflects everything the JD actually
+                # asks for, not just one field of the parsed profile.
+                ats_keyword_terms = [
+                    k.get("normalized_keyword") or k.get("keyword") or ""
+                    for k in (inp.jd_profile.get("ats_keywords") or [])
+                    if isinstance(k, dict)
+                ]
+                gap_report = compute_gap_report(
+                    candidate_skills,
+                    list(dict.fromkeys(jd_required + ats_keyword_terms)),
+                    applied,
+                )
         except Exception as e:
-            logger.warning("TailoringEngineV1: keyword expansion skipped (%s)", e)
+            logger.warning("TailoringEngineV1: keyword expansion/gap report skipped (%s)", e)
 
         # ── Compute keyword coverage & TailoringEffectivenessScore ──────────────
         keyword_coverage = self._compute_keyword_coverage(tailored_tex, inp.jd_profile)
@@ -783,6 +810,7 @@ class TailoringEngineV1:
             effectiveness_score=effectiveness,
             keyword_coverage=keyword_coverage,
             keyword_expansions=keyword_expansions,
+            gap_report=gap_report,
             llm_calls_made=calls_made,
             version_metadata=VersionMetadata(
                 prompt_version=self.VERSION,
