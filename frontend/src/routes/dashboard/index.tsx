@@ -125,22 +125,36 @@ function DashboardHome() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageResults = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
 
+  const [turningOff, setTurningOff] = useState(false);
+
   const handleToggleAutoApply = async () => {
     if (!autoApplyOn) {
       setShowPreferencesModal(true);
       return;
     }
+    // Turning off is the user's clearest "stop" signal -- it must actually
+    // cancel a run in progress (not just flip the durable policy for next
+    // time while the current batch keeps going regardless), so both calls
+    // fire together rather than relying on cancelBatchApply being a no-op
+    // when idle.
+    setTurningOff(true);
     setAutoApplyOn(false);
     try {
-      await ServiceRegistry.getJobService().setAutoApplyPolicy(
-        false,
-        70,
-        autoApplyPolicy?.apply_mode ?? "automatic",
-        autoApplyPolicy?.confirm_before_submit ?? false,
-      );
+      await Promise.all([
+        ServiceRegistry.getJobService().setAutoApplyPolicy(
+          false,
+          70,
+          autoApplyPolicy?.apply_mode ?? "automatic",
+          autoApplyPolicy?.confirm_before_submit ?? false,
+        ),
+        ServiceRegistry.getJobService().cancelBatchApply(),
+      ]);
       queryClient.invalidateQueries({ queryKey: ["auto-apply-policy"] });
+      queryClient.invalidateQueries({ queryKey: ["batch-apply-status"] });
     } catch (e) {
-      console.error("Failed to disable auto-apply policy:", e);
+      console.error("Failed to turn off auto-apply:", e);
+    } finally {
+      setTurningOff(false);
     }
   };
 
@@ -270,24 +284,56 @@ function DashboardHome() {
                 className="font-semibold"
                 style={{ fontSize: 14, color: batchStatus?.error ? "#B4392C" : "var(--ds-sage-text)" }}
               >
-                {batchStatus?.error
-                  ? `Couldn't start: ${batchStatus.error}`
-                  : batchRunning
-                    ? `Applying… ${batchStatus?.completed ?? 0}/${batchStatus?.total ?? 0}${
-                        batchStatus?.current_job_title ? ` — ${batchStatus.current_job_title}` : ""
-                      }`
-                    : batchStatus && (batchStatus.total ?? 0) > 0
-                      ? `Done: ${batchStatus.submitted ?? 0} submitted, ${batchStatus.review_required ?? 0} need review, ${batchStatus.failed ?? 0} failed`
-                      : "Auto Apply on ✓"}
+                {batchStatus?.cancelled
+                  ? `Stopped: ${batchStatus.completed ?? 0}/${batchStatus.total ?? 0} done before you turned it off`
+                  : batchStatus?.error
+                    ? `Couldn't start: ${batchStatus.error}`
+                    : batchRunning
+                      ? `Applying… ${batchStatus?.completed ?? 0}/${batchStatus?.total ?? 0}${
+                          batchStatus?.current_job_title ? ` — ${batchStatus.current_job_title}` : ""
+                        }`
+                      : batchStatus && (batchStatus.total ?? 0) > 0
+                        ? `Done: ${batchStatus.submitted ?? 0} submitted, ${batchStatus.review_required ?? 0} need review, ${batchStatus.failed ?? 0} failed`
+                        : "Auto Apply on ✓"}
               </span>
-              {!batchRunning && (
-                // Nothing to "pause" mid-run (no cancel endpoint) — this
-                // button only appears once a run has actually finished, to
-                // dismiss the summary and go back to "Start Auto Apply".
-                <DsButton variant="outline" size="md" onClick={handleToggleAutoApply}>
-                  Dismiss
-                </DsButton>
-              )}
+              {/* Always-visible on/off switch -- previously this only showed
+                  a "Dismiss" button once a run had finished, so there was no
+                  way to actually stop things while a batch was running; the
+                  underlying policy toggle already supported turning off, it
+                  just had no control surface for it mid-run. Clicking while
+                  running cancels the batch (after its current in-flight job
+                  finishes -- never mid-application) via the same call. */}
+              <button
+                type="button"
+                onClick={handleToggleAutoApply}
+                disabled={turningOff}
+                title={batchRunning ? "Stop auto-apply" : "Turn off auto-apply"}
+                className="flex-shrink-0 transition-colors"
+                style={{
+                  width: 44,
+                  height: 24,
+                  borderRadius: 999,
+                  border: "none",
+                  background: "var(--ds-sage-text, #4E6E42)",
+                  position: "relative",
+                  cursor: turningOff ? "default" : "pointer",
+                  opacity: turningOff ? 0.6 : 1,
+                  padding: 0,
+                }}
+              >
+                <span
+                  style={{
+                    position: "absolute",
+                    top: 3,
+                    right: 3,
+                    width: 18,
+                    height: 18,
+                    borderRadius: "50%",
+                    background: "#fff",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.25)",
+                  }}
+                />
+              </button>
             </div>
           ) : (
             <DsButton variant="primary" size="md" onClick={handleToggleAutoApply}>
