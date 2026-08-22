@@ -33,7 +33,6 @@ class EmailClient:
         self.smtp_port = 587
         self.imap_server = "imap.gmail.com"
         
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=2, min=4, max=15), retry=tenacity.retry_if_exception(retry_if_transient_error))
     def send_email(self, to_email: str, subject: str, body: str, resume_path: str = None, extra_attachment_path: str = None, dry_run: bool = False) -> bool:
         for path in (resume_path, extra_attachment_path):
             if path:

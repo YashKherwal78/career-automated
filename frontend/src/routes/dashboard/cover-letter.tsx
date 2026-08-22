@@ -96,6 +96,9 @@ function CoverLetterPage() {
   const [companyName, setCompanyName] = useState("");
   const [roleTitle, setRoleTitle] = useState("");
   const [copied, setCopied] = useState(false);
+  const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [extracting, setExtracting] = useState(false);
+  const [extractError, setExtractError] = useState("");
 
   const { data: job } = useQuery({
     queryKey: ["job", jobId],
@@ -115,6 +118,35 @@ function CoverLetterPage() {
   }, [genPhase]);
 
   const canGenerate = !!jobId || jobDescription.trim().length > 0;
+
+  const extractFromLink = async () => {
+    if (!linkedinUrl.trim()) return;
+    setExtracting(true);
+    setExtractError("");
+    try {
+      const response = await fetch(`${API_BASE}/resume/extract-from-link`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ url: linkedinUrl.trim() }),
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.detail || "Couldn't read that link");
+      }
+      const data = await response.json();
+      setJobDescription(data.job_description);
+      setCompanyName(data.company_name || "");
+      setRoleTitle(data.role_title || "");
+      setLinkedinUrl("");
+    } catch (err) {
+      setExtractError(err instanceof Error ? err.message : "Couldn't read that link");
+    } finally {
+      setExtracting(false);
+    }
+  };
 
   const generateCoverLetter = async () => {
     if (!user || !canGenerate) return;
@@ -358,6 +390,55 @@ function CoverLetterPage() {
             >
               The job you're applying to
             </label>
+            <div className="flex" style={{ gap: 8, marginBottom: 10 }}>
+              <input
+                type="text"
+                value={linkedinUrl}
+                onChange={(e) => setLinkedinUrl(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && extractFromLink()}
+                placeholder="Paste a LinkedIn job link instead…"
+                className="flex-1 bg-transparent outline-none"
+                style={{
+                  fontSize: 13.5,
+                  color: "var(--ds-text-primary)",
+                  border: "1px solid var(--ds-border-default)",
+                  borderRadius: "var(--ds-radius-md)",
+                  padding: "10px 12px",
+                  boxSizing: "border-box",
+                }}
+              />
+              <button
+                type="button"
+                onClick={extractFromLink}
+                disabled={extracting || !linkedinUrl.trim()}
+                className="flex-shrink-0"
+                style={{
+                  padding: "0 16px",
+                  borderRadius: "var(--ds-radius-md)",
+                  border: "1px solid var(--ds-border-default)",
+                  background: extracting ? "var(--ds-cream-300)" : "var(--ds-ink-900)",
+                  color: extracting ? "var(--ds-ink-400)" : "#FFFDFA",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: extracting || !linkedinUrl.trim() ? "default" : "pointer",
+                }}
+              >
+                {extracting ? "Reading…" : "Extract"}
+              </button>
+            </div>
+            {extractError && (
+              <div style={{ fontSize: 12.5, color: "var(--ds-accent-danger, #C4432B)", marginBottom: 10 }}>
+                {extractError}
+              </div>
+            )}
+            <div
+              className="flex items-center"
+              style={{ gap: 10, margin: "4px 0 10px", fontSize: 11.5, color: "var(--ds-ink-400)" }}
+            >
+              <div style={{ flex: 1, height: 1, background: "var(--ds-border-default)" }} />
+              or paste it yourself
+              <div style={{ flex: 1, height: 1, background: "var(--ds-border-default)" }} />
+            </div>
             <textarea
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}

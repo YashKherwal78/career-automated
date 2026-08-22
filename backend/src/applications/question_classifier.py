@@ -80,6 +80,18 @@ class QuestionClassifier:
         "describe your experience", "walk us through", "proud of",
         "what have you built", "something you built", "technical background",
         "briefly describe your background", "your background",
+        # Behavioral/problem-solving essay questions — answerable the same
+        # way ("proud of"/"project" above) from the candidate's own RAG-
+        # indexed project write-ups, not a negotiation or opinion question.
+        # Missing these meant "What's the hardest problem you've worked on?"
+        # fell through to rule 4 (bare textarea, no keyword match) and
+        # escalated the entire application to REVIEW_REQUIRED even though
+        # QuestionEngine's BEHAVIORAL path answers it directly.
+        "hardest problem", "biggest challenge", "toughest problem",
+        "most difficult", "most challenging", "greatest challenge",
+        "biggest technical challenge", "challenging project",
+        "tell me about a time", "describe a situation", "describe a time",
+        "difficult problem", "difficult bug", "hardest bug",
     ]
 
     @classmethod

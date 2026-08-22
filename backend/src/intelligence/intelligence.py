@@ -66,6 +66,7 @@ def run_intelligence_engine(company_name: str) -> dict:
         response = router.chat_completion(
             messages=[{"role": "user", "content": prompt}],
             temperature=0.1,
+            response_format={"type": "json_object"},
             intent="outreach"
         )
     except Exception as e:

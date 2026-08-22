@@ -46,6 +46,8 @@ def run_daily_outreach(target_limit: int = 400):
     engine.limit = target_limit
     
     files_to_process = [
+        "data/gurgaon_verified_leads.xlsx",
+        "data/verified_active_leads.xlsx",
         "data/clean_leads.xlsx", 
         "data/leads_cleaned.xlsx", 
         "data/leads.xlsx", 

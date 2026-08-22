@@ -99,6 +99,36 @@ def embed_text_v2_query(text: str) -> List[float]:
     return vectors[0].tolist()
 
 
+def embed_candidate_text_with_retry(text: str, v2: bool = False, attempts: int = 3, delay_seconds: float = 1.5):
+    """Wraps embed_text/embed_text_v2_query with a few retries before
+    giving up.
+
+    A new user's very first candidate embedding is computed synchronously
+    inside the resume-upload/profile-save request (see users.py
+    extract_profile_endpoint, candidate.py's profile save) specifically so
+    matches are available immediately, not after some later async backfill
+    -- but that call previously had zero retry, so a transient hiccup (the
+    ONNX model's first-ever load in a freshly restarted container can take
+    a few seconds and briefly contend with other startup work) permanently
+    left that candidate with no embedding and therefore zero job matches,
+    with nothing to ever retry it since there's no candidate-embedding
+    backfill worker in this codebase (only jobs get one). Retrying inline,
+    a few times, with a short pause, costs nothing on the common (already-
+    warm model) path and turns a permanent silent failure into a self-
+    healing one on the rare cold-start path.
+    """
+    import time
+    for attempt in range(attempts):
+        try:
+            return embed_text_v2_query(text) if v2 else embed_text(text)
+        except Exception as e:
+            logger.warning(f"embed_candidate_text_with_retry: attempt {attempt + 1}/{attempts} failed: {e}")
+            if attempt < attempts - 1:
+                time.sleep(delay_seconds)
+            else:
+                raise
+
+
 def job_embedding_text(
     title: str,
     description: str,

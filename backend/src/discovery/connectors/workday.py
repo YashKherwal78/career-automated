@@ -1,4 +1,5 @@
 import logging
+import asyncio
 from typing import AsyncIterator, Optional
 from src.discovery.models import RawJob, ConnectorCapability, Board, FetchResult
 from src.discovery.registry.connector import Connector, FreshnessStrategy, DefaultFreshnessStrategy
@@ -99,13 +100,21 @@ class WorkdayConnector(Connector):
 
 
 
+        # Helper for batch detail fetching
+        async def fetch_descriptions_for_batch(jobs):
+            tasks = [
+                self._fetch_description(cxs_base, job.get("externalPath", ""), http_client, throttle)
+                for job in jobs
+            ]
+            descriptions = await asyncio.gather(*tasks, return_exceptions=True)
+            for job, desc in zip(jobs, descriptions):
+                job["description"] = desc if isinstance(desc, str) else ""
+
         # Process Page 1
         if result.status_code == 200 and isinstance(result.payload, dict):
             job_list = result.payload.get("jobPostings", [])
+            await fetch_descriptions_for_batch(job_list)
             for job in job_list:
-                job["description"] = await self._fetch_description(
-                    cxs_base, job.get("externalPath", ""), http_client, throttle
-                ) or ""
                 yield RawJob(company_id=board.company_id, provider="workday", board_identity=board.identity, payload=job)
 
             if len(job_list) < limit:
@@ -115,10 +124,17 @@ class WorkdayConnector(Connector):
         else:
             return
 
-        # Paginate the rest
-        while True:
+        # Paginate remaining pages (Capped at 5 pages / 100 jobs max per crawl cycle to maintain high system throughput)
+        max_pages = 5
+        page_count = 1
+
+        while page_count < max_pages:
             payload = {"appliedFacets": {}, "limit": limit, "offset": offset, "searchText": ""}
-            result = await http_client.fetch("POST", api_url, headers=headers, json=payload)
+            try:
+                result = await http_client.fetch("POST", api_url, headers=headers, json=payload)
+            except Exception as e:
+                logger.debug(f"Workday pagination fetch error: {e}")
+                break
 
             yield result
             if result.status_code != 200 or not isinstance(result.payload, dict):
@@ -128,16 +144,15 @@ class WorkdayConnector(Connector):
             if not job_list:
                 break
 
+            await fetch_descriptions_for_batch(job_list)
             for job in job_list:
-                job["description"] = await self._fetch_description(
-                    cxs_base, job.get("externalPath", ""), http_client, throttle
-                ) or ""
                 yield RawJob(company_id=board.company_id, provider="workday", board_identity=board.identity, payload=job)
 
             if len(job_list) < limit:
                 break
 
             offset += limit
+            page_count += 1
 
 from src.discovery.registry.connector_registry import ConnectorRegistry
 ConnectorRegistry.register('workday', 'HTML', 10, WorkdayConnector)
