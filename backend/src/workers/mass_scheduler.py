@@ -34,8 +34,8 @@ logging.basicConfig(
 logger = logging.getLogger("MassScheduler")
 
 # ── Configuration ─────────────────────────────────────────────────────────────
-# How many concurrent crawl coroutines to run in total
-MASS_CONCURRENCY = int(os.environ.get("MASS_CONCURRENCY", "20"))
+# How many concurrent crawl coroutines to run in total (70 coroutines = balanced high-throughput)
+MASS_CONCURRENCY = int(os.environ.get("MASS_CONCURRENCY", "70"))
 
 # Lease duration for each board reservation (seconds)
 LEASE_DURATION = int(os.environ.get("LEASE_DURATION", "300"))

@@ -76,25 +76,39 @@ class HttpClient:
             
         start_time = time.time()
         
-        async with self.session.request(method, url, headers=req_headers, allow_redirects=True, **kwargs) as response:
-            status_code = response.status
-            resp_headers = dict(response.headers)
-            final_url = str(response.url)
-            redirect_chain = [str(r.url) for r in response.history] + [final_url]
-            
-            payload = None
-            payload_bytes = b""
-            if status_code != 304 and method != 'HEAD':
-                try:
-                    payload = await response.json()
-                    import json
-                    payload_bytes = json.dumps(payload).encode('utf-8')
-                except Exception:
-                    payload_bytes = await response.read()
-                    payload = payload_bytes
-                    
-            end_time = time.time()
-            duration_ms = int((end_time - start_time) * 1000)
+        for attempt in range(3):
+            async with self.session.request(method, url, headers=req_headers, allow_redirects=True, **kwargs) as response:
+                status_code = response.status
+                resp_headers = dict(response.headers)
+                final_url = str(response.url)
+                redirect_chain = [str(r.url) for r in response.history] + [final_url]
+                
+                # If rate limited (HTTP 429), respect Retry-After header and back off automatically
+                if status_code == 429 and attempt < 2:
+                    retry_after = 5
+                    try:
+                        if "Retry-After" in resp_headers:
+                            retry_after = min(max(int(resp_headers["Retry-After"]), 2), 30)
+                    except Exception:
+                        pass
+                    import asyncio
+                    await asyncio.sleep(retry_after)
+                    continue
+                
+                payload = None
+                payload_bytes = b""
+                if status_code != 304 and method != 'HEAD':
+                    try:
+                        payload = await response.json()
+                        import json
+                        payload_bytes = json.dumps(payload).encode('utf-8')
+                    except Exception:
+                        payload_bytes = await response.read()
+                        payload = payload_bytes
+                        
+                end_time = time.time()
+                duration_ms = int((end_time - start_time) * 1000)
+                break
             
             content_hash = hashlib.sha256(payload_bytes).hexdigest() if payload_bytes else ""
             

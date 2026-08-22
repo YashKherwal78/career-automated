@@ -70,10 +70,19 @@ class LLMRouter:
                 logger.info(f"[LLMRouter] Failed to initialize OpenRouter Client: {e}")
 
         self.routes = {
-            "outreach": ["groq", "gemini", "openrouter"],
-            "reasoning": ["groq", "gemini", "openrouter"],
-            "utility": ["groq", "gemini", "openrouter"]
+            "strategy": ["gemini", "groq", "openrouter"],
+            "reasoning": ["gemini", "groq", "openrouter"],
+            "outreach": ["gemini", "groq", "openrouter"],
+            "utility": ["gemini", "groq", "openrouter"],
+            "classification": ["gemini", "groq", "openrouter"]
         }
+        
+        self.groq_models = [
+            "qwen/qwen3.6-27b",
+            "openai/gpt-oss-120b",
+            "llama-3.3-70b-versatile",
+            "llama-3.1-8b-instant"
+        ]
 
         self.openrouter_models = [
             "deepseek/deepseek-chat",
@@ -82,7 +91,7 @@ class LLMRouter:
         ]
 
     def chat_completion(self, messages: List[Dict], temperature: float = 0.2, response_format: Optional[Dict] = None, intent: str = "utility") -> FakeResponse:
-        providers = self.routes.get(intent, ["groq", "gemini", "openrouter"])
+        providers = self.routes.get(intent, ["gemini", "groq", "openrouter"])
         fallback_count = 0
         
         for provider in providers:
@@ -125,18 +134,33 @@ class LLMRouter:
             response_mime_type=mime_type
         )
         
-        model_name = "gemini-3.6-flash"
-        response = self.gemini_client.models.generate_content(
-            model=model_name,
-            contents=prompt,
-            config=config
-        )
-        
-        tokens = 0
-        if hasattr(response, 'usage_metadata') and response.usage_metadata:
-            tokens = response.usage_metadata.total_token_count
-            
-        return response.text, tokens, model_name
+        gemini_candidates = [
+            "gemini-2.5-flash",
+            "gemini-2.5-flash-lite",
+            "gemini-3.5-flash",
+            "gemini-3.5-flash-lite",
+            "gemini-3.6-flash",
+            "gemini-3.7-flash",
+            "gemini-flash-latest",
+            "gemini-3.1-pro-preview"
+        ]
+        last_err = None
+        for model_name in gemini_candidates:
+            try:
+                response = self.gemini_client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                    config=config
+                )
+                tokens = 0
+                if hasattr(response, 'usage_metadata') and response.usage_metadata:
+                    tokens = response.usage_metadata.total_token_count
+                return response.text, tokens, model_name
+            except Exception as e:
+                last_err = e
+                logger.info(f"[LLMRouter] Gemini model {model_name} failed: {e}. Trying next...")
+                
+        raise last_err or Exception("All Gemini candidate models failed.")
 
     def _call_openrouter(self, messages: List[Dict], temperature: float, response_format: Optional[Dict]):
         if not self.openrouter_client:
@@ -163,7 +187,7 @@ class LLMRouter:
         raise Exception(f"All OpenRouter fallback models failed. Last error: {last_error}")
 
     def _call_groq(self, messages: List[Dict], temperature: float, response_format: Optional[Dict], intent: str = "utility"):
-        candidate_models = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768", "gemma2-9b-it"]
+        candidate_models = self.groq_models
         last_exc = None
         for model_name in candidate_models:
             try:

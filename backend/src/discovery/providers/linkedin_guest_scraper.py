@@ -26,6 +26,7 @@ LinkedInJobsProvider._discover_jobs_internal.
 """
 from __future__ import annotations
 
+import re
 import time
 from typing import Optional
 
@@ -133,6 +134,66 @@ def fetch_job_description(job_id: str, timeout: int = 15) -> str:
     except requests.RequestException as e:
         logger.info(f"[linkedin_guest_scraper] description fetch failed for job_id={job_id}: {e}")
         return ""
+
+
+# Matches every real-world shape a candidate might paste, in order of how
+# specific/reliable the match is:
+#   /jobs/view/software-engineer-at-acme-1234567890
+#   /jobs/view/1234567890
+#   ?currentJobId=1234567890 (search-results deep link)
+_JOB_ID_URL_PATTERNS = (
+    re.compile(r"/jobs/view/(?:[\w-]*-)?(\d{6,})"),
+    re.compile(r"[?&]currentJobId=(\d{6,})"),
+)
+
+
+def extract_job_id_from_url(url: str) -> str:
+    """Pulls the numeric job posting ID out of a pasted LinkedIn job URL, in
+    whatever shape a candidate actually copies from their browser (full
+    "/jobs/view/<slug>-<id>" pages and the "?currentJobId=" deep-link format
+    search results use both appear in practice). Returns "" (never raises)
+    on anything that doesn't look like a LinkedIn job URL -- the caller
+    already needs to handle "couldn't read that page" as a normal, expected
+    outcome, same as fetch_job_description above."""
+    if not url:
+        return ""
+    for pattern in _JOB_ID_URL_PATTERNS:
+        match = pattern.search(url)
+        if match:
+            return match.group(1)
+    return ""
+
+
+def fetch_job_posting_details(job_id: str, timeout: int = 15) -> dict:
+    """Title/company/description for a single job_id from the same guest
+    jobPosting page fetch_job_description already uses -- one request, not
+    a separate one per field. Returns {} (never raises) if the job_id is
+    empty or the page didn't come back in a recognizable shape (blocked,
+    removed posting, layout change), so a caller can treat "couldn't read
+    this job" as a normal, expected outcome rather than a crash."""
+    if not job_id:
+        return {}
+    try:
+        resp = requests.get(_DETAIL_URL.format(job_id=job_id), headers=_HEADERS, timeout=timeout)
+        if resp.status_code != 200:
+            return {}
+        soup = BeautifulSoup(resp.text, "html.parser")
+        desc_el = soup.select_one(".show-more-less-html__markup, .description__text")
+        title_el = soup.select_one(".top-card-layout__title, .topcard__title")
+        company_el = soup.select_one(".topcard__org-name-link, .top-card-layout__second-subline a, .topcard__flavor")
+        description = desc_el.get_text(" ", strip=True) if desc_el else ""
+        if not description:
+            # No recognizable description at all -- most likely a removed/
+            # expired posting or a block page, not a genuinely empty JD.
+            return {}
+        return {
+            "title": title_el.get_text(strip=True) if title_el else "",
+            "company": company_el.get_text(strip=True) if company_el else "",
+            "description": description,
+        }
+    except requests.RequestException as e:
+        logger.info(f"[linkedin_guest_scraper] posting details fetch failed for job_id={job_id}: {e}")
+        return {}
 
 
 def search_jobs_with_descriptions(

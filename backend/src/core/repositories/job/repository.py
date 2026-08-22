@@ -280,14 +280,32 @@ class JobRepository(BaseRepository, IJobRepository):
                 if hybrid_jobs:
                     profile = self._load_profile(conn, user_id)
                     passed, _rejected, _counts = self._hard_reject.filter_batch(hybrid_jobs, profile)
+                    # Min-max normalize rrf_score across THIS batch instead of
+                    # a fixed "* 3000" scale. RRF's absolute value is capped
+                    # by how many of the two signals (vector, BM25) agree on
+                    # a job -- a job that's the single best vector match but
+                    # absent from the BM25 top-500 can never exceed ~50% on
+                    # the fixed formula, which reads as "mediocre match" to a
+                    # user even when it's genuinely the #1 result. Confirmed
+                    # live, 2026-08-21: narrowing BM25 to 8 distinctive terms
+                    # (perf fix, same day) made this worse by reducing how
+                    # often a job scores on both signals at once, pushing
+                    # displayed percentages down further despite unchanged
+                    # underlying relevance.
+                    # Floored at 40 (not 0) for the batch's lowest scorer --
+                    # every job here already passed hybrid retrieval AND
+                    # HardRejectFilter, so the "worst of an already-curated
+                    # top-500" is still a reasonable match, not a bad one;
+                    # a plain 0-100 min-max would make it look like a bad
+                    # match purely for being last in this particular batch.
+                    if passed:
+                        rrf_values = [j.get("rrf_score", 0.0) for j in passed]
+                        rrf_max, rrf_min = max(rrf_values), min(rrf_values)
+                        rrf_spread = rrf_max - rrf_min
                     for j in passed:
-                        # rrf_score is a small fraction (two RRF terms, each
-                        # <= 1/61) -- scale to a 0-100ish display range the
-                        # same shape job_score has always had. matched_terms
-                        # (real overlapping profile keywords, no LLM call)
-                        # replaces JIE's score_breakdown as the "why this
-                        # matched" signal shown to the user.
-                        j["job_score"] = round(min(j.get("rrf_score", 0.0) * 3000, 100))
+                        raw_rrf = j.get("rrf_score", 0.0)
+                        normalized = (raw_rrf - rrf_min) / rrf_spread if rrf_spread > 0 else 1.0
+                        j["job_score"] = round(40 + normalized * 60)
                         j["score_breakdown"] = j.get("matched_terms") or []
                         j["match_score"] = j["job_score"]
                         j["priority_score"] = 0.0
@@ -1090,27 +1108,78 @@ class JobRepository(BaseRepository, IJobRepository):
             boilerplate_sql = ", ".join(f"'{w}'" for w in self._BM25_BOILERPLATE_STEMS)
 
             query = f"""
-                WITH vec AS (
-                    SELECT n.job_id, ROW_NUMBER() OVER (ORDER BY n.embedding <=> {p}::vector) AS rnk
+                WITH vec_topk AS (
+                    -- Plain "ORDER BY <-> LIMIT N" (no window function in
+                    -- the same scope as the LIMIT) is what lets Postgres
+                    -- use idx_normalized_jobs_embedding_hnsw for top-K ANN
+                    -- retrieval. The previous shape computed
+                    -- ROW_NUMBER() OVER (ORDER BY ...) across the WHOLE
+                    -- filtered table (a window function needs its full
+                    -- partition sorted before any outer LIMIT can trim it),
+                    -- forcing a full sequential scan + sort of every ACTIVE
+                    -- row with an embedding on every single request.
+                    -- Confirmed live (2026-08-21): 12+ of these queries
+                    -- piled up concurrently in pg_stat_activity, one stuck
+                    -- for ~4 minutes, pegging Postgres at over 3.5 cores of CPU and
+                    -- timing out the dashboard.
+                    SELECT n.job_id, n.embedding <=> {p}::vector AS dist
                     FROM normalized_jobs n
                     WHERE n.status = 'ACTIVE' AND n.embedding IS NOT NULL{exp_clause}
                     ORDER BY n.embedding <=> {p}::vector
                     {candidate_pool_limit}
                 ),
+                vec AS (
+                    SELECT job_id, ROW_NUMBER() OVER (ORDER BY dist) AS rnk
+                    FROM vec_topk
+                ),
                 lex_query AS (
+                    -- Capped to the 8 longest (most distinctive) surviving
+                    -- lexemes, not every one of them OR'd together.
+                    -- Confirmed live (2026-08-21): OR-joining every
+                    -- non-boilerplate term from a candidate's full profile
+                    -- text against a ~1.5M-row corpus matches 300-500K+
+                    -- rows for common tech vocabulary ("engineer",
+                    -- "python") -- ranking that many rows by ts_rank_cd is
+                    -- inherently expensive regardless of indexing, and
+                    -- Postgres's planner has no reliable way to estimate
+                    -- multi-term tsquery selectivity to compensate (ANALYZE
+                    -- does not fix this -- confirmed, tried first). Longer
+                    -- lexemes correlate with specific technical terms
+                    -- (e.g. "langgraph") over generic short ones ("work",
+                    -- "team") -- already partly filtered by the boilerplate
+                    -- list, this is the next cut. Vector search still
+                    -- covers broad semantic relevance independently, so
+                    -- this only narrows the keyword-match half of RRF, not
+                    -- overall recall.
                     SELECT to_tsquery('english', string_agg(lexeme, ' | ')) AS q,
                            ARRAY_AGG(lexeme) AS terms
-                    FROM unnest(tsvector_to_array(to_tsvector('english', {p}))) AS lexeme
-                    WHERE lexeme NOT IN ({boilerplate_sql})
+                    FROM (
+                        SELECT lexeme
+                        FROM unnest(tsvector_to_array(to_tsvector('english', {p}))) AS lexeme
+                        WHERE lexeme NOT IN ({boilerplate_sql})
+                        ORDER BY length(lexeme) DESC
+                        LIMIT 8
+                    ) distinctive_terms
                 ),
-                lex AS (
-                    SELECT n.job_id,
-                           ROW_NUMBER() OVER (ORDER BY ts_rank_cd(n.search_vector, lex_query.q) DESC) AS rnk
+                lex_topk AS (
+                    -- Same fix as vec_topk above: a plain "ORDER BY ...
+                    -- LIMIT N" (no window function sharing scope with the
+                    -- LIMIT) lets Postgres use a top-N heapsort instead of
+                    -- fully sorting every row matching the GIN @@ filter
+                    -- by ts_rank_cd before any limit can trim it. Missing
+                    -- this exact same fix here (right next to vec_topk)
+                    -- was still the dominant cost even after vec_topk was
+                    -- fixed -- confirmed live, 2026-08-21.
+                    SELECT n.job_id, ts_rank_cd(n.search_vector, lex_query.q) AS rank_score
                     FROM normalized_jobs n, lex_query
                     WHERE n.status = 'ACTIVE' AND n.search_vector IS NOT NULL
                           AND lex_query.q IS NOT NULL AND n.search_vector @@ lex_query.q{exp_clause}
                     ORDER BY ts_rank_cd(n.search_vector, lex_query.q) DESC
                     {candidate_pool_limit}
+                ),
+                lex AS (
+                    SELECT job_id, ROW_NUMBER() OVER (ORDER BY rank_score DESC) AS rnk
+                    FROM lex_topk
                 ),
                 fused AS (
                     SELECT COALESCE(vec.job_id, lex.job_id) AS job_id,
@@ -1176,6 +1245,18 @@ class JobRepository(BaseRepository, IJobRepository):
                 exp_params +                                # lex CTE
                 [embedding]                                 # final SELECT's vector_similarity
             )
+            # SET LOCAL (transaction-scoped, reverts automatically -- no
+            # lasting server-wide config change) bumps the planner's memory
+            # budget for the lex CTE's bitmap heap scan. Confirmed live,
+            # 2026-08-21: the default work_mem left that scan "lossy" at
+            # the block level (a common multi-term OR'd tsquery can match
+            # 300K+ of the ~1.5M rows), forcing expensive re-checks and
+            # taking ~55s; 256MB avoids the lossy fallback and brings it
+            # to ~18s. Real remaining cost is genuinely reading that many
+            # matching rows off disk -- shared_buffers sizing is a
+            # separate, server-config-level concern beyond what a query
+            # hint can fix, flagged separately rather than changed here.
+            conn.execute("SET LOCAL work_mem = '256MB'")
             c = conn.execute(query, tuple(params))
             return [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
 
@@ -1250,26 +1331,56 @@ class JobRepository(BaseRepository, IJobRepository):
             boilerplate_sql = ", ".join(f"'{w}'" for w in self._BM25_BOILERPLATE_STEMS)
 
             query = f"""
-                WITH vec AS (
-                    SELECT n.job_id, ROW_NUMBER() OVER (ORDER BY n.embedding_v2 <=> {p}::vector) AS rnk
+                WITH vec_topk AS (
+                    -- See get_jobs_by_hybrid_search's identical fix: a
+                    -- plain "ORDER BY <-> LIMIT N" (no window function
+                    -- sharing scope with the LIMIT) is required for
+                    -- idx_normalized_jobs_embedding_v2_hnsw to actually be
+                    -- used for top-K ANN retrieval, instead of a full
+                    -- table sort on every request.
+                    SELECT n.job_id, n.embedding_v2 <=> {p}::vector AS dist
                     FROM normalized_jobs n
                     WHERE n.status = 'ACTIVE' AND n.embedding_v2 IS NOT NULL{exp_clause}
                     ORDER BY n.embedding_v2 <=> {p}::vector
                     {candidate_pool_limit}
                 ),
-                lex_query AS (
-                    SELECT to_tsquery('english', string_agg(lexeme, ' | ')) AS q
-                    FROM unnest(tsvector_to_array(to_tsvector('english', {p}))) AS lexeme
-                    WHERE lexeme NOT IN ({boilerplate_sql})
+                vec AS (
+                    SELECT job_id, ROW_NUMBER() OVER (ORDER BY dist) AS rnk
+                    FROM vec_topk
                 ),
-                lex AS (
-                    SELECT n.job_id,
-                           ROW_NUMBER() OVER (ORDER BY ts_rank_cd(n.search_vector, lex_query.q) DESC) AS rnk
+                lex_query AS (
+                    -- See get_jobs_by_hybrid_search's identical fix for why:
+                    -- capped to the 8 longest (most distinctive) surviving
+                    -- lexemes instead of OR-joining every one against the
+                    -- whole corpus.
+                    SELECT to_tsquery('english', string_agg(lexeme, ' | ')) AS q
+                    FROM (
+                        SELECT lexeme
+                        FROM unnest(tsvector_to_array(to_tsvector('english', {p}))) AS lexeme
+                        WHERE lexeme NOT IN ({boilerplate_sql})
+                        ORDER BY length(lexeme) DESC
+                        LIMIT 8
+                    ) distinctive_terms
+                ),
+                lex_topk AS (
+                    -- Same fix as vec_topk above: a plain "ORDER BY ...
+                    -- LIMIT N" (no window function sharing scope with the
+                    -- LIMIT) lets Postgres use a top-N heapsort instead of
+                    -- fully sorting every row matching the GIN @@ filter
+                    -- by ts_rank_cd before any limit can trim it. Missing
+                    -- this exact same fix here (right next to vec_topk)
+                    -- was still the dominant cost even after vec_topk was
+                    -- fixed -- confirmed live, 2026-08-21.
+                    SELECT n.job_id, ts_rank_cd(n.search_vector, lex_query.q) AS rank_score
                     FROM normalized_jobs n, lex_query
                     WHERE n.status = 'ACTIVE' AND n.search_vector IS NOT NULL
                           AND lex_query.q IS NOT NULL AND n.search_vector @@ lex_query.q{exp_clause}
                     ORDER BY ts_rank_cd(n.search_vector, lex_query.q) DESC
                     {candidate_pool_limit}
+                ),
+                lex AS (
+                    SELECT job_id, ROW_NUMBER() OVER (ORDER BY rank_score DESC) AS rnk
+                    FROM lex_topk
                 ),
                 fused AS (
                     SELECT COALESCE(vec.job_id, lex.job_id) AS job_id,
@@ -1297,6 +1408,8 @@ class JobRepository(BaseRepository, IJobRepository):
                 exp_params +
                 [embedding_v2]
             )
+            # See get_jobs_by_hybrid_search's identical SET LOCAL for why.
+            conn.execute("SET LOCAL work_mem = '256MB'")
             c = conn.execute(query, tuple(params))
             return [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
 

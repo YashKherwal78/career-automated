@@ -7,6 +7,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 class Config:
+    BASE_DIR = BASE_DIR
     GROQ_KEYS = [
         os.getenv("GROQ_API_KEY"),  # legacy support
         os.getenv("GROQ_API_KEY_1"),
@@ -15,6 +16,8 @@ class Config:
     ]
     GROQ_KEYS = [k for k in GROQ_KEYS if k]
     GROQ_API_KEY = GROQ_KEYS[0] if GROQ_KEYS else ""
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+    OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
     GETPROSPECT_API_KEY = os.getenv("GETPROSPECT_API_KEY")
     HUNTER_API_KEY = os.getenv("HUNTER_API_KEY")
     GMAIL_ADDRESS = os.getenv("GMAIL_ADDRESS")

@@ -79,6 +79,16 @@ class TailoredPdfRequest(BaseModel):
     tailored_tex: str
 
 
+class ExtractFromLinkRequest(BaseModel):
+    url: str
+
+
+class ExtractFromLinkResponse(BaseModel):
+    job_description: str
+    company_name: str
+    role_title: str
+
+
 class CoverLetterRequest(BaseModel):
     candidate_id: str
     job_id: Optional[str] = None
@@ -404,6 +414,51 @@ def _has_cover_letter_access(current_user: "CurrentUser", db) -> bool:
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
+
+@router.post("/extract-from-link", response_model=ExtractFromLinkResponse, status_code=status.HTTP_200_OK)
+def extract_from_link(
+    request: ExtractFromLinkRequest,
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    """
+    Lets a candidate paste a LinkedIn job URL instead of copy-pasting the
+    whole job description by hand -- same "give us a link, we'll pull out
+    the details" pattern the dashboard's job-screenshot upload already
+    uses, just for a link instead of an image. Free (LinkedIn's public
+    jobs-guest pages, no Apify credits), same source
+    linkedin_guest_scraper.py's discovery path already relies on.
+
+    Returns the extracted fields directly rather than a job_id -- this
+    job may not be one CareerAutomated has discovered/tracked at all, so
+    there's nothing to look up by ID later. The frontend feeds these
+    straight into the existing job_description/company_name/role_title
+    fields /tailor and /cover-letter already accept for a pasted JD.
+    """
+    from src.discovery.providers.linkedin_guest_scraper import (
+        extract_job_id_from_url,
+        fetch_job_posting_details,
+    )
+
+    job_id = extract_job_id_from_url(request.url)
+    if not job_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="That doesn't look like a LinkedIn job link. Paste the URL from the job posting's page (linkedin.com/jobs/view/...).",
+        )
+
+    details = fetch_job_posting_details(job_id)
+    if not details.get("description"):
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Couldn't read that job posting -- it may have been removed, or LinkedIn blocked the request. Try pasting the job description directly instead.",
+        )
+
+    return ExtractFromLinkResponse(
+        job_description=details["description"],
+        company_name=details.get("company") or "",
+        role_title=details.get("title") or "",
+    )
+
 
 @router.post("/tailor", response_model=TailorResponse, status_code=status.HTTP_200_OK)
 def tailor_resume(request: TailorRequest, db=Depends(get_db), current_user: CurrentUser = Depends(get_current_user)):

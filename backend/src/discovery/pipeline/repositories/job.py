@@ -27,7 +27,23 @@ class JobRepository(BaseRepository):
         archived = 0
         
         if not jobs:
-            return (0, 0, 0, 0)
+            company_id = board_id
+            with self.get_connection() as conn:
+                is_sqlite = getattr(conn, "_is_sqlite", isinstance(conn, sqlite3.Connection))
+                if not is_sqlite and is_postgres():
+                    cur = conn.execute(
+                        "UPDATE normalized_jobs SET status = 'CLOSED', closed_at = NOW() WHERE company_id = %s AND status = 'ACTIVE'",
+                        (company_id,)
+                    )
+                    archived = cur.rowcount if hasattr(cur, 'rowcount') else 0
+                else:
+                    cur = conn.execute(
+                        "UPDATE normalized_jobs SET status = 'CLOSED', closed_at = datetime('now') WHERE company_id = ? AND status = 'ACTIVE'",
+                        (company_id,)
+                    )
+                    archived = cur.rowcount if hasattr(cur, 'rowcount') else 0
+                conn.commit()
+            return (0, 0, archived, archived)
             
         company_id = jobs[0].company_id
 

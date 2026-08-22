@@ -35,7 +35,7 @@ class RipplingAdapter(BaseAdapter):
                     profile_manager=self.profile_manager,
                     rag_client=self.rag_client,
                     llm_client=self.llm_router,
-                    company_context=""
+                    company_context=job.get("description", "") or ""
                 )
 
                 result_data = handler.execute()

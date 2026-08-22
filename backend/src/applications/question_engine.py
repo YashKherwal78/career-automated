@@ -208,7 +208,12 @@ class QuestionClassifier:
             return "MOTIVATION"
             
         # 6. BEHAVIORAL
-        behavioral_keywords = ["tell me about a time", "describe a situation", "greatest challenge", "proudest"]
+        behavioral_keywords = [
+            "tell me about a time", "describe a situation", "greatest challenge",
+            "proudest", "hardest problem", "biggest challenge", "toughest problem",
+            "most difficult", "most challenging", "biggest technical challenge",
+            "challenging project", "difficult problem", "difficult bug", "hardest bug",
+        ]
         if any(kw in q_lower for kw in behavioral_keywords):
             return "BEHAVIORAL"
             
@@ -1213,9 +1218,21 @@ class QuestionEngine:
             else:
                 chunk_text = "\n\n".join(chunk_texts)
                 context_block = f"CANDIDATE PROJECTS / CONTEXT:\n{chunk_text}"
-                if classification == "MOTIVATION" and self.company_context:
-                    context_block += f"\n\nCOMPANY CONTEXT:\n{self.company_context}"
-                    
+                # JD text (from normalized_jobs.description, passed in as
+                # company_context by the adapter) grounds BEHAVIORAL/TECHNICAL
+                # answers too, not just MOTIVATION -- e.g. "what's the hardest
+                # problem you've worked on" should surface the project most
+                # relevant to THIS job's stack/domain, not just whichever
+                # project retrieval ranked first in isolation. Truncated: this
+                # is prompt content on every essay question in a form, and a
+                # full JD can run several KB -- no reason to spend that many
+                # tokens on it every single question.
+                jd_excerpt = ""
+                if self.company_context:
+                    jd_excerpt = self.company_context[:1500]
+                    label = "JOB DESCRIPTION" if classification != "MOTIVATION" else "COMPANY CONTEXT"
+                    context_block += f"\n\n{label}:\n{jd_excerpt}"
+
                 profile_context = self.profile.get_llm_context()
                 
                 SYSTEM_PROMPT = f"""
@@ -1226,8 +1243,9 @@ Candidate Profile Summary: {profile_context}
 {context_block}
 
 Instructions:
-- Answer the question strictly using facts from the provided context chunks.
-- Do not hallucinate external projects or experience.
+- Answer the question strictly using facts from the provided context: the CANDIDATE PROJECTS/CONTEXT chunks, the Candidate Profile Summary, or the JOB DESCRIPTION above (if present). You may reference something stated in the JOB DESCRIPTION itself (e.g. its stated stack, responsibilities, or requirements) even if it doesn't appear in the candidate's own profile -- that's still a grounded fact, just not one about the candidate.
+- Do not hallucinate external projects, experience, or JD requirements not actually present in the provided context.
+- If a JOB DESCRIPTION is provided above, prefer whichever candidate project/experience is most relevant to it when multiple could answer the question (e.g. for "hardest problem you've worked on", pick the one closest to this role's stack/domain) -- but never invent a connection the candidate's own context doesn't support.
 - STRICT METRIC GROUNDING RULE: NEVER fabricate metrics, percentages, revenue, user counts, or business impact. 
 - If the prompt asks for metrics, but there are no explicit numbers in the provided context, DO NOT INVENT THEM. Instead, answer honestly. If the entire answer relies on missing metrics, use this fallback: "I focused on building the system and validating the workflow. I do not have production metrics available for this project."
 - Keep the answer concise. Maximum 50 words unless an essay is requested.
@@ -1248,8 +1266,14 @@ Instructions:
                     raw_answer = response.choices[0].message.content.strip()
                     logger.info(f"  -> Final LLM Answer: {raw_answer}")
                     
-                    # Metric Validation
+                    # Metric Validation. Numbers from the JD count as grounded
+                    # too (e.g. a role stating "3+ years" or team size) -- the
+                    # candidate legitimately restating a JD-stated number isn't
+                    # a fabrication the way inventing a metric about their own
+                    # work would be.
                     chunk_nums = set(re.findall(r'\b\d+(?:\.\d+)?\b', chunk_text))
+                    if jd_excerpt:
+                        chunk_nums.update(re.findall(r'\b\d+(?:\.\d+)?\b', jd_excerpt))
                     if options:
                         options_text = " ".join([str(o) for o in options])
                         chunk_nums.update(re.findall(r'\b\d+(?:\.\d+)?\b', options_text))
@@ -1283,7 +1307,7 @@ Instructions:
                     # Kubernetes?"), the LLM echoing that word back inside a
                     # fabricated "yes" must still be caught; grounding this
                     # check on question text would let it defeat itself.
-                    grounded_pool = f"{chunk_text}\n{profile_context}".lower()
+                    grounded_pool = f"{chunk_text}\n{profile_context}\n{jd_excerpt}".lower()
                     candidate_terms = re.findall(r"\b[A-Z][A-Za-z0-9+.#]{2,}\b", raw_answer)
                     _COMMON_SENTENCE_STARTERS = {"I", "The", "My", "This", "It", "In", "At", "A", "An", "Yes", "No"}
                     unsupported_terms = [

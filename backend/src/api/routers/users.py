@@ -247,24 +247,24 @@ def extract_profile_endpoint(
             conn.commit()
 
         try:
-            from src.discovery.embeddings import embed_text, candidate_embedding_text
+            from src.discovery.embeddings import embed_candidate_text_with_retry, candidate_embedding_text
             from src.core.repositories.job.repository import JobRepository
-            vec = embed_text(candidate_embedding_text(parsed_data))
+            vec = embed_candidate_text_with_retry(candidate_embedding_text(parsed_data))
             JobRepository().store_candidate_embedding(current_user.user_id, vec)
         except Exception as embed_err:
             import logging
-            logging.getLogger("users").warning(f"Candidate embedding update failed: {embed_err}")
+            logging.getLogger("users").warning(f"Candidate embedding update failed after retries: {embed_err}")
 
         # Separate try/except, same reasoning as the v1 block above -- a v2
         # failure must never block the v1 embedding live search depends on.
         try:
-            from src.discovery.embeddings import embed_text_v2_query, candidate_embedding_text
+            from src.discovery.embeddings import embed_candidate_text_with_retry, candidate_embedding_text
             from src.core.repositories.job.repository import JobRepository
-            vec_v2 = embed_text_v2_query(candidate_embedding_text(parsed_data))
+            vec_v2 = embed_candidate_text_with_retry(candidate_embedding_text(parsed_data), v2=True)
             JobRepository().store_candidate_embedding_v2(current_user.user_id, vec_v2)
         except Exception as embed_v2_err:
             import logging
-            logging.getLogger("users").warning(f"Candidate embedding_v2 update failed: {embed_v2_err}")
+            logging.getLogger("users").warning(f"Candidate embedding_v2 update failed after retries: {embed_v2_err}")
 
         return parsed_data
 
