@@ -34,6 +34,7 @@ import os
 import re
 from typing import Any, Optional
 
+from src.config.config import Config
 from src.resume_intelligence.cover_letter.models import (
     CoverLetterInput,
     CoverLetterResult,
@@ -61,6 +62,22 @@ _BUZZWORD_RE = [
     (re.compile(pattern, re.IGNORECASE), repl)
     for pattern, repl in _BUZZWORD_REPLACEMENTS.items()
 ]
+
+
+_MARKDOWN_JSON_FENCE_RE = re.compile(r"^```(?:json)?\s*\n?(.*?)\n?```\s*$", re.DOTALL)
+
+
+def _strip_markdown_json_fence(text: str) -> str:
+    """Groq (response_format=json_object) and Gemini (response_mime_type=
+    application/json) both structurally guarantee bare JSON. OpenRouter has
+    no equivalent enforcement across arbitrary underlying models, and
+    confirmed live (2026-08-23) it wraps output in a ```json ... ``` fence
+    even when told to return JSON only -- json.loads() on that raw string
+    raises. Only ever unwraps a fence that spans the WHOLE string, so real
+    JSON content that happens to contain a code-fence-like substring inside
+    a field value is left untouched."""
+    match = _MARKDOWN_JSON_FENCE_RE.match(text.strip())
+    return match.group(1).strip() if match else text
 
 
 def _strip_buzzwords(text: str) -> str:
@@ -121,6 +138,38 @@ class _LLMCaller:
                 return None
         return None
 
+    def _init_openrouter_client(self) -> Any:
+        """Third-tier fallback, same reasoning as _init_gemini_client above --
+        Groq's shared free-tier quota and Gemini's (much smaller) free-tier
+        quota can BOTH be exhausted at the same time by other features
+        sharing the same keys (confirmed live, 2026-08-23: Groq at
+        199935/200000 daily tokens, Gemini capped at just 20-500/day
+        depending on model). OpenRouter uses the OpenAI SDK against a
+        different base_url, same client library already imported below for
+        the (unused-here) "openai" provider branch."""
+        try:
+            import openai
+            api_key = os.environ.get("OPENROUTER_API_KEY") or getattr(Config, "OPENROUTER_API_KEY", "")
+            return openai.OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key) if api_key else None
+        except ImportError:
+            logger.warning("openai package not installed (needed for OpenRouter)")
+            return None
+
+    def _init_gemini_client(self) -> Any:
+        """Lazily built cross-provider fallback client -- only needed once
+        every Groq model in _FALLBACK_MODELS has failed. Same client/config
+        pattern as LLMRouter._call_gemini (src/utils/llm_router.py), kept as
+        a small copy for the same reason the rest of this class is: no
+        dependency on tailoring/router internals for a conceptually
+        unrelated document type."""
+        try:
+            from google import genai
+            api_key = os.environ.get("GEMINI_API_KEY") or getattr(Config, "GEMINI_API_KEY", "")
+            return genai.Client(api_key=api_key) if api_key else None
+        except ImportError:
+            logger.warning("google-genai package not installed")
+            return None
+
     def call(self, system_prompt: str, user_prompt: str, max_tokens: int = 700) -> Optional[str]:
         if self._client is None:
             logger.warning("CoverLetterGenerator: LLM client unavailable for provider '%s'", self.provider)
@@ -151,8 +200,67 @@ class _LLMCaller:
                     "CoverLetterGenerator LLM error (%s/%s), trying next fallback: %s",
                     self.provider, model, exc,
                 )
+
+        # Every Groq model failed -- confirmed live (2026-08-23): Groq's
+        # shared free-tier daily token cap gets exhausted by OTHER features
+        # sharing the same org/key (tailoring, extraction, outreach), which
+        # took cover letters down with a 503 even though a working,
+        # already-configured Gemini client exists elsewhere in this codebase
+        # (LLMRouter) -- this class just never fell through to it. Lazily
+        # initialize Gemini only now, since the common case (Groq succeeds)
+        # shouldn't pay for a client it never uses.
+        gemini_client = self._init_gemini_client()
+        if gemini_client is not None:
+            prompt = f"{system_prompt}\n\n{user_prompt}"
+            for model_name in ("gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-2.5-flash"):
+                try:
+                    from google.genai import types as genai_types
+                    response = gemini_client.models.generate_content(
+                        model=model_name,
+                        contents=prompt,
+                        config=genai_types.GenerateContentConfig(
+                            temperature=0.4,
+                            response_mime_type="application/json",
+                        ),
+                    )
+                    if response.text:
+                        return response.text
+                except Exception as exc:
+                    last_exc = exc
+                    logger.warning(
+                        "CoverLetterGenerator LLM error (gemini/%s), trying next fallback: %s",
+                        model_name, exc,
+                    )
+
+        # Every Gemini model failed too. OpenRouter as a third tier --
+        # confirmed live (2026-08-23) that Groq and Gemini's free tiers can
+        # BOTH be exhausted simultaneously, so a two-provider fallback still
+        # wasn't enough headroom in practice.
+        openrouter_client = self._init_openrouter_client()
+        if openrouter_client is not None:
+            for model_name in ("deepseek/deepseek-chat", "qwen/qwen-2.5-72b-instruct", "meta-llama/llama-3-70b-instruct"):
+                try:
+                    response = openrouter_client.chat.completions.create(
+                        model=model_name,
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": user_prompt},
+                        ],
+                        temperature=0.4,
+                        max_tokens=max_tokens,
+                    )
+                    content = response.choices[0].message.content
+                    if content:
+                        return _strip_markdown_json_fence(content)
+                except Exception as exc:
+                    last_exc = exc
+                    logger.warning(
+                        "CoverLetterGenerator LLM error (openrouter/%s), trying next fallback: %s",
+                        model_name, exc,
+                    )
+
         if last_exc:
-            logger.error("CoverLetterGenerator: all models exhausted, provider='%s': %s", self.provider, last_exc)
+            logger.error("CoverLetterGenerator: all models exhausted (groq + gemini + openrouter): %s", last_exc)
         return None
 
 
