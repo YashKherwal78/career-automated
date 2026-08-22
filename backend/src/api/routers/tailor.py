@@ -21,6 +21,7 @@ from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
 from src.api.db import get_db
+from src.config.config import Config
 from src.runtime.auth.dependencies import get_current_user, CurrentUser
 from src.resume_intelligence.tailoring.engine_v1 import TailoringEngineV1
 from src.resume_intelligence.tailoring.models_v1 import (
@@ -39,6 +40,17 @@ FREE_ACCESS_EMAILS = {"yash.kherwal78@gmail.com"}
 
 logger = logging.getLogger("TailoringRouter")
 router = APIRouter(prefix="/resume", tags=["Resume Tailoring"])
+
+# TailoringInput.resume_knowledge2_path defaults to the bare relative string
+# "resume_knowledge" (models_v1.py), which PromptBuilder resolves relative to
+# the process CWD (/app in the container) -- that path never existed, so
+# _load_yaml_rule's `if not os.path.exists(path): return {}` silently
+# degraded every real tailoring run to empty rule dicts (no banned-phrase
+# list, no action-verb examples, no validation constraints) with zero
+# errors anywhere. Confirmed live, 2026-08-22. The actual compiled rules
+# live at backend/data/resume_knowledge/rules/ -- pass that absolute path
+# explicitly instead of relying on the broken default.
+RESUME_KNOWLEDGE_PATH = str(Config.DATA_DIR / "resume_knowledge")
 
 # ---------------------------------------------------------------------------
 # Request / Response schemas
@@ -495,6 +507,7 @@ def tailor_resume(request: TailorRequest, db=Depends(get_db), current_user: Curr
         job_id=effective_job_id,
         writing_tone=writing_tone,
         tailoring_aggressiveness=tailoring_aggressiveness,
+        resume_knowledge2_path=RESUME_KNOWLEDGE_PATH,
     )
 
     try:
@@ -605,6 +618,7 @@ def preview_tailor(request: TailorRequest, db=Depends(get_db), current_user: Cur
         job_id=effective_job_id,
         writing_tone=writing_tone,
         tailoring_aggressiveness=tailoring_aggressiveness,
+        resume_knowledge2_path=RESUME_KNOWLEDGE_PATH,
     )
 
     try:
