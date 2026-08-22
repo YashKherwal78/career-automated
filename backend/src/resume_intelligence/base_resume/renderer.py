@@ -143,7 +143,7 @@ JAKE_LATEX_TEMPLATE = r"""
 \begin{itemize}[leftmargin=0.15in, label={}]
   \small{\item{
     {% for cat in resume.skill_categories %}
-    \textbf{ {{ cat.category_name }}:} {{ cat.skills | join(' $|$ ') }} {% if not loop.last %}\\ \vspace{-2pt} {% endif %}
+    \textbf{ {{ cat.category_name }}:} {{ cat.skills | join(', ') }} {% if not loop.last %}\\ \vspace{-2pt} {% endif %}
     {% endfor %}
   }}
 \end{itemize}
@@ -333,6 +333,7 @@ _SPLIT_TOKEN_PATTERNS: dict[str, str] = {
     r"Git\s+Hub\b": "GitHub",
     r"Type\s+Script\b": "TypeScript",
     r"Dock\s+er\b": "Docker",
+    r"\bY\s+AAR\b": "YAAR",
 }
 
 
