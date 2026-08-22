@@ -68,7 +68,29 @@ def generate_base_resume(
     with open(tex_path, "w", encoding="utf-8") as f:
         f.write(tex_content)
 
-    pdf_path = compile_pdf(tex_content, out_dir, filename_prefix="base_resume")
+    # Compile under a throwaway prefix rather than "base_resume" directly --
+    # compile_pdf() writes its OWN sanitized copy of the .tex (arrow/
+    # split-token/whitespace fixes) to {prefix}.tex before invoking
+    # pdflatex, which would otherwise silently overwrite the raw file just
+    # written above. tailor.py's _load_base_tex reads that exact path as
+    # the source of truth for bullet text fed to the tailoring LLM -- if it
+    # contained raw LaTeX math-mode syntax like "$\rightarrow$" instead of
+    # a plain arrow character, the LLM has no reason to know it must
+    # preserve the "$" delimiters exactly while rewriting a bullet, and
+    # dropping them breaks pdflatex compilation entirely. Confirmed live
+    # (2026-08-22): a tailored bullet's "\rightarrow" survived with its
+    # "$" signs stripped, and PDF compilation failed outright.
+    render_prefix = "_base_resume_render"
+    compiled_pdf_path = compile_pdf(tex_content, out_dir, filename_prefix=render_prefix)
+    throwaway_tex = os.path.join(out_dir, f"{render_prefix}.tex")
+    if os.path.exists(throwaway_tex):
+        os.remove(throwaway_tex)
+
+    pdf_path = os.path.join(out_dir, "base_resume.pdf")
+    if compiled_pdf_path:
+        os.replace(compiled_pdf_path, pdf_path)
+    else:
+        pdf_path = None
 
     logger.info(
         "Generated base resume for candidate_id=%s: passes=%s fit_achieved=%s pages=%s",
