@@ -67,3 +67,5 @@ zstandard
 rank-bm25
 fastembed
 pgvector
+google-genai
+openai
