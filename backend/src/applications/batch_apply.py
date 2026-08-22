@@ -91,6 +91,25 @@ def get_status(user_id: str) -> Dict[str, Any]:
     return _BATCH_STATUS.get(user_id, {"running": False})
 
 
+def request_cancel(user_id: str) -> bool:
+    """Signals a running batch to stop after its current in-flight job
+    finishes (never mid-application -- there's no safe place to abort a
+    Playwright run partway through a submit). Returns True if a run was
+    actually running to cancel; False is not an error, just "nothing to
+    do" (already stopped, or never started).
+
+    In-memory, not DB-backed -- same reasoning as _BATCH_STATUS itself
+    (single uvicorn worker, see module docstring): a plain dict flag
+    checked once per loop iteration is all that's needed, no cross-
+    process signaling required.
+    """
+    status = _BATCH_STATUS.get(user_id)
+    if not status or not status.get("running"):
+        return False
+    status["cancel_requested"] = True
+    return True
+
+
 def run_batch(
     user_id: str,
     min_score: int = 70,
@@ -144,8 +163,13 @@ def run_batch(
     }
 
     for i, job in enumerate(jobs):
-        job_id = job["job_id"]
         status = _BATCH_STATUS[user_id]
+        if status.get("cancel_requested"):
+            logger.info(f"[batch_apply] user={user_id} cancelled after {i}/{len(jobs)} jobs")
+            status["cancelled"] = True
+            break
+
+        job_id = job["job_id"]
         status["current_job_title"] = job["title"]
         logger.info(
             f"[batch_apply] [{i + 1}/{len(jobs)}] {job['title']!r} ({job['provider']}) "
@@ -248,7 +272,20 @@ def run_batch(
 
         status["completed"] = i + 1
         if i < len(jobs) - 1:
-            time.sleep(delay_seconds)
+            # Sleep in 1s increments (not one bare time.sleep(delay_seconds))
+            # so a cancel request lands within ~1s instead of waiting out
+            # the full inter-job delay first.
+            remaining = delay_seconds
+            while remaining > 0:
+                if status.get("cancel_requested"):
+                    break
+                step = min(1.0, remaining)
+                time.sleep(step)
+                remaining -= step
+            if status.get("cancel_requested"):
+                logger.info(f"[batch_apply] user={user_id} cancelled after {i + 1}/{len(jobs)} jobs")
+                status["cancelled"] = True
+                break
 
     _BATCH_STATUS[user_id]["running"] = False
     _BATCH_STATUS[user_id]["current_job_title"] = None

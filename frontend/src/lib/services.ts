@@ -110,6 +110,7 @@ export interface JobService {
     failure_reason: string | null;
   }>;
   startBatchApply(minScore?: number): Promise<{ started: boolean; candidate_count: number; blocked_reason?: string }>;
+  cancelBatchApply(): Promise<{ cancelled: boolean; status: BatchApplyStatus }>;
   getBatchApplyStatus(): Promise<BatchApplyStatus>;
   getAutoApplyPolicy(): Promise<{ enabled: boolean; min_score: number; apply_mode: "automatic" | "assisted"; confirm_before_submit: boolean }>;
   setAutoApplyPolicy(
@@ -130,6 +131,7 @@ export interface BatchApplyStatus {
   failed?: number;
   current_job_title?: string | null;
   error?: string;
+  cancelled?: boolean;
 }
 
 export interface NeedsReviewItem {
@@ -652,6 +654,12 @@ export class ApiJobService implements JobService {
     return res.json();
   }
 
+  async cancelBatchApply(): Promise<{ cancelled: boolean; status: BatchApplyStatus }> {
+    const res = await authFetch(`${API_BASE}/applications/batch-apply/cancel`, { method: "POST" });
+    if (!res.ok) throw new Error(`Cancel batch apply failed (${res.status})`);
+    return res.json();
+  }
+
   async getAutoApplyPolicy(): Promise<{
     enabled: boolean;
     min_score: number;
@@ -833,6 +841,9 @@ export class MockJobService implements JobService {
   }
   async getBatchApplyStatus(): Promise<BatchApplyStatus> {
     return { running: false };
+  }
+  async cancelBatchApply(): Promise<{ cancelled: boolean; status: BatchApplyStatus }> {
+    return { cancelled: false, status: { running: false } };
   }
   async getAutoApplyPolicy(): Promise<{
     enabled: boolean;

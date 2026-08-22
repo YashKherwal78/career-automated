@@ -10,7 +10,7 @@ from src.api.dependencies import get_repos
 from src.core.repositories.manager import RepositoryManager
 from src.applications import captcha_bridge
 from src.applications.apply_service import apply_to_job
-from src.applications.batch_apply import get_candidate_jobs, get_status, run_batch
+from src.applications.batch_apply import get_candidate_jobs, get_status, request_cancel, run_batch
 from src.applications.profile import ProfileManager
 from src.applications.question_engine import QuestionEngine
 from src.applications.rag import get_rag_client
@@ -207,6 +207,16 @@ def batch_apply_status(current_user: CurrentUser = Depends(get_current_user)):
     return get_status(current_user.user_id)
 
 
+@router.post("/batch-apply/cancel")
+def cancel_batch_apply(current_user: CurrentUser = Depends(get_current_user)):
+    """Stops a running batch after its current in-flight job finishes --
+    never mid-application, there's no safe point to abort a Playwright
+    submit partway through. Idempotent: cancelling when nothing is running
+    is a normal no-op, not an error."""
+    was_running = request_cancel(current_user.user_id)
+    return {"cancelled": was_running, "status": get_status(current_user.user_id)}
+
+
 class AutofillQuestion(BaseModel):
     question: str
     field_type: str = "text"
@@ -343,6 +353,13 @@ def set_auto_apply_policy(
                 (current_user.user_id, body.enabled, body.min_score, body.apply_mode, body.confirm_before_submit),
             )
         conn.commit()
+
+    # Turning the toggle off is the user's clearest possible "stop" signal
+    # -- it must actually stop a run in progress, not just flip a policy
+    # flag for next time while the current batch keeps going regardless.
+    if not body.enabled:
+        request_cancel(current_user.user_id)
+
     return {"enabled": body.enabled, "min_score": body.min_score, "apply_mode": body.apply_mode, "confirm_before_submit": body.confirm_before_submit}
 
 
