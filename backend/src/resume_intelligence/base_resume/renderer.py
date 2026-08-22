@@ -70,7 +70,7 @@ JAKE_LATEX_TEMPLATE = r"""
 }
 \newcommand{\resumeProjectHeading}[2]{
   \item
-  \begin{tabular*}{0.97\textwidth}{l @{\extracolsep{\fill}} r}
+  \begin{tabular*}{0.97\textwidth}[t]{p{0.8\textwidth} @{\extracolsep{\fill}} r}
     \small #1 & \small #2 \\
   \end{tabular*}\vspace{-7pt}
 }
@@ -340,7 +340,18 @@ _SPLIT_TOKEN_PATTERNS: dict[str, str] = {
 def _fix_split_tokens(text: str) -> str:
     for pattern, replacement in _SPLIT_TOKEN_PATTERNS.items():
         text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
-    return _restore_dropped_arrows(text)
+    return _restore_dropped_arrows(_fix_stray_punctuation_spacing(text))
+
+
+# Same source-PDF-extraction-artifact family as the patterns above, just for
+# punctuation instead of a specific word: a stray space before a comma or
+# period ("root-cause analysis , executes") from the source PDF's own
+# spacing/kerning around punctuation. Confirmed live (2026-08-22). Universal
+# typographic cleanup -- not tied to any specific bullet's wording, and safe
+# since no real sentence should ever have whitespace immediately before a
+# comma/period/semicolon/colon.
+def _fix_stray_punctuation_spacing(text: str) -> str:
+    return re.sub(r"[ \t]+([,.;:])", r"\1", text)
 
 
 # Same extraction-artifact family as _SPLIT_TOKEN_PATTERNS above, but for a
