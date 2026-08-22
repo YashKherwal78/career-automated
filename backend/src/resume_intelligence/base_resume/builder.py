@@ -144,4 +144,11 @@ def build_structured_resume(profile_data: Dict[str, Any]) -> ExtendedStructuredR
 
 
 def _humanize_category(category: str) -> str:
+    """Legacy snake_case category keys ("developer_tools") get title-cased
+    for display. Newer extractions already store display-ready category
+    names directly ("AI & Agents", "Languages & Backend") -- title-casing
+    those would mangle "AI" into "Ai", so a key that already contains a
+    space is passed through unchanged rather than re-cased."""
+    if " " in category:
+        return category
     return category.replace("_", " ").title()
