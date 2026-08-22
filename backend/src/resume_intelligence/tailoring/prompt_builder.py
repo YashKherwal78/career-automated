@@ -303,7 +303,10 @@ VERB UPGRADE EXAMPLES: {verb_examples}
 
 {_HARD_CONSTRAINTS}
 ABSOLUTE RULE FOR TECH NAMES AND NUMBERS:
-Every technology name (e.g. ASTERIX, CAT048, EUROCONTROL, Tesseract, Random Forest) and every numeric metric (e.g. 500+, ~80%, 10,000+) present in the original bullet MUST be preserved in your rewritten bullet. Do NOT omit or simplify them.
+Every technology name (e.g. ASTERIX, CAT048, EUROCONTROL, Tesseract, Random Forest) and every numeric metric (e.g. 500+, ~80%, 10,000+) present in the original bullet MUST be preserved in your rewritten bullet. Do NOT omit or simplify them. This is enforced downstream (any dropped name/number hard-blocks the whole tailoring run) so there is no room to trade evidence for better phrasing.
+
+HOW TO REFRAME WITHOUT LOSING EVIDENCE:
+Lead the bullet with whatever this JD cares about most (its own language, not generic filler) -- but that framing is an ADDITION, never a REPLACEMENT for the specifics already there. A rewrite that reads well but drops the scale/technology proof behind it is a worse bullet, not a more targeted one: it's the same failure as making the bullet vague. If the JD-relevant framing and the original evidence don't both fit comfortably, trim connective words, not facts.
 
 {_CONTRIBUTION_LEVEL_GUARDRAIL}
 CRITICAL: You must output a patch op for EVERY bullet listed above.
