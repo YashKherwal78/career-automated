@@ -17,6 +17,21 @@ ENTRY_LEVEL_PATTERN = re.compile(
     re.IGNORECASE
 )
 
+# A years-of-experience number immediately preceded by one of these is a
+# nested sub-clause describing a specialization WITHIN the primary
+# requirement (e.g. "5+ years of experience..., including at least 1 year
+# focused on Generative AI") -- not the primary requirement itself.
+SUBCLAUSE_PRECEDING_PATTERN = re.compile(
+    r'(?:including|of\s+which|particularly|specifically|plus(?:\s+an?)?\s+additional)\s*$',
+    re.IGNORECASE
+)
+# A years-of-experience number near one of these is an optional/nice-to-have
+# tier, not a hard minimum requirement (e.g. "5+ years preferred").
+OPTIONAL_NEARBY_PATTERN = re.compile(
+    r'\b(?:preferred|nice[\s-]to[\s-]have|a\s+plus|bonus|ideally)\b',
+    re.IGNORECASE
+)
+
 WORD_NUMBERS = {
     "zero": 0, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
     "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10
@@ -33,10 +48,26 @@ class ExperienceExtractor(BaseExtractor):
             return int(val_clean)
         return WORD_NUMBERS.get(val_clean, 0)
 
+    def _is_subordinate_or_optional(self, text: str, match: "re.Match[str]") -> bool:
+        """True if this match is a nested sub-clause (a specialization within
+        the primary requirement) or an optional/preferred tier -- either way,
+        not the primary years-of-experience requirement. Checked via a small
+        window of surrounding text rather than the whole JD, since these
+        marker phrases apply locally to the clause containing the number."""
+        preceding = text[max(0, match.start() - 40):match.start()]
+        if SUBCLAUSE_PRECEDING_PATTERN.search(preceding):
+            return True
+        following = text[match.end():match.end() + 40]
+        if OPTIONAL_NEARBY_PATTERN.search(preceding) or OPTIONAL_NEARBY_PATTERN.search(following):
+            return True
+        return False
+
     def find_range(self, text: str) -> List[Tuple[int, int]]:
         """Finds experience range patterns (e.g. 3-5 years) in text."""
         matches = []
         for m in RANGE_PATTERN.finditer(text):
+            if self._is_subordinate_or_optional(text, m):
+                continue
             try:
                 min_val = self.parse_number(m.group(1))
                 max_val = self.parse_number(m.group(2))
@@ -49,6 +80,8 @@ class ExperienceExtractor(BaseExtractor):
         """Finds experience bound patterns (e.g. 3+ years) in text."""
         matches = []
         for m in PLUS_PATTERN.finditer(text):
+            if self._is_subordinate_or_optional(text, m):
+                continue
             try:
                 val = self.parse_number(m.group(1))
                 matches.append(val)
