@@ -415,15 +415,6 @@ def _load_ai_preferences(candidate_id: str, db) -> tuple[str, str]:
         return "Professional", "Balanced"
 
 
-def _has_cover_letter_access(current_user: "CurrentUser", db) -> bool:
-    """Pro-tier gate. Delegates to src.billing.access.has_paid_access --
-    the same check now also used by the auto-apply pipeline to decide
-    whether to generate a cover letter for a real submission, so this and
-    that stay in sync instead of drifting as two copies of the same query."""
-    from src.billing.access import has_paid_access
-    return has_paid_access(current_user.user_id, current_user.email)
-
-
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
@@ -492,6 +483,15 @@ def tailor_resume(request: TailorRequest, db=Depends(get_db), current_user: Curr
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="candidate_id does not match the authenticated user")
     logger.info("POST /resume/tailor — candidate=%s, job=%s", request.candidate_id, request.job_id or "(pasted JD)")
 
+    from src.billing.usage_limits import enforce_quota, record_usage, UsageLimitExceeded
+    try:
+        enforce_quota(current_user.user_id, current_user.email, "resume_tailor")
+    except UsageLimitExceeded as exc:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Free plan is limited to {exc.limit} resume tailorings per day. Upgrade to Pro for unlimited, or try again tomorrow.",
+        )
+
     base_tex = _load_base_tex(request.candidate_id, db)
     effective_job_id, jd_profile = _resolve_jd_profile(request, db)
     candidate_memory = _load_candidate_memory(request.candidate_id, db)
@@ -528,6 +528,8 @@ def tailor_resume(request: TailorRequest, db=Depends(get_db), current_user: Curr
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Tailoring engine error: {str(exc)}",
         )
+
+    record_usage(current_user.user_id, current_user.email, "resume_tailor")
 
     return TailorResponse(
         job_id=result.job_id,
@@ -649,13 +651,16 @@ def generate_cover_letter(
 ):
     """
     Generate a short, tailored, Problem-Solution-format cover letter for a
-    specific job. Pro-tier feature — costs a real LLM call per use, unlike
-    the deterministic zero-LLM base resume generator.
+    specific job. Free tier gets a limited number per day (see
+    src.billing.usage_limits); Pro tier is unlimited.
     """
-    if not _has_cover_letter_access(current_user, db):
+    from src.billing.usage_limits import enforce_quota, record_usage, UsageLimitExceeded
+    try:
+        enforce_quota(current_user.user_id, current_user.email, "cover_letter")
+    except UsageLimitExceeded as exc:
         raise HTTPException(
-            status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail="Cover letter generation is a Pro feature. Upgrade to generate one.",
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Free plan is limited to {exc.limit} cover letters per day. Upgrade to Pro for unlimited, or try again tomorrow.",
         )
     # Same authorization gap as /tailor -- being a paying user isn't the
     # same as being authorized for the specific candidate_id in the body.
@@ -700,6 +705,8 @@ def generate_cover_letter(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Cover letter generation failed — either no resume facts are on file yet (save your profile first) or the LLM call failed. Nothing was charged.",
         )
+
+    record_usage(current_user.user_id, current_user.email, "cover_letter")
 
     return CoverLetterResponse(
         job_id=effective_job_id,
