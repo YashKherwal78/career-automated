@@ -128,7 +128,7 @@ JAKE_LATEX_TEMPLATE = r"""
 \resumeSubHeadingListStart
 {% for proj in resume.projects %}
   \resumeProjectHeading
-    {\textbf{ {{ proj.title }} }{% if proj.technologies %} $|$ \emph{ {{ proj.technologies | join(' $\\bullet$ ') }} }{% endif %}}{ {{ proj.date }} }
+    {\textbf{ {{ proj.title }} }{% if proj.technologies %} $|$ \emph{ {{ proj.technologies | join(' $|$ ') }} }{% endif %}}{ {{ proj.date }} }
   {% if proj.bullets %}
   \resumeItemListStart
     {% for b in proj.bullets %}
@@ -143,7 +143,7 @@ JAKE_LATEX_TEMPLATE = r"""
 \begin{itemize}[leftmargin=0.15in, label={}]
   \small{\item{
     {% for cat in resume.skill_categories %}
-    \textbf{ {{ cat.category_name }}:} {{ cat.skills | join(' $\\bullet$ ') }} {% if not loop.last %}\\ \vspace{-2pt} {% endif %}
+    \textbf{ {{ cat.category_name }}:} {{ cat.skills | join(' $|$ ') }} {% if not loop.last %}\\ \vspace{-2pt} {% endif %}
     {% endfor %}
   }}
 \end{itemize}
