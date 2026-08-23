@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../lib/auth';
+import { blockOnProductionHost } from '../lib/internalOnlyGuard';
 import { Sidebar } from '../components/mission-control/layout/Sidebar';
 import { Overview } from '../components/mission-control/overview/Overview';
 import { Connectors } from '../components/mission-control/connectors/Connectors';
@@ -16,6 +17,7 @@ import { LogViewer } from '../components/mission-control/log-viewer/LogViewer';
 import { ShieldAlert } from 'lucide-react';
 
 export const Route = createFileRoute('/mission-control')({
+  beforeLoad: blockOnProductionHost,
   component: MissionControlWorkspace,
 });
 

@@ -1,1 +1,1 @@
-import { createFileRoute } from '@tanstack/react-router'; export const Route = createFileRoute('/mission-control/company-replay')({ component: () => <div className='p-6 text-zinc-400'>Company Replay coming soon...</div> });
+import { createFileRoute } from '@tanstack/react-router'; import { blockOnProductionHost } from '../../lib/internalOnlyGuard'; export const Route = createFileRoute('/mission-control/company-replay')({ beforeLoad: blockOnProductionHost, component: () => <div className='p-6 text-zinc-400'>Company Replay coming soon...</div> });
