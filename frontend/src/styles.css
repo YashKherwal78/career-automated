@@ -226,6 +226,42 @@
   animation: float-slow 6s ease-in-out infinite;
 }
 
+/* Dashboard "matching you with jobs" loading state (index.tsx) */
+@keyframes ds-shimmer-sweep {
+  0% { background-position: -150% 0; }
+  100% { background-position: 250% 0; }
+}
+
+@utility animate-shimmer-sweep {
+  animation: ds-shimmer-sweep 2.4s ease-in-out infinite;
+}
+
+@keyframes ds-pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.7); opacity: 0.35; }
+}
+
+@utility animate-pulse-dot {
+  animation: ds-pulse-dot 1.6s ease-in-out infinite;
+}
+
+@keyframes ds-status-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@utility animate-status-in {
+  animation: ds-status-in 0.4s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-shimmer-sweep,
+  .animate-pulse-dot,
+  .animate-status-in {
+    animation: none !important;
+  }
+}
+
 /*
  * Design-system tokens from the CareerAutomated handoff
  * (design_handoff_careerautomated/_ds/.../tokens/{colors,typography,spacing,effects}.css).
