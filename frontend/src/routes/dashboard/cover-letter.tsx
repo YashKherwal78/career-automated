@@ -390,14 +390,14 @@ function CoverLetterPage() {
             >
               The job you're applying to
             </label>
-            <div className="flex" style={{ gap: 8, marginBottom: 10 }}>
+            <div className="flex flex-col sm:flex-row" style={{ gap: 8, marginBottom: 10 }}>
               <input
                 type="text"
                 value={linkedinUrl}
                 onChange={(e) => setLinkedinUrl(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && extractFromLink()}
-                placeholder="Paste a LinkedIn job link instead…"
-                className="flex-1 bg-transparent outline-none"
+                placeholder="Paste a job link (LinkedIn, Greenhouse, Lever, Ashby…)"
+                className="flex-1 bg-transparent outline-none w-full sm:w-auto"
                 style={{
                   fontSize: 13.5,
                   color: "var(--ds-text-primary)",
@@ -405,15 +405,16 @@ function CoverLetterPage() {
                   borderRadius: "var(--ds-radius-md)",
                   padding: "10px 12px",
                   boxSizing: "border-box",
+                  minWidth: 0,
                 }}
               />
               <button
                 type="button"
                 onClick={extractFromLink}
                 disabled={extracting || !linkedinUrl.trim()}
-                className="flex-shrink-0"
+                className="flex-shrink-0 w-full sm:w-auto"
                 style={{
-                  padding: "0 16px",
+                  padding: "10px 16px",
                   borderRadius: "var(--ds-radius-md)",
                   border: "1px solid var(--ds-border-default)",
                   background: extracting ? "var(--ds-cream-300)" : "var(--ds-ink-900)",
