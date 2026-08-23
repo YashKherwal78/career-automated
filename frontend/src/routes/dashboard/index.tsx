@@ -13,6 +13,7 @@ import { useDashboard } from "../../components/dashboard/DashboardContext";
 import { CareerPreferencesModal, type CareerPreferences } from "../../components/dashboard/CareerPreferencesModal";
 import { UpgradeModal } from "../../components/dashboard/UpgradeModal";
 import { CompanyLogo } from "../../components/dashboard/CompanyLogo";
+import { MatchingAnimation } from "../../components/dashboard/MatchingAnimation";
 
 export const Route = createFileRoute("/dashboard/")({
   component: DashboardHome,
@@ -376,16 +377,7 @@ function DashboardHome() {
         )}
 
         {isLoading ? (
-          <div
-            style={{
-              padding: "40px 0",
-              textAlign: "center",
-              color: "var(--ds-ink-450)",
-              fontSize: 13.5,
-            }}
-          >
-            Loading your matches…
-          </div>
+          <MatchingAnimation />
         ) : error ? (
           <div
             style={{
