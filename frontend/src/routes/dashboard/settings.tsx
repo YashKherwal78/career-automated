@@ -27,7 +27,7 @@ const DEFAULT_SETTINGS: SettingsValues = {
   preferredRole: "Software Engineer",
   experienceLevel: "Mid-level",
   location: "Remote",
-  salary: "₹15L+",
+  salary: "₹10L+",
   workAuth: "Indian citizen",
   resumeStyle: "Modern",
   tailoringAggro: "Balanced",
@@ -108,7 +108,22 @@ function useSettingsPersistence(session: { access_token?: string } | null | unde
         volunteer: base.volunteer || [],
         publications: base.publications || [],
         awards: base.awards || [],
-        career_preferences: base.career_preferences || {},
+        // Also write into career_preferences -- the ONLY place the matching
+        // engine actually reads from (CandidateProfile.from_profile_data(),
+        // backend/src/discovery/jie/candidate_profile.py). Confirmed live
+        // (2026-08-25): settings.career.* was saving correctly but nothing
+        // in matching ever read that key, so none of these fields affected
+        // job results despite looking like they should. Keep settings.career
+        // too (below) since other UI reads from there -- this is additive,
+        // not a replacement.
+        career_preferences: {
+          ...(base.career_preferences || {}),
+          locations: next.location,
+          work_type: next.location,
+          desired_role: next.preferredRole,
+          min_salary: next.salary,
+          experience_level: next.experienceLevel,
+        },
         ai_instructions: base.ai_instructions || "",
         custom_sections: base.custom_sections || [],
         settings: {

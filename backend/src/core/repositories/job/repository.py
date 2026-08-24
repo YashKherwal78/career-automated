@@ -305,10 +305,27 @@ class JobRepository(BaseRepository, IJobRepository):
                         rrf_values = [j.get("rrf_score", 0.0) for j in passed]
                         rrf_max, rrf_min = max(rrf_values), min(rrf_values)
                         rrf_spread = rrf_max - rrf_min
+                    # Soft signal, not a filter -- see _SQL_ENTRY_LEVEL_TITLE_PATTERN's
+                    # own docstring for exactly what it does and doesn't match.
+                    # \y (Postgres word-boundary) -> \b (Python) since this runs
+                    # against already-fetched job dicts here, not in SQL. Guarded
+                    # against _ENTRY_LEVEL_SENIOR_GUARD_PATTERN so "Senior SDE"
+                    # doesn't get boosted just for containing "SDE" -- tested
+                    # live (2026-08-25) against 30 real title shapes.
+                    entry_level_re = re.compile(
+                        self._SQL_ENTRY_LEVEL_TITLE_PATTERN.replace(r"\y", r"\b"), re.IGNORECASE
+                    )
+                    entry_level_guard_re = re.compile(
+                        self._ENTRY_LEVEL_SENIOR_GUARD_PATTERN.replace(r"\y", r"\b"), re.IGNORECASE
+                    )
                     for j in passed:
                         raw_rrf = j.get("rrf_score", 0.0)
                         normalized = (raw_rrf - rrf_min) / rrf_spread if rrf_spread > 0 else 1.0
-                        j["job_score"] = round(40 + normalized * 60)
+                        score = 40 + normalized * 60
+                        title_text = j.get("title") or ""
+                        if entry_level_re.search(title_text) and not entry_level_guard_re.search(title_text):
+                            score = min(100, score + 3)
+                        j["job_score"] = round(score)
                         j["score_breakdown"] = j.get("matched_terms") or []
                         j["match_score"] = j["job_score"]
                         j["priority_score"] = 0.0
@@ -487,6 +504,36 @@ class JobRepository(BaseRepository, IJobRepository):
         r"\yavp\y|\ygm\y|\yvice president\y|\yhead\y|\ymanager\y|\yarchitect\y"
     )
     _SQL_INTERN_TITLE_PATTERN = r"\yintern\y|\yinternship\y|\ytrainee\y|\yco-op\y|\ycoop\y"
+    # Soft signal only -- a small job_score boost (see get_jobs' scoring
+    # block), never a filter condition. Explicitly non-exhaustive: covers
+    # common numbered/associate-level title conventions (SDE1/SDE 1, SWE/
+    # SWE I, AMTS/MTS -- Amazon/Meta associate-track titles, APM/Associate
+    # Product Manager, entry-track "Engineer I"/"Analyst I"/"Developer I")
+    # without claiming to enumerate every company's scheme. Deliberately
+    # does NOT include bare "AI Engineer"/"Software Engineer"/"Product
+    # Manager" -- those span every seniority level on their own and would
+    # boost senior postings just as much as entry ones, defeating the point.
+    # SDE/SWE need a negative lookahead, not just an optional "1" -- tested
+    # live against real titles (2026-08-25): a naive `swe\s?1?` matched
+    # "SWE 2" and "SWE II" too, since the optional pieces let the engine
+    # skip past the actual level number entirely. The lookahead explicitly
+    # rejects a following digit 2-9 or roman numeral II+ instead.
+    _SQL_ENTRY_LEVEL_TITLE_PATTERN = (
+        r"\y(sde|swe)(?!\s?(\d|ii|iii|iv|v|vi)\y)\s?|\y(sde|swe)\s?1(?!\d)\y|"
+        r"\yamts\y|\ymts\y|\yapm\y|\yassociate product manager\y|"
+        r"\y(engineer|analyst|developer)\s+i\y"
+    )
+    # Used only to guard the entry-level boost above against titles that
+    # are ALSO senior (e.g. "Senior SDE") -- deliberately narrower than
+    # _SQL_SENIOR_TITLE_PATTERN (excludes bare "manager"), matching
+    # HardRejectFilter's own senior_keywords reasoning: "Associate Product
+    # Manager"/"Product Manager" are legitimate entry-level titles, and a
+    # bare "manager" check would wrongly disqualify APM from its own boost.
+    _ENTRY_LEVEL_SENIOR_GUARD_PATTERN = (
+        r"\ysenior\y|\ysr\y|\ystaff\y|\yprincipal\y|\ylead\y|\ydirector\y|"
+        r"\yvp\y|\yvice president\y|\yhead of\y|"
+        r"\yengineering manager\y|\ytechnical manager\y"
+    )
     # Max postings from any one company in a single hybrid-search result
     # page -- see get_jobs_by_hybrid_search's "capped" CTE. A staffing/
     # defense contractor with many genuinely-separate but similarly-worded
@@ -991,6 +1038,32 @@ class JobRepository(BaseRepository, IJobRepository):
                 profile_data = raw or {}
             query_text = candidate_embedding_text(profile_data) if profile_data else ""
 
+            # Auto-derive max_experience_years from the candidate's own work
+            # history when the caller doesn't pass one explicitly, instead of
+            # leaving the SQL-level experience pre-filter inactive by
+            # default. Confirmed live (2026-08-25): the settings page's
+            # free-text "Experience level" field doesn't reach here at all
+            # today, so this was never populated for real traffic.
+            # Deliberately reuses CandidateProfile._estimate_years_experience()
+            # -- the SAME calculation HardRejectFilter's Rule 5 (years-of-
+            # experience reject) and Rule 3 (senior-title reject, gated on
+            # years_experience < 5) already use -- rather than introducing a
+            # second, differently-sourced number that could disagree with
+            # those existing rules. This just moves the same criterion
+            # earlier (into the vec_topk/lex_topk CTEs below, before HNSW/
+            # BM25 rank anything) for jobs it can cheaply exclude up front;
+            # HardRejectFilter's Rules 3/5 still run afterward unchanged as
+            # the authoritative check -- this is a performance pre-filter,
+            # not a replacement.
+            if max_experience_years is None and profile_data:
+                try:
+                    from src.discovery.jie.candidate_profile import CandidateProfile as _CP
+                    max_experience_years = float(
+                        _CP._estimate_years_experience(profile_data.get("experience") or [])
+                    )
+                except Exception as e:
+                    logger.warning(f"experience auto-derivation failed, no pre-filter applied: {e}")
+
             # Candidate-aware term selection (candidate_term_selection.py)
             # replaces the old "ORDER BY length(lexeme) DESC LIMIT 8" SQL
             # heuristic -- see that module's docstring for the real failure
@@ -1016,6 +1089,20 @@ class JobRepository(BaseRepository, IJobRepository):
             candidate_pool_limit = conn.dialect.create_limit(500)
             exp_clause = ""
             exp_params: list = []
+            # NOTE (2026-08-24): tried a hybrid "n.is_senior = false OR
+            # (n.is_senior IS NULL AND title !~* pattern)" here to use the
+            # new indexed column (migration 049) while the backfill is
+            # still in progress. Measured live: this OR shape is too
+            # complex for Postgres's planner to trust an index-based plan
+            # on at ~7% backfill coverage -- it fell back to a parallel
+            # sequential scan and made the India+remote combined case
+            # SLOWER (37s) than the original regex-only version (7.8s), not
+            # faster. A pure `is_senior = false` with no OR fallback
+            # measured under 1s, so the columns/indexes themselves are
+            # fine -- the OR fallback is what breaks planning. Reverted to
+            # plain regex until the backfill is much further along, at
+            # which point this should become a clean, OR-free swap instead
+            # of a gradual hybrid rollout.
             if max_experience_years is not None:
                 exp_clause = (
                     f" AND ((n.experience_min IS NOT NULL AND n.experience_min <= {p})"
@@ -1071,6 +1158,14 @@ class JobRepository(BaseRepository, IJobRepository):
                     # same major-cities pattern get_unscored_job_batch
                     # already relies on for this exact reason, instead of
                     # a second, narrower ad-hoc definition.
+                    #
+                    # NOTE (2026-08-24): see the is_senior note above --
+                    # the same OR-hybrid attempt for is_india_eligible
+                    # measured WORSE (37s) than this plain regex (7.8s in
+                    # the original audit) at ~7% backfill coverage. Reverted
+                    # until backfill is much further along, then this
+                    # should become a clean is_india_eligible = true swap
+                    # with no OR fallback, not a gradual hybrid.
                     exp_clause += f" AND n.location ~* {p}"
                     exp_params.append(self._SQL_INDIA_LOCATION_PATTERN)
                 else:
