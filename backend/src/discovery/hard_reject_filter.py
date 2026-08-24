@@ -61,6 +61,7 @@ class HardRejectFilter:
         desc = str(job.get("description") or job.get("job_description") or "")
         desc_lower = desc.lower()
         location = str(job.get("location") or "").lower()
+        remote_type = str(job.get("remote_type") or "").lower()
         apply_url = str(job.get("apply_url") or job.get("application_url") or "")
         status = str(job.get("status") or "ACTIVE").upper()
 
@@ -177,6 +178,25 @@ class HardRejectFilter:
             )
 
         # ── Rule 6: Location mismatch ────────────────────────────────────────
+        # A job with genuinely NO location or remote_type stored (confirmed
+        # real, 2026-08-25: a "USA, Hybrid" Capgemini posting had location=''
+        # and remote_type='' in our own data despite the actual listing
+        # stating a real onsite/hybrid location -- a scraping gap, not a
+        # remote job) previously skipped this whole rule via `if location:`,
+        # silently KEEPING a job we have zero geographic signal for. Safe
+        # when the candidate never stated a location preference (nothing to
+        # violate); wrong once they have (career_preferences.locations),
+        # since "we don't know" must not silently mean "assume it's fine" --
+        # only applies when the candidate actually expressed a preference,
+        # so a candidate with no stated preference is unaffected.
+        if not location and not remote_type and profile.preferred_locations:
+            return HardRejectResult(
+                "REJECT",
+                reason="Location unknown -- cannot verify against stated preference",
+                field="location",
+                job_value=None,
+                candidate_value=profile.preferred_locations,
+            )
         if location:
             # Indian city/country signals — use word boundaries to avoid
             # false positives like "Indianapolis", "Indiana, United States"
@@ -218,6 +238,24 @@ class HardRejectFilter:
                         "sydney", "melbourne", "stockholm", "warsaw",
                         "zurich", "paris", "amsterdam", "dublin",
                         "singapore", "hong kong",
+                        # Confirmed real (2026-08-25): "Remote, Poland"/
+                        # "Mexico, Remote"/"Colombia, Remote" postings were
+                        # slipping through as if unrestricted-global-remote
+                        # -- this list was US/EU-city-heavy and missed most
+                        # other countries entirely. Still not exhaustive
+                        # (no list of world countries is), but covers the
+                        # ones actually observed in live data plus common
+                        # LatAm/EU/APAC remote-hiring markets.
+                        "mexico", "colombia", "brazil", "argentina", "chile",
+                        "peru", "poland", "portugal", "spain", "italy",
+                        "netherlands", "belgium", "switzerland", "austria",
+                        "sweden", "norway", "denmark", "finland", "ireland",
+                        "romania", "ukraine", "czech republic", "hungary",
+                        "philippines", "vietnam", "indonesia", "malaysia",
+                        "thailand", "south africa", "nigeria", "kenya",
+                        "egypt", "israel", "uae", "united arab emirates",
+                        "saudi arabia", "new zealand", "china", "south korea",
+                        "taiwan",
                     ]
                     is_geo_restricted = any(sig in location for sig in geo_restrict_signals)
                     if is_geo_restricted:
