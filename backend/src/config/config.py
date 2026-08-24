@@ -8,6 +8,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 class Config:
     BASE_DIR = BASE_DIR
+    # Gates computing/storing user_career_profiles.structured_profile
+    # (migration 048, discovery/candidate_understanding/role_profiles.py) at
+    # profile-save time. Nothing downstream reads structured_profile yet --
+    # this flag exists so computation itself can be instantly disabled
+    # (rollback) without a code change if it ever misbehaves.
+    ENABLE_STRUCTURED_CANDIDATE_PROFILE = os.getenv("ENABLE_STRUCTURED_CANDIDATE_PROFILE", "true").lower() == "true"
     GROQ_KEYS = [
         os.getenv("GROQ_API_KEY"),  # legacy support
         os.getenv("GROQ_API_KEY_1"),
