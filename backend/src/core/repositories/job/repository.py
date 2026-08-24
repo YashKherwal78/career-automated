@@ -805,16 +805,57 @@ class JobRepository(BaseRepository, IJobRepository):
         return "[" + ",".join(repr(float(x)) for x in vec) + "]"
 
     def get_jobs_missing_embedding(self, limit: int = 500, tx=None) -> List[dict]:
+        """India-eligible jobs first, then everything else (2026-08-25).
+
+        Two plain (non-ORDER BY) queries, not one query with `ORDER BY
+        (regex match) DESC` -- an ORDER BY on a computed expression forces
+        Postgres to evaluate that expression across and sort the ENTIRE
+        remaining `embedding IS NULL` backlog (hundreds of thousands of
+        rows) on every single call from a loop that runs continuously.
+        Each of these two queries instead just filters with a LIMIT, which
+        lets Postgres stop as soon as it's found enough rows -- confirmed
+        live, ~20-230ms per call, not meaningfully different from the old
+        unprioritized query's own ~650ms.
+
+        Why prioritize India at all: get_jobs_by_hybrid_search's vector
+        leg has a real recall gap for India-filtered candidates (pgvector's
+        HNSW graph walk finds few India-eligible rows before its ef_search
+        budget runs out, since embedding-space proximity has nothing to do
+        with geography) -- getting India jobs embedded sooner directly
+        shrinks that gap for the platform's primary candidate base, without
+        waiting on the full ~1.35M-row backlog. Confirmed live (2026-08-25):
+        15,064 ACTIVE India-eligible jobs still had no embedding at time of
+        writing -- small enough to clear in minutes once prioritized,
+        instead of being scattered arbitrarily across the remaining
+        multi-hour full-corpus backfill.
+        """
         with self.transaction() as conn:
+            p = conn.dialect.placeholder()
             batch_limit = conn.dialect.create_limit(limit)
-            c = conn.execute(
+            india_c = conn.execute(
                 f"""
                 SELECT job_id, title, description FROM normalized_jobs
                 WHERE status = 'ACTIVE' AND embedding IS NULL
+                  AND (location ~* {p} OR location ~ {p})
                 {batch_limit}
-                """
+                """,
+                (self._SQL_INDIA_LOCATION_PATTERN, self._SQL_INDIA_COUNTRY_CODE_SUFFIX_PATTERN),
             )
-            return [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
+            rows = [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in india_c.description], row)) for row in india_c.fetchall()]
+            remaining = limit - len(rows)
+            if remaining > 0:
+                fallback_limit = conn.dialect.create_limit(remaining)
+                c = conn.execute(
+                    f"""
+                    SELECT job_id, title, description FROM normalized_jobs
+                    WHERE status = 'ACTIVE' AND embedding IS NULL
+                      AND NOT COALESCE(location ~* {p} OR location ~ {p}, false)
+                    {fallback_limit}
+                    """,
+                    (self._SQL_INDIA_LOCATION_PATTERN, self._SQL_INDIA_COUNTRY_CODE_SUFFIX_PATTERN),
+                )
+                rows.extend([dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()])
+            return rows
 
     def get_jobs_missing_embedding_v2(self, limit: int = 500, tx=None) -> List[dict]:
         """Same idea as get_jobs_missing_embedding, targeting the parallel
