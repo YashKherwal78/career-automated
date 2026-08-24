@@ -146,6 +146,28 @@ def update_career_profile(
             )
             conn.commit()
 
+        # Additive, best-effort: compute the structured capability/intent
+        # representation (discovery/candidate_understanding) alongside the
+        # flat profile_data above. Gated behind a flag purely so computation
+        # can be disabled instantly without a deploy if it ever misbehaves --
+        # nothing downstream reads this column yet, so a failure here must
+        # never block saving profile_data itself.
+        from src.config.config import Config
+        if Config.ENABLE_STRUCTURED_CANDIDATE_PROFILE:
+            try:
+                from src.discovery.candidate_understanding.role_profiles import build_structured_profile
+                structured = build_structured_profile(payload.dict())
+                with get_connection() as conn:
+                    cursor = conn.cursor()
+                    cursor.execute(
+                        "UPDATE public.user_career_profiles SET structured_profile = %s WHERE user_id = %s",
+                        (json.dumps(structured), current_user.user_id),
+                    )
+                    conn.commit()
+            except Exception as structured_err:
+                import logging
+                logging.getLogger("candidate").warning(f"Structured profile computation failed: {structured_err}")
+
         # Best-effort: recompute the semantic embedding used for vector job
         # search whenever the profile changes. Not fatal if it fails (e.g.
         # cold model load hiccup) — the embedding backfill/scoring path can

@@ -6,6 +6,9 @@ from typing import List, Tuple
 from src.discovery.models import CanonicalJob
 from src.core.repositories.base import BaseRepository
 from src.core.repositories.interfaces import IJobRepository
+from src.system.logger import setup_logger
+
+logger = setup_logger("JobRepository")
 
 class JobRepository(BaseRepository, IJobRepository):
     # Workday-sourced jobs store a bare company_id ("revvity") while
@@ -614,6 +617,20 @@ class JobRepository(BaseRepository, IJobRepository):
                 profile_data = raw or {}
             query_text = candidate_embedding_text(profile_data) if profile_data else ""
 
+            # See get_jobs_by_hybrid_search's identical fix for why: swaps
+            # query_text for a short, already-curated term list before the
+            # unchanged SQL below re-tokenizes/caps it -- harmless no-op
+            # pass-through since there are already <=8 terms. Falls back to
+            # the raw profile text on any error.
+            if profile_data:
+                try:
+                    from src.discovery.candidate_term_selection import select_bm25_terms
+                    curated_terms = select_bm25_terms(profile_data, conn)
+                    if curated_terms:
+                        query_text = " ".join(curated_terms)
+                except Exception as e:
+                    logger.warning(f"candidate_term_selection failed, falling back to raw profile text: {e}")
+
             candidate_pool_limit = conn.dialect.create_limit(500)
             boilerplate_sql = ", ".join(f"'{w}'" for w in self._BM25_BOILERPLATE_STEMS)
 
@@ -974,6 +991,27 @@ class JobRepository(BaseRepository, IJobRepository):
                 profile_data = raw or {}
             query_text = candidate_embedding_text(profile_data) if profile_data else ""
 
+            # Candidate-aware term selection (candidate_term_selection.py)
+            # replaces the old "ORDER BY length(lexeme) DESC LIMIT 8" SQL
+            # heuristic -- see that module's docstring for the real failure
+            # this fixes (it was picking the candidate's own project name
+            # over real skills). Deliberately does NOT touch the lex_query
+            # CTE's SQL below at all: query_text is simply swapped for a
+            # short, already-curated list of good terms before it reaches
+            # that unchanged SQL, which then just re-tokenizes and re-caps
+            # at 8 -- a harmless no-op pass-through since there are already
+            # <=8 terms. Falls back to the original raw profile text (old
+            # behavior, unchanged) on any error, so a bug here degrades
+            # gracefully instead of breaking search.
+            if profile_data:
+                try:
+                    from src.discovery.candidate_term_selection import select_bm25_terms
+                    curated_terms = select_bm25_terms(profile_data, conn)
+                    if curated_terms:
+                        query_text = " ".join(curated_terms)
+                except Exception as e:
+                    logger.warning(f"candidate_term_selection failed, falling back to raw profile text: {e}")
+
             json_company = json_extract('n.raw_payload_json', '$.company')
             candidate_pool_limit = conn.dialect.create_limit(500)
             exp_clause = ""
@@ -1310,6 +1348,27 @@ class JobRepository(BaseRepository, IJobRepository):
                     raw = json.loads(raw) if raw else {}
                 profile_data = raw or {}
             query_text = candidate_embedding_text(profile_data) if profile_data else ""
+
+            # Candidate-aware term selection (candidate_term_selection.py)
+            # replaces the old "ORDER BY length(lexeme) DESC LIMIT 8" SQL
+            # heuristic -- see that module's docstring for the real failure
+            # this fixes (it was picking the candidate's own project name
+            # over real skills). Deliberately does NOT touch the lex_query
+            # CTE's SQL below at all: query_text is simply swapped for a
+            # short, already-curated list of good terms before it reaches
+            # that unchanged SQL, which then just re-tokenizes and re-caps
+            # at 8 -- a harmless no-op pass-through since there are already
+            # <=8 terms. Falls back to the original raw profile text (old
+            # behavior, unchanged) on any error, so a bug here degrades
+            # gracefully instead of breaking search.
+            if profile_data:
+                try:
+                    from src.discovery.candidate_term_selection import select_bm25_terms
+                    curated_terms = select_bm25_terms(profile_data, conn)
+                    if curated_terms:
+                        query_text = " ".join(curated_terms)
+                except Exception as e:
+                    logger.warning(f"candidate_term_selection failed, falling back to raw profile text: {e}")
 
             json_company = json_extract('n.raw_payload_json', '$.company')
             candidate_pool_limit = conn.dialect.create_limit(500)
