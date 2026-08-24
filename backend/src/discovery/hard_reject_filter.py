@@ -60,7 +60,8 @@ class HardRejectFilter:
         title_lower = title.lower()
         desc = str(job.get("description") or job.get("job_description") or "")
         desc_lower = desc.lower()
-        location = str(job.get("location") or "").lower()
+        location_raw = str(job.get("location") or "")
+        location = location_raw.lower()
         remote_type = str(job.get("remote_type") or "").lower()
         apply_url = str(job.get("apply_url") or job.get("application_url") or "")
         status = str(job.get("status") or "ACTIVE").upper()
@@ -205,8 +206,29 @@ class HardRejectFilter:
                 r"\bhyderabad\b", r"\bchennai\b", r"\bdelhi\b", r"\bncr\b",
                 r"\bgurgaon\b", r"\bgurugram\b", r"\bnoida\b", r"\bkolkata\b",
                 r"\bahmedabad\b", r"\bindia\b",
+                # State names -- confirmed real (2026-08-25): postings like
+                # "Indore, MP, in" / "Jaipur, Rajasthan" / "Kochi, Kerala"
+                # match no city above and no literal "india". Deliberately
+                # excludes "punjab" -- same sample had "Lahore, Punjab,
+                # Pakistan" and other Pakistani cities sharing that state
+                # name, unlike every state below (unique to India).
+                r"\bkarnataka\b", r"\btelangana\b", r"\bkerala\b", r"\brajasthan\b",
+                r"\bgujarat\b", r"\bharyana\b", r"\bbihar\b", r"\bodisha\b",
+                r"\btamil nadu\b", r"\bwest bengal\b", r"\buttar pradesh\b",
+                r"\bmadhya pradesh\b", r"\bandhra pradesh\b",
             ]
             is_india = any(re.search(pat, location) for pat in indian_patterns)
+            if not is_india:
+                # Case-SENSITIVE, against the ORIGINAL (non-lowercased) text
+                # -- confirmed real (2026-08-25): many India postings encode
+                # country as a trailing lowercase ISO code ("Indore, MP,
+                # in"), while every Indiana, US posting sampled uses the
+                # uppercase state abbreviation ("Indianapolis, IN"). That
+                # distinction only exists before .lower() collapses both to
+                # "in" -- same reasoning as repository.py's
+                # _SQL_INDIA_COUNTRY_CODE_SUFFIX_PATTERN, kept as a separate
+                # case-sensitive check here for the same reason.
+                is_india = bool(re.search(r", in$", location_raw))
 
             # If the job is in India, always keep
             if is_india:
