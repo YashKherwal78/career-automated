@@ -543,8 +543,27 @@ class JobRepository(BaseRepository, IJobRepository):
     _HYBRID_PER_COMPANY_CAP = 3
     _SQL_INDIA_LOCATION_PATTERN = (
         r"\ybangalore\y|\ybengaluru\y|\ymumbai\y|\ypune\y|\yhyderabad\y|\ychennai\y|"
-        r"\ydelhi\y|\yncr\y|\ygurgaon\y|\ygurugram\y|\ynoida\y|\ykolkata\y|\yahmedabad\y|\yindia\y"
+        r"\ydelhi\y|\yncr\y|\ygurgaon\y|\ygurugram\y|\ynoida\y|\ykolkata\y|\yahmedabad\y|\yindia\y|"
+        # State names -- confirmed real (2026-08-25): postings like "Indore,
+        # MP, in" / "Jaipur, Rajasthan" / "Kochi, Kerala" have no matching
+        # city above and no literal "india". Deliberately excludes "punjab"
+        # -- confirmed real, same sample: "Lahore, Punjab, Pakistan" and
+        # other Pakistani cities share that state name, and unlike every
+        # state below, Punjab isn't unique to India.
+        r"\ykarnataka\y|\ytelangana\y|\ykerala\y|\yrajasthan\y|\ygujarat\y|"
+        r"\yharyana\y|\ybihar\y|\yodisha\y|\ytamil nadu\y|\ywest bengal\y|"
+        r"\yuttar pradesh\y|\ymadhya pradesh\y|\yandhra pradesh\y"
     )
+    # Case-SENSITIVE on purpose (matched with Postgres's `~`, not `~*`) --
+    # confirmed real (2026-08-25): many India postings encode country as a
+    # trailing lowercase ISO code, e.g. "Indore, MP, in" / "Thane, MH, in"
+    # (960 rows recovered in the embedding-eligible pool alone). Every
+    # Indiana, US posting sampled uses the uppercase state abbreviation
+    # instead ("Indianapolis, IN", "Fort Wayne, IN") -- lowercasing this
+    # pattern to fold into _SQL_INDIA_LOCATION_PATTERN's `~*` match would
+    # collide with exactly that Indiana case, which is why this stays a
+    # separate, case-sensitive OR clause at each call site instead.
+    _SQL_INDIA_COUNTRY_CODE_SUFFIX_PATTERN = r", in$"
     _SQL_REMOTE_LOCATION_PATTERN = r"\yremote\y|\ywork from home\y|\ywfh\y"
 
     # Postgres's ts_rank/ts_rank_cd is NOT true BM25 -- it has no corpus-
@@ -623,10 +642,14 @@ class JobRepository(BaseRepository, IJobRepository):
 
             if preferred_locations is not None:
                 location_clause = (
-                    f"n.location ~* {p} OR n.location ~* {p} "
+                    f"n.location ~* {p} OR n.location ~ {p} OR n.location ~* {p} "
                     f"OR n.location IS NULL OR n.location = ''"
                 )
-                params.extend([self._SQL_INDIA_LOCATION_PATTERN, self._SQL_REMOTE_LOCATION_PATTERN])
+                params.extend([
+                    self._SQL_INDIA_LOCATION_PATTERN,
+                    self._SQL_INDIA_COUNTRY_CODE_SUFFIX_PATTERN,
+                    self._SQL_REMOTE_LOCATION_PATTERN,
+                ])
                 preferred = [pl.strip() for pl in preferred_locations if pl and pl.strip()]
                 if preferred:
                     location_clause += f" OR n.location ILIKE ANY({p})"
@@ -987,18 +1010,42 @@ class JobRepository(BaseRepository, IJobRepository):
         posted_within_days: int = None, tx=None
     ) -> List[dict]:
         """
-        Reciprocal rank fusion (k=60, same as the RAG system's hybrid
-        retrieval) of two independent rankings:
-          - vector: cosine similarity, same as get_jobs_by_vector_similarity
-          - lexical: BM25-style full-text search against search_vector
-            (migration 044), using the candidate's own profile text as an
-            OR-query of its distinct terms (via tsvector_to_array) rather
-            than plainto_tsquery's implicit AND -- no job shares literally
-            every word of a full profile, but ts_rank still rewards jobs
-            that share MORE and RARER terms, the same IDF-driven behavior
-            real BM25 has. This is what recovers exact/rare-term matches
-            (a specific tool, framework, certification) that pure semantic
-            similarity blurs into a general topical neighborhood.
+        Two-stage retrieve-then-rerank, NOT independent-leg RRF fusion
+        (changed 2026-08-25 -- see NOTE below for why):
+          1. vector: cosine similarity ANN search generates a top-1000
+             candidate pool (same embedding as get_jobs_by_vector_similarity).
+          2. lexical: BM25-style full-text search (ts_rank_cd against
+             search_vector, migration 044) re-scores ONLY those same 1000
+             job_ids -- using the candidate's own profile text as an
+             OR-query of its distinct terms (via tsvector_to_array) rather
+             than plainto_tsquery's implicit AND -- no job shares literally
+             every word of a full profile, but ts_rank still rewards jobs
+             that share MORE and RARER terms, the same IDF-driven behavior
+             real BM25 has. This is what recovers exact/rare-term matches
+             (a specific tool, framework, certification) that pure semantic
+             similarity blurs into a general topical neighborhood.
+          3. Final score is still RRF (k=60) over the vector-rank and
+             lex-rank *within that shared 1000-job pool*, then capped to
+             the top `k` (default 500) after the per-company cap below.
+
+        NOTE (2026-08-25): the OLD design ran BM25 as its own independent
+        leg -- a full GIN-indexed scan across the whole ~1.35M-row ACTIVE
+        corpus, ranking every matched row by ts_rank_cd before its own
+        LIMIT 500. Confirmed live that scan alone cost 12-27s under normal
+        load (worse under lock contention / stale planner stats -- see
+        CLAUDE.md-adjacent incident notes), even after capping to 8 curated
+        terms and bumping work_mem to avoid a lossy bitmap re-check.
+        Rescoring only the vector leg's already-fetched 1000 job_ids is a
+        primary-key join, not a corpus-wide scan -- expected to bring the
+        lexical leg down to double-digit milliseconds, since it does zero
+        additional index/heap scanning over normalized_jobs (search_vector
+        for those 1000 rows is already fetched as part of vec_topk itself).
+        Recall tradeoff: a job that ONLY the lexical leg would have
+        surfaced (strong exact-term match, poor semantic similarity) is no
+        longer reachable if it falls outside the vector leg's top 1000 --
+        accepted deliberately, since vector recall at k=1000 against a
+        candidate's full profile embedding is generally broad enough to
+        contain anything BM25 would want to promote from within it.
 
         include_interns=False excludes titles matching
         _SQL_INTERN_TITLE_PATTERN, same shape as the experience-based
@@ -1086,7 +1133,11 @@ class JobRepository(BaseRepository, IJobRepository):
                     logger.warning(f"candidate_term_selection failed, falling back to raw profile text: {e}")
 
             json_company = json_extract('n.raw_payload_json', '$.company')
-            candidate_pool_limit = conn.dialect.create_limit(500)
+            # 1000, not 500 -- this is now the ONLY retrieval-leg pool
+            # (BM25 re-ranks within it rather than pulling its own
+            # independent 500), so it needs headroom above the final `k`
+            # the caller actually gets back after the per-company cap.
+            vec_pool_limit = conn.dialect.create_limit(1000)
             exp_clause = ""
             exp_params: list = []
             # NOTE (2026-08-24): tried a hybrid "n.is_senior = false OR
@@ -1166,8 +1217,18 @@ class JobRepository(BaseRepository, IJobRepository):
                     # until backfill is much further along, then this
                     # should become a clean is_india_eligible = true swap
                     # with no OR fallback, not a gradual hybrid.
-                    exp_clause += f" AND n.location ~* {p}"
-                    exp_params.append(self._SQL_INDIA_LOCATION_PATTERN)
+                    #
+                    # Second, case-SENSITIVE `~` clause (2026-08-25): catches
+                    # the lowercase ISO-country-code suffix format ("Indore,
+                    # MP, in") the case-insensitive pattern above can't
+                    # safely include -- see _SQL_INDIA_COUNTRY_CODE_SUFFIX_
+                    # PATTERN's own comment for why this can't just be
+                    # folded into the `~*` pattern (Indiana, US collision).
+                    exp_clause += f" AND (n.location ~* {p} OR n.location ~ {p})"
+                    exp_params.extend([
+                        self._SQL_INDIA_LOCATION_PATTERN,
+                        self._SQL_INDIA_COUNTRY_CODE_SUFFIX_PATTERN,
+                    ])
                 else:
                     # Word-boundary regex, not a plain substring ILIKE --
                     # confirmed real: filtering on "India" matched
@@ -1255,11 +1316,16 @@ class JobRepository(BaseRepository, IJobRepository):
                     -- piled up concurrently in pg_stat_activity, one stuck
                     -- for ~4 minutes, pegging Postgres at over 3.5 cores of CPU and
                     -- timing out the dashboard.
-                    SELECT n.job_id, n.embedding <=> {p}::vector AS dist
+                    --
+                    -- search_vector is selected here (2026-08-25) so
+                    -- lex_scored below can score it directly off this same
+                    -- row fetch, instead of a second independent full-
+                    -- corpus lookup -- see lex_scored's own comment.
+                    SELECT n.job_id, n.embedding <=> {p}::vector AS dist, n.search_vector
                     FROM normalized_jobs n
                     WHERE n.status = 'ACTIVE' AND n.embedding IS NOT NULL{exp_clause}
                     ORDER BY n.embedding <=> {p}::vector
-                    {candidate_pool_limit}
+                    {vec_pool_limit}
                 ),
                 vec AS (
                     SELECT job_id, ROW_NUMBER() OVER (ORDER BY dist) AS rnk
@@ -1280,10 +1346,11 @@ class JobRepository(BaseRepository, IJobRepository):
                     -- lexemes correlate with specific technical terms
                     -- (e.g. "langgraph") over generic short ones ("work",
                     -- "team") -- already partly filtered by the boilerplate
-                    -- list, this is the next cut. Vector search still
-                    -- covers broad semantic relevance independently, so
-                    -- this only narrows the keyword-match half of RRF, not
-                    -- overall recall.
+                    -- list, this is the next cut. Still worth keeping now
+                    -- that lex only re-ranks vec_topk's own 1000 rows: a
+                    -- broader OR-query would just be noisier ts_rank_cd
+                    -- input over the same fixed pool, not a cost problem
+                    -- any more, but not a quality win either.
                     SELECT to_tsquery('english', string_agg(lexeme, ' | ')) AS q,
                            ARRAY_AGG(lexeme) AS terms
                     FROM (
@@ -1294,30 +1361,45 @@ class JobRepository(BaseRepository, IJobRepository):
                         LIMIT 8
                     ) distinctive_terms
                 ),
-                lex_topk AS (
-                    -- Same fix as vec_topk above: a plain "ORDER BY ...
-                    -- LIMIT N" (no window function sharing scope with the
-                    -- LIMIT) lets Postgres use a top-N heapsort instead of
-                    -- fully sorting every row matching the GIN @@ filter
-                    -- by ts_rank_cd before any limit can trim it. Missing
-                    -- this exact same fix here (right next to vec_topk)
-                    -- was still the dominant cost even after vec_topk was
-                    -- fixed -- confirmed live, 2026-08-21.
-                    SELECT n.job_id, ts_rank_cd(n.search_vector, lex_query.q) AS rank_score
-                    FROM normalized_jobs n, lex_query
-                    WHERE n.status = 'ACTIVE' AND n.search_vector IS NOT NULL
-                          AND lex_query.q IS NOT NULL AND n.search_vector @@ lex_query.q{exp_clause}
-                    ORDER BY ts_rank_cd(n.search_vector, lex_query.q) DESC
-                    {candidate_pool_limit}
+                lex_scored AS (
+                    -- Re-rank ONLY vec_topk's own 1000 job_ids (2026-08-25),
+                    -- not an independent GIN scan across the whole ACTIVE
+                    -- corpus. search_vector for these rows is already in
+                    -- hand from vec_topk's own SELECT, so this is a plain
+                    -- in-memory rank computation over 1000 rows -- no extra
+                    -- index or heap access against normalized_jobs at all.
+                    -- This is what replaces the old lex_topk CTE, which was
+                    -- the dominant cost of the whole query (12-27s+
+                    -- confirmed live, even after the 8-term cap and a
+                    -- work_mem bump to dodge a lossy bitmap re-check --
+                    -- neither fixes an inherently corpus-wide scan).
+                    -- No search_vector IS NOT NULL / @@ filter here on
+                    -- purpose: a job missing search_vector or matching zero
+                    -- lex terms still belongs in the pool on vector merit
+                    -- alone -- ts_rank_cd degrades to 0 for it via COALESCE,
+                    -- which just pushes it to the bottom of the lex
+                    -- ranking rather than dropping it, mirroring how such a
+                    -- job would have been vector-only under the old design
+                    -- too (it was never eligible for the old lex leg either).
+                    SELECT vec_topk.job_id,
+                           COALESCE(ts_rank_cd(vec_topk.search_vector, lex_query.q), 0) AS rank_score
+                    FROM vec_topk, lex_query
                 ),
                 lex AS (
                     SELECT job_id, ROW_NUMBER() OVER (ORDER BY rank_score DESC) AS rnk
-                    FROM lex_topk
+                    FROM lex_scored
                 ),
                 fused AS (
-                    SELECT COALESCE(vec.job_id, lex.job_id) AS job_id,
-                           COALESCE(1.0 / (60 + vec.rnk), 0) + COALESCE(1.0 / (60 + lex.rnk), 0) AS rrf_score
-                    FROM vec FULL OUTER JOIN lex ON vec.job_id = lex.job_id
+                    -- Plain JOIN, not FULL OUTER (2026-08-25): lex is now
+                    -- derived FROM vec_topk, so its job_id set is always a
+                    -- subset of vec's -- there is no longer a "lex-only"
+                    -- job that vec wouldn't already have. COALESCE/OUTER
+                    -- JOIN scaffolding from the old independent-leg design
+                    -- would be dead weight here, not a correctness need.
+                    SELECT vec.job_id,
+                           (1.0 / (60 + vec.rnk)) + COALESCE(1.0 / (60 + lex.rnk), 0) AS rrf_score
+                    FROM vec
+                    LEFT JOIN lex ON vec.job_id = lex.job_id
                 ),
                 ranked_raw AS (
                     SELECT COALESCE(i.canonical_name, i2.canonical_name, {json_company}, n.company_id) AS canonical_name,
@@ -1368,28 +1450,27 @@ class JobRepository(BaseRepository, IJobRepository):
             # function's ORDER BY and the CTE's own outer ORDER BY -- the
             # latter is required for LIMIT to actually keep the closest
             # rows, since LIMIT without ORDER BY on the CTE's SELECT would
-            # return an arbitrary 500 rows regardless of their computed
+            # return an arbitrary 1000 rows regardless of their computed
             # rnk), with exp_params (max_experience_years + senior pattern,
             # then intern pattern if excluded) sitting between them (inside
-            # the WHERE clause) when present.
+            # the WHERE clause) when present. lex_scored (2026-08-25) has
+            # NO placeholders of its own any more -- it filters nothing,
+            # just scores vec_topk's rows -- so exp_params now appears
+            # exactly ONCE total (in vec_topk), not twice.
             params = (
                 [embedding] + exp_params + [embedding] +  # vec CTE (window + outer ORDER BY)
                 [query_text] +                             # lex_query CTE
-                exp_params +                                # lex CTE
                 [embedding]                                 # final SELECT's vector_similarity
             )
-            # SET LOCAL (transaction-scoped, reverts automatically -- no
-            # lasting server-wide config change) bumps the planner's memory
-            # budget for the lex CTE's bitmap heap scan. Confirmed live,
-            # 2026-08-21: the default work_mem left that scan "lossy" at
-            # the block level (a common multi-term OR'd tsquery can match
-            # 300K+ of the ~1.5M rows), forcing expensive re-checks and
-            # taking ~55s; 256MB avoids the lossy fallback and brings it
-            # to ~18s. Real remaining cost is genuinely reading that many
-            # matching rows off disk -- shared_buffers sizing is a
-            # separate, server-config-level concern beyond what a query
-            # hint can fix, flagged separately rather than changed here.
-            conn.execute("SET LOCAL work_mem = '256MB'")
+            # NOTE (2026-08-25): the work_mem bump this SET LOCAL used to
+            # provide was specifically for the old lex_topk CTE's corpus-
+            # wide bitmap heap scan (a multi-term OR'd tsquery matching
+            # 300K+ rows out of ~1.5M, needing ~256MB to avoid Postgres's
+            # lossy block-level bitmap fallback). lex_scored no longer does
+            # that scan at all -- it's a rank computation over vec_topk's
+            # fixed 1000 rows already in memory -- so this bump has nothing
+            # left to help and was removed rather than left as a stale,
+            # now-unnecessary per-query memory grant.
             c = conn.execute(query, tuple(params))
             return [dict(row) if hasattr(row, 'keys') else dict(zip([col[0] for col in c.description], row)) for row in c.fetchall()]
 
