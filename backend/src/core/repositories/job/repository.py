@@ -1,3 +1,4 @@
+import dataclasses
 import json
 import re
 import sqlite3
@@ -6,6 +7,7 @@ from typing import List, Tuple
 from src.discovery.models import CanonicalJob
 from src.core.repositories.base import BaseRepository
 from src.core.repositories.interfaces import IJobRepository
+from src.discovery.html_text import strip_html
 from src.system.logger import setup_logger
 
 logger = setup_logger("JobRepository")
@@ -196,7 +198,15 @@ class JobRepository(BaseRepository, IJobRepository):
             where_clause += f" AND n.location {ilike_op} {p}"
             params.append(f"%{location}%")
         if remote_type:
-            where_clause += f" AND n.remote_type = {p}"
+            # Case-insensitive on purpose -- confirmed real (2026-08-25):
+            # remote_type is stored as a genuinely mixed-case free-text
+            # field ('Remote' AND 'remote', 'Hybrid' AND 'hybrid' both occur
+            # at real volume across different scraped sources). A plain `=`
+            # against the frontend's lowercase filter values silently
+            # missed most of the matching rows (e.g. 25,623 'Remote' rows
+            # invisible to a "remote" filter that only caught 3,903
+            # lowercase 'remote' rows).
+            where_clause += f" AND LOWER(n.remote_type) = LOWER({p})"
             params.append(remote_type)
         if employment_type:
             where_clause += f" AND n.employment_type = {p}"
@@ -318,12 +328,25 @@ class JobRepository(BaseRepository, IJobRepository):
                     entry_level_guard_re = re.compile(
                         self._ENTRY_LEVEL_SENIOR_GUARD_PATTERN.replace(r"\y", r"\b"), re.IGNORECASE
                     )
+                    # Same soft-signal shape as entry-level above -- India
+                    # location gets a small boost (2026-08-25), not a hard
+                    # gate. Case-insensitive city/state pattern + the
+                    # separate case-sensitive ISO-country-code-suffix check
+                    # (see _SQL_INDIA_COUNTRY_CODE_SUFFIX_PATTERN's own
+                    # comment for why these can't be merged into one regex).
+                    india_location_re = re.compile(
+                        self._SQL_INDIA_LOCATION_PATTERN.replace(r"\y", r"\b"), re.IGNORECASE
+                    )
+                    india_suffix_re = re.compile(self._SQL_INDIA_COUNTRY_CODE_SUFFIX_PATTERN)
                     for j in passed:
                         raw_rrf = j.get("rrf_score", 0.0)
                         normalized = (raw_rrf - rrf_min) / rrf_spread if rrf_spread > 0 else 1.0
                         score = 40 + normalized * 60
                         title_text = j.get("title") or ""
                         if entry_level_re.search(title_text) and not entry_level_guard_re.search(title_text):
+                            score = min(100, score + 3)
+                        location_text = j.get("location") or ""
+                        if india_location_re.search(location_text) or india_suffix_re.search(location_text):
                             score = min(100, score + 3)
                         j["job_score"] = round(score)
                         j["score_breakdown"] = j.get("matched_terms") or []
@@ -384,7 +407,9 @@ class JobRepository(BaseRepository, IJobRepository):
                 base_query += f" AND n.location {ilike_op} {p}"
                 params.append(f"%{location}%")
             if remote_type:
-                base_query += f" AND n.remote_type = {p}"
+                # Case-insensitive -- see get_jobs_from_precomputed's
+                # identical fix for why (mixed-case remote_type data).
+                base_query += f" AND LOWER(n.remote_type) = LOWER({p})"
                 params.append(remote_type)
             if employment_type:
                 base_query += f" AND n.employment_type = {p}"
@@ -1278,7 +1303,9 @@ class JobRepository(BaseRepository, IJobRepository):
                     exp_clause += f" AND n.location ~* {p}"
                     exp_params.append(rf"\y{re.escape(location)}\y")
             if remote_type:
-                exp_clause += f" AND n.remote_type = {p}"
+                # Case-insensitive -- see get_jobs_from_precomputed's
+                # identical fix for why (mixed-case remote_type data).
+                exp_clause += f" AND LOWER(n.remote_type) = LOWER({p})"
                 exp_params.append(remote_type)
             if employment_type:
                 exp_clause += f" AND n.employment_type = {p}"
@@ -1731,10 +1758,19 @@ class JobRepository(BaseRepository, IJobRepository):
         inserted = 0
         updated = 0
         archived = 0
-        
+
+        # Same defensive strip_html pass as
+        # discovery.pipeline.repositories.job.JobRepository.upsert_and_diff
+        # -- this is a SEPARATE upsert_and_diff implementation (this file's
+        # Pipeline A path, reached via RepositoryManager.job from
+        # job_board_worker.py) that writes to the same normalized_jobs
+        # table, so it needs the identical fix rather than relying on the
+        # other implementation's fix to somehow cover this path too.
+        jobs = [dataclasses.replace(j, description=strip_html(j.description)) for j in jobs]
+
         if not jobs:
             return (0, 0, 0, 0)
-            
+
         company_id = jobs[0].company_id
 
         # 1. Get all active job hashes for this company
