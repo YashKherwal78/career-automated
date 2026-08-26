@@ -365,6 +365,21 @@ class JobRepository(BaseRepository, IJobRepository):
                 # until an embedding exists, and that's a real, expected
                 # state (brand-new profile), not an error.
 
+            # This is the "sort_by=newest" path -- confirmed real
+            # (2026-08-27): it applies max_experience_years/include_interns
+            # ONLY if the caller explicitly passes them (both silently
+            # ignored otherwise), so "Sort: Date Posted" on the dashboard
+            # showed a completely unfiltered chronological feed with no
+            # profile-fit applied at all, unlike the "score" path above.
+            # Auto-deriving here the same way makes "sort by newest" behave
+            # as "latest jobs that still fit my profile" instead of "latest
+            # jobs, period" -- reusing _load_profile's already-computed
+            # years_experience rather than re-deriving it a third way.
+            if user_id and max_experience_years is None:
+                profile = self._load_profile(conn, user_id)
+                if profile.years_experience:
+                    max_experience_years = float(profile.years_experience)
+
             p = conn.dialect.placeholder()
             json_company = json_extract('n.raw_payload_json', '$.company')
             base_query = f"""
@@ -423,6 +438,12 @@ class JobRepository(BaseRepository, IJobRepository):
                     f" OR (n.experience_min IS NULL AND n.title !~* {p}))"
                 )
                 params.extend([max_experience_years, self._SQL_SENIOR_TITLE_PATTERN])
+            if not include_interns:
+                # Same pattern/semantics as get_jobs_by_hybrid_search's
+                # identical filter -- previously silently ignored on this
+                # path (see the auto-derivation comment above).
+                base_query += f" AND n.title !~* {p}"
+                params.append(self._SQL_INTERN_TITLE_PATTERN)
 
             # Bound the candidate set to the most recent N active jobs before
             # windowing/ranking. Without this, the per-company window function
