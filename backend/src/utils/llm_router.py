@@ -4,6 +4,7 @@ import os
 import json
 import time
 from typing import List, Dict, Optional
+from langsmith import traceable
 from src.config.config import Config
 from src.crm.database import log_llm_usage
 from src.utils.groq_manager import GroqManager
@@ -70,18 +71,19 @@ class LLMRouter:
                 logger.info(f"[LLMRouter] Failed to initialize OpenRouter Client: {e}")
 
         self.routes = {
-            "strategy": ["gemini", "groq", "openrouter"],
-            "reasoning": ["gemini", "groq", "openrouter"],
-            "outreach": ["gemini", "groq", "openrouter"],
-            "utility": ["gemini", "groq", "openrouter"],
-            "classification": ["gemini", "groq", "openrouter"]
+            "strategy": ["groq", "gemini", "openrouter"],
+            "reasoning": ["groq", "gemini", "openrouter"],
+            "outreach": ["groq", "gemini", "openrouter"],
+            "utility": ["groq", "gemini", "openrouter"],
+            "classification": ["groq", "gemini", "openrouter"]
         }
         
         self.groq_models = [
+            "openai/gpt-oss-20b",
             "qwen/qwen3.6-27b",
+            "allam-2-7b",
             "openai/gpt-oss-120b",
-            "llama-3.3-70b-versatile",
-            "llama-3.1-8b-instant"
+            "groq/compound-mini"
         ]
 
         self.openrouter_models = [
@@ -90,6 +92,13 @@ class LLMRouter:
             "meta-llama/llama-3-70b-instruct"
         ]
 
+    # Parent span for the whole provider-fallback loop below -- nests
+    # automatically under whichever _call_* method actually succeeds
+    # (LangSmith nests traces by call stack, no manual wiring needed), so
+    # a single trace shows which providers were tried, in what order, and
+    # which one ultimately served the request. No-op unless
+    # LANGSMITH_TRACING=true and LANGSMITH_API_KEY are set.
+    @traceable(run_type="chain", name="llm_router_chat_completion")
     def chat_completion(self, messages: List[Dict], temperature: float = 0.2, response_format: Optional[Dict] = None, intent: str = "utility") -> FakeResponse:
         providers = self.routes.get(intent, ["gemini", "groq", "openrouter"])
         fallback_count = 0
@@ -117,6 +126,7 @@ class LLMRouter:
                 
         raise Exception(f"All LLM providers failed for intent: {intent}")
 
+    @traceable(run_type="llm", name="gemini_call")
     def _call_gemini(self, messages: List[Dict], temperature: float, response_format: Optional[Dict]):
         if not self.gemini_client:
             raise Exception("Gemini client not initialized.")
@@ -135,12 +145,11 @@ class LLMRouter:
         )
         
         gemini_candidates = [
-            "gemini-2.5-flash",
-            "gemini-2.5-flash-lite",
-            "gemini-3.5-flash",
             "gemini-3.5-flash-lite",
-            "gemini-3.6-flash",
+            "gemini-3.5-flash",
+            "gemini-2.5-flash",
             "gemini-3.7-flash",
+            "gemini-3.6-flash",
             "gemini-flash-latest",
             "gemini-3.1-pro-preview"
         ]
@@ -162,6 +171,7 @@ class LLMRouter:
                 
         raise last_err or Exception("All Gemini candidate models failed.")
 
+    @traceable(run_type="llm", name="openrouter_call")
     def _call_openrouter(self, messages: List[Dict], temperature: float, response_format: Optional[Dict]):
         if not self.openrouter_client:
             raise Exception("OpenRouter client not initialized.")
@@ -186,6 +196,7 @@ class LLMRouter:
                 
         raise Exception(f"All OpenRouter fallback models failed. Last error: {last_error}")
 
+    @traceable(run_type="chain", name="groq_call_with_model_fallback")
     def _call_groq(self, messages: List[Dict], temperature: float, response_format: Optional[Dict], intent: str = "utility"):
         candidate_models = self.groq_models
         last_exc = None

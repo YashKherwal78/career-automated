@@ -8,7 +8,7 @@ import sqlite3
 import time
 import json
 import random
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from groq import Groq
 from src.utils.groq_manager import GroqManager
 from src.config.config import Config
@@ -16,6 +16,17 @@ from src.outreach.email_client import EmailClient
 from src.outreach.prompts import TEMPLATE_GENERATION_PROMPT
 from src.utils.profile_parser import ProfileParser
 from src.utils.llm_router import LLMRouter
+
+IST_TZ = timezone(timedelta(hours=5, minutes=30))
+
+def get_ist_now() -> datetime:
+    return datetime.now(timezone.utc).astimezone(IST_TZ)
+
+def get_window_bounds_ist() -> tuple[datetime, datetime]:
+    now = get_ist_now()
+    start_dt = now.replace(hour=9, minute=0, second=0, microsecond=0)
+    end_dt = now.replace(hour=15, minute=0, second=0, microsecond=0)
+    return start_dt, end_dt
 
 class OutreachEngine:
     def __init__(self, dry_run=False):
@@ -83,28 +94,46 @@ class OutreachEngine:
         {tailored_context}
         """
         
-        try:
-            response = self.client_manager.chat_completion(
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.1,
-                response_format={"type": "json_object"},
-                intent="outreach"
-            )
-            data = json.loads(response.choices[0].message.content)
-            obs = data.get("observation", "").replace("aligns with", "matches").replace("thrilled", "glad")
-            rel = data.get("relevance", "").replace("aligns with", "matches").replace("thrilled", "glad")
+        obs = ""
+        rel = ""
+        success = False
+        for attempt in range(3):
+            try:
+                response = self.client_manager.chat_completion(
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.1,
+                    response_format={"type": "json_object"},
+                    intent="outreach"
+                )
+                raw_content = response.choices[0].message.content.strip()
+                if "```json" in raw_content:
+                    raw_content = raw_content.split("```json")[1].split("```")[0].strip()
+                elif "```" in raw_content:
+                    raw_content = raw_content.split("```")[1].strip()
+                data = json.loads(raw_content)
+                obs = data.get("observation", "").replace("aligns with", "matches").replace("thrilled", "glad")
+                rel = data.get("relevance", "").replace("aligns with", "matches").replace("thrilled", "glad")
+                success = True
+                break
+            except Exception as e:
+                logger.info(f"Outreach generation attempt {attempt+1}/3 failed: {e}")
+                if attempt < 2:
+                    time.sleep(6)
+        
+        if not success or not obs or not rel:
+            return "", ""
             
-            networking_asks = [
-                "I'd love to learn more about the problems your team is solving.",
-                "I'd be happy to connect if my background seems relevant.",
-                "If you're open to it, I'd love to hear more about your team's current technical priorities.",
-                "I would be glad to connect and learn more about the engineering challenges you are tackling.",
-                "If my background matches any early-career opportunities, I'd be glad to connect."
-            ]
-            ask = random.choice(networking_asks)
-            
-            # Construct final template
-            body = f"""{greeting}
+        networking_asks = [
+            "I'd love to learn more about the problems your team is solving.",
+            "I'd be happy to connect if my background seems relevant.",
+            "If you're open to it, I'd love to hear more about your team's current technical priorities.",
+            "I would be glad to connect and learn more about the engineering challenges you are tackling.",
+            "If my background matches any early-career opportunities, I'd be glad to connect."
+        ]
+        ask = random.choice(networking_asks)
+        
+        # Construct final template
+        body = f"""{greeting}
 
 I'm a recent IIT Roorkee graduate focused on AI systems and product development. {obs}
 
@@ -119,15 +148,12 @@ Phone: +91 9891148156
 Email: yash.kherwal78@gmail.com
 LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
 
-            if role_str and role_str != "Engineering Team":
-                subject = f"Connecting: {role_str} / IIT Roorkee"
-            else:
-                subject = f"Connecting: IIT Roorkee Student & {comp_str} Opportunities"
+        if role_str and role_str != "Engineering Team":
+            subject = f"Connecting: {role_str} / IIT Roorkee"
+        else:
+            subject = f"Connecting: IIT Roorkee Student & {comp_str} Opportunities"
 
-            return subject, body
-        except Exception as e:
-            logger.info(f"Error generating email parts: {e}")
-            return "", ""
+        return subject, body
 
     def is_already_contacted(self, email: str) -> bool:
         clean_email = email.strip().lower()
@@ -135,9 +161,9 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
             return True
             
         db_paths = set([
-            Config.DATABASE_PATH,
-            os.path.join(Config.BASE_DIR, "data", "crm.db"),
-            os.path.join(Config.BASE_DIR, "backend", "data", "crm.db")
+            str(Config.DATABASE_PATH),
+            os.path.join(str(Config.DATA_DIR), "crm.db"),
+            os.path.join(os.path.dirname(str(Config.DATA_DIR)), "backend", "data", "crm.db")
         ])
         
         for path in db_paths:
@@ -163,11 +189,12 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
             self.contacted_in_session.add(clean_email)
             
         db_paths = set([
-            Config.DATABASE_PATH,
-            os.path.join(Config.BASE_DIR, "data", "crm.db"),
-            os.path.join(Config.BASE_DIR, "backend", "data", "crm.db")
+            str(Config.DATABASE_PATH),
+            os.path.join(str(Config.DATA_DIR), "crm.db"),
+            os.path.join(os.path.dirname(str(Config.DATA_DIR)), "backend", "data", "crm.db")
         ])
         
+        now_ts = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         for path in db_paths:
             if not os.path.exists(os.path.dirname(path)):
                 continue
@@ -175,9 +202,9 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
                 conn = sqlite3.connect(path)
                 cursor = conn.cursor()
                 cursor.execute("""
-                    INSERT OR REPLACE INTO outreach_log (email, recruiter_name, company, role, subject, body, status)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                """, (email.strip(), name, company, role, subject, body, status))
+                    INSERT OR REPLACE INTO outreach_log (email, recruiter_name, company, role, subject, body, status, sent_timestamp)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """, (email.strip(), name, company, role, subject, body, status, now_ts))
                 conn.commit()
                 conn.close()
             except Exception as e:
@@ -212,6 +239,7 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
         from src.intelligence.project_selector import ProjectSelector
         from src.outreach.critic import EmailCritic
         from src.outreach.email_client import ResumeAttachmentError
+        from src.outreach.email_generation_graph import run_generation_loop
         
         critic = EmailCritic()
         logger.info("Starting Autonomous Outreach Engine V2...")
@@ -253,6 +281,21 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
             return str(val).strip()
         
         for _, row in df.iterrows():
+            now_ist = get_ist_now()
+            start_window, end_window = get_window_bounds_ist()
+            
+            # If current time is before 9:00 AM IST, wait until 9:00 AM IST
+            if now_ist < start_window:
+                wait_sec = (start_window - now_ist).total_seconds()
+                logger.info(f"Current time ({now_ist.strftime('%H:%M:%S')} IST) is before 9:00 AM IST. Waiting {wait_sec/60:.1f} mins until window opens...")
+                time.sleep(min(wait_sec, 600))
+                continue
+                
+            # If current time is past 3:00 PM IST (15:00), window is closed for the day
+            if now_ist >= end_window:
+                logger.info(f"3:00 PM IST reached ({now_ist.strftime('%H:%M:%S')} IST). Outreach window is closed for today. Stopping.")
+                break
+
             if sent >= self.limit:
                 logger.info("Reached daily limit.")
                 break
@@ -297,22 +340,16 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
             
             project, proj_rejected, proj_reason, proj_conf = ProjectSelector.select(company_val, intel)
             
-            # 3. Email Generation & Critic Loop
-            subject, body = "", ""
-            critic_passed = False
-            critic_result = {}
-            for attempt in range(3):
-                subject, body = self.generate_email(name_val, company_val, role_val, notes_val, domain, project, intel, email=email_val)
-                if not body:
-                    continue
-                    
-                critic_result = critic.evaluate(body, company_val, project, domain)
-                if critic_result.get("status") == "PASS":
-                    critic_passed = True
-                    break
-                else:
-                    logger.info(f"Critic Rejected Attempt {attempt+1}: {critic_result.get('reason')}")
-                    
+            # 3. Email Generation & Critic Loop -- a LangGraph StateGraph
+            # (backend/src/outreach/email_generation_graph.py), not a plain
+            # Python loop: this is the one place in the codebase where a
+            # runtime outcome (did the critic pass?) actually decides what
+            # happens next, which is what conditional graph edges are for.
+            subject, body, critic_result, critic_passed = run_generation_loop(
+                self, critic, name_val, company_val, role_val, notes_val,
+                domain, project, intel, email_val, max_attempts=3,
+            )
+
             if not critic_passed:
                 logger.info(f"Failed to pass Email Critic for {email_val}. Skipping.")
                 failures += 1
@@ -390,8 +427,16 @@ LinkedIn: linkedin.com/in/yash-kherwal-944497254"""
                 sent += 1
                 logger.info(f"🚀 [OUTREACH PROGRESS: {sent}/{self.limit} SUCCESSFUL MAILS SENT] (Skipped: {skipped})")
                 if not self.dry_run and sent < self.limit:
-                    sleep_sec = random.uniform(12, 25)
-                    logger.info(f"Pacing delay: sleeping {sleep_sec:.1f}s before next recipient...")
+                    now_ist = get_ist_now()
+                    _, end_window = get_window_bounds_ist()
+                    rem_sec = max(0, (end_window - now_ist).total_seconds())
+                    rem_mails = max(1, self.limit - sent)
+                    if rem_sec > 0:
+                        ideal_pace = (rem_sec / rem_mails) - 5.0
+                        sleep_sec = max(35.0, min(60.0, ideal_pace + random.uniform(-3.0, 3.0)))
+                    else:
+                        sleep_sec = random.uniform(45.0, 55.0)
+                    logger.info(f"Pacing delay (9 AM – 3 PM IST window): sleeping {sleep_sec:.1f}s before next recipient...")
                     time.sleep(sleep_sec)
             else:
                 failures += 1

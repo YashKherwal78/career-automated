@@ -138,6 +138,15 @@
     ]
   },
   {
+    "canonical": "pgvector",
+    "category": "Databases",
+    "aliases": [
+      "pgvector",
+      "pg vector",
+      "pg-vector"
+    ]
+  },
+  {
     "canonical": "MongoDB",
     "category": "Databases",
     "aliases": [
@@ -242,6 +251,23 @@
     "category": "AI & ML",
     "aliases": [
       "openai"
+    ]
+  },
+  {
+    "canonical": "MCP",
+    "category": "AI & ML",
+    "aliases": [
+      "mcp",
+      "model context protocol"
+    ]
+  },
+  {
+    "canonical": "VectorDB",
+    "category": "Databases",
+    "aliases": [
+      "vectordb",
+      "vector db",
+      "vector database"
     ]
   },
   {
